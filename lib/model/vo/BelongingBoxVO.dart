@@ -16,17 +16,4 @@ class BelongingBoxVO{
     this.color = const Color(0xFF000000), // 默认颜色为黑色
   });
 
-  //TODO：带参数的构造函数，或许应该写道Provider之中？
-  // BelongingBoxVO.fromEntity(BelongingBox entity){
-  //   id = entity.id;
-  //   name = entity.name;
-  //   color = Color(entity.colorValue);
-  //
-  //   // TODO: 获取任务
-  //   tasks = [];
-  //   // tasks = entity.taskIds.map((id) => TaskVO.fromEntity(Task.getById(id))).toList();
-  // }
-
-
-
 }
