@@ -6,24 +6,26 @@ import '../model/entity/Task.dart';
 import '../model/vo/TaskVO.dart';
 
 class TaskProvider with ChangeNotifier {
-  final TaskRepository _repository;
+
   List<Task> _tasks = [];
+  List<Task> _currentTasks = [];
   bool _isLoading = false;
 
-  TaskProvider(): _repository = locator<TaskRepository>();
-
-  // 状态字段
   List<Task> get tasks => _tasks;
+  List<Task> get currentTasks => _currentTasks;
   bool get isLoading => _isLoading;
 
+
+  final TaskRepository _repository;
+  TaskProvider() : _repository = locator<TaskRepository>();
+
+
+
+
   // 业务方法
-  Future<void> loadTasks() async {
+  Future<void> loadAllTasks() async {
     // 设置加载状态为 true
     _isLoading = true;
-
-    //TODO： 通知监听者状态已改变，这里需要通知吗？
-    notifyListeners();
-
     _tasks = await _repository.getAll();
     _isLoading = false;
 
@@ -31,24 +33,33 @@ class TaskProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  //TODO:获得当前要显示的任务
+  Future<void> loadCurrentTasks() async {
+    // 设置加载状态为 true
+    _isLoading = true;
+    notifyListeners();
 
-  // Future<void> addTask(String title) async {
-  //   final task = Task()..title = title;
-  //   await _repository.createTask(task);
-  //   await loadTasks(); // 更新状态
-  // }
+    _currentTasks = await _repository.getAll();
+    _isLoading = false;
+
+    // 通知监听者状态已改变
+    notifyListeners();
+  }
+
+  //TODO: 根据VO生成Wight，或许不应该写入Provider之中？
+  void generateTestAllTodos() {
+    notifyListeners(); // 通知监听者状态已更改
+  }
+
+  //TODO: 获得 某一天所有的待办事项
+  // Future<List<TaskVO>> getTodosForDate(DateTime date) async {
+  //   List<Task> tasks = await _repository.getTodosForDate(date);
+  //   List<TaskVO> todos = [ for (var task in tasks) convertToVO(task) ];;
   //
-  // Future<void> toggleTask(int taskId) async {
-  //   // 业务逻辑：先获取，再修改，再保存
-  //   final task = await _repository.getTaskById(taskId);
-  //   if (task != null) {
-  //     task.isCompleted = !task.isCompleted;
-  //     await _repository.updateTask(task);
-  //     await loadTasks(); // 更新状态
-  //   }
+  //   return todos;
   // }
 
-  Task convertToEntity(TaskVO vo){
+  Task convertToEntity(TaskVO vo) {
     return Task(name: vo.name)
       ..id = vo.id
       ..description = vo.description
@@ -57,21 +68,23 @@ class TaskProvider with ChangeNotifier {
       ..startTime = vo.startTime
       ..endTime = vo.endTime
       ..parentTaskId = vo.parentTask?.id
-      ..subTaskIds = [ for (var subTask in vo.subTasks) subTask.id ]
-      ..belongingBoxId = vo.belongingBox?.id
-    ;
+      ..subTaskIds = [for (var subTask in vo.subTasks) subTask.id]
+      ..belongingBoxId = vo.belongingBox?.id;
   }
 
-  TaskVO convertToVO(Task entity){
+  //TODO: 完善 parentTask 和 subTasks
+  TaskVO convertToVO(Task entity) {
+    // ..parentTask = entity.parentTaskId != null ? convertToVO(await _repository.getTaskById(entity.parentTaskId)) : null
+    // ..subTasks = [ for (var subTaskId in entity.subTaskIds) convertToVO(await _repository.getTaskById(subTaskId)) ];
+
     return TaskVO(id: entity.id, name: entity.name)
-        ..description = entity.description
-        ..isDone = entity.isDone
-        ..checkpoints = entity.checkpoints
-        ..startTime = entity.startTime
-        ..endTime = entity.endTime
-        ..parentTask = null
-        ..subTasks = [];
-        // ..parentTask = entity.parentTaskId != null ? convertToVO(await _repository.getTaskById(entity.parentTaskId)) : null
-        // ..subTasks = [ for (var subTaskId in entity.subTaskIds) convertToVO(await _repository.getTaskById(subTaskId)) ];
+      ..description = entity.description
+      ..isDone = entity.isDone
+      ..checkpoints = entity.checkpoints
+      ..startTime = entity.startTime
+      ..endTime = entity.endTime
+      ..parentTask = null
+      ..subTasks = []
+      ..belongingBox = null;
   }
 }

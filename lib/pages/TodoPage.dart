@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:my_dida/model/TodoItem.dart';
 import 'package:my_dida/provider/TodosProvider.dart';
 import 'package:provider/provider.dart';
+
+import '../provider/BelongingBoxVOProvider.dart';
+import '../provider/TaskProvider.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -19,18 +21,23 @@ class _TodoPageState extends State<TodoPage> {
     /// 使用 Provider 来获取 TodosProvider 实例
     final todosProvider = context.watch<TodosProvider>();
 
-    //TODO: 按说子 widget 中是不应该使用 Scaffold 的，但我确实没想到显示 悬浮按钮和侧边栏 好的处理方式
+    final _taskProvider = Provider.of<TaskProvider>(context);
+    final _belongingBoxProvider = Provider.of<BelongingBoxProvider>(context);
+    var tasks = _taskProvider.tasks;
+
     return Scaffold(
+      appBar: AppBar(title: Text("代办")),
+
       /// 可滑动的列表视图
       body: ListView.builder(
-        itemCount: todosProvider.cur_todos.length, // 项目总数
+        itemCount: _taskProvider.currentTasks.length, // 项目总数
         itemBuilder: (context, index) {
-          return TodosProvider.generateCard(todosProvider.cur_todos[index]);
+          return Text("还没写完");
+          // return _taskProvider.generateCard(_taskProvider.tasks[index]);
         },
       ),
 
       /// 添加一个悬浮按钮
-      //TODO: 这里的悬浮按钮是一个添加新任务的按钮，点击后会弹出一个对话框（对话框和键盘同时弹出），
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           print("Add new todo item");
@@ -39,7 +46,6 @@ class _TodoPageState extends State<TodoPage> {
       ),
 
       /// 添加侧边栏
-      //TODO: 侧边栏中根据我写下的类进行渲染
       drawer: Drawer(
         child: Column(
           children: [
@@ -47,33 +53,28 @@ class _TodoPageState extends State<TodoPage> {
             UserAccountsDrawerHeader(
               accountName: Text("我喜欢你"),
               accountEmail: Text("这里其实是邮件地址，但是我找不到简介的地方"),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
+              decoration: BoxDecoration(color: Colors.blue),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
                 child: Icon(Icons.person, size: 40, color: Colors.blue),
               ),
             ),
+
             /// 侧边栏菜单项
             Expanded(
               child: ListView(
                 children: [
-                  ListTile(
-                    leading: Icon(Icons.home),
-                    title: Text("主页"),
-                    onTap: () {},
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.settings),
-                    title: Text("设置"),
-                    onTap: () {},
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.info),
-                    title: Text("关于"),
-                    onTap: () {},
-                  ),
+                  for (var belongingBox
+                      in _belongingBoxProvider.all_belongingBoxes)
+                    ListTile(
+                      leading: Icon(Icons.home),
+                      title: Text(belongingBox.name),
+                      onTap: () {
+                        print("点击了 ${belongingBox.name}");
+                        //TODO: 跳转到对应的任务列表页面
+                        // Navigator.of(context).push(MaterialPageRoute(builder: (context) => TaskListPage()));
+                      },
+                    ),
                 ],
               ),
             ),

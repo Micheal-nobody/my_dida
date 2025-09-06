@@ -6,7 +6,6 @@ import 'package:isar/isar.dart';
 import 'package:my_dida/model/entity/CheckPoint.dart';
 part 'Task.g.dart';
 
-//TODO:接入 Isar 数据库！
 @Collection()
 class Task {
   Id id = Isar.autoIncrement;

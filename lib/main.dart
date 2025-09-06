@@ -15,8 +15,6 @@ void main() async{
 
   /// 初始化 Isar 数据库
   await setupLocator();
-
-  //TODO: 或者使用ChangeNotifierProvider 中 create 返回一个 Future 对象
   runApp(
     MultiProvider(
       providers: [

@@ -6,15 +6,16 @@ import 'package:my_dida/pages/TodoPage.dart';
 
 import '../pages/CalendarScreen.dart';
 
-//TODO: 也许可以把 TodoDetails 模块放在这里，父 Navigator 就是Material App 的 Navigator
 final GoRouter goRouter = GoRouter(
   // 初始路由
-  initialLocation: '/tomato',
+  initialLocation: '/todoList',
+
   routes: [
     StatefulShellRoute.indexedStack(
       /// 整个页面的内容，其中 Branch 中的内容会填充到 body 中
       builder: (context, state, navigationShell) => Scaffold(
-        appBar: AppBar(title: const Text('My Dida')),
+        //? 路由跳转时，这个函数会被调用！这意味着页面重新渲染！
+        // appBar: _getAppBar(context, navigationShell.currentIndex),
 
         //? StatefulNavigationShell 是一个特殊的路由组件，它允许在底部导航栏中切换不同的分支（branch），每个分支都有自己的导航栈。
         body: navigationShell,
@@ -26,11 +27,8 @@ final GoRouter goRouter = GoRouter(
           onTap: (index) => _onTap(context, index, navigationShell),
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.masks), label: '待办清单'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_view_day),
-              label: '日历视图',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.circle), label: '番茄钟'),
+            BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: '日历视图'),
+            BottomNavigationBarItem(icon: Icon(Icons.lock_clock), label: '番茄钟'),
           ],
         ),
       ),
@@ -39,11 +37,17 @@ final GoRouter goRouter = GoRouter(
       branches: [
         // 为每一个底部导航项创建一个分支（branch）
         StatefulShellBranch(
+          /// StatefulShellBranch.routes 表示分支中的路由
           routes: [
             GoRoute(
               path: '/todoList',
               pageBuilder: (context, state) =>
                   const NoTransitionPage(child: TodoPage()),
+            ),
+            GoRoute(
+              path: '/todoDetails',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: Text("这是还没有做的 todo 详情页面！")),
             ),
           ],
         ),
@@ -59,7 +63,7 @@ final GoRouter goRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/tomato',
+              path: '/pomodoro',
               pageBuilder: (context, state) =>
                   const NoTransitionPage(child: PomodoroPage()),
             ),
@@ -76,14 +80,26 @@ final GoRouter goRouter = GoRouter(
   ),
 );
 
-// 底部导航栏点击处理
-void _onTap(
-  BuildContext context,
-  int index,
-  StatefulNavigationShell navigationShell,
-) {
+/// 底部导航栏点击处理
+void _onTap(BuildContext context, int index, StatefulNavigationShell navigationShell) {
   navigationShell.goBranch(
     index,
+    //? initialLocation 表示是否初始化该分支的导航栈，如果为 true，则该分支的导航栈将初始化为该分支的根路由。
+    //? 在这里 index == navigationShell.currentIndex 表示是否跳转到当前分支，如果是，则不需要初始化导航栈
     initialLocation: index == navigationShell.currentIndex,
   );
+}
+
+//TODO： appBar 生成器
+AppBar _getAppBar(BuildContext context, int branchIndex) {
+  switch (branchIndex) {
+    case 0:
+      return AppBar(title: const Text('待办清单'));
+    case 1:
+      return AppBar(title: const Text('日历视图'));
+    case 2:
+      return AppBar(title: const Text('番茄钟'));
+    default:
+      return AppBar(title: const Text('My Dida'));
+  }
 }

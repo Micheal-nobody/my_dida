@@ -3,21 +3,20 @@ import 'package:my_dida/utils/TimeUtils.dart';
 
 import '../model/TodoItem.dart';
 
-//TODO: 这个Provider封装了一系列的待办事项操作，包括添加、删除、清空待办事项等功能。这些都要与 isar 数据库进行交互，
+//TODO: 这个类将要被TaskProvider取代了，找个时间删了吧！
 class TodosProvider extends ChangeNotifier {
   /// 当前的待办事项列表
   Map<DateTime,List<TodoItem>> all_todos = {}; // 当前日期的待办事项列表，按日期分组
   List<TodoItem> cur_todos = []; // 当前显示的待办事项列表
   DateTime cur_date = DateTime.now().dateOnly; // 当前日期，用于筛选待办事项
 
-  //TODO: FutureProvider 管理一次性异步任务，可以用来读取一次数据！
   void init_todos() {
-    //TODO: 优先使用 getApplicationDocumentsDirectory() 存放核心数据库/数据文件。不需要手动创建复杂的日期文件夹结构来存储核心日程数据，数据库查询是更优解。共享存储空间主要用于用户明确交互的媒体或文件。
     generateTestAllTodos();
     cur_todos = all_todos[cur_date] ?? [];
     //更详细的all_todos数据:
     notifyListeners();
   }
+
   void generateTestAllTodos() {
     for (int i = -5; i <= 5; i++) {
       /// 生成只包含年月日的 DateTime
@@ -49,10 +48,7 @@ class TodosProvider extends ChangeNotifier {
 
 
   // 生成一个待办事项的卡片
-  //TODO: 美化Card的样式
   static Card generateCard(TodoItem item) {
-    //TODO:如果item已完成，那么就不生成Card了。
-    //TODO:是否显示已完成的待办事项可以通过一个开关来控制，用一个Provider来记录开关的状态
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -95,7 +91,6 @@ class TodosProvider extends ChangeNotifier {
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () {
-                    //TODO: 删除操作
                     print("Remove successful");
                   },
                 ),
@@ -131,19 +126,16 @@ class TodosProvider extends ChangeNotifier {
 
   /// 添加一个新的待办事项
   void addTodo(String todo) {
-    // todos.add(todo);
     // notifyListeners(); // 通知所有监听者状态已改变
   }
 
   /// 删除一个待办事项
   void removeTodo(String todo) {
-    // todos.remove(todo);
     // notifyListeners(); // 通知所有监听者状态已改变
   }
 
   /// 清空所有待办事项
   void clearTodos() {
-    // todos.clear();
     // notifyListeners(); // 通知所有监听者状态已改变
   }
 }

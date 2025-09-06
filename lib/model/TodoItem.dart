@@ -4,7 +4,7 @@ import 'dart:ui';
 
 import 'package:isar/isar.dart';
 
-//TODO:接入 Isar 数据库！
+//TODO: 用不到的话，就删了吧
 class TodoItem {
   Id id = Isar.autoIncrement;
 
@@ -46,7 +46,6 @@ class TodoItem {
     this.belongingBox,
   }){
     // this.endTime ??= DateTime.now();
-    //TODO：BelongList应该被管理，默认值为代理类中lists[0]
     // ??= 表示如果变量为 null，则赋值
     this.belongingBox ??= BelongingBox(name: 'Default List', color: const Color(0xFF000000));
   }
