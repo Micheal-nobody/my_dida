@@ -3,6 +3,7 @@
 import 'dart:ui';
 
 import 'package:isar/isar.dart';
+import 'package:my_dida/model/entity/CheckPoint.dart';
 part 'Task.g.dart';
 
 //TODO:接入 Isar 数据库！
@@ -15,7 +16,7 @@ class Task {
   bool isDone;
 
   /// 检查点
-  List<int> checkpointIds;
+  List<CheckPoint> checkpoints;
 
   /// 时间（两个时间是因为任务可以接受 时间段/时间点）
   DateTime? startTime;
@@ -35,7 +36,7 @@ class Task {
     this.description = '',
     this.isDone = false,
 
-    this.checkpointIds = const [],
+    this.checkpoints = const [],
 
     /// 两个时间默认为 null
     this.startTime,

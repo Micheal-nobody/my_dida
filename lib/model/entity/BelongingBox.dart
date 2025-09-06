@@ -14,6 +14,6 @@ class BelongingBox{
 
   BelongingBox({
     required this.name,
-    this.colorValue = 0 // 默认颜色为黑色
+    this.colorValue = 0,
   });
 }

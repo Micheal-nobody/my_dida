@@ -21,4 +21,6 @@ class TaskRepository extends BaseRepository<Task>{
   Future<List<Task>> getAllData() async {
     return await _isar.tasks.where().findAll();
   }
+
+  Future<Task> getTaskById(int? parentTaskId) async {}
 }

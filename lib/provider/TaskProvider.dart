@@ -3,6 +3,7 @@ import 'package:my_dida/repository/TaskRepository.dart';
 
 import '../locator/locator.dart';
 import '../model/entity/Task.dart';
+import '../model/vo/TaskVO.dart';
 
 class TaskProvider with ChangeNotifier {
   final TaskRepository _repository;
@@ -46,4 +47,31 @@ class TaskProvider with ChangeNotifier {
   //     await loadTasks(); // 更新状态
   //   }
   // }
+
+  Task convertToEntity(TaskVO vo){
+    return Task(name: vo.name)
+      ..id = vo.id
+      ..description = vo.description
+      ..isDone = vo.isDone
+      ..checkpoints = vo.checkpoints
+      ..startTime = vo.startTime
+      ..endTime = vo.endTime
+      ..parentTaskId = vo.parentTask?.id
+      ..subTaskIds = [ for (var subTask in vo.subTasks) subTask.id ]
+      ..belongingBoxId = vo.belongingBox?.id
+    ;
+  }
+
+  TaskVO convertToVO(Task entity){
+    return TaskVO(id: entity.id, name: entity.name)
+        ..description = entity.description
+        ..isDone = entity.isDone
+        ..checkpoints = entity.checkpoints
+        ..startTime = entity.startTime
+        ..endTime = entity.endTime
+        ..parentTask = null
+        ..subTasks = [];
+        // ..parentTask = entity.parentTaskId != null ? convertToVO(await _repository.getTaskById(entity.parentTaskId)) : null
+        // ..subTasks = [ for (var subTaskId in entity.subTaskIds) convertToVO(await _repository.getTaskById(subTaskId)) ];
+  }
 }

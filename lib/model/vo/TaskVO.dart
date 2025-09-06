@@ -1,4 +1,5 @@
 import 'package:my_dida/model/entity/BelongingBox.dart';
+import 'package:my_dida/model/entity/CheckPoint.dart';
 
 //TODO:接入 Isar 数据库！
 class TaskVO {
@@ -9,7 +10,7 @@ class TaskVO {
   bool isDone;
 
   /// 检查点
-  List<int> checkpointIds;
+  List<CheckPoint> checkpoints;
 
   /// 时间（两个时间是因为任务可以接受 时间段/时间点）
   DateTime? startTime;
@@ -30,7 +31,7 @@ class TaskVO {
     this.description = '',
     this.isDone = false,
 
-    this.checkpointIds = const [],
+    this.checkpoints = const [],
 
     /// 两个时间默认为 null
     this.startTime,
