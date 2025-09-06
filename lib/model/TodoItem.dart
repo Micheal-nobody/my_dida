@@ -5,7 +5,6 @@ import 'dart:ui';
 import 'package:isar/isar.dart';
 
 //TODO:接入 Isar 数据库！
-@Collection()
 class TodoItem {
   Id id = Isar.autoIncrement;
 

@@ -58,7 +58,7 @@ class PomodoroPage extends StatelessWidget {
               return ListView.builder(
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
-                  print('列表数据更新了');
+                  // print('列表数据更新了');
                   return Text(snapshot.data![index].name ?? "");
                 },
               );

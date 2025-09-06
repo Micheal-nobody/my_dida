@@ -19,6 +19,8 @@ dependencies:
   isar_flutter_libs: ^3.1.0+1 # Flutter 特定支持
   path_provider: ^2.1.0 # 获取存储路径
   table_calendar: ^3.2.0 # 日历组件
+  analyzer: 5.13.0
+
 
 # dev_dependencies 表示测试依赖
 dev_dependencies:

@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
 import 'package:my_dida/model/IsarTest.dart';
+import 'package:my_dida/model/entity/BelongingBox.dart';
+import 'package:my_dida/model/entity/Task.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../repository/IsarTestRepository.dart';
@@ -19,7 +21,7 @@ Future<void> setupLocator() async {
 Future<Isar> initializeIsar() async {
   final dir = await getApplicationDocumentsDirectory();
   final isar = await Isar.open(
-    [IsarTestSchema],
+    [IsarTestSchema,TaskSchema,BelongingBoxSchema],
     directory: dir.path,
   );
   return isar;
