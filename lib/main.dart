@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/provider/BelongingBoxVOProvider.dart';
+import 'package:my_dida/provider/TaskProvider.dart';
 import 'package:my_dida/provider/TodosProvider.dart';
 import 'package:my_dida/provider/UIStatusProvider.dart';
 import 'package:my_dida/router/goRouter.dart';
@@ -20,6 +22,10 @@ void main() async{
       providers: [
         ChangeNotifierProvider(create: (context) => TodosProvider()),
         ChangeNotifierProvider(create: (context) => UIStatusProvider()),
+
+        /// 添加两个 Service
+        ChangeNotifierProvider(create: (context) => TaskProvider()),
+        ChangeNotifierProvider(create: (context) => BelongingBoxProvider()),
       ],
       child: MyApp(),
     ),
