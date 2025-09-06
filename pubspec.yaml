@@ -1,0 +1,32 @@
+name: my_dida
+description: "A new Flutter project."
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+# Dependencies 依赖
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8 # iOS 风格图标
+  get_it: ^7.2.0 # 依赖注入，用于实现 服务定位器（Service Locator）模式
+  go_router: ^16.0.0 # 路由管理
+  provider: ^6.1.5 # 状态管理
+  isar: ^3.1.0+1 # 数据库支持
+  isar_flutter_libs: ^3.1.0+1 # Flutter 特定支持
+  path_provider: ^2.1.0 # 获取存储路径
+  table_calendar: ^3.2.0 # 日历组件
+
+# dev_dependencies 表示测试依赖
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0 # Flutter 代码规范
+  isar_generator: ^3.1.0+1 # Isar 数据库代码生成
+  build_runner: ^2.4.13 # 代码生成
+
+flutter:
+  uses-material-design: true
