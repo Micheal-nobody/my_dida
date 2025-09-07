@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/provider/TodosProvider.dart';
 import 'package:provider/provider.dart';
 
-import '../provider/BelongingBoxVOProvider.dart';
+import '../provider/BelongingBoxProvider.dart';
+import '../provider/DateBoxProvider.dart';
 import '../provider/TaskProvider.dart';
 
 class TodoPage extends StatefulWidget {
@@ -23,25 +24,25 @@ class _TodoPageState extends State<TodoPage> {
 
     final _taskProvider = Provider.of<TaskProvider>(context);
     final _belongingBoxProvider = Provider.of<BelongingBoxProvider>(context);
-    var tasks = _taskProvider.tasks;
+    var current_tasks = _taskProvider.currentTasks;
 
     return Scaffold(
       appBar: AppBar(title: Text("代办")),
 
       /// 可滑动的列表视图
       body: ListView.builder(
-        itemCount: _taskProvider.currentTasks.length, // 项目总数
+        itemCount: current_tasks.length, // 项目总数
         itemBuilder: (context, index) {
-          return Text("还没写完");
-          // return _taskProvider.generateCard(_taskProvider.tasks[index]);
+          return Text(current_tasks[index].name);
         },
       ),
 
       /// 添加一个悬浮按钮
       floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
         onPressed: () {
           print("Add new todo item");
-          todosProvider.init_todos();
+          _taskProvider.showAddDialog(context);
         },
       ),
 
@@ -64,6 +65,15 @@ class _TodoPageState extends State<TodoPage> {
             Expanded(
               child: ListView(
                 children: [
+                  /// 默认收藏夹
+                  ListTile(
+                    leading: Icon(Icons.home),
+                    title: Text("今天"),
+                    onTap: () {
+                      print("点击了 今天");
+                      _taskProvider.loadTodayTasks();
+                    },
+                  ),
                   for (var belongingBox
                       in _belongingBoxProvider.all_belongingBoxes)
                     ListTile(
@@ -71,7 +81,7 @@ class _TodoPageState extends State<TodoPage> {
                       title: Text(belongingBox.name),
                       onTap: () {
                         print("点击了 ${belongingBox.name}");
-                        //TODO: 跳转到对应的任务列表页面
+                        //TODO: 修改 BelongingBoxProvider中的 cur
                         // Navigator.of(context).push(MaterialPageRoute(builder: (context) => TaskListPage()));
                       },
                     ),

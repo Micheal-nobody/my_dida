@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:my_dida/repository/TaskRepository.dart';
 
 import '../locator/locator.dart';
@@ -6,21 +7,19 @@ import '../model/entity/Task.dart';
 import '../model/vo/TaskVO.dart';
 
 class TaskProvider with ChangeNotifier {
-
   List<Task> _tasks = [];
   List<Task> _currentTasks = [];
   bool _isLoading = false;
 
   List<Task> get tasks => _tasks;
+
   List<Task> get currentTasks => _currentTasks;
+
   bool get isLoading => _isLoading;
 
-
   final TaskRepository _repository;
+
   TaskProvider() : _repository = locator<TaskRepository>();
-
-
-
 
   // 业务方法
   Future<void> loadAllTasks() async {
@@ -49,6 +48,15 @@ class TaskProvider with ChangeNotifier {
   //TODO: 根据VO生成Wight，或许不应该写入Provider之中？
   void generateTestAllTodos() {
     notifyListeners(); // 通知监听者状态已更改
+  }
+
+  Future<void> loadTodayTasks() async {
+    _isLoading = true;
+    notifyListeners();
+
+    _currentTasks = await _repository.getTodayTasks();
+    _isLoading = false;
+    notifyListeners();
   }
 
   //TODO: 获得 某一天所有的待办事项
@@ -86,5 +94,46 @@ class TaskProvider with ChangeNotifier {
       ..parentTask = null
       ..subTasks = []
       ..belongingBox = null;
+  }
+
+  //TODO: 这是暂时的测试数据
+  void initTasks() {
+    _currentTasks = [
+      Task(name: "Task 1"),
+      Task(name: "Task 2"),
+      Task(name: "Task 3"),
+    ];
+
+    notifyListeners();
+  }
+
+  //TODO：被 bottomNavigationBar 遮挡了！
+  void showAddDialog(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        useRootNavigator: true,
+        isScrollControlled: true,
+        backgroundColor: Colors.red,
+        builder: (BuildContext context) {
+          return Container(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      decoration: InputDecoration(labelText: 'Task Name'),
+                    ),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      child: Text("确认"),
+                      onPressed: () {
+                        // 添加逻辑
+                      },
+                    )
+                  ]
+              )
+          );
+        }
+    );
   }
 }

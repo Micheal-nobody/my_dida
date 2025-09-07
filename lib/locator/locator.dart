@@ -28,5 +28,20 @@ Future<Isar> initializeIsar() async {
     [IsarTestSchema,TaskSchema,BelongingBoxSchema],
     directory: dir.path,
   );
+
+  /// 初始化数据
+  isar.writeTxnSync(() {
+    /// 如果没有收集箱则创建一个
+    if (isar.belongingBoxs.countSync() == 0) {
+      isar.belongingBoxs.putSync(BelongingBox(name: '收集箱'));
+    }
+
+    if (isar.tasks.countSync() == 0) {
+      for(var i = 0; i < 10; i++){
+        isar.tasks.putSync(Task(name: '任务 $i'));
+      }
+    }
+  });
+
   return isar;
 }
