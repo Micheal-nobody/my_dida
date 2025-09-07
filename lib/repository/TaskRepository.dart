@@ -37,6 +37,12 @@ class TaskRepository extends BaseRepository<Task> {
       .findAll();
   }
 
+  Future<void> addTask(Task newTask) async {
+    await _isar.writeTxn(() async {
+      await _isar.tasks.put(newTask);
+    });
+  }
+
   // Future<List<Task>> getTodosForDate(DateTime date) {
   //   return _isar.tasks.where()
   //       .filter()

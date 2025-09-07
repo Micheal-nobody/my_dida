@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:my_dida/component/AddTaskDialog.dart';
 import 'package:my_dida/provider/TodosProvider.dart';
 import 'package:provider/provider.dart';
 
@@ -42,7 +43,7 @@ class _TodoPageState extends State<TodoPage> {
         child: Icon(Icons.add),
         onPressed: () {
           print("Add new todo item");
-          _taskProvider.showAddDialog(context);
+          AddTaskDialog.show(context);
         },
       ),
 

@@ -107,33 +107,11 @@ class TaskProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  //TODO：被 bottomNavigationBar 遮挡了！
-  void showAddDialog(BuildContext context) {
-    showModalBottomSheet(
-        context: context,
-        useRootNavigator: true,
-        isScrollControlled: true,
-        backgroundColor: Colors.red,
-        builder: (BuildContext context) {
-          return Container(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      decoration: InputDecoration(labelText: 'Task Name'),
-                    ),
-                    SizedBox(height: 16),
-                    ElevatedButton(
-                      child: Text("确认"),
-                      onPressed: () {
-                        // 添加逻辑
-                      },
-                    )
-                  ]
-              )
-          );
-        }
-    );
+
+
+  //TODO: 如果添加的任务属于一个盒子，则需要刷新页面！
+  Future<void> addTask(Task newTask) async {
+    await _repository.addTask(newTask);
+    notifyListeners();
   }
 }
