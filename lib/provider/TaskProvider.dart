@@ -33,6 +33,9 @@ class TaskProvider with ChangeNotifier {
 
   /// 依赖 BelongingBoxProvider 更新 _currentTasks
   _updateCurTasks() async {
+
+    print("更新 _currentTasks");
+
     /// 查询今天的任务
     if (_belongingBoxProvider.cur_belongingBox == null ||
         _belongingBoxProvider.cur_belongingBox!.id == -1) {
@@ -74,6 +77,7 @@ class TaskProvider with ChangeNotifier {
     notifyListeners(); // 通知监听者状态已更改
   }
 
+  //TODO: 有bug！
   /// 获得今天所有的待办事项
   Future<void> loadTodayTasks() async {
     _isLoading = true;

@@ -88,8 +88,7 @@ class _TodoPageState extends State<TodoPage> {
                       title: Text(belongingBox.name),
                       onTap: () {
                         print("点击了 ${belongingBox.name}");
-                        //TODO: 修改 BelongingBoxProvider中的 cur
-                        // Navigator.of(context).push(MaterialPageRoute(builder: (context) => TaskListPage()));
+                        _belongingBoxProvider.updateCurBelongingBox(belongingBox);
                       },
                     ),
                 ],

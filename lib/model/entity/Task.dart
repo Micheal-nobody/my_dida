@@ -45,8 +45,8 @@ class Task {
     this.parentTaskId,
     this.subTaskIds = const [],
 
-    /// 所属收集箱
-    this.belongingBoxId = 0,
+    /// 所属收集箱（默认为 “收集箱”）
+    this.belongingBoxId = 1,
   });
 
   //

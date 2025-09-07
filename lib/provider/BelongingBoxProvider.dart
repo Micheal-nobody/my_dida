@@ -54,6 +54,8 @@ class BelongingBoxProvider extends ChangeNotifier {
 
 
 
+
+
   BelongingBox convertToEntity(BelongingBoxVO vo) {
     return BelongingBox(name: vo.name)
       ..id = vo.id
@@ -69,4 +71,12 @@ class BelongingBoxProvider extends ChangeNotifier {
       taskIds: entity.taskIds
     );
   }
+
+  //TODO: 保证cur_BelongingBox更新后，TaskProvider同样更新
+  void updateCurBelongingBox(BelongingBoxVO belongingBox) {
+    print("触发了更新！");
+    _currentBelongingBox = belongingBox;
+    notifyListeners();
+  }
 }
+
