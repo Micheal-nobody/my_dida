@@ -18,7 +18,9 @@ class BelongingBoxProvider extends ChangeNotifier {
   final BelongingBoxRepository _belongingBoxRepository;
   BelongingBoxProvider()
     : _belongingBoxRepository = locator<BelongingBoxRepository>(),
-      _currentBelongingBox = BelongingBoxVO(id: -1, name: "今天");
+      _currentBelongingBox = BelongingBoxVO(id: -1, name: "今天"){
+    loadAllBelongingBoxes();
+  }
 
 
   /// 获取所有的收藏夹

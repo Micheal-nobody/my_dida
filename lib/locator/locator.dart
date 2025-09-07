@@ -25,32 +25,38 @@ Future<void> setupLocator() async {
 
 Future<Isar> initializeIsar() async {
   final dir = await getApplicationDocumentsDirectory();
-  final isar = await Isar.open(
-    [IsarTestSchema,TaskSchema,BelongingBoxSchema],
-    directory: dir.path,
-  );
+  final isar = await Isar.open([
+    IsarTestSchema,
+    TaskSchema,
+    BelongingBoxSchema,
+  ], directory: dir.path);
 
   /// 初始化数据
-  isar.writeTxnSync(() {
+  await isar.writeTxn(() async {
+    print("开始初始化数据！");
 
     /// 清空所有数据
-    isar.clear();
+    await isar.clear();
 
     /// 如果没有收集箱则创建一个
-    if (isar.belongingBoxs.countSync() == 0) {
-      isar.belongingBoxs.putSync(BelongingBox(name: '收集箱'));
+    if (await isar.belongingBoxs.count() == 0) {
+      Id id = await isar.belongingBoxs.put(BelongingBox(name: '收集箱'));
+      print("收集箱 id: $id ");
     }
 
-    if (isar.tasks.countSync() == 0) {
+    if (await isar.tasks.count() == 0) {
       /// 最近7天，每天7个任务
       var today = DateTime.now().dateOnly;
-
       for (var i = 0; i < 7; i++) {
         for (var j = 0; j < 7; j++) {
-          isar.tasks.putSync(Task(
-            name: '任务 ${i + 1} 的第 ${j + 1} 个任务',
+          Task task = Task(
+            name: '任务 ${i} 的第 ${j + 1} 个任务',
             startTime: today.add(Duration(days: i)),
-          ));
+          );
+
+          await isar.tasks.put(task);
+
+          print("第 ${i} 天，第 ${j + 1} 个任务");
         }
       }
     }
@@ -58,3 +64,5 @@ Future<Isar> initializeIsar() async {
 
   return isar;
 }
+
+

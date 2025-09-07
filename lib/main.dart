@@ -22,10 +22,20 @@ void main() async{
         ChangeNotifierProvider(create: (context) => TodosProvider()),
         ChangeNotifierProvider(create: (context) => UIStatusProvider()),
 
-        /// 添加两个 Service
-        ChangeNotifierProvider(create: (context) => TaskProvider()),
+
         ChangeNotifierProvider(create: (context) => BelongingBoxProvider()),
         ChangeNotifierProvider(create: (context) => DateBoxProvider()),
+
+        ChangeNotifierProvider(
+          create: (context) => TaskProvider(Provider.of<BelongingBoxProvider>(context, listen: false)),
+        ),
+
+
+
+        // ProxyProvider<BelongingBoxProvider, TaskProvider>(
+        //   create: (context) => TaskProvider(Provider.of<BelongingBoxProvider>(context, listen: false)),
+        //   update: (context, belongingBoxProvider, taskProvider) => taskProvider!..updateCurTasks(belongingBoxProvider),
+        // ),
       ],
       child: MyApp(),
     ),

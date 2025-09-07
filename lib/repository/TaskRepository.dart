@@ -43,6 +43,13 @@ class TaskRepository extends BaseRepository<Task> {
     });
   }
 
+  Future<List<Task>> getTasksByBelongingBoxId(int id) async {
+    return await _isar.tasks.where()
+      .filter()
+      .belongingBoxIdEqualTo(id)
+      .findAll();
+  }
+
   // Future<List<Task>> getTodosForDate(DateTime date) {
   //   return _isar.tasks.where()
   //       .filter()

@@ -1,11 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:my_dida/provider/BelongingBoxProvider.dart';
 import 'package:my_dida/repository/TaskRepository.dart';
 
 import '../locator/locator.dart';
 import '../model/entity/Task.dart';
 import '../model/vo/TaskVO.dart';
 
+/// 给TodoPage用的Provider！
 class TaskProvider with ChangeNotifier {
   List<Task> _tasks = [];
   List<Task> _currentTasks = [];
@@ -13,14 +15,37 @@ class TaskProvider with ChangeNotifier {
 
   /// 三个 getter
   List<Task> get tasks => _tasks;
+
   List<Task> get cur_tasks => _currentTasks;
+
   bool get isLoading => _isLoading;
 
-  /// 注入 Repository
   final TaskRepository _repository;
-  TaskProvider() : _repository = locator<TaskRepository>();
 
-  // 业务方法
+
+  final BelongingBoxProvider _belongingBoxProvider;
+
+  /// 创建时注入Repository，并且初始化_currentTasks
+  TaskProvider(this._belongingBoxProvider)
+      : _repository = locator<TaskRepository>() {
+    _belongingBoxProvider.addListener(_updateCurTasks);
+  }
+
+  /// 依赖 BelongingBoxProvider 更新 _currentTasks
+  _updateCurTasks() async {
+    /// 查询今天的任务
+    if (_belongingBoxProvider.cur_belongingBox == null ||
+        _belongingBoxProvider.cur_belongingBox!.id == -1) {
+      await loadTodayTasks();
+    } else {
+      await loadTasksByBelongingBoxId(
+        _belongingBoxProvider.cur_belongingBox!.id,
+      );
+    }
+    notifyListeners();
+  }
+
+  /// 获取所有任务
   Future<void> loadAllTasks() async {
     // 设置加载状态为 true
     _isLoading = true;
@@ -49,11 +74,22 @@ class TaskProvider with ChangeNotifier {
     notifyListeners(); // 通知监听者状态已更改
   }
 
+  /// 获得今天所有的待办事项
   Future<void> loadTodayTasks() async {
     _isLoading = true;
     notifyListeners();
 
     _currentTasks = await _repository.getTodayTasks();
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  /// 获得某个收藏夹下的所有待办事项
+  Future<void> loadTasksByBelongingBoxId(int belongingBoxId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    _currentTasks = await _repository.getTasksByBelongingBoxId(belongingBoxId);
     _isLoading = false;
     notifyListeners();
   }
@@ -105,8 +141,6 @@ class TaskProvider with ChangeNotifier {
 
     notifyListeners();
   }
-
-
 
   //TODO: 如果添加的任务属于一个盒子，则需要刷新页面！
   Future<void> addTask(Task newTask) async {
