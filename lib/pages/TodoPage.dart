@@ -25,10 +25,16 @@ class _TodoPageState extends State<TodoPage> {
 
     final _taskProvider = Provider.of<TaskProvider>(context);
     final _belongingBoxProvider = Provider.of<BelongingBoxProvider>(context);
-    var current_tasks = _taskProvider.currentTasks;
+    var current_tasks = _taskProvider.cur_tasks;
+    var cur_belongingBox = _belongingBoxProvider.cur_belongingBox;
 
     return Scaffold(
-      appBar: AppBar(title: Text("代办")),
+
+      appBar: AppBar(
+        title: Text(
+          cur_belongingBox?.name != null ? cur_belongingBox!.name : "代办",
+        ),
+      ),
 
       /// 可滑动的列表视图
       body: ListView.builder(

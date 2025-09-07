@@ -10,6 +10,7 @@ import '../model/vo/TaskVO.dart';
 class BelongingBoxProvider extends ChangeNotifier {
 
   List<BelongingBoxVO> all_belongingBoxes = [];
+  BelongingBoxVO? get cur_belongingBox => _currentBelongingBox;
 
 
   /// 注入 Repository，设置默认收藏夹为 “今天”
@@ -17,11 +18,8 @@ class BelongingBoxProvider extends ChangeNotifier {
   final BelongingBoxRepository _belongingBoxRepository;
   BelongingBoxProvider()
     : _belongingBoxRepository = locator<BelongingBoxRepository>(),
-      _currentBelongingBox = BelongingBoxVO(id: 0, name: "今天");
+      _currentBelongingBox = BelongingBoxVO(id: -1, name: "今天");
 
-
-
-  /// 常用函数：
 
   /// 获取所有的收藏夹
   Future<List<BelongingBoxVO>> loadAllBelongingBoxes() async {

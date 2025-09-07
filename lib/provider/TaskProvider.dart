@@ -11,14 +11,13 @@ class TaskProvider with ChangeNotifier {
   List<Task> _currentTasks = [];
   bool _isLoading = false;
 
+  /// 三个 getter
   List<Task> get tasks => _tasks;
-
-  List<Task> get currentTasks => _currentTasks;
-
+  List<Task> get cur_tasks => _currentTasks;
   bool get isLoading => _isLoading;
 
+  /// 注入 Repository
   final TaskRepository _repository;
-
   TaskProvider() : _repository = locator<TaskRepository>();
 
   // 业务方法

@@ -13,6 +13,7 @@ class AddTaskDialog{
     showModalBottomSheet(
       context: context,
       useRootNavigator: true,
+      //TODO: 键盘出现时还是会遮挡输入框！
       isScrollControlled: true,
       builder: (BuildContext context) {
         final TextEditingController _textController = TextEditingController();
@@ -68,6 +69,7 @@ class AddTaskDialog{
                       print('添加任务 ==> $taskName');
 
                       //TODO: 修改TextField，当 输入为空时，显示红色的错误信息
+                      /// 或者说，taskName为空的话，就不显示确认按钮
                       if (taskName.isEmpty) {
                         print('任务名称不能为空！');
 
