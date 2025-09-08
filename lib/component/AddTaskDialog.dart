@@ -7,7 +7,9 @@ import '../provider/TaskProvider.dart';
 
 class AddTaskDialog{
 
-  //TODO：添加自动聚焦！
+  //TODO: 添加自动聚焦！
+  //TODO: 美化 Container
+  //TODO: 添加 BelongingBox 选择器！
   /// 1、对ai这样说：我希望showModalBottomSheet可以自动展示键盘并聚焦于TextField
   static void show(BuildContext context) {
     showModalBottomSheet(
@@ -23,7 +25,6 @@ class AddTaskDialog{
 
         return Container(
           padding: EdgeInsets.all(16),
-
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -72,7 +72,6 @@ class BelongingBoxProvider extends ChangeNotifier {
     );
   }
 
-  //TODO: 保证cur_BelongingBox更新后，TaskProvider同样更新
   void updateCurBelongingBox(BelongingBoxVO belongingBox) {
     print("触发了更新！");
     _currentBelongingBox = belongingBox;

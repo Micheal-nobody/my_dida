@@ -46,7 +46,7 @@ Future<Isar> initializeIsar() async {
 
     if (await isar.tasks.count() == 0) {
       /// 最近7天，每天7个任务
-      var today = DateTime.now().dateOnly;
+      var today = DateTime.now().dateOnly; // 获取今天 00:00:00
       for (var i = 0; i < 7; i++) {
         for (var j = 0; j < 7; j++) {
           Task task = Task(

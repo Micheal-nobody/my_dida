@@ -12,28 +12,24 @@ class TaskProvider with ChangeNotifier {
   List<Task> _tasks = [];
   List<Task> _currentTasks = [];
   bool _isLoading = false;
-
-  /// 三个 getter
-  List<Task> get tasks => _tasks;
-
-  List<Task> get cur_tasks => _currentTasks;
-
-  bool get isLoading => _isLoading;
-
   final TaskRepository _repository;
 
+  //region 一系列getter
+  List<Task> get tasks => _tasks;
+  List<Task> get cur_tasks => _currentTasks;
+  bool get isLoading => _isLoading;
+  //endregion
 
-  final BelongingBoxProvider _belongingBoxProvider;
+
 
   /// 创建时注入Repository，并且初始化_currentTasks
-  TaskProvider(this._belongingBoxProvider)
+  TaskProvider(BelongingBoxProvider _belongingBoxProvider)
       : _repository = locator<TaskRepository>() {
-    _belongingBoxProvider.addListener(_updateCurTasks);
+    // 用于初始化
+    updateCurTasks(_belongingBoxProvider);
   }
-
-  /// 依赖 BelongingBoxProvider 更新 _currentTasks
-  _updateCurTasks() async {
-
+  // 依赖 BelongingBoxProvider 更新 _currentTasks
+  updateCurTasks(BelongingBoxProvider _belongingBoxProvider) async {
     print("更新 _currentTasks");
 
     /// 查询今天的任务
@@ -45,8 +41,10 @@ class TaskProvider with ChangeNotifier {
         _belongingBoxProvider.cur_belongingBox!.id,
       );
     }
-    notifyListeners();
+    // 使用ChangeNotifierProxyProvider之后这里就不需要使用notifyListeners()了
+    // notifyListeners();
   }
+
 
   /// 获取所有任务
   Future<void> loadAllTasks() async {
@@ -77,7 +75,6 @@ class TaskProvider with ChangeNotifier {
     notifyListeners(); // 通知监听者状态已更改
   }
 
-  //TODO: 有bug！
   /// 获得今天所有的待办事项
   Future<void> loadTodayTasks() async {
     _isLoading = true;
@@ -135,18 +132,8 @@ class TaskProvider with ChangeNotifier {
       ..belongingBox = null;
   }
 
-  //TODO: 这是暂时的测试数据
-  void initTasks() {
-    _currentTasks = [
-      Task(name: "Task 1"),
-      Task(name: "Task 2"),
-      Task(name: "Task 3"),
-    ];
 
-    notifyListeners();
-  }
-
-  //TODO: 如果添加的任务属于一个盒子，则需要刷新页面！
+  //TODO: 如果添加的任务属于一个盒子，则需要刷新页面！但是 notifyListeners()也够用！
   Future<void> addTask(Task newTask) async {
     await _repository.addTask(newTask);
     notifyListeners();

@@ -20,6 +20,8 @@ class TodoPage extends StatefulWidget {
 class _TodoPageState extends State<TodoPage> {
   @override
   Widget build(BuildContext context) {
+    print('TodoPage build');
+
     /// 使用 Provider 来获取 TodosProvider 实例
     final todosProvider = context.watch<TodosProvider>();
 
@@ -29,7 +31,6 @@ class _TodoPageState extends State<TodoPage> {
     var cur_belongingBox = _belongingBoxProvider.cur_belongingBox;
 
     return Scaffold(
-
       appBar: AppBar(
         title: Text(
           cur_belongingBox?.name != null ? cur_belongingBox!.name : "代办",

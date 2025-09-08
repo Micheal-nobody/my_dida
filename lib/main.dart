@@ -26,16 +26,22 @@ void main() async{
         ChangeNotifierProvider(create: (context) => BelongingBoxProvider()),
         ChangeNotifierProvider(create: (context) => DateBoxProvider()),
 
-        ChangeNotifierProvider(
-          create: (context) => TaskProvider(Provider.of<BelongingBoxProvider>(context, listen: false)),
-        ),
-
-
-
-        // ProxyProvider<BelongingBoxProvider, TaskProvider>(
+        // 直接传入 BelongingBoxProvider
+        // ChangeNotifierProvider(
         //   create: (context) => TaskProvider(Provider.of<BelongingBoxProvider>(context, listen: false)),
-        //   update: (context, belongingBoxProvider, taskProvider) => taskProvider!..updateCurTasks(belongingBoxProvider),
         // ),
+
+        // 使用 ProxyProvider
+        ChangeNotifierProxyProvider<BelongingBoxProvider, TaskProvider>(
+          create: (context) => TaskProvider(
+            // 获取已创建的 BelongingBoxProvider 实例
+            Provider.of<BelongingBoxProvider>(context, listen: false),
+          ),
+          update: (context, belongingBoxProvider, previousTaskProvider) {
+            // 更新 TaskProvider 中的依赖
+            return previousTaskProvider!..updateCurTasks(belongingBoxProvider);
+          },
+        ),
       ],
       child: MyApp(),
     ),

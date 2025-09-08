@@ -23,15 +23,14 @@ class TaskRepository extends BaseRepository<Task> {
     return await _isar.tasks.where().findAll();
   }
 
-  //TODO: 获取start<=today && end>=today 的任务，或者 end==null && start == today 的任务
   Future<List<Task>> getTodayTasks() async {
-    final now = DateTime.now();
-    final startOfDay = DateTime(now.year, now.month, now.day);
-    final endOfDay = startOfDay.add(const Duration(days: 1));
+    final now = DateTime.now(); // 包含年月日 时 分 秒
+    final startOfDay = DateTime(now.year, now.month, now.day);  // 获取今天00:00:00
+    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59, 999); // 获取今天23:59:59.999
 
     return await _isar.tasks.where()
       .filter()
-      .startTimeBetween(startOfDay, endOfDay)
+      .startTimeBetween(startOfDay, endOfDay) // Between 是闭区间！
       .or()
       .endTimeBetween(startOfDay, endOfDay)
       .findAll();
