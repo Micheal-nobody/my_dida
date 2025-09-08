@@ -8,9 +8,9 @@ import 'package:my_dida/router/goRouter.dart';
 import 'package:provider/provider.dart';
 
 import 'locator/locator.dart';
+import 'model/vo/BelongingBoxVO.dart';
 
-void main() async{
-
+void main() async {
   /// ensureInitialized() 方法的作用是确保 Flutter 运行时环境已经初始化完毕。
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -22,7 +22,6 @@ void main() async{
         ChangeNotifierProvider(create: (context) => TodosProvider()),
         ChangeNotifierProvider(create: (context) => UIStatusProvider()),
 
-
         ChangeNotifierProvider(create: (context) => BelongingBoxProvider()),
         ChangeNotifierProvider(create: (context) => DateBoxProvider()),
 
@@ -30,16 +29,30 @@ void main() async{
         // ChangeNotifierProvider(
         //   create: (context) => TaskProvider(Provider.of<BelongingBoxProvider>(context, listen: false)),
         // ),
+        // ChangeNotifierProvider(
+        //   create: (context) => TaskProvider(context.select<BelongingBoxProvider, List<BelongingBoxVO>>(
+        //           (provider) => provider.all_belongingBoxes
+        //   )),
+        // ),
 
-        // 使用 ProxyProvider
+        // 使用 ChangeNotifierProxyProvider
         ChangeNotifierProxyProvider<BelongingBoxProvider, TaskProvider>(
+          // 首次创建时调用，就传入 belongingBoxProvider.cur_belongingBox
           create: (context) => TaskProvider(
-            // 获取已创建的 BelongingBoxProvider 实例
-            Provider.of<BelongingBoxProvider>(context, listen: false),
+            Provider.of<BelongingBoxProvider>(context, listen: false).cur_belongingBox,
           ),
+          // update 的返回值应该是 TaskProvider
           update: (context, belongingBoxProvider, previousTaskProvider) {
-            // 更新 TaskProvider 中的依赖
-            return previousTaskProvider!..updateCurTasks(belongingBoxProvider);
+            /// 只有 belongingBoxProvider.cur_belongingBox 发生变化时才进行更新
+            if (previousTaskProvider != null &&
+                belongingBoxProvider.cur_belongingBox != previousTaskProvider.cur_belongingBox) {
+              // 更新 TaskProvider 中的依赖，级联操作符会返回 updateCurTasks 之后的自身！
+              return previousTaskProvider..updateCurTasks(belongingBoxProvider.cur_belongingBox);
+            }
+
+            return TaskProvider(
+              Provider.of<BelongingBoxProvider>(context, listen: false).cur_belongingBox,
+            );
           },
         ),
       ],
@@ -61,7 +74,8 @@ class MyApp extends StatelessWidget {
 
       /// builder 作用是 在 MaterialApp.router 构建任意子组件时，插入额外的 widget
       /// 只不过这里没有插入而是直接返回了child，原因：Material.router会创建新的context，导致子widget无法通过context获取Provider，所以通过builder传入 MultiProvider 的context，
-      builder: (context,child) =>child!, // !是空安全断言，child 不是 null
+      builder: (context, child) => child!,
+      // !是空安全断言，child 不是 null
 
       // 主题
       theme: ThemeData(

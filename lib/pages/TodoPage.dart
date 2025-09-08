@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_dida/component/AddTaskDialog.dart';
+import 'package:my_dida/component/TaskCard.dart';
 import 'package:my_dida/provider/TodosProvider.dart';
 import 'package:provider/provider.dart';
 
@@ -22,11 +23,13 @@ class _TodoPageState extends State<TodoPage> {
   Widget build(BuildContext context) {
     print('TodoPage build');
 
+
     /// 使用 Provider 来获取 TodosProvider 实例
     final todosProvider = context.watch<TodosProvider>();
 
     final _taskProvider = Provider.of<TaskProvider>(context);
     final _belongingBoxProvider = Provider.of<BelongingBoxProvider>(context);
+
     var current_tasks = _taskProvider.cur_tasks;
     var cur_belongingBox = _belongingBoxProvider.cur_belongingBox;
 
@@ -41,7 +44,8 @@ class _TodoPageState extends State<TodoPage> {
       body: ListView.builder(
         itemCount: current_tasks.length, // 项目总数
         itemBuilder: (context, index) {
-          return Text(current_tasks[index].name);
+          // TODO:美化样式
+          return TaskCard(current_tasks[index]);
         },
       ),
 

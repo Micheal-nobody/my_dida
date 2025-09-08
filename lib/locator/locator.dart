@@ -55,8 +55,6 @@ Future<Isar> initializeIsar() async {
           );
 
           await isar.tasks.put(task);
-
-          print("第 ${i} 天，第 ${j + 1} 个任务");
         }
       }
     }

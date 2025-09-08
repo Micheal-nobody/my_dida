@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:my_dida/model/vo/BelongingBoxVO.dart';
 import 'package:my_dida/provider/BelongingBoxProvider.dart';
 import 'package:my_dida/repository/TaskRepository.dart';
+import 'package:provider/provider.dart';
 
 import '../locator/locator.dart';
 import '../model/entity/Task.dart';
@@ -21,28 +23,26 @@ class TaskProvider with ChangeNotifier {
   //endregion
 
 
-
   /// 创建时注入Repository，并且初始化_currentTasks
-  TaskProvider(BelongingBoxProvider _belongingBoxProvider)
-      : _repository = locator<TaskRepository>() {
-    // 用于初始化
-    updateCurTasks(_belongingBoxProvider);
+  TaskProvider(BelongingBoxVO? cur_belongingBox)
+      : _repository = locator<TaskRepository>(),
+      cur_belongingBox = cur_belongingBox {
+    updateCurTasks(cur_belongingBox);
   }
-  // 依赖 BelongingBoxProvider 更新 _currentTasks
-  updateCurTasks(BelongingBoxProvider _belongingBoxProvider) async {
-    print("更新 _currentTasks");
 
-    /// 查询今天的任务
-    if (_belongingBoxProvider.cur_belongingBox == null ||
-        _belongingBoxProvider.cur_belongingBox!.id == -1) {
+  // 依赖 BelongingBoxProvider.cur_belongingBox 更新 _currentTasks
+  BelongingBoxVO?  cur_belongingBox; // 用于性能优化，在更新前会被用来做判断，如果BelongingBoxProvider.cur_belongingBox 和 cur_belongingBox相等，则不更新
+  updateCurTasks(BelongingBoxVO? cur_belongingBox) async {
+    print("更新 _currentTasks");
+    this.cur_belongingBox = cur_belongingBox;
+
+    if(cur_belongingBox == null || cur_belongingBox.id == -1){
       await loadTodayTasks();
-    } else {
+    }else{
       await loadTasksByBelongingBoxId(
-        _belongingBoxProvider.cur_belongingBox!.id,
+        cur_belongingBox!.id,
       );
     }
-    // 使用ChangeNotifierProxyProvider之后这里就不需要使用notifyListeners()了
-    // notifyListeners();
   }
 
 
