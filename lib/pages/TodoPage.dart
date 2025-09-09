@@ -45,7 +45,7 @@ class _TodoPageState extends State<TodoPage> {
       body: Selector<TaskProvider, List<Task>>(
         selector: (context, provider) => provider.cur_tasks,
         builder: (context, current_tasks, child) {
-          logger.e("TaskProvider.cur_tasks 更新了，所以刷新列表: ${current_tasks.length}");
+          // logger.e("TaskProvider.cur_tasks 更新了，所以刷新列表: ${current_tasks.length}");
           return ListView.builder(
             itemCount: current_tasks.length, // 项目总数
             itemBuilder: (context, index) {
@@ -64,8 +64,13 @@ class _TodoPageState extends State<TodoPage> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          print("Add new todo item");
-          AddTaskDialog.show(context);
+          showModalBottomSheet(
+            context: context,
+            useRootNavigator: true,
+            //TODO: 键盘出现时还是会遮挡输入框！
+            isScrollControlled: true,
+            builder: (BuildContext context) => AddTaskDialog(),
+          );
         },
       ),
 

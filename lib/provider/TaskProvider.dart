@@ -31,20 +31,20 @@ class TaskProvider with ChangeNotifier {
 
   // 依赖 BelongingBoxProvider.cur_belongingBox 更新 _currentTasks
   BelongingBoxVO?  cur_belongingBox; // 用于性能优化，在更新前会被用来做判断，如果BelongingBoxProvider.cur_belongingBox 和 cur_belongingBox相等，则不更新
-  updateCurTasks(BelongingBoxVO? cur_belongingBox) async {
-    logger.i("因为 cur_belongingBox 改变所以更新 _currentTasks！");
-    this.cur_belongingBox = cur_belongingBox;
+  updateCurTasks(BelongingBoxVO? new_belongingBox) async {
+    // logger.i("因为 cur_belongingBox 改变所以更新 _currentTasks！");
+    cur_belongingBox = new_belongingBox;
 
-    if(cur_belongingBox == null || cur_belongingBox.id == -1){
+    if(new_belongingBox == null || new_belongingBox.id == -1){
       await loadTodayTasks();
     }else{
       await loadTasksByBelongingBoxId(
-        cur_belongingBox.id,
+        new_belongingBox.id,
       );
     }
   }
 
-  /// 获取所有任务
+  // 获取所有任务
   Future<void> loadAllTasks() async {
     _tasks = await _taskRepository.getAll();
     notifyListeners();
@@ -66,7 +66,7 @@ class TaskProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// 获得某个收藏夹下的所有待办事项
+  // 获得某个收藏夹下的所有待办事项
   Future<void> loadTasksByBelongingBoxId(int belongingBoxId) async {
     _currentTasks = await _taskRepository.getTasksByBelongingBoxId(belongingBoxId);
     notifyListeners();
