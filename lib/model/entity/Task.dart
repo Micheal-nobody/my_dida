@@ -49,6 +49,12 @@ class Task {
     this.belongingBoxId = 1,
   });
 
+  // toString 方法
+  @override
+  String toString() {
+    return 'TodoItem{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, belongingBoxId: $belongingBoxId}';
+  }
+
   //
   // void addCheckPoint(String name) {
   //   checkpoints.add(CheckPoint(name: name));

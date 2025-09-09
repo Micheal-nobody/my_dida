@@ -3,6 +3,7 @@ import 'package:my_dida/model/entity/BelongingBox.dart';
 import 'package:my_dida/repository/BelongingBoxRepository.dart';
 
 import '../config/locator.dart';
+import '../config/logger.dart';
 import '../model/vo/BelongingBoxVO.dart';
 import '../model/vo/TaskVO.dart';
 
@@ -12,13 +13,16 @@ class BelongingBoxProvider extends ChangeNotifier {
   List<BelongingBoxVO> all_belongingBoxes = [];
   BelongingBoxVO? get cur_belongingBox => _currentBelongingBox;
 
+  // 一个默认的收藏夹
+  static BelongingBoxVO default_belongingBox = BelongingBoxVO(id: -1, name: "今天");
+
 
   /// 注入 Repository，设置默认收藏夹为 “今天”
   BelongingBoxVO? _currentBelongingBox;
   final BelongingBoxRepository _belongingBoxRepository;
   BelongingBoxProvider()
     : _belongingBoxRepository = locator<BelongingBoxRepository>(),
-      _currentBelongingBox = BelongingBoxVO(id: -1, name: "今天"){
+      _currentBelongingBox = default_belongingBox{
     loadAllBelongingBoxes();
   }
 
@@ -33,27 +37,6 @@ class BelongingBoxProvider extends ChangeNotifier {
     notifyListeners();
     return all_belongingBoxes;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   BelongingBox convertToEntity(BelongingBoxVO vo) {
@@ -73,7 +56,7 @@ class BelongingBoxProvider extends ChangeNotifier {
   }
 
   void updateCurBelongingBox(BelongingBoxVO belongingBox) {
-    print("触发了更新！");
+    logger.i("updateCurBelongingBox 更新了 cur_belongingBox ！！");
     _currentBelongingBox = belongingBox;
     notifyListeners();
   }

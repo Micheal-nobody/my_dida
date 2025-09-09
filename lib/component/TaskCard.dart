@@ -15,7 +15,7 @@ class TaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
 
     // 只需要调用方法，所以不需要监听
-    var _taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    TaskProvider taskProvider = Provider.of<TaskProvider>(context, listen: false);
 
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -28,7 +28,7 @@ class TaskCard extends StatelessWidget {
             value: task.isDone,
             onChanged: (value) {
               // TODO: 处理任务完成状态改变
-              _taskProvider.updateTaskIsDone(task, value!);
+              taskProvider.updateTaskIsDone(task, value!);
             },
             activeColor: Colors.blue,
             side: BorderSide(color: Colors.grey, width: 1),

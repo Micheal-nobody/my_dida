@@ -8,7 +8,6 @@ import 'package:my_dida/router/goRouter.dart';
 import 'package:provider/provider.dart';
 
 import 'config/locator.dart';
-import 'model/vo/BelongingBoxVO.dart';
 
 void main() async {
   /// ensureInitialized() 方法的作用是确保 Flutter 运行时环境已经初始化完毕。

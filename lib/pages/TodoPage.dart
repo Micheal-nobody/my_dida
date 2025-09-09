@@ -2,9 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_dida/component/AddTaskDialog.dart';
 import 'package:my_dida/component/TaskCard.dart';
+import 'package:my_dida/config/logger.dart';
 import 'package:my_dida/provider/TodosProvider.dart';
 import 'package:provider/provider.dart';
 
+import '../model/entity/Task.dart';
 import '../provider/BelongingBoxProvider.dart';
 import '../provider/DateBoxProvider.dart';
 import '../provider/TaskProvider.dart';
@@ -23,14 +25,13 @@ class _TodoPageState extends State<TodoPage> {
   Widget build(BuildContext context) {
     print('TodoPage build');
 
-
     /// 使用 Provider 来获取 TodosProvider 实例
     final todosProvider = context.watch<TodosProvider>();
 
-    final _taskProvider = Provider.of<TaskProvider>(context);
+    final _taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    //TODO: 可以选择优化，使用Selector
     final _belongingBoxProvider = Provider.of<BelongingBoxProvider>(context);
 
-    var current_tasks = _taskProvider.cur_tasks;
     var cur_belongingBox = _belongingBoxProvider.cur_belongingBox;
 
     return Scaffold(
@@ -40,16 +41,22 @@ class _TodoPageState extends State<TodoPage> {
         ),
       ),
 
-      /// 可滑动的列表视图
-      body: ListView.builder(
-        itemCount: current_tasks.length, // 项目总数
-        itemBuilder: (context, index) {
-          // 如果任务已完成，则不显示
-          if(current_tasks[index].isDone){
-            return Container();
-          }
-          // TODO:美化样式
-          return TaskCard(current_tasks[index]);
+      /// 可滑动的列表视图，当且仅当TaskProvider.cur_tasks更新时，才出发更新
+      body: Selector<TaskProvider, List<Task>>(
+        selector: (context, provider) => provider.cur_tasks,
+        builder: (context, current_tasks, child) {
+          logger.e("TaskProvider.cur_tasks 更新了，所以刷新列表: ${current_tasks.length}");
+          return ListView.builder(
+            itemCount: current_tasks.length, // 项目总数
+            itemBuilder: (context, index) {
+              // 如果任务已完成，则不显示
+              if (current_tasks[index].isDone) {
+                return Container();
+              }
+              // TODO:美化样式
+              return TaskCard(current_tasks[index]);
+            },
+          );
         },
       ),
 
@@ -81,13 +88,13 @@ class _TodoPageState extends State<TodoPage> {
             Expanded(
               child: ListView(
                 children: [
-                  /// 默认收藏夹
                   ListTile(
                     leading: Icon(Icons.home),
                     title: Text("今天"),
                     onTap: () {
-                      print("点击了 今天");
-                      _taskProvider.loadTodayTasks();
+                      _belongingBoxProvider.updateCurBelongingBox(
+                        BelongingBoxProvider.default_belongingBox,
+                      );
                     },
                   ),
                   for (var belongingBox
@@ -96,8 +103,9 @@ class _TodoPageState extends State<TodoPage> {
                       leading: Icon(Icons.home),
                       title: Text(belongingBox.name),
                       onTap: () {
-                        print("点击了 ${belongingBox.name}");
-                        _belongingBoxProvider.updateCurBelongingBox(belongingBox);
+                        _belongingBoxProvider.updateCurBelongingBox(
+                          belongingBox,
+                        );
                       },
                     ),
                 ],
