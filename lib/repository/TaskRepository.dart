@@ -1,7 +1,7 @@
 import 'package:isar/isar.dart';
 import 'package:my_dida/model/entity/Task.dart';
 import 'package:my_dida/repository/BaseRepository.dart';
-import '../locator/locator.dart';
+import '../config/locator.dart';
 
 class TaskRepository extends BaseRepository<Task> {
   final Isar _isar;
@@ -47,6 +47,13 @@ class TaskRepository extends BaseRepository<Task> {
       .filter()
       .belongingBoxIdEqualTo(id)
       .findAll();
+  }
+
+  void updateTaskIsDone(Task task, bool value) {
+    _isar.writeTxn(() async {
+      task.isDone = value;
+      await _isar.tasks.put(task);
+    });
   }
 
   // Future<List<Task>> getTodosForDate(DateTime date) {

@@ -7,7 +7,7 @@ import 'package:my_dida/provider/UIStatusProvider.dart';
 import 'package:my_dida/router/goRouter.dart';
 import 'package:provider/provider.dart';
 
-import 'locator/locator.dart';
+import 'config/locator.dart';
 import 'model/vo/BelongingBoxVO.dart';
 
 void main() async {

@@ -1,5 +1,5 @@
 import 'package:isar/isar.dart';
-import '../locator/locator.dart';
+import '../config/locator.dart';
 
 abstract class BaseRepository<T> {
   // 获取对应的 Isar 集合

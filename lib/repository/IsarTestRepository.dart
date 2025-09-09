@@ -1,7 +1,7 @@
 import 'package:isar/isar.dart';
 import 'package:my_dida/model/IsarTest.dart';
 import 'package:my_dida/repository/BaseRepository.dart';
-import '../locator/locator.dart';
+import '../config/locator.dart';
 
 class IsarTestRepository extends BaseRepository<IsarTest>{
   final Isar _isar;

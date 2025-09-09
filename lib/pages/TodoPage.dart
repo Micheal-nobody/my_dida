@@ -44,6 +44,10 @@ class _TodoPageState extends State<TodoPage> {
       body: ListView.builder(
         itemCount: current_tasks.length, // 项目总数
         itemBuilder: (context, index) {
+          // 如果任务已完成，则不显示
+          if(current_tasks[index].isDone){
+            return Container();
+          }
           // TODO:美化样式
           return TaskCard(current_tasks[index]);
         },

@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:my_dida/model/entity/BelongingBox.dart';
 import 'package:my_dida/repository/BelongingBoxRepository.dart';
 
-import '../locator/locator.dart';
+import '../config/locator.dart';
 import '../model/vo/BelongingBoxVO.dart';
 import '../model/vo/TaskVO.dart';
 

@@ -48,10 +48,11 @@ Future<Isar> initializeIsar() async {
       /// 最近7天，每天7个任务
       var today = DateTime.now().dateOnly; // 获取今天 00:00:00
       for (var i = 0; i < 7; i++) {
-        for (var j = 0; j < 7; j++) {
+        for (var j = 1; j <= 7; j++) {
           Task task = Task(
-            name: '任务 ${i} 的第 ${j + 1} 个任务',
+            name: '任务 ${i} 的第 ${j} 个任务',
             startTime: today.add(Duration(days: i)),
+            isDone: j % 2 == 0,
           );
 
           await isar.tasks.put(task);
@@ -62,5 +63,3 @@ Future<Isar> initializeIsar() async {
 
   return isar;
 }
-
-

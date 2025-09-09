@@ -1,7 +1,7 @@
 import 'package:isar/isar.dart';
 import 'package:my_dida/model/entity/BelongingBox.dart';
 import 'package:my_dida/repository/BaseRepository.dart';
-import '../locator/locator.dart';
+import '../config/locator.dart';
 
 class BelongingBoxRepository extends BaseRepository<BelongingBox>{
   final Isar _isar;

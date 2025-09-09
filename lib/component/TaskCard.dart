@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../model/entity/Task.dart';
 import '../provider/BelongingBoxProvider.dart';
+import '../provider/TaskProvider.dart';
 class TaskCard extends StatelessWidget {
   // 在 TaskCard.dart 中添加新的构建方法
   final Task task;
@@ -12,6 +13,10 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    // 只需要调用方法，所以不需要监听
+    var _taskProvider = Provider.of<TaskProvider>(context, listen: false);
+
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: ListTile(
@@ -23,12 +28,13 @@ class TaskCard extends StatelessWidget {
             value: task.isDone,
             onChanged: (value) {
               // TODO: 处理任务完成状态改变
-              print("任务完成状态改变");
+              _taskProvider.updateTaskIsDone(task, value!);
             },
             activeColor: Colors.blue,
             side: BorderSide(color: Colors.grey, width: 1),
           ),
         ),
+
 
         // 任务名称
         title: Text(
@@ -41,7 +47,7 @@ class TaskCard extends StatelessWidget {
           ),
         ),
 
-        // 任务时间
+        // 任务时间、所属收藏夹
         subtitle: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

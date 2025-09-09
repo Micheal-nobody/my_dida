@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
 
-import '../locator/locator.dart';
+import '../config/locator.dart';
 import '../repository/TaskRepository.dart';
 
 //TODO: CalenderPage 用的 Provider

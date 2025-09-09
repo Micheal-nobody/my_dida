@@ -5,7 +5,7 @@ import 'package:my_dida/provider/BelongingBoxProvider.dart';
 import 'package:my_dida/repository/TaskRepository.dart';
 import 'package:provider/provider.dart';
 
-import '../locator/locator.dart';
+import '../config/locator.dart';
 import '../model/entity/Task.dart';
 import '../model/vo/TaskVO.dart';
 
@@ -14,7 +14,7 @@ class TaskProvider with ChangeNotifier {
   List<Task> _tasks = [];
   List<Task> _currentTasks = [];
   bool _isLoading = false;
-  final TaskRepository _repository;
+  final TaskRepository _taskRepository;
 
   //region 一系列getter
   List<Task> get tasks => _tasks;
@@ -25,7 +25,7 @@ class TaskProvider with ChangeNotifier {
 
   /// 创建时注入Repository，并且初始化_currentTasks
   TaskProvider(BelongingBoxVO? cur_belongingBox)
-      : _repository = locator<TaskRepository>(),
+      : _taskRepository = locator<TaskRepository>(),
       cur_belongingBox = cur_belongingBox {
     updateCurTasks(cur_belongingBox);
   }
@@ -40,30 +40,34 @@ class TaskProvider with ChangeNotifier {
       await loadTodayTasks();
     }else{
       await loadTasksByBelongingBoxId(
-        cur_belongingBox!.id,
+        cur_belongingBox.id,
       );
     }
   }
 
+  /// 刷新任务列表
+  refreshCurrentTasks() async {
+    await loadCurrentTasks();
+  }
 
   /// 获取所有任务
   Future<void> loadAllTasks() async {
     // 设置加载状态为 true
     _isLoading = true;
-    _tasks = await _repository.getAll();
+    _tasks = await _taskRepository.getAll();
     _isLoading = false;
 
     // 通知监听者状态已改变
     notifyListeners();
   }
 
-  //TODO:获得当前要显示的任务
+  // 获得当前要显示的任务
   Future<void> loadCurrentTasks() async {
     // 设置加载状态为 true
     _isLoading = true;
     notifyListeners();
 
-    _currentTasks = await _repository.getAll();
+    _currentTasks = await _taskRepository.getTasksByBelongingBoxId(cur_belongingBox!.id);
     _isLoading = false;
 
     // 通知监听者状态已改变
@@ -80,7 +84,7 @@ class TaskProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _currentTasks = await _repository.getTodayTasks();
+    _currentTasks = await _taskRepository.getTodayTasks();
     _isLoading = false;
     notifyListeners();
   }
@@ -90,7 +94,7 @@ class TaskProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _currentTasks = await _repository.getTasksByBelongingBoxId(belongingBoxId);
+    _currentTasks = await _taskRepository.getTasksByBelongingBoxId(belongingBoxId);
     _isLoading = false;
     notifyListeners();
   }
@@ -135,7 +139,18 @@ class TaskProvider with ChangeNotifier {
 
   //TODO: 如果添加的任务属于一个盒子，则需要刷新页面！但是 notifyListeners()也够用！
   Future<void> addTask(Task newTask) async {
-    await _repository.addTask(newTask);
+    await _taskRepository.addTask(newTask);
     notifyListeners();
+  }
+
+  void updateTaskIsDone(Task task, bool value) {
+
+
+
+    // 1、更新数据库
+    _taskRepository.updateTaskIsDone(task, value);
+
+    // 2、更新数据
+    refreshCurrentTasks();
   }
 }
