@@ -19,4 +19,14 @@ class BelongingBoxVO{
     this.color = const Color(0xFF000000), // 默认颜色为黑色
     this.taskIds = const [],
   });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is BelongingBoxVO &&
+              runtimeType == other.runtimeType &&
+              id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

@@ -11,14 +11,14 @@ import '../model/vo/TaskVO.dart';
 class BelongingBoxProvider extends ChangeNotifier {
 
   List<BelongingBoxVO> all_belongingBoxes = [];
-  BelongingBoxVO? get cur_belongingBox => _currentBelongingBox;
+  BelongingBoxVO get cur_belongingBox => _currentBelongingBox;
 
   // 一个默认的收藏夹
   static BelongingBoxVO default_belongingBox = BelongingBoxVO(id: -1, name: "今天");
 
 
   /// 注入 Repository，设置默认收藏夹为 “今天”
-  BelongingBoxVO? _currentBelongingBox;
+  BelongingBoxVO _currentBelongingBox;
   final BelongingBoxRepository _belongingBoxRepository;
   BelongingBoxProvider()
     : _belongingBoxRepository = locator<BelongingBoxRepository>(),
@@ -39,6 +39,7 @@ class BelongingBoxProvider extends ChangeNotifier {
   }
 
 
+  //region 看起来不是很有用的convert
   BelongingBox convertToEntity(BelongingBoxVO vo) {
     return BelongingBox(name: vo.name)
       ..id = vo.id
@@ -54,6 +55,7 @@ class BelongingBoxProvider extends ChangeNotifier {
       taskIds: entity.taskIds
     );
   }
+  //endregion
 
   void updateCurBelongingBox(BelongingBoxVO belongingBox) {
     logger.i("updateCurBelongingBox 更新了 cur_belongingBox ！！");
@@ -61,4 +63,3 @@ class BelongingBoxProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
-

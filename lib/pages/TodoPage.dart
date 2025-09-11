@@ -2,13 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_dida/component/AddTaskDialog.dart';
 import 'package:my_dida/component/TaskCard.dart';
-import 'package:my_dida/config/logger.dart';
-import 'package:my_dida/provider/TodosProvider.dart';
 import 'package:provider/provider.dart';
 
 import '../model/entity/Task.dart';
 import '../provider/BelongingBoxProvider.dart';
-import '../provider/DateBoxProvider.dart';
 import '../provider/TaskProvider.dart';
 
 class TodoPage extends StatefulWidget {
@@ -26,10 +23,7 @@ class _TodoPageState extends State<TodoPage> {
     print('TodoPage build');
 
     /// 使用 Provider 来获取 TodosProvider 实例
-    final todosProvider = context.watch<TodosProvider>();
-
-    final _taskProvider = Provider.of<TaskProvider>(context, listen: false);
-    //TODO: 可以选择优化，使用Selector
+    //Optimize: 可以选择优化，使用Selector
     final _belongingBoxProvider = Provider.of<BelongingBoxProvider>(context);
 
     var cur_belongingBox = _belongingBoxProvider.cur_belongingBox;
@@ -37,11 +31,11 @@ class _TodoPageState extends State<TodoPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          cur_belongingBox?.name != null ? cur_belongingBox!.name : "代办",
+          cur_belongingBox.name ?? "代办",
         ),
       ),
 
-      /// 可滑动的列表视图，当且仅当TaskProvider.cur_tasks更新时，才出发更新
+      // 可滑动的列表视图，当且仅当TaskProvider.cur_tasks更新时，才出发更新
       body: Selector<TaskProvider, List<Task>>(
         selector: (context, provider) => provider.cur_tasks,
         builder: (context, current_tasks, child) {
@@ -60,25 +54,32 @@ class _TodoPageState extends State<TodoPage> {
         },
       ),
 
-      /// 添加一个悬浮按钮
+      // 悬浮按钮
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
+          /// 显示addTaskDialog
           showModalBottomSheet(
             context: context,
             useRootNavigator: true,
-            //TODO: 键盘出现时还是会遮挡输入框！
             isScrollControlled: true,
-            builder: (BuildContext context) => AddTaskDialog(),
+            builder: (BuildContext context) => Padding(
+              // 添加padding能过避免输入框被键盘遮挡，这是因为键盘会占用屏幕下方的空间
+              padding: EdgeInsets.only(
+                // MediaQuery.of(context).viewInsets.bottom 表示键盘高度
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: const AddTaskDialog(),
+            ),
           );
         },
       ),
 
-      /// 添加侧边栏
+      // 侧边栏
       drawer: Drawer(
         child: Column(
           children: [
-            /// user账户头部
+            // user账户头部
             UserAccountsDrawerHeader(
               accountName: Text("我喜欢你"),
               accountEmail: Text("这里其实是邮件地址，但是我找不到简介的地方"),
@@ -89,7 +90,7 @@ class _TodoPageState extends State<TodoPage> {
               ),
             ),
 
-            /// 侧边栏菜单项
+            // 侧边栏菜单项
             Expanded(
               child: ListView(
                 children: [

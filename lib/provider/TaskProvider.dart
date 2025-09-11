@@ -106,7 +106,7 @@ class TaskProvider with ChangeNotifier {
   //TODO: 如果添加的任务属于一个盒子，则需要刷新页面！但是 notifyListeners()也够用！
   Future<void> addTask(Task newTask) async {
     await _taskRepository.addTask(newTask);
-    notifyListeners();
+    loadCurrentBoxTasks();
   }
 
   void updateTaskIsDone(Task task, bool value) {

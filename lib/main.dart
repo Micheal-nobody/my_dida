@@ -10,11 +10,13 @@ import 'package:provider/provider.dart';
 import 'config/locator.dart';
 
 void main() async {
-  /// ensureInitialized() 方法的作用是确保 Flutter 运行时环境已经初始化完毕。
+  // ensureInitialized() 方法的作用是确保 Flutter 运行时环境已经初始化完毕。
   WidgetsFlutterBinding.ensureInitialized();
 
-  /// 初始化 Isar 数据库
+  // 初始化 Isar 数据库
   await setupLocator();
+
+
   runApp(
     MultiProvider(
       providers: [
