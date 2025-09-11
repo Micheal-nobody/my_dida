@@ -47,7 +47,6 @@ class _TodoPageState extends State<TodoPage> {
               if (current_tasks[index].isDone) {
                 return Container();
               }
-              // TODO:美化样式
               return TaskCard(current_tasks[index]);
             },
           );

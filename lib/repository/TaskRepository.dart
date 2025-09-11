@@ -51,8 +51,8 @@ class TaskRepository extends BaseRepository<Task> {
       .findAll();
   }
 
-  void updateTaskIsDone(Task task, bool value) {
-    _isar.writeTxn(() async {
+  Future<void> updateTaskIsDone(Task task, bool value) async {
+    await _isar.writeTxn(() async {
       task.isDone = value;
       await _isar.tasks.put(task);
     });

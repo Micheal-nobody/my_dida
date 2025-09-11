@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/vo/BelongingBoxVO.dart';
+import 'package:my_dida/component/TaskDetailPage.dart';
 import 'package:provider/provider.dart';
 
 import '../model/entity/Task.dart';
 import '../provider/BelongingBoxProvider.dart';
 import '../provider/TaskProvider.dart';
+
+// TODO:美化样式
 class TaskCard extends StatelessWidget {
-  // 在 TaskCard.dart 中添加新的构建方法
   final Task task;
 
   const TaskCard(this.task, {super.key});
 
   @override
   Widget build(BuildContext context) {
-
     // 只需要调用方法，所以不需要监听
     TaskProvider taskProvider = Provider.of<TaskProvider>(context, listen: false);
 
@@ -27,14 +28,12 @@ class TaskCard extends StatelessWidget {
           child: Checkbox(
             value: task.isDone,
             onChanged: (value) {
-              // TODO: 处理任务完成状态改变
               taskProvider.updateTaskIsDone(task, value!);
             },
             activeColor: Colors.blue,
             side: BorderSide(color: Colors.grey, width: 1),
           ),
         ),
-
 
         // 任务名称
         title: Text(
@@ -69,7 +68,37 @@ class TaskCard extends StatelessWidget {
         ),
 
         onTap: () {
-          // TODO: 处理任务点击事件
+          showModalBottomSheet(
+            context: context,
+            useRootNavigator: true,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (BuildContext context) {
+              return DraggableScrollableSheet(
+                expand: false,
+                // 仅两种可见状态：默认 0.6 和 全屏 1.0
+                initialChildSize: 0.6,
+                minChildSize: 0.6,
+                maxChildSize: 1.0,
+                snap: true,
+                snapSizes: const [0.6, 1.0],
+                builder: (context, scrollController) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).canvasColor,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                      ),
+                      child: TaskDetailPage(task.id, scrollController: scrollController),
+                    ),
+                  );
+                },
+              );
+            },
+          );
         },
       ),
     );

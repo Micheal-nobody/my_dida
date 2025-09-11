@@ -38,33 +38,33 @@ Future<Isar> initializeIsar() async {
   ], directory: dir.path);
 
   /// 初始化数据
-  await isar.writeTxn(() async {
-    /// 清空所有数据
-    await isar.clear();
-
-    /// 如果没有收集箱则创建一个
-    if (await isar.belongingBoxs.count() == 0) {
-
-      for(var i = 0; i < 10; i++){
-        Id id = await isar.belongingBoxs.put(BelongingBox(name: '收集箱 $i'));
-      }
-    }
-
-    if (await isar.tasks.count() == 0) {
-      /// 最近7天，每天7个任务
-      var today = DateTime.now().dateOnly; // 获取今天 00:00:00
-      for (var i = 0; i < 7; i++) {
-        for (var j = 1; j <= 7; j++) {
-          Task task = Task(
-            name: '任务 ${i} 的第 ${j} 个任务',
-            startTime: today.add(Duration(days: i)),
-            isDone: j % 2 == 0,
-          );
-          await isar.tasks.put(task);
-        }
-      }
-    }
-  });
+  // await isar.writeTxn(() async {
+  //   /// 清空所有数据
+  //   await isar.clear();
+  //
+  //   /// 如果没有收集箱则创建一个
+  //   if (await isar.belongingBoxs.count() == 0) {
+  //
+  //     for(var i = 0; i < 10; i++){
+  //       Id id = await isar.belongingBoxs.put(BelongingBox(name: '收集箱 $i'));
+  //     }
+  //   }
+  //
+  //   if (await isar.tasks.count() == 0) {
+  //     /// 最近7天，每天7个任务
+  //     var today = DateTime.now().dateOnly; // 获取今天 00:00:00
+  //     for (var i = 0; i < 7; i++) {
+  //       for (var j = 1; j <= 7; j++) {
+  //         Task task = Task(
+  //           name: '任务 ${i} 的第 ${j} 个任务',
+  //           startTime: today.add(Duration(days: i)),
+  //           isDone: j % 2 == 0,
+  //         );
+  //         await isar.tasks.put(task);
+  //       }
+  //     }
+  //   }
+  // });
 
   return isar;
 }

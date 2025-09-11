@@ -1,14 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:my_dida/config/logger.dart';
 import 'package:my_dida/model/vo/BelongingBoxVO.dart';
-import 'package:my_dida/provider/BelongingBoxProvider.dart';
 import 'package:my_dida/repository/TaskRepository.dart';
-import 'package:provider/provider.dart';
 
 import '../config/locator.dart';
 import '../model/entity/Task.dart';
 import '../model/vo/TaskVO.dart';
+import '../model/entity/CheckPoint.dart';
 
 /// 给TodoPage用的Provider！
 class TaskProvider with ChangeNotifier {
@@ -21,26 +19,24 @@ class TaskProvider with ChangeNotifier {
   List<Task> get cur_tasks => _currentTasks;
   //endregion
 
-
   /// 创建时注入Repository，并且初始化_currentTasks
   TaskProvider(BelongingBoxVO? cur_belongingBox)
-      : _taskRepository = locator<TaskRepository>(),
+    : _taskRepository = locator<TaskRepository>(),
       cur_belongingBox = cur_belongingBox {
     updateCurTasks(cur_belongingBox);
   }
 
   // 依赖 BelongingBoxProvider.cur_belongingBox 更新 _currentTasks
-  BelongingBoxVO?  cur_belongingBox; // 用于性能优化，在更新前会被用来做判断，如果BelongingBoxProvider.cur_belongingBox 和 cur_belongingBox相等，则不更新
+  BelongingBoxVO?
+  cur_belongingBox; // 用于性能优化，在更新前会被用来做判断，如果BelongingBoxProvider.cur_belongingBox 和 cur_belongingBox相等，则不更新
   updateCurTasks(BelongingBoxVO? new_belongingBox) async {
     // logger.i("因为 cur_belongingBox 改变所以更新 _currentTasks！");
     cur_belongingBox = new_belongingBox;
 
-    if(new_belongingBox == null || new_belongingBox.id == -1){
+    if (new_belongingBox == null || new_belongingBox.id == -1) {
       await loadTodayTasks();
-    }else{
-      await loadTasksByBelongingBoxId(
-        new_belongingBox.id,
-      );
+    } else {
+      await loadTasksByBelongingBoxId(new_belongingBox.id);
     }
   }
 
@@ -52,11 +48,13 @@ class TaskProvider with ChangeNotifier {
 
   // 获得当前要显示的任务
   Future<void> loadCurrentBoxTasks() async {
-    if(cur_belongingBox == null || cur_belongingBox!.id == -1){
+    if (cur_belongingBox == null || cur_belongingBox!.id == -1) {
       await loadTodayTasks();
       return;
     }
-    _currentTasks = await _taskRepository.getTasksByBelongingBoxId(cur_belongingBox!.id);
+    _currentTasks = await _taskRepository.getTasksByBelongingBoxId(
+      cur_belongingBox!.id,
+    );
     notifyListeners();
   }
 
@@ -68,7 +66,9 @@ class TaskProvider with ChangeNotifier {
 
   // 获得某个收藏夹下的所有待办事项
   Future<void> loadTasksByBelongingBoxId(int belongingBoxId) async {
-    _currentTasks = await _taskRepository.getTasksByBelongingBoxId(belongingBoxId);
+    _currentTasks = await _taskRepository.getTasksByBelongingBoxId(
+      belongingBoxId,
+    );
     notifyListeners();
   }
 
@@ -109,12 +109,175 @@ class TaskProvider with ChangeNotifier {
     loadCurrentBoxTasks();
   }
 
-  void updateTaskIsDone(Task task, bool value) {
+  Future<void> updateTaskIsDone(Task task, bool value) async {
     // 1、更新数据库
-    _taskRepository.updateTaskIsDone(task, value);
+    await _taskRepository.updateTaskIsDone(task, value);
 
     // 2、更新数据
     loadCurrentBoxTasks();
   }
-}
 
+  //region 任务详情：对单个任务的增删改封装
+  Stream<Task?> watchTaskById(int id) {
+    return _taskRepository.watchById(id);
+  }
+
+  Future<Task?> getTaskById(int id) async {
+    return await _taskRepository.getById(id);
+  }
+
+  Future<List<Task>> getTasksByIds(List<int> ids) async {
+    final List<Task> tasks = [];
+    for (final id in ids) {
+      final Task? t = await _taskRepository.getById(id);
+      if (t != null) tasks.add(t);
+    }
+    return tasks;
+  }
+
+  Future<void> updateTitle(Task task, String newTitle) async {
+    final Task newTask = Task(name: newTitle)
+      ..id = task.id
+      ..description = task.description
+      ..isDone = task.isDone
+      ..checkpoints = task.checkpoints
+      ..startTime = task.startTime
+      ..endTime = task.endTime
+      ..parentTaskId = task.parentTaskId
+      ..subTaskIds = task.subTaskIds
+      ..belongingBoxId = task.belongingBoxId;
+    await _taskRepository.update(newTask);
+  }
+
+  Future<void> updateDescription(Task task, String newDesc) async {
+    final Task newTask = Task(name: task.name)
+      ..id = task.id
+      ..description = newDesc
+      ..isDone = task.isDone
+      ..checkpoints = task.checkpoints
+      ..startTime = task.startTime
+      ..endTime = task.endTime
+      ..parentTaskId = task.parentTaskId
+      ..subTaskIds = task.subTaskIds
+      ..belongingBoxId = task.belongingBoxId;
+    await _taskRepository.update(newTask);
+  }
+
+  Future<void> toggleCheckpoint(Task task, int index, bool value) async {
+    final List<CheckPoint> updated = List.of(task.checkpoints);
+    updated[index] = CheckPoint(name: updated[index].name, isDone: value);
+    final Task newTask = Task(name: task.name)
+      ..id = task.id
+      ..description = task.description
+      ..isDone = task.isDone
+      ..checkpoints = updated
+      ..startTime = task.startTime
+      ..endTime = task.endTime
+      ..parentTaskId = task.parentTaskId
+      ..subTaskIds = task.subTaskIds
+      ..belongingBoxId = task.belongingBoxId;
+    await _taskRepository.update(newTask);
+  }
+
+  Future<void> renameCheckpoint(Task task, int index, String newName) async {
+    final List<CheckPoint> updated = List.of(task.checkpoints);
+    updated[index] = CheckPoint(name: newName, isDone: updated[index].isDone);
+    final Task newTask = Task(name: task.name)
+      ..id = task.id
+      ..description = task.description
+      ..isDone = task.isDone
+      ..checkpoints = updated
+      ..startTime = task.startTime
+      ..endTime = task.endTime
+      ..parentTaskId = task.parentTaskId
+      ..subTaskIds = task.subTaskIds
+      ..belongingBoxId = task.belongingBoxId;
+    await _taskRepository.update(newTask);
+  }
+
+  Future<void> addCheckpoint(Task task) async {
+    final List<CheckPoint> updated = List.of(task.checkpoints)
+      ..add(CheckPoint(name: '新检查点'));
+    final Task newTask = Task(name: task.name)
+      ..id = task.id
+      ..description = task.description
+      ..isDone = task.isDone
+      ..checkpoints = updated
+      ..startTime = task.startTime
+      ..endTime = task.endTime
+      ..parentTaskId = task.parentTaskId
+      ..subTaskIds = task.subTaskIds
+      ..belongingBoxId = task.belongingBoxId;
+    await _taskRepository.update(newTask);
+  }
+
+  Future<void> removeCheckpoint(Task task, int index) async {
+    final List<CheckPoint> updated = List.of(task.checkpoints)..removeAt(index);
+    final Task newTask = Task(name: task.name)
+      ..id = task.id
+      ..description = task.description
+      ..isDone = task.isDone
+      ..checkpoints = updated
+      ..startTime = task.startTime
+      ..endTime = task.endTime
+      ..parentTaskId = task.parentTaskId
+      ..subTaskIds = task.subTaskIds
+      ..belongingBoxId = task.belongingBoxId;
+    await _taskRepository.update(newTask);
+  }
+
+  Future<int> createSubTask(Task parent) async {
+    final Task sub = Task(
+      name: '子任务',
+      parentTaskId: parent.id,
+      belongingBoxId: parent.belongingBoxId,
+    );
+    final int newId = await _taskRepository.insert(sub);
+    final List<int> newIds = List.of(parent.subTaskIds)..add(newId);
+    final Task updatedParent = Task(name: parent.name)
+      ..id = parent.id
+      ..description = parent.description
+      ..isDone = parent.isDone
+      ..checkpoints = parent.checkpoints
+      ..startTime = parent.startTime
+      ..endTime = parent.endTime
+      ..parentTaskId = parent.parentTaskId
+      ..subTaskIds = newIds
+      ..belongingBoxId = parent.belongingBoxId;
+    await _taskRepository.update(updatedParent);
+    return newId;
+  }
+
+  Future<void> deleteSubTask(Task parent, int subTaskId) async {
+    await _taskRepository.deleteById(subTaskId);
+    final List<int> newIds = List.of(parent.subTaskIds)..remove(subTaskId);
+    final Task updatedParent = Task(name: parent.name)
+      ..id = parent.id
+      ..description = parent.description
+      ..isDone = parent.isDone
+      ..checkpoints = parent.checkpoints
+      ..startTime = parent.startTime
+      ..endTime = parent.endTime
+      ..parentTaskId = parent.parentTaskId
+      ..subTaskIds = newIds
+      ..belongingBoxId = parent.belongingBoxId;
+    await _taskRepository.update(updatedParent);
+  }
+
+  Future<void> updateBelongingBox(Task task, int? newBelongingBoxId) async {
+    final Task newTask = Task(name: task.name)
+      ..id = task.id
+      ..description = task.description
+      ..isDone = task.isDone
+      ..checkpoints = task.checkpoints
+      ..startTime = task.startTime
+      ..endTime = task.endTime
+      ..parentTaskId = task.parentTaskId
+      ..subTaskIds = task.subTaskIds
+      ..belongingBoxId = newBelongingBoxId;
+    await _taskRepository.update(newTask);
+    await loadCurrentBoxTasks();
+  }
+
+  //endregion
+}
