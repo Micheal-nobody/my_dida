@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/CheckPoint.dart';
 import 'package:provider/provider.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
+import 'package:my_dida/provider/BelongingBoxProvider.dart';
 
-/// 任务详情 BottomSheet（由 TaskCard 的 onTap 触发）
+// 任务详情 BottomSheet（由 TaskCard 的 onTap 触发）
 class TaskDetailPage extends StatefulWidget {
   final int taskId;
   final ScrollController? scrollController;
@@ -16,8 +18,16 @@ class TaskDetailPage extends StatefulWidget {
   }
 }
 
+//TODO：修复以下bug：原地修改任务名、检查点内容时，键盘弹出于是该组件自动刷新，导致无法输入任何文字（因为widget刷新后键盘会落下）
 class _TaskDetailPageState extends State<TaskDetailPage> {
   late TaskProvider _taskProvider;
+  Task? _currentTask;
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final Map<int, TextEditingController> _checkpointControllers = {};
+  final Map<int, bool> _checkpointEditingStates = {};
+  bool _isEditingTitle = false;
+  bool _isEditingDescription = false;
 
   @override
   void initState() {
@@ -25,61 +35,54 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     _taskProvider = Provider.of<TaskProvider>(context, listen: false);
   }
 
-  Future<String?> _editTextDialog(
-    BuildContext context, {
-    String title = '编辑',
-    String initial = '',
-  }) async {
-    final controller = TextEditingController(text: initial);
-    return await showDialog<String>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: Text(title),
-          content: TextField(controller: controller, autofocus: true),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(null),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-              child: const Text('确定'),
-            ),
-          ],
-        );
-      },
-    );
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    for (final controller in _checkpointControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
   }
 
-  //TODO：在时间的左侧添加一个退出按钮（图标：左箭头），拖过调用栈中的数量切换按钮的样式与功能（参考_buildSubTaskSection上的TODO）
   Widget _buildHeader(Task task) {
     final DateTime now = DateTime.now();
     final String dateText = "今天, ${now.month}月${now.day}日";
+    final boxes = context.read<BelongingBoxProvider>().all_belongingBoxes;
+
+    // 检查是否可以返回（有调用栈）
+    final bool canPop = Navigator.of(context).canPop();
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.event_note, color: Colors.orange),
-              const SizedBox(width: 8),
-              Text(
-                dateText,
-                style: const TextStyle(color: Colors.orange, fontSize: 14),
-              ),
-            ],
+          IconButton(
+            icon: Icon(
+              canPop ? Icons.arrow_back : Icons.close,
+              color: Colors.orange,
+            ),
+            onPressed: () {
+              if (canPop) {
+                Navigator.of(context).pop();
+              } else {
+                Navigator.of(context).maybePop();
+              }
+            },
           ),
-          //TODO： 从 BelongingBoxProvider 中获取所有收集箱，并显示在 dropdown 中
+          const Icon(Icons.event_note, color: Colors.orange),
+          const SizedBox(width: 6),
+          Text(
+            dateText,
+            style: const TextStyle(color: Colors.orange, fontSize: 14),
+          ),
+          const Spacer(),
           DropdownButton<int?>(
             value: task.belongingBoxId,
-            icon: const Icon(Icons.arrow_drop_down, color: Colors.orange),
             underline: const SizedBox.shrink(),
-            items: const [
-              DropdownMenuItem<int?>(value: 1, child: Text('收集箱 1')),
-              DropdownMenuItem<int?>(value: 2, child: Text('收集箱 2')),
-              DropdownMenuItem<int?>(value: 3, child: Text('收集箱 3')),
+            items: [
+              for (final b in boxes)
+                DropdownMenuItem<int?>(value: b.id, child: Text(b.name)),
             ],
             onChanged: (v) async {
               await _taskProvider.updateBelongingBox(task, v);
@@ -90,81 +93,90 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     );
   }
 
-  //TODO: 原地修改Title，不需要弹出Dialog
   Widget _buildTitle(Task task) {
+    // 更新控制器文本，如果任务发生变化且不在编辑状态
+    if (_currentTask?.id != task.id ||
+        (!_isEditingTitle && _titleController.text != task.name)) {
+      _titleController.text = task.name;
+      _currentTask = task;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () async {
-                final String? text = await _editTextDialog(
-                  context,
-                  title: '编辑标题',
-                  initial: task.name,
-                );
-                if (text != null && text.isNotEmpty) {
-                  await _taskProvider.updateTitle(task, text);
-                }
-              },
-              child: Text(
-                task.name,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.orange,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined, color: Colors.orange),
-            onPressed: () async {
-              final String? text = await _editTextDialog(
-                context,
-                title: '编辑标题',
-                initial: task.name,
-              );
-              if (text != null && text.isNotEmpty) {
-                await _taskProvider.updateTitle(task, text);
-              }
-            },
-          ),
-        ],
+      child: TextField(
+        controller: _titleController,
+        decoration: const InputDecoration(border: InputBorder.none),
+        style: const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: Colors.orange,
+          decoration: TextDecoration.underline,
+        ),
+        onTap: () {
+          if (!_isEditingTitle) {
+            setState(() {
+              _isEditingTitle = true;
+            });
+          }
+        },
+        onSubmitted: (v) async {
+          final value = v.trim();
+          if (value.isNotEmpty && value != task.name) {
+            await _taskProvider.updateTitle(task, value);
+          }
+          setState(() {
+            _isEditingTitle = false;
+          });
+        },
+        onEditingComplete: () {
+          setState(() {
+            _isEditingTitle = false;
+          });
+        },
       ),
     );
   }
 
-  //TODO: 原地修改备注，不需要弹出Dialog
   Widget _buildDescription(Task task) {
+    // 更新控制器文本，如果任务发生变化且不在编辑状态
+    if (_currentTask?.id != task.id ||
+        (!_isEditingDescription &&
+            _descriptionController.text != task.description)) {
+      _descriptionController.text = task.description;
+      _currentTask = task;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            child: GestureDetector(
-              onTap: () async {
-                final String? text = await _editTextDialog(
-                  context,
-                  title: task.description.isEmpty ? '添加备注' : '编辑备注',
-                  initial: task.description,
-                );
-                if (text != null) {
-                  await _taskProvider.updateDescription(task, text);
+            child: TextField(
+              controller: _descriptionController,
+              minLines: 1,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: '添加备注...',
+                border: InputBorder.none,
+              ),
+              onTap: () {
+                if (!_isEditingDescription) {
+                  setState(() {
+                    _isEditingDescription = true;
+                  });
                 }
               },
-              child: Text(
-                task.description.isEmpty ? '添加备注...' : task.description,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: task.description.isEmpty
-                      ? Colors.black26
-                      : Colors.black87,
-                ),
-              ),
+              onSubmitted: (v) async {
+                await _taskProvider.updateDescription(task, v.trim());
+                setState(() {
+                  _isEditingDescription = false;
+                });
+              },
+              onEditingComplete: () {
+                setState(() {
+                  _isEditingDescription = false;
+                });
+              },
             ),
           ),
           if (task.description.isNotEmpty)
@@ -172,6 +184,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               icon: const Icon(Icons.clear, color: Colors.black38),
               onPressed: () async {
                 await _taskProvider.updateDescription(task, '');
+                _descriptionController.clear();
               },
             ),
         ],
@@ -179,62 +192,108 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     );
   }
 
-  //TODO： 添加删除按钮，删除按钮位于检查点右侧，图标为 delete_outline
   Widget _buildCheckpoints(Task task) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (task.checkpoints.isEmpty)
-          const SizedBox.shrink(),
+        if (task.checkpoints.isEmpty) const SizedBox.shrink(),
 
         // 含义：遍历任务的检查点，并显示在列表中（未完成在前，完成在后，完成项半透明）
         for (final entry in ([
           ...task.checkpoints.where((e) => !e.isDone),
           ...task.checkpoints.where((e) => e.isDone),
         ]).asMap().entries)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-              leading: Checkbox(
-                value: entry.value.isDone,
-                onChanged: (v) {
-                  if (v == null) return;
-                  _taskProvider.toggleCheckpoint(task, entry.key, v);
-                },
-              ),
-              title: GestureDetector(
-                onTap: () async {
-                  final String? text = await _editTextDialog(
-                    context,
-                    title: '编辑检查点',
-                    initial: entry.value.name,
-                  );
-                  if (text != null && text.isNotEmpty) {
-                    await _taskProvider.renameCheckpoint(task, entry.key, text);
-                  }
-                },
-                child: Text(
-                  entry.value.name,
-                  style: TextStyle(
-                    color: entry.value.isDone ? Colors.black38 : null,
-                  ),
-                ),
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.black26),
-                onPressed: () async {
-                  await _taskProvider.removeCheckpoint(task, entry.key);
-                },
-              ),
-            ),
-          ),
+          _buildCheckpointItem(task, entry.key, entry.value),
       ],
     );
   }
 
-  // 用于显示任务的子任务
-  //TODO：子任务可以点击进入新的TaskDetailPage，跳转后Header的左上角由退出按钮（图标：左箭头），变为返回按钮（图标： ×）
+  Widget _buildCheckpointItem(Task task, int index, CheckPoint checkpoint) {
+    // 为每个检查点创建或获取控制器
+    if (!_checkpointControllers.containsKey(index)) {
+      _checkpointControllers[index] = TextEditingController(
+        text: checkpoint.name,
+      );
+      _checkpointEditingStates[index] = false;
+    }
+
+    final controller = _checkpointControllers[index]!;
+    final isEditing = _checkpointEditingStates[index] ?? false;
+
+    // 更新控制器文本，如果检查点发生变化且不在编辑状态
+    if (!isEditing && controller.text != checkpoint.name) {
+      controller.text = checkpoint.name;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+        leading: Checkbox(
+          value: checkpoint.isDone,
+          onChanged: (v) {
+            if (v == null) return;
+            _taskProvider.toggleCheckpoint(task, index, v);
+          },
+        ),
+        title: isEditing
+            ? TextField(
+                controller: controller,
+                autofocus: true,
+                style: TextStyle(
+                  color: checkpoint.isDone ? Colors.black38 : null,
+                ),
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                onSubmitted: (value) async {
+                  final trimmedValue = value.trim();
+                  if (trimmedValue.isNotEmpty &&
+                      trimmedValue != checkpoint.name) {
+                    await _taskProvider.renameCheckpoint(
+                      task,
+                      index,
+                      trimmedValue,
+                    );
+                  }
+                  setState(() {
+                    _checkpointEditingStates[index] = false;
+                  });
+                },
+                onEditingComplete: () {
+                  setState(() {
+                    _checkpointEditingStates[index] = false;
+                  });
+                },
+              )
+            : GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _checkpointEditingStates[index] = true;
+                  });
+                },
+                child: Text(
+                  checkpoint.name,
+                  style: TextStyle(
+                    color: checkpoint.isDone ? Colors.black38 : null,
+                  ),
+                ),
+              ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete_outline, color: Colors.red),
+          onPressed: () async {
+            // 清理控制器
+            _checkpointControllers[index]?.dispose();
+            _checkpointControllers.remove(index);
+            _checkpointEditingStates.remove(index);
+            await _taskProvider.removeCheckpoint(task, index);
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildSubTaskSection(Task task) {
     return Padding(
       padding: const EdgeInsets.all(12),
@@ -267,9 +326,17 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                               await _taskProvider.updateTaskIsDone(st, v);
                             },
                           ),
-                          title: Text(st.name),
+                          title: GestureDetector(
+                            onTap: () {
+                              _navigateToSubTask(st.id);
+                            },
+                            child: Text(st.name),
+                          ),
                           trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                            ),
                             onPressed: () async {
                               await _taskProvider.deleteSubTask(task, st.id);
                             },
@@ -286,6 +353,14 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     );
   }
 
+  void _navigateToSubTask(int subTaskId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TaskDetailPage(subTaskId),
+        fullscreenDialog: true,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -302,6 +377,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             );
           }
 
+          // 更新当前任务引用
+          _currentTask = task;
+
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -317,7 +395,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                       _buildTitle(task),
                       const SizedBox(height: 8),
                       _buildDescription(task),
-                      _buildCheckpoints(task), 
+                      _buildCheckpoints(task),
                       const SizedBox(height: 10),
                       _buildSubTaskSection(task),
                       const SizedBox(height: 80),
@@ -326,7 +404,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                 ),
               ),
 
-              // 这是底部按钮栏
+              // 底部按钮栏
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,

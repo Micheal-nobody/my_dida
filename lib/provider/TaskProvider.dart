@@ -20,9 +20,9 @@ class TaskProvider with ChangeNotifier {
   //endregion
 
   /// 创建时注入Repository，并且初始化_currentTasks
-  TaskProvider(BelongingBoxVO? cur_belongingBox)
+  TaskProvider(BelongingBoxVO? new_belongingBox)
     : _taskRepository = locator<TaskRepository>(),
-      cur_belongingBox = cur_belongingBox {
+      cur_belongingBox = new_belongingBox {
     updateCurTasks(cur_belongingBox);
   }
 
