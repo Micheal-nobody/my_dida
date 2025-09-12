@@ -7,7 +7,6 @@ import '../model/entity/Task.dart';
 import '../provider/BelongingBoxProvider.dart';
 import '../provider/TaskProvider.dart';
 
-// TODO:美化样式
 class TaskCard extends StatelessWidget {
   final Task task;
 
@@ -16,13 +15,16 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 只需要调用方法，所以不需要监听
-    TaskProvider taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    TaskProvider taskProvider = Provider.of<TaskProvider>(
+      context,
+      listen: false,
+    );
 
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: ListTile(
         // 任务完成状态
-        leading: Container(
+        leading: SizedBox(
           width: 24,
           height: 24,
           child: Checkbox(
@@ -57,9 +59,13 @@ class TaskCard extends StatelessWidget {
 
             Selector<BelongingBoxProvider, List<BelongingBoxVO>>(
               selector: (context, provider) => provider.all_belongingBoxes,
-              builder: (context, all_boxes, child) {
+              builder: (context, allBoxes, child) {
                 return Text(
-                  all_boxes.firstWhere((element) => element.id == task.belongingBoxId).name,
+                  allBoxes
+                      .firstWhere(
+                        (element) => element.id == task.belongingBoxId,
+                      )
+                      .name,
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 );
               },
@@ -80,19 +86,29 @@ class TaskCard extends StatelessWidget {
                 initialChildSize: 0.6,
                 minChildSize: 0.6,
                 maxChildSize: 1.0,
-                snap: true,
+                snap: true, // snap 开启后，snapSizes 设置可切换状态
                 snapSizes: const [0.6, 1.0],
                 builder: (context, scrollController) {
+                  final bottomInset = MediaQuery.of(context).viewInsets.bottom;
                   return Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).canvasColor,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(16),
                       ),
-                      child: TaskDetailPage(task.id, scrollController: scrollController),
+                    ),
+                    child: AnimatedPadding(
+                      duration: const Duration(milliseconds: 160),
+                      curve: Curves.easeOut,
+                      padding: EdgeInsets.only(bottom: bottomInset),
+                      child: MediaQuery.removeViewInsets(
+                        removeBottom: true,
+                        context: context,
+                        child: TaskDetailPage(
+                          task.id,
+                          scrollController: scrollController,
+                        ),
+                      ),
                     ),
                   );
                 },

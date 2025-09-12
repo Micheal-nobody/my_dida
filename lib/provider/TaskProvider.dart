@@ -16,7 +16,9 @@ class TaskProvider with ChangeNotifier {
 
   //region 一系列getter
   List<Task> get tasks => _tasks;
+
   List<Task> get cur_tasks => _currentTasks;
+
   //endregion
 
   /// 创建时注入Repository，并且初始化_currentTasks
@@ -101,6 +103,7 @@ class TaskProvider with ChangeNotifier {
       ..subTasks = []
       ..belongingBox = null;
   }
+
   //endregion
 
   //TODO: 如果添加的任务属于一个盒子，则需要刷新页面！但是 notifyListeners()也够用！
@@ -136,31 +139,11 @@ class TaskProvider with ChangeNotifier {
   }
 
   Future<void> updateTitle(Task task, String newTitle) async {
-    final Task newTask = Task(name: newTitle)
-      ..id = task.id
-      ..description = task.description
-      ..isDone = task.isDone
-      ..checkpoints = task.checkpoints
-      ..startTime = task.startTime
-      ..endTime = task.endTime
-      ..parentTaskId = task.parentTaskId
-      ..subTaskIds = task.subTaskIds
-      ..belongingBoxId = task.belongingBoxId;
-    await _taskRepository.update(newTask);
+    await _taskRepository.update(task..name = newTitle);
   }
 
   Future<void> updateDescription(Task task, String newDesc) async {
-    final Task newTask = Task(name: task.name)
-      ..id = task.id
-      ..description = newDesc
-      ..isDone = task.isDone
-      ..checkpoints = task.checkpoints
-      ..startTime = task.startTime
-      ..endTime = task.endTime
-      ..parentTaskId = task.parentTaskId
-      ..subTaskIds = task.subTaskIds
-      ..belongingBoxId = task.belongingBoxId;
-    await _taskRepository.update(newTask);
+    await _taskRepository.update(task..description = newDesc);
   }
 
   Future<void> toggleCheckpoint(Task task, int index, bool value) async {
@@ -275,6 +258,21 @@ class TaskProvider with ChangeNotifier {
       ..parentTaskId = task.parentTaskId
       ..subTaskIds = task.subTaskIds
       ..belongingBoxId = newBelongingBoxId;
+    await _taskRepository.update(newTask);
+    await loadCurrentBoxTasks();
+  }
+
+  Future<void> updateStartTime(Task task, DateTime? newStartTime) async {
+    final Task newTask = Task(name: task.name)
+      ..id = task.id
+      ..description = task.description
+      ..isDone = task.isDone
+      ..checkpoints = task.checkpoints
+      ..startTime = newStartTime
+      ..endTime = task.endTime
+      ..parentTaskId = task.parentTaskId
+      ..subTaskIds = task.subTaskIds
+      ..belongingBoxId = task.belongingBoxId;
     await _taskRepository.update(newTask);
     await loadCurrentBoxTasks();
   }

@@ -29,11 +29,7 @@ class _TodoPageState extends State<TodoPage> {
     var cur_belongingBox = _belongingBoxProvider.cur_belongingBox;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          cur_belongingBox.name ?? "代办",
-        ),
-      ),
+      appBar: AppBar(title: Text(cur_belongingBox.name)),
 
       // 可滑动的列表视图，当且仅当TaskProvider.cur_tasks更新时，才出发更新
       body: Selector<TaskProvider, List<Task>>(
