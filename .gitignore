@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/lib/model/entity/BelongingBox.g.dart
+/lib/model/entity/CheckPoint.g.dart
+/lib/model/entity/Task.g.dart
+/lib/provider/tempfile_1757390079462.dart

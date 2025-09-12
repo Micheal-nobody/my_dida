@@ -149,64 +149,24 @@ class TaskProvider with ChangeNotifier {
   Future<void> toggleCheckpoint(Task task, int index, bool value) async {
     final List<CheckPoint> updated = List.of(task.checkpoints);
     updated[index] = CheckPoint(name: updated[index].name, isDone: value);
-    final Task newTask = Task(name: task.name)
-      ..id = task.id
-      ..description = task.description
-      ..isDone = task.isDone
-      ..checkpoints = updated
-      ..startTime = task.startTime
-      ..endTime = task.endTime
-      ..parentTaskId = task.parentTaskId
-      ..subTaskIds = task.subTaskIds
-      ..belongingBoxId = task.belongingBoxId;
-    await _taskRepository.update(newTask);
+    await _taskRepository.update(task..checkpoints = updated);
   }
 
   Future<void> renameCheckpoint(Task task, int index, String newName) async {
     final List<CheckPoint> updated = List.of(task.checkpoints);
     updated[index] = CheckPoint(name: newName, isDone: updated[index].isDone);
-    final Task newTask = Task(name: task.name)
-      ..id = task.id
-      ..description = task.description
-      ..isDone = task.isDone
-      ..checkpoints = updated
-      ..startTime = task.startTime
-      ..endTime = task.endTime
-      ..parentTaskId = task.parentTaskId
-      ..subTaskIds = task.subTaskIds
-      ..belongingBoxId = task.belongingBoxId;
-    await _taskRepository.update(newTask);
+    await _taskRepository.update(task..checkpoints = updated);
   }
 
   Future<void> addCheckpoint(Task task) async {
     final List<CheckPoint> updated = List.of(task.checkpoints)
       ..add(CheckPoint(name: '新检查点'));
-    final Task newTask = Task(name: task.name)
-      ..id = task.id
-      ..description = task.description
-      ..isDone = task.isDone
-      ..checkpoints = updated
-      ..startTime = task.startTime
-      ..endTime = task.endTime
-      ..parentTaskId = task.parentTaskId
-      ..subTaskIds = task.subTaskIds
-      ..belongingBoxId = task.belongingBoxId;
-    await _taskRepository.update(newTask);
+    await _taskRepository.update(task..checkpoints = updated);
   }
 
   Future<void> removeCheckpoint(Task task, int index) async {
     final List<CheckPoint> updated = List.of(task.checkpoints)..removeAt(index);
-    final Task newTask = Task(name: task.name)
-      ..id = task.id
-      ..description = task.description
-      ..isDone = task.isDone
-      ..checkpoints = updated
-      ..startTime = task.startTime
-      ..endTime = task.endTime
-      ..parentTaskId = task.parentTaskId
-      ..subTaskIds = task.subTaskIds
-      ..belongingBoxId = task.belongingBoxId;
-    await _taskRepository.update(newTask);
+    await _taskRepository.update(task..checkpoints = updated);
   }
 
   Future<int> createSubTask(Task parent) async {
@@ -217,63 +177,23 @@ class TaskProvider with ChangeNotifier {
     );
     final int newId = await _taskRepository.insert(sub);
     final List<int> newIds = List.of(parent.subTaskIds)..add(newId);
-    final Task updatedParent = Task(name: parent.name)
-      ..id = parent.id
-      ..description = parent.description
-      ..isDone = parent.isDone
-      ..checkpoints = parent.checkpoints
-      ..startTime = parent.startTime
-      ..endTime = parent.endTime
-      ..parentTaskId = parent.parentTaskId
-      ..subTaskIds = newIds
-      ..belongingBoxId = parent.belongingBoxId;
-    await _taskRepository.update(updatedParent);
+    await _taskRepository.update(parent..subTaskIds = newIds);
     return newId;
   }
 
   Future<void> deleteSubTask(Task parent, int subTaskId) async {
     await _taskRepository.deleteById(subTaskId);
     final List<int> newIds = List.of(parent.subTaskIds)..remove(subTaskId);
-    final Task updatedParent = Task(name: parent.name)
-      ..id = parent.id
-      ..description = parent.description
-      ..isDone = parent.isDone
-      ..checkpoints = parent.checkpoints
-      ..startTime = parent.startTime
-      ..endTime = parent.endTime
-      ..parentTaskId = parent.parentTaskId
-      ..subTaskIds = newIds
-      ..belongingBoxId = parent.belongingBoxId;
-    await _taskRepository.update(updatedParent);
+    await _taskRepository.update(parent..subTaskIds = newIds);
   }
 
   Future<void> updateBelongingBox(Task task, int? newBelongingBoxId) async {
-    final Task newTask = Task(name: task.name)
-      ..id = task.id
-      ..description = task.description
-      ..isDone = task.isDone
-      ..checkpoints = task.checkpoints
-      ..startTime = task.startTime
-      ..endTime = task.endTime
-      ..parentTaskId = task.parentTaskId
-      ..subTaskIds = task.subTaskIds
-      ..belongingBoxId = newBelongingBoxId;
-    await _taskRepository.update(newTask);
+    await _taskRepository.update(task..belongingBoxId = newBelongingBoxId);
     await loadCurrentBoxTasks();
   }
 
   Future<void> updateStartTime(Task task, DateTime? newStartTime) async {
-    final Task newTask = Task(name: task.name)
-      ..id = task.id
-      ..description = task.description
-      ..isDone = task.isDone
-      ..checkpoints = task.checkpoints
-      ..startTime = newStartTime
-      ..endTime = task.endTime
-      ..parentTaskId = task.parentTaskId
-      ..subTaskIds = task.subTaskIds
-      ..belongingBoxId = task.belongingBoxId;
-    await _taskRepository.update(newTask);
+    await _taskRepository.update(task..startTime = newStartTime);
     await loadCurrentBoxTasks();
   }
 
