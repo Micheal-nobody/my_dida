@@ -4,6 +4,7 @@ import 'package:my_dida/component/AddTaskDialog.dart';
 import 'package:my_dida/component/TaskCard.dart';
 import 'package:provider/provider.dart';
 
+import '../component/CustomFloatingActionButton.dart';
 import '../model/entity/Task.dart';
 import '../provider/BelongingBoxProvider.dart';
 import '../provider/TaskProvider.dart';
@@ -50,27 +51,10 @@ class _TodoPageState extends State<TodoPage> {
       ),
 
       // 悬浮按钮
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-          /// 显示addTaskDialog
-          showModalBottomSheet(
-            context: context,
-            useRootNavigator: true,
-            isScrollControlled: true,
-            builder: (BuildContext context) => Padding(
-              // 添加padding能过避免输入框被键盘遮挡，这是因为键盘会占用屏幕下方的空间
-              padding: EdgeInsets.only(
-                // MediaQuery.of(context).viewInsets.bottom 表示键盘高度
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: const AddTaskDialog(),
-            ),
-          );
-        },
-      ),
+      floatingActionButton: CustomFloatingActionButton(),
 
-      // 侧边栏
+
+    // 侧边栏
       drawer: Drawer(
         child: Column(
           children: [

@@ -4,7 +4,6 @@ import 'package:my_dida/pages/CalendarPage.dart';
 import 'package:my_dida/pages/PomodoroPage.dart';
 import 'package:my_dida/pages/TodoPage.dart';
 
-import '../pages/CalendarScreen.dart';
 
 final GoRouter goRouter = GoRouter(
   // 初始路由
@@ -90,16 +89,3 @@ void _onTap(BuildContext context, int index, StatefulNavigationShell navigationS
   );
 }
 
-//TODO： appBar 生成器
-AppBar _getAppBar(BuildContext context, int branchIndex) {
-  switch (branchIndex) {
-    case 0:
-      return AppBar(title: const Text('待办清单'));
-    case 1:
-      return AppBar(title: const Text('日历视图'));
-    case 2:
-      return AppBar(title: const Text('番茄钟'));
-    default:
-      return AppBar(title: const Text('My Dida'));
-  }
-}

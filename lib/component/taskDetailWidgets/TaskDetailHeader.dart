@@ -5,7 +5,7 @@ import 'package:my_dida/model/entity/Task.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
 import 'package:my_dida/provider/BelongingBoxProvider.dart';
 
-import '../model/vo/BelongingBoxVO.dart';
+import '../../model/vo/BelongingBoxVO.dart';
 
 class TaskDetailHeader extends StatelessWidget {
   final Task task;

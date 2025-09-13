@@ -1,30 +1,84 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:my_dida/provider/TaskProvider.dart';
-import 'package:provider/provider.dart';
+import 'package:my_dida/component/CustomFloatingActionButton.dart';
+import 'package:my_dida/component/StatelessWidget/CalendarDateHeader.dart';
+import 'package:my_dida/component/StatelessWidget/CalendarScrollableContent.dart';
+import 'package:intl/intl.dart';
 
-import '../provider/TodosProvider.dart';
-import 'CalendarScreen.dart';
-
-//TODO:这个类是最难的，我需要设计日历视图！但是我觉得Flutter应该提供了日历的封装
-class CalendarPage extends StatelessWidget {
+class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    /// 使用 Provider 来获取 TodosProvider 实例
-    final todosProvider = context.watch<TodosProvider>();
+  State<CalendarPage> createState() => _CalendarPageState();
+}
 
-    return Column(children: [
-      Expanded(child: CalendarScreen()),
-      Expanded(
-        child: ListView.builder(
-          itemCount: todosProvider.cur_todos.length, // 项目总数
-          itemBuilder: (context, index) {
-            return TodosProvider.generateCard(todosProvider.cur_todos[index]);
+//TOOD:
+class _CalendarPageState extends State<CalendarPage> {
+  final DateTime _currentDate = DateTime.now();
+  DateTime _selectedDate = DateTime.now();
+  int _dateRange = 7; // 7-day view by default
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // 1. AppBar 区域：左侧是当前月份
+      appBar: AppBar(
+        title: GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedDate = DateTime.now();
+            });
           },
+          child: Text(
+            DateFormat('M月').format(_currentDate),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
+          ),
         ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(
+              _dateRange == 7 ? Icons.view_list : Icons.view_week,
+              color: Colors.grey[600],
+            ),
+            onPressed: () {
+              setState(() {
+                _dateRange = _dateRange == 7 ? 3 : 7;
+              });
+            },
+          ),
+          SizedBox(width: 8),
+          Icon(Icons.more_vert, color: Colors.grey[600]),
+          SizedBox(width: 16),
+        ],
       ),
-    ]);
+
+      body: Column(
+        children: [
+          // 2. Header：显示日期和对应的星期
+          CalendarDateHeader(
+            selectedDate: _selectedDate,
+            dateRange: _dateRange,
+            onDateSelected: (date) {
+              setState(() {
+                _selectedDate = date;
+              });
+            },
+          ),
+
+          // 主要内容区域
+          Expanded(
+            child: CalendarScrollableContent(selectedDate: _selectedDate),
+          ),
+        ],
+      ),
+
+      // 3. FloatingActionButton：用于添加任务
+      floatingActionButton: CustomFloatingActionButton(),
+    );
   }
 }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/component/taskDetailWidgets/EditableTitleWidget.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/component/EditableTitleWidget.dart';
-import 'package:my_dida/component/EditableDescriptionWidget.dart';
-import 'package:my_dida/component/CheckpointItemWidget.dart';
-import 'package:my_dida/component/TaskDetailHeader.dart';
-import 'package:my_dida/component/SubTaskSection.dart';
+import 'package:my_dida/component/taskDetailWidgets/EditableDescriptionWidget.dart';
+import 'package:my_dida/component/taskDetailWidgets/CheckpointItemWidget.dart';
+import 'package:my_dida/component/taskDetailWidgets/TaskDetailHeader.dart';
+import 'package:my_dida/component/taskDetailWidgets/SubTaskSection.dart';
 import 'package:provider/provider.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
 import 'dart:async';
