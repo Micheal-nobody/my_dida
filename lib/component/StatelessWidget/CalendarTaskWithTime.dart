@@ -4,26 +4,24 @@ import '../../model/entity/Task.dart';
 class CalendarTaskWithTime extends StatelessWidget {
   final Task task;
   final double columnWidth;
+  final int hourIndex;
 
   const CalendarTaskWithTime({
     super.key,
     required this.task,
     required this.columnWidth,
+    required this.hourIndex,
   });
 
   @override
   Widget build(BuildContext context) {
     if (task.startTime == null) return Container();
 
-    int startHour = task.startTime!.hour;
     int startMinute = task.startTime!.minute;
 
-    // 计算任务开始位置（相对于顶部）
-    // CalendarTimeColumn每个时间间隔是60px
-    double topPosition = (startHour * 60 + startMinute) * (60 / 60);
-
-    // 注意：根据需求，任务高度固定为CalendarTimeColumn两个数字之间间隔的1/4（15px）
-    // 这里不再根据endTime计算高度，而是使用固定高度
+    // 计算任务在当前小时行中的垂直位置（基于分钟）
+    // 每小时60px，每分钟1px
+    double topPosition = startMinute.toDouble();
 
     // 任务宽度为列宽，高度为CalendarTimeColumn两个数字之间间隔的1/4
     final taskWidth = columnWidth;

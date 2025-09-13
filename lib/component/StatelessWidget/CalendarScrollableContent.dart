@@ -37,18 +37,29 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // 4. 左侧时间列
-        CalendarTimeColumn(scrollController: _scrollController),
+    return CustomScrollView(
+      controller: _scrollController,
+      physics: const ClampingScrollPhysics(),
+      slivers: [
+        // 使用SliverToBoxAdapter包装整个内容
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: 1440, // 24小时 * 60px = 1440px
+            child: Row(
+              children: [
+                // 4. 左侧时间列
+                CalendarTimeColumn(),
 
-        // 5. 任务显示区域
-        Expanded(
-          child: CalendarTaskArea(
-            selectedDate: widget.selectedDate,
-            visibleDates: widget.visibleDates,
-            tasksForDates: widget.tasksForDates,
-            scrollController: _scrollController,
+                // 5. 任务显示区域
+                Expanded(
+                  child: CalendarTaskArea(
+                    selectedDate: widget.selectedDate,
+                    visibleDates: widget.visibleDates,
+                    tasksForDates: widget.tasksForDates,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
