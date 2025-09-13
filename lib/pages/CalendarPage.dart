@@ -7,7 +7,7 @@ import 'package:my_dida/component/CustomDatePicker/TimeSlotTabWidget.dart';
 import 'package:my_dida/model/entity/Task.dart';
 import 'package:my_dida/repository/TaskRepository.dart';
 import 'package:intl/intl.dart';
-
+//TODO：我希望 CalendarPage 同时显示多个日期下的任务，某个日期的任务显示在 CalendarDateHeader 对应的日期下。CalendarDateHeader 有改变的功能（3 个日期/7 个日期），日期范围改变时现实的任务范围也要变化。
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
 
@@ -57,133 +57,6 @@ class _CalendarPageState extends State<CalendarPage> {
     });
   }
 
-  void _showCalendarWidget() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.6,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Expanded(
-                    child: Text(
-                      '选择日期',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 48), // Balance the close button
-                ],
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: CalendarWidget(
-                  selectedDate: _calendarSelectedDate,
-                  onDateChanged: (date) {
-                    setState(() {
-                      _calendarSelectedDate = date;
-                    });
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showTimeSlotWidget() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Expanded(
-                    child: Text(
-                      '时间段设置',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 48), // Balance the close button
-                ],
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TimeSlotTabWidget(
-                  selectedDate: _calendarSelectedDate,
-                  startTime: _startTime,
-                  endTime: _endTime,
-                  isAllDay: _isAllDay,
-                  onDateChanged: (date) {
-                    setState(() {
-                      _calendarSelectedDate = date;
-                    });
-                  },
-                  onTimeChanged: (start, end) {
-                    setState(() {
-                      _startTime = start;
-                      _endTime = end;
-                    });
-                  },
-                  onAllDayChanged: (isAllDay) {
-                    setState(() {
-                      _isAllDay = isAllDay;
-                    });
-                  },
-                  onSwitchToDateTab: () {
-                    // This would switch to date tab in a full implementation
-                    Navigator.pop(context);
-                    _showCalendarWidget();
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -207,17 +80,6 @@ class _CalendarPageState extends State<CalendarPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          // Demo buttons for the new widget classes
-          IconButton(
-            icon: Icon(Icons.calendar_today, color: Colors.orange),
-            onPressed: _showCalendarWidget,
-            tooltip: 'Calendar Widget Demo',
-          ),
-          IconButton(
-            icon: Icon(Icons.access_time, color: Colors.blue),
-            onPressed: _showTimeSlotWidget,
-            tooltip: 'Time Slot Widget Demo',
-          ),
           IconButton(
             icon: Icon(
               _dateRange == 7 ? Icons.view_list : Icons.view_week,

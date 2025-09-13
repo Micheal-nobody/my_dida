@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/component/CustomTimePicker.dart';
+import 'package:my_dida/component/SelectionRow.dart';
 
-//TODO：添加选择具体时间的部分
+import 'CustomRepeatPicker.dart';
+
 class CalendarWidget extends StatefulWidget {
   final DateTime? selectedDate;
   final Function(DateTime) onDateChanged;
@@ -17,6 +20,8 @@ class CalendarWidget extends StatefulWidget {
 
 class _CalendarWidgetState extends State<CalendarWidget> {
   late DateTime _currentMonth;
+  TimeOfDay? _selectedTime;
+  String _selectedRepeat = '无';
 
   @override
   void initState() {
@@ -142,6 +147,52 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             }),
           );
         }),
+
+        const SizedBox(height: 24),
+
+        // Time selection section
+        SelectionRow(
+          icon: Icons.access_time,
+          label: '时间',
+          value: _selectedTime != null
+              ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
+              : '无',
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) => CustomTimePicker(
+                initialTime: _selectedTime ?? TimeOfDay.now(),
+                onTimeSelected: (time) {
+                  setState(() {
+                    _selectedTime = time;
+                  });
+                },
+              ),
+            );
+          },
+        ),
+
+        const SizedBox(height: 16),
+
+        // Repeat selection section
+        SelectionRow(
+          icon: Icons.repeat,
+          label: '重复',
+          value: _selectedRepeat,
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) => CustomRepeatPicker(
+                selectedRepeat: _selectedRepeat,
+                onRepeatSelected: (repeat) {
+                  setState(() {
+                    _selectedRepeat = repeat;
+                  });
+                },
+              ),
+            );
+          },
+        ),
       ],
     );
   }

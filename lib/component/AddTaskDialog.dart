@@ -69,17 +69,21 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         endTime: _endTime,
         isAllDay: _isAllDay,
         onDateChanged: (date) {
+          logger.i("onDateChanged date == $date");
           setState(() {
             _selectedDate = date;
           });
         },
         onTimeChanged: (start, end) {
+          // onTimeChanged start == TimeOfDay(09:00), end == TimeOfDay(10:00)
+          logger.i("onTimeChanged start == $start, end == $end");
           setState(() {
             _startTime = start;
             _endTime = end;
           });
         },
         onAllDayChanged: (isAllDay) {
+          logger.i("onAllDayChanged isAllDay == $isAllDay");
           setState(() {
             _isAllDay = isAllDay;
           });
@@ -125,6 +129,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             children: [
               // 选择日期按钮
               GestureDetector(
+                //TODO: 从CustomDatePicker中移除onDateChanged，直接在这里处理
                 onTap: () => _showCustomDatePicker(context),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
