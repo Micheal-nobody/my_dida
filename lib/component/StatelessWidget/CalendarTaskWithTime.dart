@@ -3,8 +3,13 @@ import '../../model/entity/Task.dart';
 
 class CalendarTaskWithTime extends StatelessWidget {
   final Task task;
+  final double columnWidth;
 
-  const CalendarTaskWithTime({super.key, required this.task});
+  const CalendarTaskWithTime({
+    super.key,
+    required this.task,
+    required this.columnWidth,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,41 +19,37 @@ class CalendarTaskWithTime extends StatelessWidget {
     int startMinute = task.startTime!.minute;
 
     // 计算任务开始位置（相对于顶部）
-    double topPosition =
-        (startHour * 60 + startMinute) * (60 / 60); // 60px per hour
+    // CalendarTimeColumn每个时间间隔是60px
+    double topPosition = (startHour * 60 + startMinute) * (60 / 60);
 
-    // 计算任务高度
-    double taskHeight;
-    if (task.endTime != null) {
-      int endHour = task.endTime!.hour;
-      int endMinute = task.endTime!.minute;
-      taskHeight =
-          ((endHour * 60 + endMinute) - (startHour * 60 + startMinute)) *
-          (60 / 60);
-    } else {
-      // 如果没有结束时间，使用默认高度（1/4小时）
-      taskHeight = 15; // 15px = 1/4 hour
-    }
+    // 注意：根据需求，任务高度固定为CalendarTimeColumn两个数字之间间隔的1/4（15px）
+    // 这里不再根据endTime计算高度，而是使用固定高度
+
+    // 任务宽度为列宽，高度为CalendarTimeColumn两个数字之间间隔的1/4
+    final taskWidth = columnWidth;
+    final taskHeightActual = 15.0; // 1/4 of 60px
 
     return Positioned(
       top: topPosition,
-      left: 8,
-      right: 8,
-      height: taskHeight,
+      left: 0,
+      width: taskWidth,
+      height: taskHeightActual,
       child: Container(
-        padding: EdgeInsets.all(8),
+        margin: EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         decoration: BoxDecoration(
           color: Colors.orange.withValues(alpha: 0.8),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Text(
           task.name,
           style: TextStyle(
             color: Colors.white,
-            fontSize: 12,
+            fontSize: 10,
             fontWeight: FontWeight.w500,
           ),
           overflow: TextOverflow.ellipsis,
+          maxLines: 1,
         ),
       ),
     );

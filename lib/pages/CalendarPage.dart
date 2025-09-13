@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/component/CustomFloatingActionButton.dart';
 import 'package:my_dida/component/StatelessWidget/CalendarDateHeader.dart';
 import 'package:my_dida/component/StatelessWidget/CalendarScrollableContent.dart';
-import 'package:my_dida/component/CustomDatePicker/CalendarWidget.dart';
-import 'package:my_dida/component/CustomDatePicker/TimeSlotTabWidget.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/repository/TaskRepository.dart';
+import 'package:my_dida/provider/TaskProvider.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-//TODO：我希望 CalendarPage 同时显示多个日期下的任务，某个日期的任务显示在 CalendarDateHeader 对应的日期下。CalendarDateHeader 有改变的功能（3 个日期/7 个日期），日期范围改变时现实的任务范围也要变化。
+
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
 
@@ -20,13 +19,6 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime _selectedDate = DateTime.now();
   int _dateRange = 7; // 7-day view by default
   Map<DateTime, List<Task>> _tasksForDates = {};
-  final TaskRepository _taskRepository = TaskRepository();
-
-  // For demonstrating the new widget classes
-  DateTime? _calendarSelectedDate;
-  TimeOfDay? _startTime;
-  TimeOfDay? _endTime;
-  bool _isAllDay = false;
 
   @override
   void initState() {
@@ -44,12 +36,28 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _loadTasksForVisibleDates() async {
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
     final Map<DateTime, List<Task>> tasksMap = {};
+
+    // 获取所有任务
+    await taskProvider.loadAllTasks();
+    final allTasks = taskProvider.tasks;
 
     for (final date in _visibleDates) {
       final normalizedDate = DateTime(date.year, date.month, date.day);
-      final tasks = await _taskRepository.getTasksForDate(normalizedDate);
-      tasksMap[normalizedDate] = tasks;
+
+      // 筛选出该日期的任务
+      final tasksForDate = allTasks.where((task) {
+        if (task.startTime == null) return false;
+        final taskDate = DateTime(
+          task.startTime!.year,
+          task.startTime!.month,
+          task.startTime!.day,
+        );
+        return taskDate.isAtSameMomentAs(normalizedDate);
+      }).toList();
+
+      tasksMap[normalizedDate] = tasksForDate;
     }
 
     setState(() {
@@ -115,6 +123,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
           // 主要内容区域
           Expanded(
+            //TODO：实现显示当前日期范围下的任务
             child: CalendarScrollableContent(
               selectedDate: _selectedDate,
               visibleDates: _visibleDates,

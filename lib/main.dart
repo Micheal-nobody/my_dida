@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/provider/BelongingBoxProvider.dart';
-import 'package:my_dida/provider/DateBoxProvider.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
-import 'package:my_dida/provider/UIStatusProvider.dart';
 import 'package:my_dida/router/goRouter.dart';
 import 'package:provider/provider.dart';
 
@@ -19,20 +17,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => UIStatusProvider()),
-
         ChangeNotifierProvider(create: (context) => BelongingBoxProvider()),
-        ChangeNotifierProvider(create: (context) => DateBoxProvider()),
-
-        // 直接传入 BelongingBoxProvider
-        // ChangeNotifierProvider(
-        //   create: (context) => TaskProvider(Provider.of<BelongingBoxProvider>(context, listen: false)),
-        // ),
-        // ChangeNotifierProvider(
-        //   create: (context) => TaskProvider(context.select<BelongingBoxProvider, List<BelongingBoxVO>>(
-        //           (provider) => provider.all_belongingBoxes
-        //   )),
-        // ),
 
         // 使用 ChangeNotifierProxyProvider
         ChangeNotifierProxyProvider<BelongingBoxProvider, TaskProvider>(

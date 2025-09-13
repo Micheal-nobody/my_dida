@@ -33,73 +33,78 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
       height: 80,
       padding: EdgeInsets.symmetric(vertical: 8),
       child: Row(
-        children: dates.map((date) {
-          bool isSelected = date.day == widget.selectedDate.day;
-          String weekday = _getWeekdayName(date.weekday);
+        children: [
+          // 预留左侧时间列的宽度
+          SizedBox(width: 60), // CalendarTimeColumn的宽度
+          // 日期列
+          ...dates.map((date) {
+            bool isSelected = date.day == widget.selectedDate.day;
+            String weekday = _getWeekdayName(date.weekday);
 
-          // Get tasks for this date (normalize date to remove time component)
-          final normalizedDate = DateTime(date.year, date.month, date.day);
-          final tasksForDate = widget.tasksForDates[normalizedDate] ?? [];
-          final hasTasks = tasksForDate.isNotEmpty;
+            // Get tasks for this date (normalize date to remove time component)
+            final normalizedDate = DateTime(date.year, date.month, date.day);
+            final tasksForDate = widget.tasksForDates[normalizedDate] ?? [];
+            final hasTasks = tasksForDate.isNotEmpty;
 
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                widget.onDateSelected(date);
-              },
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    weekday,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                  SizedBox(height: 4),
-                  Stack(
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Colors.orange
-                              : Colors.transparent,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${date.day}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: isSelected
-                                  ? Colors.white
-                                  : Colors.grey[800],
+            return Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  widget.onDateSelected(date);
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      weekday,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 4),
+                    Stack(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.orange
+                                : Colors.transparent,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${date.day}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.grey[800],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      // Task indicator dot
-                      if (hasTasks)
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
+                        // Task indicator dot
+                        if (hasTasks)
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ],
       ),
     );
   }

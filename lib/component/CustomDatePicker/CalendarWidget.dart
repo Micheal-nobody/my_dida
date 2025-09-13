@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/component/CustomTimePicker.dart';
+import 'package:my_dida/component/CustomDatePicker/CustomTimePicker.dart';
 import 'package:my_dida/component/SelectionRow.dart';
 
 import 'CustomRepeatPicker.dart';

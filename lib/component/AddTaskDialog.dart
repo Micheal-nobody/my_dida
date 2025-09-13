@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../model/entity/Task.dart';
 import '../provider/TaskProvider.dart';
-import 'CustomDatePicker.dart';
+import 'CustomDatePicker/CustomDatePicker.dart';
 
 class AddTaskDialog extends StatefulWidget {
   const AddTaskDialog({super.key});

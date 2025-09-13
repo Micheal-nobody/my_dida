@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'CustomDatePicker/CalendarWidget.dart';
-import 'CustomDatePicker/TimeSlotTabWidget.dart';
+import 'CalendarWidget.dart';
+import 'TimeSlotTabWidget.dart';
 
 class CustomDatePicker extends StatefulWidget {
   final DateTime? selectedDate;

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class CalendarTimeColumn extends StatelessWidget {
-  const CalendarTimeColumn({super.key});
+  final ScrollController scrollController;
+
+  const CalendarTimeColumn({super.key, required this.scrollController});
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +16,7 @@ class CalendarTimeColumn extends StatelessWidget {
     return SizedBox(
       width: 60,
       child: ListView.builder(
+        controller: scrollController,
         itemCount: timeLabels.length,
         itemBuilder: (context, index) {
           String time = timeLabels[index];

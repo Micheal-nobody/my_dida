@@ -38,18 +38,20 @@ Future<Isar> initializeIsar() async {
   ], directory: dir.path);
 
   /// 初始化数据
-  // await isar.writeTxn(() async {
+  await isar.writeTxn(() async {
   //   /// 清空所有数据
   //   await isar.clear();
   //
   //   /// 如果没有收集箱则创建一个
-  //   if (await isar.belongingBoxs.count() == 0) {
-  //
-  //     for(var i = 0; i < 10; i++){
-  //       Id id = await isar.belongingBoxs.put(BelongingBox(name: '收集箱 $i'));
-  //     }
-  //   }
-  //
+    if (await isar.belongingBoxs.count() == 0) {
+
+      Id id = await isar.belongingBoxs.put(BelongingBox(name: '收集箱'));
+
+      // for(var i = 0; i < 10; i++){
+      //   Id id = await isar.belongingBoxs.put(BelongingBox(name: '收集箱 $i'));
+      // }
+    }
+
   //   if (await isar.tasks.count() == 0) {
   //     /// 最近7天，每天7个任务
   //     var today = DateTime.now().dateOnly; // 获取今天 00:00:00
@@ -64,7 +66,7 @@ Future<Isar> initializeIsar() async {
   //       }
   //     }
   //   }
-  // });
+  });
 
   return isar;
 }

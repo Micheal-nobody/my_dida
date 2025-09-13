@@ -74,39 +74,6 @@ class TaskProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  //region 看起来没什么用的转换
-  Task convertToEntity(TaskVO vo) {
-    return Task(name: vo.name)
-      ..id = vo.id
-      ..description = vo.description
-      ..isDone = vo.isDone
-      ..checkpoints = vo.checkpoints
-      ..startTime = vo.startTime
-      ..endTime = vo.endTime
-      ..parentTaskId = vo.parentTask?.id
-      ..subTaskIds = [for (var subTask in vo.subTasks) subTask.id]
-      ..belongingBoxId = vo.belongingBox?.id;
-  }
-
-  //TODO: 完善 parentTask 和 subTasks
-  TaskVO convertToVO(Task entity) {
-    // ..parentTask = entity.parentTaskId != null ? convertToVO(await _repository.getTaskById(entity.parentTaskId)) : null
-    // ..subTasks = [ for (var subTaskId in entity.subTaskIds) convertToVO(await _repository.getTaskById(subTaskId)) ];
-
-    return TaskVO(id: entity.id, name: entity.name)
-      ..description = entity.description
-      ..isDone = entity.isDone
-      ..checkpoints = entity.checkpoints
-      ..startTime = entity.startTime
-      ..endTime = entity.endTime
-      ..parentTask = null
-      ..subTasks = []
-      ..belongingBox = null;
-  }
-
-  //endregion
-
-  //TODO: 如果添加的任务属于一个盒子，则需要刷新页面！但是 notifyListeners()也够用！
   Future<void> addTask(Task newTask) async {
     await _taskRepository.addTask(newTask);
     loadCurrentBoxTasks();

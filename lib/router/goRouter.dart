@@ -7,7 +7,9 @@ import 'package:my_dida/pages/TodoPage.dart';
 
 final GoRouter goRouter = GoRouter(
   // 初始路由
+  // initialLocation: '/todoList',
   initialLocation: '/calendarView',
+
 
   routes: [
     StatefulShellRoute.indexedStack(

@@ -52,23 +52,31 @@ class TaskCard extends StatelessWidget {
         subtitle: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              _getDateString(task.startTime),
-              style: TextStyle(color: Colors.orange, fontSize: 12),
+            Expanded(
+              child: Text(
+                _getDateString(task.startTime),
+                style: TextStyle(color: Colors.orange, fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Selector<BelongingBoxProvider, List<BelongingBoxVO>>(
+                selector: (context, provider) => provider.all_belongingBoxes,
+                builder: (context, allBoxes, child) {
+                  // 安全地查找BelongingBox，如果找不到则显示默认名称
+                  final belongingBox = allBoxes
+                      .where((element) => element.id == task.belongingBoxId)
+                      .firstOrNull;
 
-            Selector<BelongingBoxProvider, List<BelongingBoxVO>>(
-              selector: (context, provider) => provider.all_belongingBoxes,
-              builder: (context, allBoxes, child) {
-                return Text(
-                  allBoxes
-                      .firstWhere(
-                        (element) => element.id == task.belongingBoxId,
-                      )
-                      .name,
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                );
-              },
+                  return Text(
+                    belongingBox?.name ?? '未知收藏夹',
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                  );
+                },
+              ),
             ),
           ],
         ),
