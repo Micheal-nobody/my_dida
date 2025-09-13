@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../model/entity/Task.dart';
 import '../provider/TaskProvider.dart';
+import 'CustomDatePicker.dart';
 
 class AddTaskDialog extends StatefulWidget {
   const AddTaskDialog({super.key});
@@ -17,8 +18,10 @@ class AddTaskDialog extends StatefulWidget {
 
 class _AddTaskDialogState extends State<AddTaskDialog> {
   final TextEditingController _textController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
   DateTime? _selectedDate;
+  TimeOfDay? _startTime;
+  TimeOfDay? _endTime;
+  bool _isAllDay = false;
   bool _hasError = false;
   late BelongingBoxVO _selectedBelongingBox; // 其实是不可能为null的
 
@@ -26,11 +29,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   void initState() {
     super.initState();
     _selectedDate = DateTime.now();
-
-    //TODO: 自动聚焦到输入框，但是没有发挥作用！
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   FocusScope.of(context).requestFocus(_focusNode);
-    // });
   }
 
   @override
@@ -51,11 +49,51 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
 
     Task newTask = Task(name: taskName);
     newTask.startTime = _selectedDate;
-    newTask.belongingBoxId = _selectedBelongingBox!.id;
+    newTask.belongingBoxId = _selectedBelongingBox.id;
+
+    logger.i("newTask == $newTask");
 
     await Provider.of<TaskProvider>(context, listen: false).addTask(newTask);
 
     Navigator.pop(context);
+  }
+
+  void _showCustomDatePicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CustomDatePicker(
+        selectedDate: _selectedDate,
+        startTime: _startTime,
+        endTime: _endTime,
+        isAllDay: _isAllDay,
+        onDateChanged: (date) {
+          setState(() {
+            _selectedDate = date;
+          });
+        },
+        onTimeChanged: (start, end) {
+          setState(() {
+            _startTime = start;
+            _endTime = end;
+          });
+        },
+        onAllDayChanged: (isAllDay) {
+          setState(() {
+            _isAllDay = isAllDay;
+          });
+        },
+        onClear: () {
+          setState(() {
+            _selectedDate = DateTime.now();
+            _startTime = null;
+            _endTime = null;
+            _isAllDay = false;
+          });
+        },
+      ),
+    );
   }
 
   @override
@@ -65,7 +103,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          //TODO: 添加自动聚焦！
           TextField(
             controller: _textController,
             decoration: InputDecoration(
@@ -87,32 +124,54 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               // 选择日期按钮
-              IconButton(
-                icon: const Icon(Icons.calendar_today),
-                onPressed: () async {
-                  final DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      _selectedDate = picked;
-                    });
-                  }
-                },
+              GestureDetector(
+                onTap: () => _showCustomDatePicker(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.calendar_today, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        _selectedDate != null
+                            ? '${_selectedDate!.month}月${_selectedDate!.day}日'
+                            : '选择日期',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: _selectedDate != null
+                              ? Colors.orange
+                              : Colors.grey,
+                          fontWeight: _selectedDate != null
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                  ),
+                ),
               ),
-              //TODO: 根据 provider.all_belongingBoxes 添加 BelongingBox 选择器！
+
+              // BelongingBox 下拉框
               Consumer<BelongingBoxProvider>(
                 builder: (context, provider, child) {
-                  // 更新为当前归属盒子
-                  _selectedBelongingBox = provider.cur_belongingBox;
-
-                  print("组件构建");
+                  // 更新为当前归属盒子，如果当前归属盒子为default_belongingBox则返回all_belongBox
+                  _selectedBelongingBox =
+                      provider.cur_belongingBox ==
+                          BelongingBoxProvider.today_belongingBox
+                      ? BelongingBoxProvider.default_belongingBox
+                      : provider.cur_belongingBox;
 
                   return DropdownButton<BelongingBoxVO>(
-                    hint: Text(_selectedBelongingBox!.name),
+                    hint: Text(_selectedBelongingBox.name),
                     items: provider.all_belongingBoxes
                         .map<DropdownMenuItem<BelongingBoxVO>>((
                           BelongingBoxVO value,

@@ -1,7 +1,3 @@
-
-// @Collection
-import 'dart:ui';
-
 import 'package:isar/isar.dart';
 import 'package:my_dida/model/entity/CheckPoint.dart';
 part 'Task.g.dart';
@@ -28,7 +24,6 @@ class Task {
   /// 所属收集箱
   int? belongingBoxId;
 
-
   /// Constructor for TodoItem
   Task({
     required this.name,
@@ -54,20 +49,4 @@ class Task {
   String toString() {
     return 'TodoItem{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, belongingBoxId: $belongingBoxId}';
   }
-
-  //
-  // void addCheckPoint(String name) {
-  //   checkpoints.add(CheckPoint(name: name));
-  // }
-  // void removeCheckPoint(int index) {
-  //   checkpoints.removeAt(index);
-  // }
-  //
-  // void addChild(TaskId childId) {
-  //   child.parentTaskId = this; // Set the parent of the child
-  //   subTasks.add(child);
-  // }
-  // void removeChild(int index) {
-  //   subTasks.removeAt(index);
-  // }
 }

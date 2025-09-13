@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/provider/BelongingBoxProvider.dart';
 import 'package:my_dida/provider/DateBoxProvider.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
-import 'package:my_dida/provider/TodosProvider.dart';
 import 'package:my_dida/provider/UIStatusProvider.dart';
 import 'package:my_dida/router/goRouter.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +19,6 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => TodosProvider()),
         ChangeNotifierProvider(create: (context) => UIStatusProvider()),
 
         ChangeNotifierProvider(create: (context) => BelongingBoxProvider()),

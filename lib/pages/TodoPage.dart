@@ -78,7 +78,7 @@ class _TodoPageState extends State<TodoPage> {
                     title: Text("今天"),
                     onTap: () {
                       _belongingBoxProvider.updateCurBelongingBox(
-                        BelongingBoxProvider.default_belongingBox,
+                        BelongingBoxProvider.today_belongingBox,
                       );
                     },
                   ),

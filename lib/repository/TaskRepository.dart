@@ -3,7 +3,6 @@ import 'package:my_dida/model/entity/Task.dart';
 import 'package:my_dida/repository/BaseRepository.dart';
 
 import '../config/locator.dart';
-import '../config/logger.dart';
 
 class TaskRepository extends BaseRepository<Task> {
   final Isar _isar;
@@ -27,15 +26,24 @@ class TaskRepository extends BaseRepository<Task> {
 
   Future<List<Task>> getTodayTasks() async {
     final now = DateTime.now(); // 包含年月日 时 分 秒
-    final startOfDay = DateTime(now.year, now.month, now.day);  // 获取今天00:00:00
-    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59, 999); // 获取今天23:59:59.999
+    final startOfDay = DateTime(now.year, now.month, now.day); // 获取今天00:00:00
+    final endOfDay = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      23,
+      59,
+      59,
+      999,
+    ); // 获取今天23:59:59.999
 
-    return await _isar.tasks.where()
-      .filter()
-      .startTimeBetween(startOfDay, endOfDay) // Between 是闭区间！
-      .or()
-      .endTimeBetween(startOfDay, endOfDay)
-      .findAll();
+    return await _isar.tasks
+        .where()
+        .filter()
+        .startTimeBetween(startOfDay, endOfDay) // Between 是闭区间！
+        .or()
+        .endTimeBetween(startOfDay, endOfDay)
+        .findAll();
   }
 
   Future<void> addTask(Task newTask) async {
@@ -45,10 +53,11 @@ class TaskRepository extends BaseRepository<Task> {
   }
 
   Future<List<Task>> getTasksByBelongingBoxId(int id) async {
-    return await _isar.tasks.where()
-      .filter()
-      .belongingBoxIdEqualTo(id)
-      .findAll();
+    return await _isar.tasks
+        .where()
+        .filter()
+        .belongingBoxIdEqualTo(id)
+        .findAll();
   }
 
   Future<void> updateTaskIsDone(Task task, bool value) async {
@@ -58,12 +67,16 @@ class TaskRepository extends BaseRepository<Task> {
     });
   }
 
-  // Future<List<Task>> getTodosForDate(DateTime date) {
-  //   return _isar.tasks.where()
-  //       .filter()
-  //       .startTimeBetween(date.midnight, date.endOfDay)
-  //       .or()
-  //       .endTimeBetween(date.midnight, date.endOfDay)
-  //       .findAll();
-  // }
+  Future<List<Task>> getTasksForDate(DateTime date) async {
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
+
+    return await _isar.tasks
+        .where()
+        .filter()
+        .startTimeBetween(startOfDay, endOfDay)
+        .or()
+        .endTimeBetween(startOfDay, endOfDay)
+        .findAll();
+  }
 }

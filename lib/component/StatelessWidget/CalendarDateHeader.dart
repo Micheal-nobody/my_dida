@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/model/entity/Task.dart';
 
 class CalendarDateHeader extends StatefulWidget {
   final DateTime selectedDate;
   final Function(DateTime) onDateSelected;
   final int dateRange; // 3 for 3-day view, 7 for 7-day view
+  final Map<DateTime, List<Task>> tasksForDates;
 
   const CalendarDateHeader({
     super.key,
     required this.selectedDate,
     required this.onDateSelected,
     this.dateRange = 7,
+    this.tasksForDates = const {},
   });
 
   @override
@@ -34,6 +37,11 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
           bool isSelected = date.day == widget.selectedDate.day;
           String weekday = _getWeekdayName(date.weekday);
 
+          // Get tasks for this date (normalize date to remove time component)
+          final normalizedDate = DateTime(date.year, date.month, date.day);
+          final tasksForDate = widget.tasksForDates[normalizedDate] ?? [];
+          final hasTasks = tasksForDate.isNotEmpty;
+
           return Expanded(
             child: GestureDetector(
               onTap: () {
@@ -47,23 +55,45 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                   SizedBox(height: 4),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.orange : Colors.transparent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '${date.day}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white : Colors.grey[800],
+                  Stack(
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Colors.orange
+                              : Colors.transparent,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${date.day}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.grey[800],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      // Task indicator dot
+                      if (hasTasks)
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),

@@ -14,7 +14,9 @@ class BelongingBoxProvider extends ChangeNotifier {
   BelongingBoxVO get cur_belongingBox => _currentBelongingBox;
 
   // 一个默认的收藏夹
-  static BelongingBoxVO default_belongingBox = BelongingBoxVO(id: -1, name: "今天");
+  static BelongingBoxVO today_belongingBox = BelongingBoxVO(id: -1, name: "今天");
+  //TODO: 这个default_belongingBox无论如何都要改！
+  static BelongingBoxVO default_belongingBox = BelongingBoxVO(id: 1, name: "收集箱1");
 
 
   /// 注入 Repository，设置默认收藏夹为 “今天”
@@ -22,7 +24,7 @@ class BelongingBoxProvider extends ChangeNotifier {
   final BelongingBoxRepository _belongingBoxRepository;
   BelongingBoxProvider()
     : _belongingBoxRepository = locator<BelongingBoxRepository>(),
-      _currentBelongingBox = default_belongingBox{
+      _currentBelongingBox = today_belongingBox{
     loadAllBelongingBoxes();
   }
 
