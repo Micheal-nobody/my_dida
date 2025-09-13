@@ -47,3 +47,4 @@ app.*.map.json
 /lib/model/entity/CheckPoint.g.dart
 /lib/model/entity/Task.g.dart
 /lib/provider/tempfile_1757390079462.dart
+/logger
