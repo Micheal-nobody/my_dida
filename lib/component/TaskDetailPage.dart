@@ -20,8 +20,52 @@ class TaskDetailPage extends StatefulWidget {
   State<StatefulWidget> createState() {
     return _TaskDetailPageState();
   }
-}
 
+  static void show(BuildContext context, Task task){
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          // 仅两种可见状态：默认 0.6 和 全屏 1.0
+          initialChildSize: 0.6,
+          minChildSize: 0.6,
+          maxChildSize: 1.0,
+          snap: true, // snap 开启后，snapSizes 设置可切换状态
+          snapSizes: const [0.6, 1.0],
+          builder: (context, scrollController) {
+            final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).canvasColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+              ),
+              child: AnimatedPadding(
+                duration: const Duration(milliseconds: 160),
+                curve: Curves.easeOut,
+                padding: EdgeInsets.only(bottom: bottomInset),
+                child: MediaQuery.removeViewInsets(
+                  removeBottom: true,
+                  context: context,
+                  child: TaskDetailPage(
+                    task.id,
+                    scrollController: scrollController,
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+}
 class _TaskDetailPageState extends State<TaskDetailPage> {
   late TaskProvider _taskProvider;
   Task? _task;
@@ -45,8 +89,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     super.dispose();
   }
 
-  // 其余返回 Widget 的函数已拆分为独立组件
-
   void _navigateToSubTask(int subTaskId) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -55,6 +97,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -7,6 +7,10 @@ import 'package:my_dida/provider/TaskProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
+//TODO：上半部分有bug，只显示一个任务（所有任务重叠到一起了）
+//TODO：上半部分动态统一边界，以当前显示的日期中 没有具体时间的任务最多的一个日期 为宽度上限
+//TODO：主要内容区域分两部分：上半部分显示没有具体时间的任务（最多显示5个，宽度默认，多余的不显示），下半部分显示有具体时间的任务
+//TODO：实现拖动排序！！！！（听起来就很难！）
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
 
@@ -17,7 +21,7 @@ class CalendarPage extends StatefulWidget {
 class _CalendarPageState extends State<CalendarPage> {
   final DateTime _currentDate = DateTime.now();
   DateTime _selectedDate = DateTime.now();
-  int _dateRange = 7; // 7-day view by default
+  int _dateRange = 3; // 3-day view by default
   Map<DateTime, List<Task>> _tasksForDates = {};
 
   @override
@@ -46,9 +50,14 @@ class _CalendarPageState extends State<CalendarPage> {
     for (final date in _visibleDates) {
       final normalizedDate = DateTime(date.year, date.month, date.day);
 
-      // 筛选出该日期的任务
+      // 筛选出该日期的任务（包括有时间和无时间的任务）
       final tasksForDate = allTasks.where((task) {
-        if (task.startTime == null) return false;
+        if (task.startTime == null) {
+          // 没有具体时间的任务，检查是否属于当前日期
+          // 这里需要根据你的业务逻辑来判断，暂时返回false
+          // TODO: 需要根据任务的创建日期或其他字段来判断是否属于当前日期
+          return false;
+        }
         final taskDate = DateTime(
           task.startTime!.year,
           task.startTime!.month,
@@ -123,7 +132,6 @@ class _CalendarPageState extends State<CalendarPage> {
 
           // 主要内容区域
           Expanded(
-            //TODO：实现显示当前日期范围下的任务
             child: CalendarScrollableContent(
               selectedDate: _selectedDate,
               visibleDates: _visibleDates,

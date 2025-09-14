@@ -11,7 +11,7 @@ class CalendarDateHeader extends StatefulWidget {
     super.key,
     required this.selectedDate,
     required this.onDateSelected,
-    this.dateRange = 7,
+    this.dateRange = 3,
     this.tasksForDates = const {},
   });
 

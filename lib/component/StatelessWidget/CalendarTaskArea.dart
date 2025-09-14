@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../model/entity/Task.dart';
-import 'CalendarTaskWithoutTime.dart';
 import 'CalendarTaskWithTime.dart';
 
 class CalendarTaskArea extends StatelessWidget {
@@ -61,20 +60,15 @@ class CalendarTaskArea extends StatelessWidget {
                   // 获取当前小时的任务
                   List<Task> currentHourTasks = [];
 
-                  if (hourIndex == 0) {
-                    // 在第一个小时行显示没有具体时间的任务
-                    currentHourTasks = dayTasks.where((task) {
-                      return task.startTime == null ||
-                          (task.startTime!.hour == 0 &&
-                              task.startTime!.minute == 0);
-                    }).toList();
-                  } else {
-                    // 其他小时显示有具体时间的任务
-                    currentHourTasks = dayTasks.where((task) {
-                      if (task.startTime == null) return false;
-                      return task.startTime!.hour == hourIndex;
-                    }).toList();
-                  }
+                  // 只显示有具体时间的任务（排除时间为00:00的任务，这些任务在CalendarNoTimeTaskArea中显示）
+                  currentHourTasks = dayTasks.where((task) {
+                    if (task.startTime == null) return false;
+                    // 排除时间为00:00的任务，这些任务在CalendarNoTimeTaskArea中显示
+                    if (task.startTime!.hour == 0 &&
+                        task.startTime!.minute == 0)
+                      return false;
+                    return task.startTime!.hour == hourIndex;
+                  }).toList();
 
                   return Positioned(
                     left: index * dateColumnWidth,
@@ -83,35 +77,19 @@ class CalendarTaskArea extends StatelessWidget {
                       height: 60,
                       child: Stack(
                         children: [
-                          // 当前小时的任务
-                          if (hourIndex == 0)
-                            // 没有具体时间的任务（显示在顶部，最多6个）
-                            ...currentHourTasks
-                                .take(6)
-                                .toList()
-                                .asMap()
-                                .entries
-                                .map(
-                                  (entry) => CalendarTaskWithoutTime(
-                                    task: entry.value,
-                                    columnWidth: dateColumnWidth,
-                                    taskIndex: entry.key,
-                                  ),
-                                )
-                          else
-                            // 有具体时间的任务
-                            ...currentHourTasks.map(
-                              (task) => CalendarTaskWithTime(
-                                task: task,
-                                columnWidth: dateColumnWidth,
-                                hourIndex: hourIndex,
-                              ),
+                          // 有具体时间的任务
+                          ...currentHourTasks.map(
+                            (task) => CalendarTaskWithTime(
+                              task: task,
+                              columnWidth: dateColumnWidth,
+                              hourIndex: hourIndex,
                             ),
+                          ),
                         ],
                       ),
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           );
