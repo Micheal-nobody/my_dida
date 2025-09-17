@@ -107,6 +107,13 @@ class _CustomDatePickerState extends State<CustomDatePicker>
                       });
                       widget.onDateChanged(date);
                     },
+                    onTimeChanged: (start, end) {
+                      setState(() {
+                        _startTime = start;
+                        _endTime = end;
+                      });
+                      widget.onTimeChanged(start, end);
+                    },
                   ),
                 ),
                 // Time slot tab

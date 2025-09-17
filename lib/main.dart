@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/provider/BelongingBoxProvider.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
+import 'package:my_dida/provider/HabitProvider.dart';
 import 'package:my_dida/router/goRouter.dart';
 import 'package:provider/provider.dart';
 
@@ -13,29 +14,37 @@ void main() async {
   // 初始化 Isar 数据库
   await setupLocator();
 
-
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => BelongingBoxProvider()),
+        ChangeNotifierProvider(create: (context) => HabitProvider()),
 
         // 使用 ChangeNotifierProxyProvider
         ChangeNotifierProxyProvider<BelongingBoxProvider, TaskProvider>(
           // 首次创建时调用，就传入 belongingBoxProvider.cur_belongingBox
           create: (context) => TaskProvider(
-            Provider.of<BelongingBoxProvider>(context, listen: false).cur_belongingBox,
+            Provider.of<BelongingBoxProvider>(
+              context,
+              listen: false,
+            ).cur_belongingBox,
           ),
           // update 的返回值应该是 TaskProvider
           update: (context, belongingBoxProvider, previousTaskProvider) {
             /// 只有 belongingBoxProvider.cur_belongingBox 发生变化时才进行更新
             if (previousTaskProvider != null &&
-                belongingBoxProvider.cur_belongingBox != previousTaskProvider.cur_belongingBox) {
+                belongingBoxProvider.cur_belongingBox !=
+                    previousTaskProvider.cur_belongingBox) {
               // 更新 TaskProvider 中的依赖，级联操作符会返回 updateCurTasks 之后的自身！
-              return previousTaskProvider..updateCurTasks(belongingBoxProvider.cur_belongingBox);
+              return previousTaskProvider
+                ..updateCurTasks(belongingBoxProvider.cur_belongingBox);
             }
 
             return TaskProvider(
-              Provider.of<BelongingBoxProvider>(context, listen: false).cur_belongingBox,
+              Provider.of<BelongingBoxProvider>(
+                context,
+                listen: false,
+              ).cur_belongingBox,
             );
           },
         ),

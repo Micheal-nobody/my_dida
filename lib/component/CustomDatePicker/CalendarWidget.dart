@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/component/CustomDatePicker/CustomTimePicker.dart';
 import 'package:my_dida/component/SelectionRow.dart';
 
+import '../../config/logger.dart';
 import 'CustomRepeatPicker.dart';
 
 class CalendarWidget extends StatefulWidget {
   final DateTime? selectedDate;
   final Function(DateTime) onDateChanged;
+  final Function(TimeOfDay?, TimeOfDay?)? onTimeChanged;
 
   const CalendarWidget({
     super.key,
     required this.selectedDate,
     required this.onDateChanged,
+    this.onTimeChanged,
   });
 
   @override
@@ -163,9 +166,14 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               builder: (context) => CustomTimePicker(
                 initialTime: _selectedTime ?? TimeOfDay.now(),
                 onTimeSelected: (time) {
+                  logger.i('time: $time');
                   setState(() {
                     _selectedTime = time;
                   });
+                  // 调用时间变更回调
+                  if (widget.onTimeChanged != null) {
+                    widget.onTimeChanged!(time, null);
+                  }
                 },
               ),
             );

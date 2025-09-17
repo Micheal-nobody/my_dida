@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'CalendarTimeColumn.dart';
-import 'CalendarTaskArea.dart';
+import 'CalendarTImeTaskArea.dart';
 import 'CalendarNoTimeTaskArea.dart';
 import '../../model/entity/Task.dart';
 
@@ -44,6 +44,7 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
         CalendarNoTimeTaskArea(
           visibleDates: widget.visibleDates,
           tasksForDates: widget.tasksForDates,
+          selectedDate: widget.selectedDate,
         ),
 
         // 下半部分：可滚动的时间轴和任务区域
@@ -63,7 +64,7 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
 
                       // 5. 任务显示区域
                       Expanded(
-                        child: CalendarTaskArea(
+                        child: CalendarTImeTaskArea(
                           selectedDate: widget.selectedDate,
                           visibleDates: widget.visibleDates,
                           tasksForDates: widget.tasksForDates,

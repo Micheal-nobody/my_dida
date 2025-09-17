@@ -7,10 +7,6 @@ import 'package:my_dida/provider/TaskProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-//TODO：上半部分有bug，只显示一个任务（所有任务重叠到一起了）
-//TODO：上半部分动态统一边界，以当前显示的日期中 没有具体时间的任务最多的一个日期 为宽度上限
-//TODO：主要内容区域分两部分：上半部分显示没有具体时间的任务（最多显示5个，宽度默认，多余的不显示），下半部分显示有具体时间的任务
-//TODO：实现拖动排序！！！！（听起来就很难！）
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
 
@@ -54,9 +50,16 @@ class _CalendarPageState extends State<CalendarPage> {
       final tasksForDate = allTasks.where((task) {
         if (task.startTime == null) {
           // 没有具体时间的任务，检查是否属于当前日期
-          // 这里需要根据你的业务逻辑来判断，暂时返回false
+          // 这里暂时将所有无时间任务都显示在今天的列中
           // TODO: 需要根据任务的创建日期或其他字段来判断是否属于当前日期
-          return false;
+          return normalizedDate.isAtSameMomentAs(
+            DateTime.now().toLocal().copyWith(
+              hour: 0,
+              minute: 0,
+              second: 0,
+              millisecond: 0,
+            ),
+          );
         }
         final taskDate = DateTime(
           task.startTime!.year,
@@ -76,73 +79,82 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // 1. AppBar 区域：左侧是当前月份
-      appBar: AppBar(
-        title: GestureDetector(
-          onTap: () {
-            setState(() {
-              _selectedDate = DateTime.now();
-            });
-          },
-          child: Text(
-            DateFormat('M月').format(_currentDate),
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
-            ),
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-              _dateRange == 7 ? Icons.view_list : Icons.view_week,
-              color: Colors.grey[600],
-            ),
-            onPressed: () {
-              setState(() {
-                _dateRange = _dateRange == 7 ? 3 : 7;
-              });
-              _loadTasksForVisibleDates();
-            },
-          ),
-          SizedBox(width: 8),
-          Icon(Icons.more_vert, color: Colors.grey[600]),
-          SizedBox(width: 16),
-        ],
-      ),
+    return Consumer<TaskProvider>(
+      builder: (context, taskProvider, child) {
+        // 当任务更新时，重新加载任务数据
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _loadTasksForVisibleDates();
+        });
 
-      body: Column(
-        children: [
-          // 2. Header：显示日期和对应的星期
-          CalendarDateHeader(
-            selectedDate: _selectedDate,
-            dateRange: _dateRange,
-            tasksForDates: _tasksForDates,
-            onDateSelected: (date) {
-              setState(() {
-                _selectedDate = date;
-              });
-              _loadTasksForVisibleDates();
-            },
+        return Scaffold(
+          // 1. AppBar 区域：左侧是当前月份
+          appBar: AppBar(
+            title: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedDate = DateTime.now();
+                });
+              },
+              child: Text(
+                DateFormat('M月').format(_currentDate),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            actions: [
+              IconButton(
+                icon: Icon(
+                  _dateRange == 7 ? Icons.view_list : Icons.view_week,
+                  color: Colors.grey[600],
+                ),
+                onPressed: () {
+                  setState(() {
+                    _dateRange = _dateRange == 7 ? 3 : 7;
+                  });
+                  _loadTasksForVisibleDates();
+                },
+              ),
+              SizedBox(width: 8),
+              Icon(Icons.more_vert, color: Colors.grey[600]),
+              SizedBox(width: 16),
+            ],
           ),
 
-          // 主要内容区域
-          Expanded(
-            child: CalendarScrollableContent(
-              selectedDate: _selectedDate,
-              visibleDates: _visibleDates,
-              tasksForDates: _tasksForDates,
-            ),
-          ),
-        ],
-      ),
+          body: Column(
+            children: [
+              // 2. Header：显示日期和对应的星期
+              CalendarDateHeader(
+                selectedDate: _selectedDate,
+                dateRange: _dateRange,
+                tasksForDates: _tasksForDates,
+                onDateSelected: (date) {
+                  setState(() {
+                    _selectedDate = date;
+                  });
+                  _loadTasksForVisibleDates();
+                },
+              ),
 
-      // 3. FloatingActionButton：用于添加任务
-      floatingActionButton: CustomFloatingActionButton(),
+              // 主要内容区域
+              Expanded(
+                child: CalendarScrollableContent(
+                  selectedDate: _selectedDate,
+                  visibleDates: _visibleDates,
+                  tasksForDates: _tasksForDates,
+                ),
+              ),
+            ],
+          ),
+
+          // 3. FloatingActionButton：用于添加任务
+          floatingActionButton: CustomFloatingActionButton(),
+        );
+      },
     );
   }
 }

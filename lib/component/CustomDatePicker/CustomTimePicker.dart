@@ -6,6 +6,7 @@ class CustomTimePicker extends StatefulWidget {
   final Function(TimeOfDay) onTimeSelected;
 
   const CustomTimePicker({
+    super.key,
     required this.initialTime,
     required this.onTimeSelected,
   });
@@ -53,7 +54,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
             ),
             const SizedBox(height: 20),
 
-            // Time picker
+            // Time picker with 3D Wheel
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -61,33 +62,24 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                 SizedBox(
                   width: 80,
                   height: 120,
-                  child: ListWheelScrollView.useDelegate(
-                    controller: _hourController,
+                  child: CupertinoPicker(
+                    scrollController: _hourController,
                     itemExtent: 40,
                     onSelectedItemChanged: (index) {
                       _selectedHour = index;
                     },
-                    childDelegate: ListWheelChildBuilderDelegate(
-                      builder: (context, index) {
-                        final hour = index.toString().padLeft(2, '0');
-                        final isSelected = index == _selectedHour;
-                        return Center(
-                          child: Text(
-                            hour,
-                            style: TextStyle(
-                              fontSize: isSelected ? 24 : 18,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: isSelected
-                                  ? Colors.black
-                                  : Colors.grey[600],
-                            ),
+                    children: List.generate(24, (index) {
+                      final hour = index.toString().padLeft(2, '0');
+                      return Center(
+                        child: Text(
+                          hour,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
                           ),
-                        );
-                      },
-                      childCount: 24,
-                    ),
+                        ),
+                      );
+                    }),
                   ),
                 ),
 
@@ -100,33 +92,24 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                 SizedBox(
                   width: 80,
                   height: 120,
-                  child: ListWheelScrollView.useDelegate(
-                    controller: _minuteController,
+                  child: CupertinoPicker(
+                    scrollController: _minuteController,
                     itemExtent: 40,
                     onSelectedItemChanged: (index) {
                       _selectedMinute = index;
                     },
-                    childDelegate: ListWheelChildBuilderDelegate(
-                      builder: (context, index) {
-                        final minute = index.toString().padLeft(2, '0');
-                        final isSelected = index == _selectedMinute;
-                        return Center(
-                          child: Text(
-                            minute,
-                            style: TextStyle(
-                              fontSize: isSelected ? 24 : 18,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: isSelected
-                                  ? Colors.black
-                                  : Colors.grey[600],
-                            ),
+                    children: List.generate(60, (index) {
+                      final minute = index.toString().padLeft(2, '0');
+                      return Center(
+                        child: Text(
+                          minute,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
                           ),
-                        );
-                      },
-                      childCount: 60,
-                    ),
+                        ),
+                      );
+                    }),
                   ),
                 ),
               ],

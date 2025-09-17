@@ -48,3 +48,5 @@ app.*.map.json
 /lib/model/entity/Task.g.dart
 /lib/provider/tempfile_1757390079462.dart
 /temp
+/lib/model/entity/Habit.g.dart
+/log

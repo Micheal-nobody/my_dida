@@ -64,7 +64,6 @@ class TaskDetailPage extends StatefulWidget {
       },
     );
   }
-
 }
 class _TaskDetailPageState extends State<TaskDetailPage> {
   late TaskProvider _taskProvider;

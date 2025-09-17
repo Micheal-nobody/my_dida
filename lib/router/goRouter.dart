@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/pages/CalendarPage.dart';
-import 'package:my_dida/pages/PomodoroPage.dart';
+import 'package:my_dida/pages/HabitsPage.dart';
 import 'package:my_dida/pages/TodoPage.dart';
 
 
@@ -29,7 +29,7 @@ final GoRouter goRouter = GoRouter(
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.masks), label: '待办清单'),
             BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: '日历视图'),
-            BottomNavigationBarItem(icon: Icon(Icons.lock_clock), label: '番茄钟'),
+            BottomNavigationBarItem(icon: Icon(Icons.lock_clock), label: '习惯'),
           ],
         ),
       ),
@@ -66,7 +66,7 @@ final GoRouter goRouter = GoRouter(
             GoRoute(
               path: '/pomodoro',
               pageBuilder: (context, state) =>
-                  const NoTransitionPage(child: PomodoroPage()),
+                  const NoTransitionPage(child: HabitsPage()),
             ),
           ],
         ),

@@ -84,7 +84,7 @@ class TaskCard extends StatelessWidget {
 
 
         onTap: () {
-          logger.i("cur_task == $task");
+          logger.d('点击了任务：$task');
           TaskDetailPage.show(context, task);
         },
       ),

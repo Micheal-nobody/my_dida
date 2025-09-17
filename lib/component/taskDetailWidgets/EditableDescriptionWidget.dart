@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/config/logger.dart';
 import 'package:my_dida/model/entity/Task.dart';
 
-//TODO: 修复bug，description无法正确更新内容
 class EditableDescriptionWidget extends StatefulWidget {
   final Task task;
   final Future<void> Function(String value) onSubmit;

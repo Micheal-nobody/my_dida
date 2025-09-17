@@ -23,12 +23,15 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   TimeOfDay? _endTime;
   bool _isAllDay = false;
   bool _hasError = false;
-  late BelongingBoxVO _selectedBelongingBox; // 其实是不可能为null的
+  late BelongingBoxVO _selectedBelongingBox;
 
   @override
   void initState() {
     super.initState();
-    _selectedDate = DateTime.now();
+    // 获取中国北京时区的时间 (UTC+8)
+    _selectedDate = DateTime.now().toUtc().add(const Duration(hours: 8));
+
+    logger.i("AddTaskDialog initState,_selectedDate == $_selectedDate");
   }
 
   @override
@@ -129,7 +132,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             children: [
               // 选择日期按钮
               GestureDetector(
-                //TODO: 从CustomDatePicker中移除onDateChanged，直接在这里处理
                 onTap: () => _showCustomDatePicker(context),
                 child: Container(
                   padding: const EdgeInsets.symmetric(

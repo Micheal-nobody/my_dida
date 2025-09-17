@@ -5,7 +5,6 @@ import 'package:my_dida/repository/TaskRepository.dart';
 
 import '../config/locator.dart';
 import '../model/entity/Task.dart';
-import '../model/vo/TaskVO.dart';
 import '../model/entity/CheckPoint.dart';
 
 /// 给TodoPage用的Provider！
@@ -161,6 +160,11 @@ class TaskProvider with ChangeNotifier {
 
   Future<void> updateStartTime(Task task, DateTime? newStartTime) async {
     await _taskRepository.update(task..startTime = newStartTime);
+    await loadCurrentBoxTasks();
+  }
+
+  Future<void> deleteTask(Task task) async {
+    await _taskRepository.deleteById(task.id);
     await loadCurrentBoxTasks();
   }
 
