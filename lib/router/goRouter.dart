@@ -8,7 +8,6 @@ import 'package:my_dida/pages/TodoPage.dart';
 final GoRouter goRouter = GoRouter(
   // 初始路由
   initialLocation: '/todoList',
-
   // initialLocation: '/calendarView',
   routes: [
     StatefulShellRoute.indexedStack(
@@ -21,6 +20,7 @@ final GoRouter goRouter = GoRouter(
         body: navigationShell,
 
         bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
           currentIndex: navigationShell.currentIndex,
 
           /// index 参数表示当前选中的底部导航项索引，当前项目中

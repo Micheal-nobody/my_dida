@@ -36,8 +36,7 @@ void main() async {
                 belongingBoxProvider.cur_belongingBox !=
                     previousTaskProvider.cur_belongingBox) {
               // 更新 TaskProvider 中的依赖，级联操作符会返回 updateCurTasks 之后的自身！
-              return previousTaskProvider
-                ..updateCurTasks(belongingBoxProvider.cur_belongingBox);
+              return previousTaskProvider..updateCurTasks(belongingBoxProvider.cur_belongingBox);
             }
 
             return TaskProvider(
@@ -68,7 +67,6 @@ class MyApp extends StatelessWidget {
       /// builder 作用是 在 MaterialApp.router 构建任意子组件时，插入额外的 widget
       /// 只不过这里没有插入而是直接返回了child，原因：Material.router会创建新的context，导致子widget无法通过context获取Provider，所以通过builder传入 MultiProvider 的context，
       builder: (context, child) => child!,
-      // !是空安全断言，child 不是 null
 
       // 主题
       theme: ThemeData(
