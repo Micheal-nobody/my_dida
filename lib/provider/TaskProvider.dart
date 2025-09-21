@@ -406,5 +406,39 @@ class TaskProvider with ChangeNotifier {
     await loadCurrentBoxTasks();
   }
 
+  // 复制任务
+  Future<void> copyTask(Task originalTask) async {
+    // 创建新任务，继承除了id以外的一切属性
+    final copiedTask = Task(
+      name: '${originalTask.name} (副本)',
+      description: originalTask.description,
+      isDone: false, // 复制的任务默认为未完成状态
+      checkpoints: originalTask.checkpoints
+          .map(
+            (checkpoint) => CheckPoint(
+              name: checkpoint.name,
+              isDone: false, // 复制的检查点默认为未完成状态
+            ),
+          )
+          .toList(),
+      startTime: originalTask.startTime,
+      endTime: originalTask.endTime,
+      parentTaskId: null, // 复制的任务不继承父子关系
+      subTaskIds: [], // 复制的任务不继承子任务
+      belongingBoxId: originalTask.belongingBoxId,
+      rrule: originalTask.rrule,
+    );
+
+    // 添加新任务到数据库
+    await _taskRepository.addTask(copiedTask);
+
+    // 记录复制操作
+    final operation = Operation.createAddTaskOperation(copiedTask);
+    await _operationStack.addOperation(operation);
+
+    // 更新当前任务列表
+    await loadCurrentBoxTasks();
+  }
+
   //endregion
 }

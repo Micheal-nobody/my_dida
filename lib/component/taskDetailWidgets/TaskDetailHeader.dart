@@ -88,7 +88,7 @@ class TaskDetailHeader extends StatelessWidget {
                       }
                       break;
                     case 'copy':
-                      //TODO：实现复制功能
+                      await taskProvider.copyTask(updatedTask);
                       break;
                   }
                 },
