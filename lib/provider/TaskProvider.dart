@@ -6,12 +6,15 @@ import 'package:my_dida/repository/TaskRepository.dart';
 import '../config/locator.dart';
 import '../model/entity/Task.dart';
 import '../model/entity/CheckPoint.dart';
+import '../model/entity/Operation.dart';
+import '../provider/OperationStackProvider.dart';
 
 /// 给TodoPage用的Provider！
 class TaskProvider with ChangeNotifier {
   List<Task> _tasks = [];
   List<Task> _currentTasks = [];
   final TaskRepository _taskRepository;
+  final OperationStackProvider _operationStack;
 
   //region 一系列getter
   List<Task> get tasks => _tasks;
@@ -23,6 +26,7 @@ class TaskProvider with ChangeNotifier {
   /// 创建时注入Repository，并且初始化_currentTasks
   TaskProvider(BelongingBoxVO? new_belongingBox)
     : _taskRepository = locator<TaskRepository>(),
+      _operationStack = locator<OperationStackProvider>(),
       cur_belongingBox = new_belongingBox {
     updateCurTasks(cur_belongingBox);
   }
@@ -74,15 +78,58 @@ class TaskProvider with ChangeNotifier {
   }
 
   Future<void> addTask(Task newTask) async {
+    print('TaskProvider: 开始添加任务: ${newTask.name}');
+
     await _taskRepository.addTask(newTask);
+
+    // 记录添加任务操作
+    final operation = Operation.createAddTaskOperation(newTask);
+    print('TaskProvider: 创建操作记录: ${operation.description}');
+    await _operationStack.addOperation(operation);
+
     loadCurrentBoxTasks();
   }
 
   Future<void> updateTaskIsDone(Task task, bool value) async {
+    // 保存旧状态用于操作记录
+    final oldTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
     // 1、更新数据库
     await _taskRepository.updateTaskIsDone(task, value);
 
-    // 2、更新数据
+    // 2、记录操作
+    final newTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: value,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
+    final operation = Operation.createUpdateTaskOperation(
+      oldTask,
+      newTask,
+      value ? '完成了任务"${task.name}"' : '取消了任务"${task.name}"的完成状态',
+    );
+    await _operationStack.addOperation(operation);
+
+    // 3、更新数据
     loadCurrentBoxTasks();
   }
 
@@ -105,11 +152,81 @@ class TaskProvider with ChangeNotifier {
   }
 
   Future<void> updateTitle(Task task, String newTitle) async {
+    // 保存旧状态
+    final oldTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
     await _taskRepository.update(task..name = newTitle);
+
+    // 记录操作
+    final newTask = Task(
+      name: newTitle,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
+    final operation = Operation.createUpdateTaskOperation(
+      oldTask,
+      newTask,
+      '修改了任务标题为"$newTitle"',
+    );
+    await _operationStack.addOperation(operation);
   }
 
   Future<void> updateDescription(Task task, String newDesc) async {
+    // 保存旧状态
+    final oldTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
     await _taskRepository.update(task..description = newDesc);
+
+    // 记录操作
+    final newTask = Task(
+      name: task.name,
+      description: newDesc,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
+    final operation = Operation.createUpdateTaskOperation(
+      oldTask,
+      newTask,
+      '修改了任务"${task.name}"的描述',
+    );
+    await _operationStack.addOperation(operation);
   }
 
   Future<void> toggleCheckpoint(Task task, int index, bool value) async {
@@ -159,11 +276,51 @@ class TaskProvider with ChangeNotifier {
   }
 
   Future<void> updateStartTime(Task task, DateTime? newStartTime) async {
+    // 保存旧状态
+    final oldTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
     await _taskRepository.update(task..startTime = newStartTime);
+
+    // 记录操作
+    final newTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: newStartTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
+    final operation = Operation.createUpdateTaskOperation(
+      oldTask,
+      newTask,
+      '修改了任务"${task.name}"的开始时间',
+    );
+    await _operationStack.addOperation(operation);
+
     await loadCurrentBoxTasks();
   }
 
   Future<void> deleteTask(Task task) async {
+    // 记录删除操作
+    final operation = Operation.createDeleteTaskOperation(task);
+    await _operationStack.addOperation(operation);
+
     await _taskRepository.deleteById(task.id);
     await loadCurrentBoxTasks();
   }
@@ -195,7 +352,43 @@ class TaskProvider with ChangeNotifier {
 
   // 更新重复规则
   Future<void> updateRRule(Task task, String? rrule) async {
+    // 保存旧状态
+    final oldTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
     await _taskRepository.update(task..rrule = rrule);
+
+    // 记录操作
+    final newTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: rrule,
+    )..id = task.id;
+
+    final operation = Operation.createUpdateTaskOperation(
+      oldTask,
+      newTask,
+      '修改了任务"${task.name}"的重复规则',
+    );
+    await _operationStack.addOperation(operation);
+
     await loadCurrentBoxTasks();
   }
 

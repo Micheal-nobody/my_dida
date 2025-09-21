@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/provider/BelongingBoxProvider.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
 import 'package:my_dida/provider/HabitProvider.dart';
+import 'package:my_dida/provider/OperationStackProvider.dart';
 import 'package:my_dida/router/goRouter.dart';
 import 'package:provider/provider.dart';
 
@@ -14,11 +15,16 @@ void main() async {
   // 初始化 Isar 数据库
   await setupLocator();
 
+  // 初始化操作栈
+  final operationStack = locator<OperationStackProvider>();
+  await operationStack.initialize();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => BelongingBoxProvider()),
         ChangeNotifierProvider(create: (context) => HabitProvider()),
+        ChangeNotifierProvider.value(value: operationStack),
 
         // 使用 ChangeNotifierProxyProvider
         ChangeNotifierProxyProvider<BelongingBoxProvider, TaskProvider>(
@@ -36,7 +42,8 @@ void main() async {
                 belongingBoxProvider.cur_belongingBox !=
                     previousTaskProvider.cur_belongingBox) {
               // 更新 TaskProvider 中的依赖，级联操作符会返回 updateCurTasks 之后的自身！
-              return previousTaskProvider..updateCurTasks(belongingBoxProvider.cur_belongingBox);
+              return previousTaskProvider
+                ..updateCurTasks(belongingBoxProvider.cur_belongingBox);
             }
 
             return TaskProvider(

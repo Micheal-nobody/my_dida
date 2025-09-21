@@ -29,11 +29,14 @@ class OperationStackProvider with ChangeNotifier {
   /// 初始化操作栈（从数据库加载）
   Future<void> initialize() async {
     try {
+      debugPrint('开始初始化操作栈...');
       final operations = await _isar.operations
           .where()
           .sortByTimestampDesc()
           .limit(_maxOperations)
           .findAll();
+
+      debugPrint('从数据库加载了 ${operations.length} 个操作');
 
       // 清理和修复可能存在的格式错误的JSON数据
       List<Operation> cleanedOperations = [];
@@ -57,6 +60,7 @@ class OperationStackProvider with ChangeNotifier {
       }
 
       _operations = cleanedOperations;
+      debugPrint('操作栈初始化完成，共 ${_operations.length} 个操作');
       notifyListeners();
     } catch (e) {
       debugPrint('初始化操作栈失败: $e');
@@ -66,6 +70,8 @@ class OperationStackProvider with ChangeNotifier {
   /// 添加操作到栈中
   Future<void> addOperation(Operation operation) async {
     try {
+      debugPrint('添加操作: ${operation.description}');
+
       // 保存到数据库
       await _isar.writeTxn(() async {
         await _isar.operations.put(operation);
@@ -87,6 +93,7 @@ class OperationStackProvider with ChangeNotifier {
         });
       }
 
+      debugPrint('当前操作数量: ${_operations.length}');
       notifyListeners();
     } catch (e) {
       debugPrint('添加操作失败: $e');

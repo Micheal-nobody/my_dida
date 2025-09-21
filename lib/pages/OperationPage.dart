@@ -69,7 +69,6 @@ class _OperationPageState extends State<OperationPage> {
       body: Consumer<OperationStackProvider>(
         builder: (context, operationStack, child) {
           final operations = _getFilteredOperations(operationStack.operations);
-
           if (operations.isEmpty) {
             return const Center(
               child: Column(

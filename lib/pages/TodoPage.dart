@@ -26,6 +26,15 @@ class _TodoPageState extends State<TodoPage> {
   bool _showCompletedTasks = false;
 
   @override
+  void initState() {
+    super.initState();
+    // 加载习惯数据
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<HabitProvider>(context, listen: false).loadAllHabits();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     print('TodoPage build');
 
@@ -72,8 +81,6 @@ class _TodoPageState extends State<TodoPage> {
       ),
 
       // 可滑动的列表视图，同时依赖TaskProvider.cur_tasks和HabitProvider.habits
-      //TODO: 使用Selector优化，避免无关重建
-      //TODO: HabitCard 显示在TaskCard下方，且两者之间存在分界线
       body: Selector<TaskProvider, List<Task>>(
         selector: (_, taskProvider) => taskProvider.cur_tasks,
         builder: (context, currentTasks, __) {
