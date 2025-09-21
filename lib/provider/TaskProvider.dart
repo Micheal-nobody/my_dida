@@ -330,23 +330,37 @@ class TaskProvider with ChangeNotifier {
     final allTasks = await _taskRepository.getAll();
     final incompleteTasks = allTasks.where((task) => !task.isDone).toList();
 
+    // 按创建时间排序（最新的在前）
+    incompleteTasks.sort((a, b) => b.id.compareTo(a.id));
+
     if (query.isEmpty) {
-      return incompleteTasks;
+      // 返回最近创建的10个任务
+      return incompleteTasks.take(10).toList();
     }
 
-    return incompleteTasks
+    final filteredTasks = incompleteTasks
         .where(
           (task) =>
               task.name.toLowerCase().contains(query.toLowerCase()) ||
               task.description.toLowerCase().contains(query.toLowerCase()),
         )
         .toList();
+
+    return filteredTasks;
   }
 
   // 关联主任务
   Future<void> associateMainTask(Task subTask, Task mainTask) async {
-    // 这里可以实现关联逻辑，比如设置parentTaskId
+    // 1. 更新子任务的parentTaskId
     await _taskRepository.update(subTask..parentTaskId = mainTask.id);
+
+    // 2. 更新主任务的subTaskIds，添加子任务ID（避免重复添加）
+    final updatedSubTaskIds = List<int>.from(mainTask.subTaskIds);
+    if (!updatedSubTaskIds.contains(subTask.id)) {
+      updatedSubTaskIds.add(subTask.id);
+      await _taskRepository.update(mainTask..subTaskIds = updatedSubTaskIds);
+    }
+
     await loadCurrentBoxTasks();
   }
 

@@ -115,4 +115,23 @@ class HabitProvider with ChangeNotifier {
   Stream<Habit?> watchHabitById(int id) {
     return _habitRepository.watchById(id);
   }
+
+  // 撤销一次打卡
+  Future<void> undoLastCheckIn(Habit habit) async {
+    if (habit.currentCheckInCount > 0) {
+      await _habitRepository.updateCheckInCount(
+        habit,
+        habit.currentCheckInCount - 1,
+      );
+      await _habitRepository.updateHabitStats(habit);
+      await loadAllHabits();
+    }
+  }
+
+  // 撤销所有打卡
+  Future<void> undoAllCheckIns(Habit habit) async {
+    await _habitRepository.updateCheckInCount(habit, 0);
+    await _habitRepository.updateHabitStats(habit);
+    await loadAllHabits();
+  }
 }

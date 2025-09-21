@@ -34,7 +34,8 @@ class TaskDetailPage extends StatefulWidget {
           initialChildSize: 0.6,
           minChildSize: 0.6,
           maxChildSize: 1.0,
-          snap: true, // snap 开启后，snapSizes 设置可切换状态
+          snap: true,
+          // snap 开启后，snapSizes 设置可切换状态
           snapSizes: const [0.6, 1.0],
           builder: (context, scrollController) {
             final bottomInset = MediaQuery.of(context).viewInsets.bottom;
@@ -123,6 +124,51 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                           TaskDetailHeader(task: task),
                           const SizedBox(height: 6),
 
+                          // 时间显示和确认按钮区域
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Row(
+                              children: [
+                                Consumer<TaskProvider>(
+                                  builder: (context, provider, child) {
+                                    final updatedTask = provider.tasks
+                                        .firstWhere(
+                                          (t) => t.id == task.id,
+                                          orElse: () => task,
+                                        );
+                                    final DateTime now = DateTime.now();
+                                    final DateTime effectiveDate =
+                                        updatedTask.startTime ?? now;
+                                    final String dateText =
+                                        updatedTask.startTime != null
+                                        ? "${effectiveDate.month.toString().padLeft(2, '0')}-${effectiveDate.day.toString().padLeft(2, '0')} ${effectiveDate.hour.toString().padLeft(2, '0')}:${effectiveDate.minute.toString().padLeft(2, '0')}"
+                                        : "未设置时间";
+
+                                    return Text(
+                                      dateText,
+                                      style: const TextStyle(
+                                        color: Colors.orange,
+                                        fontSize: 14,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const Spacer(),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    await _taskProvider.updateTaskIsDone(task, !task.isDone);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text('完成'),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
                           // 标题
                           EditableTitleWidget(
                             key: ValueKey('title_${task.id}'),
@@ -198,7 +244,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                           const SizedBox(height: 10),
 
                           // 子任务
-                          //TODO：点击子任务时，出现log文件的bug
                           SubTaskSection(
                             task: task,
                             onOpenSubTask: _navigateToSubTask,

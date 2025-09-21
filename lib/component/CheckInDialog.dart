@@ -139,7 +139,26 @@ class _CheckInDialogState extends State<CheckInDialog>
               ],
             ],
           ),
+
           actions: [
+            // 撤销一次打卡按钮
+            if (isCompleted && habit.currentCheckInCount > 0)
+              TextButton(
+                onPressed: () async {
+                  await habitProvider.undoLastCheckIn(habit);
+                  Navigator.of(context).pop();
+                },
+                child: const Text('撤销一次'),
+              ),
+            // 撤销所有打卡按钮
+            if (isCompleted && habit.currentCheckInCount > 0)
+              TextButton(
+                onPressed: () async {
+                  await habitProvider.undoAllCheckIns(habit);
+                  Navigator.of(context).pop();
+                },
+                child: const Text('撤销全部'),
+              ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('关闭'),
