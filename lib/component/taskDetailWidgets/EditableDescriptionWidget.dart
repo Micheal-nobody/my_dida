@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/config/logger.dart';
 import 'package:my_dida/model/entity/Task.dart';
 
 class EditableDescriptionWidget extends StatefulWidget {

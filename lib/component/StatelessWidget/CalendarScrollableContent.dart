@@ -36,16 +36,28 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
     super.dispose();
   }
 
+  int _getNoTimeTasksCount() {
+    int count = 0;
+    for (final tasks in widget.tasksForDates.values) {
+      count += tasks.where((task) => task.startTime == null).length;
+    }
+    return count;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 计算没有具体时间的任务数量
+    final noTimeTasksCount = _getNoTimeTasksCount();
+
     return Column(
       children: [
         // 上半部分：没有具体时间的任务区域
-        CalendarNoTimeTaskArea(
-          visibleDates: widget.visibleDates,
-          tasksForDates: widget.tasksForDates,
-          selectedDate: widget.selectedDate,
-        ),
+        if (noTimeTasksCount > 0)
+          CalendarNoTimeTaskArea(
+            visibleDates: widget.visibleDates,
+            tasksForDates: widget.tasksForDates,
+            selectedDate: widget.selectedDate,
+          ),
 
         // 下半部分：可滚动的时间轴和任务区域
         Expanded(

@@ -24,6 +24,9 @@ class Task {
   /// 所属收集箱
   int? belongingBoxId;
 
+  /// 重复规则 (RRule)
+  String? rrule;
+
   /// Constructor for TodoItem
   Task({
     required this.name,
@@ -40,8 +43,11 @@ class Task {
     this.parentTaskId,
     this.subTaskIds = const [],
 
-    /// 所属收集箱（默认为 “收集箱”）
+    /// 所属收集箱（默认为 "收集箱"）
     this.belongingBoxId = 1,
+
+    /// 重复规则默认为 null
+    this.rrule,
   });
 
   // toString 方法

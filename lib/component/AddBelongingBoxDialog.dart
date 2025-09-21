@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/config/logger.dart';
 import 'package:provider/provider.dart';
 import '../model/vo/BelongingBoxVO.dart';
 import '../provider/BelongingBoxProvider.dart';

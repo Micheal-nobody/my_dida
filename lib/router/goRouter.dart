@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/pages/CalendarPage.dart';
 import 'package:my_dida/pages/HabitsPage.dart';
+import 'package:my_dida/pages/OperationPage.dart';
 import 'package:my_dida/pages/TodoPage.dart';
-
 
 final GoRouter goRouter = GoRouter(
   // 初始路由
   initialLocation: '/todoList',
+
   // initialLocation: '/calendarView',
-
-
   routes: [
     StatefulShellRoute.indexedStack(
       /// 整个页面的内容，其中 Branch 中的内容会填充到 body 中
@@ -28,8 +27,12 @@ final GoRouter goRouter = GoRouter(
           onTap: (index) => _onTap(context, index, navigationShell),
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.masks), label: '待办清单'),
-            BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: '日历视图'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_month),
+              label: '日历视图',
+            ),
             BottomNavigationBarItem(icon: Icon(Icons.lock_clock), label: '习惯'),
+            BottomNavigationBarItem(icon: Icon(Icons.history), label: '操作记录'),
           ],
         ),
       ),
@@ -70,6 +73,15 @@ final GoRouter goRouter = GoRouter(
             ),
           ],
         ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/operations',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: OperationPage()),
+            ),
+          ],
+        ),
       ],
     ),
   ],
@@ -82,7 +94,11 @@ final GoRouter goRouter = GoRouter(
 );
 
 /// 底部导航栏点击处理
-void _onTap(BuildContext context, int index, StatefulNavigationShell navigationShell) {
+void _onTap(
+  BuildContext context,
+  int index,
+  StatefulNavigationShell navigationShell,
+) {
   navigationShell.goBranch(
     index,
     //? initialLocation 表示是否初始化该分支的导航栈，如果为 true，则该分支的导航栈将初始化为该分支的根路由。
@@ -90,4 +106,3 @@ void _onTap(BuildContext context, int index, StatefulNavigationShell navigationS
     initialLocation: index == navigationShell.currentIndex,
   );
 }
-

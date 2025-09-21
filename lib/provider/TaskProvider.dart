@@ -168,5 +168,36 @@ class TaskProvider with ChangeNotifier {
     await loadCurrentBoxTasks();
   }
 
+  // 搜索未完成的任务
+  Future<List<Task>> searchIncompleteTasks(String query) async {
+    final allTasks = await _taskRepository.getAll();
+    final incompleteTasks = allTasks.where((task) => !task.isDone).toList();
+
+    if (query.isEmpty) {
+      return incompleteTasks;
+    }
+
+    return incompleteTasks
+        .where(
+          (task) =>
+              task.name.toLowerCase().contains(query.toLowerCase()) ||
+              task.description.toLowerCase().contains(query.toLowerCase()),
+        )
+        .toList();
+  }
+
+  // 关联主任务
+  Future<void> associateMainTask(Task subTask, Task mainTask) async {
+    // 这里可以实现关联逻辑，比如设置parentTaskId
+    await _taskRepository.update(subTask..parentTaskId = mainTask.id);
+    await loadCurrentBoxTasks();
+  }
+
+  // 更新重复规则
+  Future<void> updateRRule(Task task, String? rrule) async {
+    await _taskRepository.update(task..rrule = rrule);
+    await loadCurrentBoxTasks();
+  }
+
   //endregion
 }

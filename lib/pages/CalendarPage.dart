@@ -51,7 +51,6 @@ class _CalendarPageState extends State<CalendarPage> {
         if (task.startTime == null) {
           // 没有具体时间的任务，检查是否属于当前日期
           // 这里暂时将所有无时间任务都显示在今天的列中
-          // TODO: 需要根据任务的创建日期或其他字段来判断是否属于当前日期
           return normalizedDate.isAtSameMomentAs(
             DateTime.now().toLocal().copyWith(
               hour: 0,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/config/logger.dart';
 import 'package:my_dida/model/vo/BelongingBoxVO.dart';
 import 'package:my_dida/provider/BelongingBoxProvider.dart';
+import 'package:my_dida/utils/TimeUtils.dart';
 import 'package:provider/provider.dart';
 
 import '../model/entity/Task.dart';
@@ -29,7 +30,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   void initState() {
     super.initState();
     // 获取中国北京时区的时间 (UTC+8)
-    _selectedDate = DateTime.now().toUtc().add(const Duration(hours: 8));
+    _selectedDate = DateTime.now().toBeijingTime().dateOnly;
 
     logger.i("AddTaskDialog initState,_selectedDate == $_selectedDate");
   }
