@@ -24,6 +24,37 @@ class CalendarNoTimeTaskArea extends StatefulWidget {
 class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
   Offset? _lastDragPosition;
 
+  // 动态计算高度基于任务数量
+  double _calculateDynamicHeight() {
+    int maxTasksInAnyDay = 0;
+
+    for (final date in widget.visibleDates) {
+      final normalizedDate = DateTime(date.year, date.month, date.day);
+      final dayTasks = widget.tasksForDates[normalizedDate] ?? [];
+      final noTimeTasks = dayTasks.where((task) {
+        return task.startTime == null ||
+            (task.startTime!.hour == 0 && task.startTime!.minute == 0);
+      }).length;
+
+      maxTasksInAnyDay = maxTasksInAnyDay > noTimeTasks
+          ? maxTasksInAnyDay
+          : noTimeTasks;
+    }
+
+    // 如果没有任务，返回0高度
+    if (maxTasksInAnyDay == 0) return 0;
+
+    // 每个任务高度约28px，加上padding和间距
+    // 最小高度80px，最大高度400px，确保有足够空间显示任务
+    final taskHeight = 28.0;
+    final padding = 16.0; // 上下padding
+    final calculatedHeight = (maxTasksInAnyDay * taskHeight + padding).clamp(
+      80.0,
+      400.0,
+    );
+    return calculatedHeight;
+  }
+
   // 计算每个日期列的宽度 - 与CalendarDateHeader保持一致
   double _getDateColumnWidth(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -81,8 +112,15 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
             return task != null;
           },
           builder: (context, candidateData, rejectedData) {
+            final dynamicHeight = _calculateDynamicHeight();
+
+            // 如果没有任务且不在拖拽状态，不显示容器
+            if (dynamicHeight == 0 && candidateData.isEmpty) {
+              return const SizedBox.shrink();
+            }
+
             return Container(
-              height: 120, // 固定高度，足够显示最多6个任务
+              height: dynamicHeight, // 动态高度基于任务数量
               decoration: BoxDecoration(
                 color: candidateData.isNotEmpty
                     ? Colors.blue.withValues(alpha: 0.1)
@@ -119,7 +157,7 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
 
                     return Expanded(
                       child: Container(
-                        height: 120,
+                        height: dynamicHeight,
                         padding: EdgeInsets.symmetric(
                           horizontal: 4,
                           vertical: 8,

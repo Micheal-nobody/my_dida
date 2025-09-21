@@ -21,7 +21,7 @@ class TaskDetailPage extends StatefulWidget {
     return _TaskDetailPageState();
   }
 
-  static void show(BuildContext context, Task task){
+  static void show(BuildContext context, Task task) {
     showModalBottomSheet(
       context: context,
       useRootNavigator: true,
@@ -38,23 +38,25 @@ class TaskDetailPage extends StatefulWidget {
           snapSizes: const [0.6, 1.0],
           builder: (context, scrollController) {
             final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-            return Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).canvasColor,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
+            return Material(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).canvasColor,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
                 ),
-              ),
-              child: AnimatedPadding(
-                duration: const Duration(milliseconds: 160),
-                curve: Curves.easeOut,
-                padding: EdgeInsets.only(bottom: bottomInset),
-                child: MediaQuery.removeViewInsets(
-                  removeBottom: true,
-                  context: context,
-                  child: TaskDetailPage(
-                    task.id,
-                    scrollController: scrollController,
+                child: AnimatedPadding(
+                  duration: const Duration(milliseconds: 160),
+                  curve: Curves.easeOut,
+                  padding: EdgeInsets.only(bottom: bottomInset),
+                  child: MediaQuery.removeViewInsets(
+                    removeBottom: true,
+                    context: context,
+                    child: TaskDetailPage(
+                      task.id,
+                      scrollController: scrollController,
+                    ),
                   ),
                 ),
               ),
@@ -65,6 +67,7 @@ class TaskDetailPage extends StatefulWidget {
     );
   }
 }
+
 class _TaskDetailPageState extends State<TaskDetailPage> {
   late TaskProvider _taskProvider;
   Task? _task;
@@ -97,153 +100,162 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     final task = _task;
-    return SafeArea(
-      child: task == null
-          ? const SizedBox(
-              height: 300,
-              child: Center(child: CircularProgressIndicator()),
-            )
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: widget.scrollController,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 8),
-                        TaskDetailHeader(task: task),
-                        const SizedBox(height: 6),
+    return Material(
+      child: SafeArea(
+        child: task == null
+            ? const SizedBox(
+                height: 300,
+                child: Center(child: CircularProgressIndicator()),
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: widget.scrollController,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          TaskDetailHeader(task: task),
+                          const SizedBox(height: 6),
 
-                        // 标题
-                        EditableTitleWidget(
-                          key: ValueKey('title_${task.id}'),
-                          task: task,
-                          onSubmit: (updated) async {
-                            await _taskProvider.updateTitle(task, updated);
-                          },
-                          onFieldSubmitted: (value) {
-                            context.read<TaskProvider>().loadCurrentBoxTasks();
-                          },
-                        ),
-                        const SizedBox(height: 8),
+                          // 标题
+                          EditableTitleWidget(
+                            key: ValueKey('title_${task.id}'),
+                            task: task,
+                            onSubmit: (updated) async {
+                              await _taskProvider.updateTitle(task, updated);
+                            },
+                            onFieldSubmitted: (value) {
+                              context
+                                  .read<TaskProvider>()
+                                  .loadCurrentBoxTasks();
+                            },
+                          ),
+                          const SizedBox(height: 8),
 
-                        // 描述
-                        EditableDescriptionWidget(
-                          key: ValueKey('desc_${task.id}'),
-                          task: task,
-                          onSubmit: (newDesc) async {
-                            await _taskProvider.updateDescription(
-                              task,
-                              newDesc,
-                            );
-                          },
-                          onFieldSubmitted: (value) {
-                            context.read<TaskProvider>().loadCurrentBoxTasks();
-                          },
-                        ),
+                          // 描述
+                          EditableDescriptionWidget(
+                            key: ValueKey('desc_${task.id}'),
+                            task: task,
+                            onSubmit: (newDesc) async {
+                              await _taskProvider.updateDescription(
+                                task,
+                                newDesc,
+                              );
+                            },
+                            onFieldSubmitted: (value) {
+                              context
+                                  .read<TaskProvider>()
+                                  .loadCurrentBoxTasks();
+                            },
+                          ),
 
-                        // CheckpointItems
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (task.checkpoints.isEmpty)
-                              const SizedBox.shrink(),
-                            for (final entry in ([
-                              ...task.checkpoints.where((e) => !e.isDone),
-                              ...task.checkpoints.where((e) => e.isDone),
-                            ]).asMap().entries)
-                              CheckpointItemWidget(
-                                key: ValueKey(
-                                  'cp_${widget.taskId}_${entry.key}_${entry.value.isDone}',
+                          // CheckpointItems
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (task.checkpoints.isEmpty)
+                                const SizedBox.shrink(),
+                              for (final entry in ([
+                                ...task.checkpoints.where((e) => !e.isDone),
+                                ...task.checkpoints.where((e) => e.isDone),
+                              ]).asMap().entries)
+                                CheckpointItemWidget(
+                                  key: ValueKey(
+                                    'cp_${widget.taskId}_${entry.key}_${entry.value.isDone}',
+                                  ),
+                                  task: task,
+                                  index: entry.key,
+                                  checkpoint: entry.value,
+                                  onToggle: (bool v) async {
+                                    await _taskProvider.toggleCheckpoint(
+                                      task,
+                                      entry.key,
+                                      v,
+                                    );
+                                  },
+                                  onRename: (String name) async {
+                                    await _taskProvider.renameCheckpoint(
+                                      task,
+                                      entry.key,
+                                      name,
+                                    );
+                                  },
+                                  onRemove: () async {
+                                    await _taskProvider.removeCheckpoint(
+                                      task,
+                                      entry.key,
+                                    );
+                                  },
                                 ),
-                                task: task,
-                                index: entry.key,
-                                checkpoint: entry.value,
-                                onToggle: (bool v) async {
-                                  await _taskProvider.toggleCheckpoint(
-                                    task,
-                                    entry.key,
-                                    v,
-                                  );
-                                },
-                                onRename: (String name) async {
-                                  await _taskProvider.renameCheckpoint(
-                                    task,
-                                    entry.key,
-                                    name,
-                                  );
-                                },
-                                onRemove: () async {
-                                  await _taskProvider.removeCheckpoint(
-                                    task,
-                                    entry.key,
-                                  );
-                                },
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
 
-                        // 子任务
-                        SubTaskSection(
-                          task: task,
-                          onOpenSubTask: _navigateToSubTask,
+                          // 子任务
+                          //TODO：点击子任务时，出现log文件的bug
+                          SubTaskSection(
+                            task: task,
+                            onOpenSubTask: _navigateToSubTask,
+                          ),
+                          const SizedBox(height: 80),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // 底部按钮栏
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(color: Colors.black12, blurRadius: 6),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        TextButton.icon(
+                          onPressed: () async {
+                            await _taskProvider.addCheckpoint(task);
+                          },
+                          icon: const Icon(
+                            Icons.checklist,
+                            color: Colors.orange,
+                          ),
+                          label: const Text(
+                            '新检查点',
+                            style: TextStyle(color: Colors.orange),
+                          ),
                         ),
-                        const SizedBox(height: 80),
+                        const SizedBox(width: 8),
+                        TextButton.icon(
+                          onPressed: () async {
+                            await _taskProvider.createSubTask(task);
+                          },
+                          icon: const Icon(
+                            Icons.subdirectory_arrow_right,
+                            color: Colors.orange,
+                          ),
+                          label: const Text(
+                            '新子任务',
+                            style: TextStyle(color: Colors.orange),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ),
-
-                // 底部按钮栏
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(color: Colors.black12, blurRadius: 6),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      TextButton.icon(
-                        onPressed: () async {
-                          await _taskProvider.addCheckpoint(task);
-                        },
-                        icon: const Icon(Icons.checklist, color: Colors.orange),
-                        label: const Text(
-                          '新检查点',
-                          style: TextStyle(color: Colors.orange),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      TextButton.icon(
-                        onPressed: () async {
-                          await _taskProvider.createSubTask(task);
-                        },
-                        icon: const Icon(
-                          Icons.subdirectory_arrow_right,
-                          color: Colors.orange,
-                        ),
-                        label: const Text(
-                          '新子任务',
-                          style: TextStyle(color: Colors.orange),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
+      ),
     );
   }
 }

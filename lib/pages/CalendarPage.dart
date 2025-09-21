@@ -19,10 +19,26 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime _selectedDate = DateTime.now();
   int _dateRange = 3; // 3-day view by default
   Map<DateTime, List<Task>> _tasksForDates = {};
+  late TaskProvider _taskProvider;
 
   @override
   void initState() {
     super.initState();
+    _taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    _loadTasksForVisibleDates();
+
+    // 添加TaskProvider监听器
+    _taskProvider.addListener(_onTaskProviderChanged);
+  }
+
+  @override
+  void dispose() {
+    _taskProvider.removeListener(_onTaskProviderChanged);
+    super.dispose();
+  }
+
+  void _onTaskProviderChanged() {
+    // 当TaskProvider发生变化时，重新加载任务数据
     _loadTasksForVisibleDates();
   }
 
@@ -78,82 +94,73 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TaskProvider>(
-      builder: (context, taskProvider, child) {
-        // 当任务更新时，重新加载任务数据
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _loadTasksForVisibleDates();
-        });
-
-        return Scaffold(
-          // 1. AppBar 区域：左侧是当前月份
-          appBar: AppBar(
-            title: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedDate = DateTime.now();
-                });
-              },
-              child: Text(
-                DateFormat('M月').format(_currentDate),
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-              ),
+    return Scaffold(
+      // 1. AppBar 区域：左侧是当前月份
+      appBar: AppBar(
+        title: GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedDate = DateTime.now();
+            });
+          },
+          child: Text(
+            DateFormat('M月').format(_currentDate),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
             ),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            actions: [
-              IconButton(
-                icon: Icon(
-                  _dateRange == 7 ? Icons.view_list : Icons.view_week,
-                  color: Colors.grey[600],
-                ),
-                onPressed: () {
-                  setState(() {
-                    _dateRange = _dateRange == 7 ? 3 : 7;
-                  });
-                  _loadTasksForVisibleDates();
-                },
-              ),
-              SizedBox(width: 8),
-              Icon(Icons.more_vert, color: Colors.grey[600]),
-              SizedBox(width: 16),
-            ],
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(
+              _dateRange == 7 ? Icons.view_list : Icons.view_week,
+              color: Colors.grey[600],
+            ),
+            onPressed: () {
+              setState(() {
+                _dateRange = _dateRange == 7 ? 3 : 7;
+              });
+              _loadTasksForVisibleDates();
+            },
+          ),
+          SizedBox(width: 8),
+          Icon(Icons.more_vert, color: Colors.grey[600]),
+          SizedBox(width: 16),
+        ],
+      ),
+
+      body: Column(
+        children: [
+          // 2. Header：显示日期和对应的星期
+          CalendarDateHeader(
+            selectedDate: _selectedDate,
+            dateRange: _dateRange,
+            tasksForDates: _tasksForDates,
+            onDateSelected: (date) {
+              setState(() {
+                _selectedDate = date;
+              });
+              _loadTasksForVisibleDates();
+            },
           ),
 
-          body: Column(
-            children: [
-              // 2. Header：显示日期和对应的星期
-              CalendarDateHeader(
-                selectedDate: _selectedDate,
-                dateRange: _dateRange,
-                tasksForDates: _tasksForDates,
-                onDateSelected: (date) {
-                  setState(() {
-                    _selectedDate = date;
-                  });
-                  _loadTasksForVisibleDates();
-                },
-              ),
-
-              // 主要内容区域
-              Expanded(
-                child: CalendarScrollableContent(
-                  selectedDate: _selectedDate,
-                  visibleDates: _visibleDates,
-                  tasksForDates: _tasksForDates,
-                ),
-              ),
-            ],
+          // 主要内容区域
+          Expanded(
+            child: CalendarScrollableContent(
+              selectedDate: _selectedDate,
+              visibleDates: _visibleDates,
+              tasksForDates: _tasksForDates,
+            ),
           ),
+        ],
+      ),
 
-          // 3. FloatingActionButton：用于添加任务
-          floatingActionButton: CustomFloatingActionButton(),
-        );
-      },
+      // 3. FloatingActionButton：用于添加任务
+      floatingActionButton: CustomFloatingActionButton(),
     );
   }
 }

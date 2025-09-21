@@ -23,6 +23,8 @@ class CalendarScrollableContent extends StatefulWidget {
 
 class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
   late ScrollController _scrollController;
+  int? _cachedNoTimeTasksCount;
+  Map<DateTime, List<Task>>? _cachedTasksForDates;
 
   @override
   void initState() {
@@ -37,10 +39,23 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
   }
 
   int _getNoTimeTasksCount() {
+    // 如果tasksForDates没有变化，返回缓存的结果
+    if (_cachedTasksForDates == widget.tasksForDates &&
+        _cachedNoTimeTasksCount != null) {
+      return _cachedNoTimeTasksCount!;
+    }
+
     int count = 0;
     for (final tasks in widget.tasksForDates.values) {
-      count += tasks.where((task) => task.startTime == null).length;
+      count += tasks.where((task) {
+        return task.startTime == null ||
+            (task.startTime!.hour == 0 && task.startTime!.minute == 0);
+      }).length;
     }
+
+    // 缓存结果
+    _cachedNoTimeTasksCount = count;
+    _cachedTasksForDates = widget.tasksForDates;
     return count;
   }
 
@@ -51,12 +66,16 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
 
     return Column(
       children: [
-        // 上半部分：没有具体时间的任务区域
+        // 上半部分：没有具体时间的任务区域 - 使用AnimatedContainer确保高度变化有动画
         if (noTimeTasksCount > 0)
-          CalendarNoTimeTaskArea(
-            visibleDates: widget.visibleDates,
-            tasksForDates: widget.tasksForDates,
-            selectedDate: widget.selectedDate,
+          AnimatedContainer(
+            duration: Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: CalendarNoTimeTaskArea(
+              visibleDates: widget.visibleDates,
+              tasksForDates: widget.tasksForDates,
+              selectedDate: widget.selectedDate,
+            ),
           ),
 
         // 下半部分：可滚动的时间轴和任务区域
