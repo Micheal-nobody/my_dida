@@ -13,7 +13,6 @@ class BelongingBoxProvider extends ChangeNotifier {
 
   // 一个默认的收藏夹
   static BelongingBoxVO today_belongingBox = BelongingBoxVO(id: -1, name: "今天");
-  //TODO: 这个default_belongingBox无论如何都要改！
   static BelongingBoxVO default_belongingBox = BelongingBoxVO(
     id: 1,
     name: "收集箱1",

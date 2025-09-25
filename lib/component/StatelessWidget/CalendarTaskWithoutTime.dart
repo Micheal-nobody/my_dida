@@ -50,17 +50,45 @@ class CalendarTaskWithoutTime extends StatelessWidget {
       height: taskHeightActual,
       child: Draggable<Task>(
         data: task,
-        feedback: Material(
-          elevation: 4,
-          borderRadius: BorderRadius.circular(4),
+        feedback: Opacity(
+          opacity: task.isDone ? 0.4 : 1.0,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(4),
+            child: Container(
+              width: taskWidth,
+              height: taskHeightActual,
+              margin: EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
+              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: taskColor.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  task.name,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+            ),
+          ),
+        ),
+        childWhenDragging: Opacity(
+          opacity: task.isDone ? 0.4 : 1.0,
           child: Container(
-            width: taskWidth,
-            height: taskHeightActual,
             margin: EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
             padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
             decoration: BoxDecoration(
-              color: taskColor.withValues(alpha: 0.9),
+              color: taskColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: taskColor, width: 1),
             ),
             child: FittedBox(
               fit: BoxFit.scaleDown,
@@ -74,28 +102,6 @@ class CalendarTaskWithoutTime extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),
-            ),
-          ),
-        ),
-        childWhenDragging: Container(
-          margin: EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
-          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-          decoration: BoxDecoration(
-            color: taskColor.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: taskColor, width: 1),
-          ),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              task.name,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
             ),
           ),
         ),
@@ -103,24 +109,27 @@ class CalendarTaskWithoutTime extends StatelessWidget {
           onTap: () {
             TaskDetailPage.show(context, task);
           },
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
-            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-            decoration: BoxDecoration(
-              color: taskColor.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                task.name,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
+          child: Opacity(
+            opacity: task.isDone ? 0.4 : 1.0,
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
+              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: taskColor.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  task.name,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
               ),
             ),
           ),

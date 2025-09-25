@@ -72,6 +72,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         startTime: _startTime,
         endTime: _endTime,
         isAllDay: _isAllDay,
+        initialRRule: null,
         onDateChanged: (date) {
           logger.i("onDateChanged date == $date");
           setState(() {

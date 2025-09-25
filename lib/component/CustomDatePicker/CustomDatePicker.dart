@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'CalendarWidget.dart';
 import 'TimeSlotTabWidget.dart';
 
+//TODO：CustomDatePicker 并没有成功修改Task的rrule!（可能是TODO： CustomRepeatPicker 的原因，也可能是调用 CustomRepeatPicker 或者 调用 CustomDatePicker 的地方的原因）
 class CustomDatePicker extends StatefulWidget {
   final DateTime? selectedDate;
   final TimeOfDay? startTime;
@@ -11,6 +12,8 @@ class CustomDatePicker extends StatefulWidget {
   final Function(TimeOfDay?, TimeOfDay?) onTimeChanged;
   final Function(bool) onAllDayChanged;
   final VoidCallback onClear;
+  final Function(String?)? onRepeatChanged;
+  final String? initialRRule;
 
   const CustomDatePicker({
     super.key,
@@ -22,6 +25,8 @@ class CustomDatePicker extends StatefulWidget {
     required this.onTimeChanged,
     required this.onAllDayChanged,
     required this.onClear,
+    this.onRepeatChanged,
+    this.initialRRule,
   });
 
   @override
@@ -35,6 +40,7 @@ class _CustomDatePickerState extends State<CustomDatePicker>
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
   bool _isAllDay = false;
+  String? _rrule;
 
   @override
   void initState() {
@@ -44,6 +50,7 @@ class _CustomDatePickerState extends State<CustomDatePicker>
     _startTime = widget.startTime;
     _endTime = widget.endTime;
     _isAllDay = widget.isAllDay;
+    _rrule = widget.initialRRule;
   }
 
   @override
@@ -101,6 +108,8 @@ class _CustomDatePickerState extends State<CustomDatePicker>
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: CalendarWidget(
                     selectedDate: _selectedDate,
+                    initialTime: _startTime,
+                    initialRRule: _rrule,
                     onDateChanged: (date) {
                       setState(() {
                         _selectedDate = date;
@@ -113,6 +122,14 @@ class _CustomDatePickerState extends State<CustomDatePicker>
                         _endTime = end;
                       });
                       widget.onTimeChanged(start, end);
+                    },
+                    onRepeatChanged: (rrule) {
+                      setState(() {
+                        _rrule = rrule;
+                      });
+                      if (widget.onRepeatChanged != null) {
+                        widget.onRepeatChanged!(rrule);
+                      }
                     },
                   ),
                 ),

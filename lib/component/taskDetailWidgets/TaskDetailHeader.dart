@@ -25,8 +25,6 @@ class TaskDetailHeader extends StatelessWidget {
           orElse: () => task,
         );
 
-        // return _buildHeader(context, updatedTask, dateText, taskProvider);
-        // 不使用函数转发，直接返回Padding
         final bool canPop = Navigator.of(context).canPop();
 
         return Padding(
@@ -46,7 +44,7 @@ class TaskDetailHeader extends StatelessWidget {
                   }
                 },
               ),
-              const Icon(Icons.event_note, color: Colors.orange),
+              
               const SizedBox(width: 6),
               const Spacer(),
 

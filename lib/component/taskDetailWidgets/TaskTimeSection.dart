@@ -111,6 +111,7 @@ class TaskTimeSection extends StatelessWidget {
         startTime: null,
         endTime: null,
         isAllDay: false,
+        initialRRule: task.rrule,
         onDateChanged: (date) async {
           await taskProvider.updateStartTime(task, date);
         },

@@ -137,6 +137,7 @@ class RRuleUtil {
   static String humanize(String rrule) {
     if (!rrule.startsWith('RRULE:')) return rrule;
     final rule = rrule.replaceFirst('RRULE:', '');
+
     final parts = <String, String>{};
     for (final kv in rule.split(';')) {
       if (kv.contains('=')) {

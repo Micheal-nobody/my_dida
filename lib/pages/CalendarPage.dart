@@ -18,6 +18,7 @@ class _CalendarPageState extends State<CalendarPage> {
   final DateTime _currentDate = DateTime.now();
   DateTime _selectedDate = DateTime.now();
   int _dateRange = 3; // 3-day view by default
+  bool _showCompleted = false; // 默认不显示已完成任务
   Map<DateTime, List<Task>> _tasksForDates = {};
   late TaskProvider _taskProvider;
 
@@ -84,7 +85,10 @@ class _CalendarPageState extends State<CalendarPage> {
         return taskDate.isAtSameMomentAs(normalizedDate);
       }).toList();
 
-      tasksMap[normalizedDate] = tasksForDate;
+      // 根据显示开关过滤是否展示已完成任务
+      tasksMap[normalizedDate] = _showCompleted
+          ? tasksForDate
+          : tasksForDate.where((t) => !t.isDone).toList();
     }
 
     setState(() {
@@ -128,7 +132,19 @@ class _CalendarPageState extends State<CalendarPage> {
             },
           ),
           SizedBox(width: 8),
-          Icon(Icons.more_vert, color: Colors.grey[600]),
+          IconButton(
+            tooltip: _showCompleted ? '隐藏已完成任务' : '显示已完成任务',
+            icon: Icon(
+              _showCompleted ? Icons.visibility : Icons.visibility_off,
+              color: Colors.grey[600],
+            ),
+            onPressed: () {
+              setState(() {
+                _showCompleted = !_showCompleted;
+              });
+              _loadTasksForVisibleDates();
+            },
+          ),
           SizedBox(width: 16),
         ],
       ),

@@ -8,6 +8,7 @@ import 'package:my_dida/component/taskDetailWidgets/SubTaskSection.dart';
 import 'package:provider/provider.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
 import 'dart:async';
+import 'package:my_dida/component/CustomDatePicker/CustomDatePicker.dart';
 
 // 任务详情 BottomSheet（由 TaskCard 的 onTap 触发）
 class TaskDetailPage extends StatefulWidget {
@@ -121,14 +122,46 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 8),
+
+                          // 任务详情头部
                           TaskDetailHeader(task: task),
                           const SizedBox(height: 6),
 
                           // 时间显示和确认按钮区域
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            // padding 表示内边距，表示内容与边缘的距离
+                            // 改为左边距 16
+                            padding: const EdgeInsets.only(left: 16),
+                            // padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Row(
                               children: [
+                                GestureDetector(
+                                  onTap: () async {
+                                    await _taskProvider.updateTaskIsDone(
+                                      task,
+                                      !task.isDone,
+                                    );
+                                  },
+                                  child: Container(
+                                    width: 16,
+                                    height: 16,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.orange),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: task.isDone
+                                        ? const Icon(
+                                            Icons.check,
+                                            color: Colors.orange,
+                                            size: 16,
+                                          )
+                                        : null,
+                                  ),
+                                ),
+
+                                // 增加一个空格
+                                const SizedBox(width: 12),
+
                                 Consumer<TaskProvider>(
                                   builder: (context, provider, child) {
                                     final updatedTask = provider.tasks
@@ -136,38 +169,110 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                           (t) => t.id == task.id,
                                           orElse: () => task,
                                         );
-                                    final DateTime now = DateTime.now();
-                                    final DateTime effectiveDate =
-                                        updatedTask.startTime ?? now;
-                                    final String dateText =
-                                        updatedTask.startTime != null
-                                        ? "${effectiveDate.month.toString().padLeft(2, '0')}-${effectiveDate.day.toString().padLeft(2, '0')} ${effectiveDate.hour.toString().padLeft(2, '0')}:${effectiveDate.minute.toString().padLeft(2, '0')}"
+                                    final DateTime? start =
+                                        updatedTask.startTime;
+                                    final String dateText = start != null
+                                        ? "${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')} ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}"
                                         : "未设置时间";
 
-                                    return Text(
-                                      dateText,
-                                      style: const TextStyle(
-                                        color: Colors.orange,
-                                        fontSize: 14,
+                                    return GestureDetector(
+                                      onTap: () async {
+                                        DateTime? tempSelectedDate =
+                                            start ?? DateTime.now();
+                                        TimeOfDay? tempStartTime = start != null
+                                            ? TimeOfDay(
+                                                hour: start.hour,
+                                                minute: start.minute,
+                                              )
+                                            : null;
+
+                                        await showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder: (ctx) {
+                                            return CustomDatePicker(
+                                              selectedDate: tempSelectedDate,
+                                              startTime: tempStartTime,
+                                              endTime: null,
+                                              isAllDay: false,
+                                              initialRRule: task.rrule,
+                                              onDateChanged: (d) {
+                                                tempSelectedDate = d;
+                                              },
+                                              onTimeChanged: (s, e) {
+                                                tempStartTime = s;
+                                              },
+                                              onAllDayChanged: (_) {},
+                                              onClear: () async {
+                                                await context
+                                                    .read<TaskProvider>()
+                                                    .updateStartTime(
+                                                      task,
+                                                      null,
+                                                    );
+                                              },
+                                              onRepeatChanged: (rrule) async {
+                                                await context
+                                                    .read<TaskProvider>()
+                                                    .updateRRule(task, rrule);
+                                              },
+                                            );
+                                          },
+                                        );
+
+                                        if (tempSelectedDate != null &&
+                                            tempStartTime != null) {
+                                          final selected = DateTime(
+                                            tempSelectedDate!.year,
+                                            tempSelectedDate!.month,
+                                            tempSelectedDate!.day,
+                                            tempStartTime!.hour,
+                                            tempStartTime!.minute,
+                                          );
+                                          await context
+                                              .read<TaskProvider>()
+                                              .updateStartTime(task, selected);
+                                        }
+                                      },
+                                      child: Text(
+                                        dateText,
+                                        style: const TextStyle(
+                                          color: Colors.orange,
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     );
                                   },
                                 ),
-                                const Spacer(),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    await _taskProvider.updateTaskIsDone(task, !task.isDone);
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.orange,
-                                    foregroundColor: Colors.white,
-                                  ),
-                                  child: const Text('完成'),
-                                ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 8),
+
+                          // 如果当前任务已关联主任务，则显示主任务标题（以及跳转按钮）
+                          if (task.parentTaskId != null)
+                            FutureBuilder<Task?>(
+                              future: _taskProvider.getTaskById(
+                                task.parentTaskId!,
+                              ),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData && snapshot.data != null) {
+                                  return Row(
+                                    children: [
+                                      TextButton.icon(
+                                        label: Text('${snapshot.data!.name} >'),
+                                        onPressed: () {
+                                          _navigateToSubTask(
+                                            task.parentTaskId!,
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
 
                           // 标题
                           EditableTitleWidget(

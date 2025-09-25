@@ -33,12 +33,19 @@ Future<void> setupLocator() async {
 
 Future<Isar> initializeIsar() async {
   final dir = await getApplicationDocumentsDirectory();
-  final isar = await Isar.open([
+  // During Hot Restart, a native Isar instance may still be alive.
+  // Reuse the existing instance if it's already open to avoid lock waits.
+  if (Isar.instanceNames.isNotEmpty) {
+    final existing = Isar.getInstance();
+    if (existing != null) {
+      return existing;
+    }
+  }
+
+  return await Isar.open([
     TaskSchema,
     BelongingBoxSchema,
     HabitSchema,
     OperationSchema,
   ], directory: dir.path);
-
-  return isar;
 }

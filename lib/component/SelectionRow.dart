@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -7,14 +6,15 @@ class SelectionRow extends StatelessWidget {
   final String label;
   final String value;
   final VoidCallback onTap;
+  final Color? valueColor;
 
   SelectionRow({
     required this.icon,
     required this.label,
     required this.value,
     required this.onTap,
+    this.valueColor,
   });
-
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class SelectionRow extends StatelessWidget {
               '$value >',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[500],
+                color: valueColor ?? Colors.grey[500],
                 fontWeight: FontWeight.normal,
               ),
             ),
@@ -48,5 +48,4 @@ class SelectionRow extends StatelessWidget {
       ),
     );
   }
-
 }
