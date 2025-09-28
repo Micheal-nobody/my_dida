@@ -22,14 +22,11 @@ class CalendarDateHeader extends StatefulWidget {
 class _CalendarDateHeaderState extends State<CalendarDateHeader> {
   @override
   Widget build(BuildContext context) {
-    // 获取当前选中日期前后几天的日期
+    // 构建日期序列：当前选中 -> 选中+1 -> ... -> 选中+(dateRange-1)
     List<DateTime> dates = [];
-    int halfRange = widget.dateRange ~/ 2;
-    for (int i = -halfRange; i <= halfRange; i++) {
+    for (int i = 0; i < widget.dateRange; i++) {
       dates.add(widget.selectedDate.add(Duration(days: i)));
     }
-
-    //TODO：当前
     return Container(
       height: 80,
       padding: EdgeInsets.symmetric(vertical: 8),
@@ -39,7 +36,7 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
           SizedBox(width: 60), // CalendarTimeColumn的宽度
           // 日期列
           ...dates.map((date) {
-            bool isSelected = date.day == widget.selectedDate.day;
+            bool isSelected = _isSameDay(date, widget.selectedDate);
             String weekday = _getWeekdayName(date.weekday);
 
             // Get tasks for this date (normalize date to remove time component)
@@ -130,5 +127,9 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
       default:
         return '';
     }
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }

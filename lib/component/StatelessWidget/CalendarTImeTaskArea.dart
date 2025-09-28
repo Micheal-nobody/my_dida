@@ -9,12 +9,16 @@ class CalendarTImeTaskArea extends StatefulWidget {
   final DateTime selectedDate;
   final List<DateTime> visibleDates;
   final Map<DateTime, List<Task>> tasksForDates;
+  final Map<DateTime, bool> rruleHasMore;
+  final void Function(DateTime date) onLoadMoreRRule;
 
   const CalendarTImeTaskArea({
     super.key,
     required this.selectedDate,
     required this.visibleDates,
     required this.tasksForDates,
+    required this.rruleHasMore,
+    required this.onLoadMoreRRule,
   });
 
   @override
@@ -98,7 +102,7 @@ class _CalendarTImeTaskAreaState extends State<CalendarTImeTaskArea> {
             // 跟踪拖拽位置（使用全局坐标）
             _lastDragPosition = details.offset;
           },
-          onAccept: (Task task) async {
+          onAcceptWithDetails: (DragTargetDetails<Task> details) async {
             if (_lastDragPosition != null) {
               // 根据最后记录的拖拽位置计算目标日期和时间
               final targetDate = _calculateTargetDate(_lastDragPosition!);
@@ -108,12 +112,12 @@ class _CalendarTImeTaskAreaState extends State<CalendarTImeTaskArea> {
               );
 
               // 更新任务的开始时间
-              await taskProvider.updateStartTime(task, newTime);
+              await taskProvider.updateStartTime(details.data, newTime);
             }
           },
-          onWillAccept: (Task? task) {
+          onWillAcceptWithDetails: (DragTargetDetails<Task> details) {
             // 允许接受任何任务
-            return task != null;
+            return true;
           },
           builder: (context, candidateData, rejectedData) {
             return Container(
@@ -195,8 +199,31 @@ class _CalendarTImeTaskAreaState extends State<CalendarTImeTaskArea> {
                                 if (task.startTime == null) return false;
                                 // 排除时间为00:00的任务，这些任务在CalendarNoTimeTaskArea中显示
                                 if (task.startTime!.hour == 0 &&
-                                    task.startTime!.minute == 0)
+                                    task.startTime!.minute == 0) {
                                   return false;
+                                }
+                                // 安全判断：如果存在结束时间，且不在同一天或结束时间不大于开始时间，则视为跨日/无效，交由无时间区域处理
+                                // 或者如果任务持续时间超过24小时，也交由无时间区域处理
+                                if (task.endTime != null) {
+                                  final st = task.startTime!;
+                                  final et = task.endTime!;
+                                  final sameDay =
+                                      st.year == et.year &&
+                                      st.month == et.month &&
+                                      st.day == et.day;
+
+                                  // 检查是否跨日
+                                  final isCrossDay =
+                                      !sameDay || !et.isAfter(st);
+
+                                  // 检查是否超过24小时
+                                  final duration = et.difference(st);
+                                  final isOver24Hours = duration.inHours >= 24;
+
+                                  if (isCrossDay || isOver24Hours) {
+                                    return false;
+                                  }
+                                }
                                 return true;
                               })
                               .map((task) {
@@ -207,11 +234,29 @@ class _CalendarTImeTaskAreaState extends State<CalendarTImeTaskArea> {
                                 final topPosition =
                                     hourIndex * 60.0 + minute.toDouble();
 
+                                // 计算高度：若同日且有结束时间，则根据持续时长（分钟）映射到像素；否则给最小高度
+                                final DateTime? et = task.endTime;
+                                double heightPx = 15.0;
+                                if (et != null && et.isAfter(task.startTime!)) {
+                                  final bool sameDay =
+                                      task.startTime!.year == et.year &&
+                                      task.startTime!.month == et.month &&
+                                      task.startTime!.day == et.day;
+                                  if (sameDay) {
+                                    final durationMinutes = et
+                                        .difference(task.startTime!)
+                                        .inMinutes;
+                                    heightPx = durationMinutes
+                                        .clamp(15, 1440)
+                                        .toDouble();
+                                  }
+                                }
+
                                 return Positioned(
                                   left: 0,
                                   top: topPosition,
                                   width: dateColumnWidth,
-                                  height: 15.0,
+                                  height: heightPx,
                                   child: CalendarTaskWithTime(
                                     task: task,
                                     columnWidth: dateColumnWidth,
@@ -220,6 +265,44 @@ class _CalendarTImeTaskAreaState extends State<CalendarTImeTaskArea> {
                                   ),
                                 );
                               }),
+
+                          // 加载更多重复任务按钮（固定在列底部靠下位置）
+                          if (widget.rruleHasMore[normalizedDate] == true)
+                            Positioned(
+                              left: 6,
+                              right: 6,
+                              bottom: 6,
+                              child: SizedBox(
+                                height: 28,
+                                child: TextButton.icon(
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    backgroundColor: Colors.orange.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    foregroundColor: Colors.orange,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(6),
+                                      side: BorderSide(
+                                        color: Colors.orange,
+                                        width: 1,
+                                      ),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    widget.onLoadMoreRRule(normalizedDate);
+                                  },
+                                  icon: Icon(Icons.expand_more, size: 16),
+                                  label: Text(
+                                    '加载更多',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     );

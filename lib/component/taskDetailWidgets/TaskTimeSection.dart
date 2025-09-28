@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:my_dida/model/entity/Task.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
-import 'package:my_dida/component/CustomDatePicker/CustomDatePicker.dart';
+import 'package:my_dida/component/CustomDatePicker/CustomDateTimePicker.dart';
 
 class TaskTimeSection extends StatelessWidget {
   final Task task;
@@ -106,7 +106,7 @@ class TaskTimeSection extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => CustomDatePicker(
+      builder: (context) => CustomDateTimePicker(
         selectedDate: task.startTime ?? now,
         startTime: null,
         endTime: null,

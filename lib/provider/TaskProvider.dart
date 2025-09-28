@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/vo/BelongingBoxVO.dart';
+import 'package:my_dida/utils/RRuleUtil.dart';
 import 'package:my_dida/repository/TaskRepository.dart';
 
 import '../config/locator.dart';
@@ -82,6 +83,16 @@ class TaskProvider with ChangeNotifier {
 
     await _taskRepository.addTask(newTask);
 
+    // 如果是子任务，需要更新父任务的subTaskIds
+    if (newTask.parentTaskId != null) {
+      final parentTask = await _taskRepository.getById(newTask.parentTaskId!);
+      if (parentTask != null) {
+        final List<int> newIds = List.of(parentTask.subTaskIds)
+          ..add(newTask.id);
+        await _taskRepository.update(parentTask..subTaskIds = newIds);
+      }
+    }
+
     // 记录添加任务操作
     final operation = Operation.createAddTaskOperation(newTask);
     print('TaskProvider: 创建操作记录: ${operation.description}');
@@ -129,7 +140,68 @@ class TaskProvider with ChangeNotifier {
     );
     await _operationStack.addOperation(operation);
 
-    // 3、更新数据
+    // 3、如果是重复任务且被标记为完成，则根据 rrule 生成下一次任务
+    if (value && task.rrule != null && task.rrule!.isNotEmpty) {
+      final DateTime? start = task.startTime;
+      if (start != null) {
+        // 找到“严格大于”当前日期的下一次发生日期
+        final List<DateTime> occ = RRuleUtil.nextOccurrences(
+          start,
+          task.rrule!,
+          10,
+        );
+        final DateTime normalizedCurrent = DateTime(
+          start.year,
+          start.month,
+          start.day,
+        );
+        DateTime? nextDay;
+        for (final d in occ) {
+          if (d.isAfter(normalizedCurrent)) {
+            nextDay = d;
+            break;
+          }
+        }
+        if (nextDay == null && occ.isNotEmpty) {
+          // 兜底：如果生成器只给了当天，尝试再取更多并选择大于当天的
+          final more = RRuleUtil.nextOccurrences(
+            start.add(const Duration(days: 1)),
+            task.rrule!,
+            1,
+          );
+          if (more.isNotEmpty) {
+            nextDay = more.first;
+          }
+        }
+        if (nextDay != null) {
+          final DateTime nextStart = DateTime(
+            nextDay.year,
+            nextDay.month,
+            nextDay.day,
+            start.hour,
+            start.minute,
+          );
+          // 复制任务，除 id 外继承一切；新任务设为未完成，检查点复位为未完成
+          final Task newRecurring = Task(
+            name: task.name,
+            description: task.description,
+            isDone: false,
+            checkpoints: task.checkpoints
+                .map((c) => CheckPoint(name: c.name, isDone: false))
+                .toList(),
+            startTime: nextStart,
+            endTime: task.endTime,
+            parentTaskId: task.parentTaskId,
+            subTaskIds: List<int>.from(task.subTaskIds),
+            belongingBoxId: task.belongingBoxId,
+            rrule: task.rrule,
+          );
+          await _taskRepository.addTask(newRecurring);
+        }
+      }
+    }
+
+    // 4、更新数据
     loadCurrentBoxTasks();
   }
 
@@ -310,6 +382,96 @@ class TaskProvider with ChangeNotifier {
       oldTask,
       newTask,
       '修改了任务"${task.name}"的开始时间',
+    );
+    await _operationStack.addOperation(operation);
+
+    await loadCurrentBoxTasks();
+  }
+
+  Future<void> updateEndTime(Task task, DateTime? newEndTime) async {
+    // 保存旧状态
+    final oldTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
+    await _taskRepository.update(task..endTime = newEndTime);
+
+    // 记录操作
+    final newTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: newEndTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
+    final operation = Operation.createUpdateTaskOperation(
+      oldTask,
+      newTask,
+      '修改了任务"${task.name}"的结束时间',
+    );
+    await _operationStack.addOperation(operation);
+
+    await loadCurrentBoxTasks();
+  }
+
+  Future<void> updateTimeRange(
+    Task task,
+    DateTime? newStartTime,
+    DateTime? newEndTime,
+  ) async {
+    // 保存旧状态
+    final oldTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: task.startTime,
+      endTime: task.endTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
+    await _taskRepository.update(
+      task
+        ..startTime = newStartTime
+        ..endTime = newEndTime,
+    );
+
+    // 记录操作
+    final newTask = Task(
+      name: task.name,
+      description: task.description,
+      isDone: task.isDone,
+      checkpoints: task.checkpoints,
+      startTime: newStartTime,
+      endTime: newEndTime,
+      parentTaskId: task.parentTaskId,
+      subTaskIds: task.subTaskIds,
+      belongingBoxId: task.belongingBoxId,
+      rrule: task.rrule,
+    )..id = task.id;
+
+    final operation = Operation.createUpdateTaskOperation(
+      oldTask,
+      newTask,
+      '修改了任务"${task.name}"的时间范围',
     );
     await _operationStack.addOperation(operation);
 

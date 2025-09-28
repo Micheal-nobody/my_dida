@@ -8,7 +8,9 @@ import 'package:my_dida/component/taskDetailWidgets/SubTaskSection.dart';
 import 'package:provider/provider.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
 import 'dart:async';
-import 'package:my_dida/component/CustomDatePicker/CustomDatePicker.dart';
+import 'package:my_dida/component/CustomDatePicker/CustomDateTimePicker.dart';
+import 'package:my_dida/utils/TimeUtils.dart';
+import 'package:my_dida/component/AddTaskDialog.dart';
 
 // 任务详情 BottomSheet（由 TaskCard 的 onTap 触发）
 class TaskDetailPage extends StatefulWidget {
@@ -102,6 +104,32 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     );
   }
 
+  String _formatTaskTime(DateTime? start, DateTime? end) {
+    if (start != null && end != null) {
+      // 显示 startTime --> endTime 格式
+      if (start.hour == 0 && start.minute == 0) {
+        // 只有日期信息，不显示时间
+        return "${start.month}月${start.day}日";
+      } else {
+        final startStr =
+            "${start.month}月${start.day}日 ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}";
+        final endStr =
+            "${end.hour.toString().padLeft(2, '0')}:${end.minute.toString().padLeft(2, '0')}";
+        return "$startStr --> $endStr";
+      }
+    } else if (start != null) {
+      // 只显示开始时间
+      if (start.hour == 0 && start.minute == 0) {
+        // 只有日期信息，不显示时间
+        return "${start.month}月${start.day}日";
+      } else {
+        return "${start.month}月${start.day}日 ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}";
+      }
+    } else {
+      return "未设置时间";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final task = _task;
@@ -129,10 +157,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
                           // 时间显示和确认按钮区域
                           Padding(
-                            // padding 表示内边距，表示内容与边缘的距离
-                            // 改为左边距 16
                             padding: const EdgeInsets.only(left: 16),
-                            // padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Row(
                               children: [
                                 GestureDetector(
@@ -171,38 +196,84 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                         );
                                     final DateTime? start =
                                         updatedTask.startTime;
-                                    final String dateText = start != null
-                                        ? "${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')} ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}"
-                                        : "未设置时间";
+                                    final DateTime? end = updatedTask.endTime;
+
+                                    String dateText = _formatTaskTime(
+                                      start,
+                                      end,
+                                    );
 
                                     return GestureDetector(
                                       onTap: () async {
                                         DateTime? tempSelectedDate =
                                             start ?? DateTime.now();
-                                        TimeOfDay? tempStartTime = start != null
+
+                                        // 如果 startTime 的时间部分全为 0，则初始化为当前北京时间，否则使用 startTime
+                                        TimeOfDay? tempStartTime;
+                                        if (start != null &&
+                                            start.hour == 0 &&
+                                            start.minute == 0) {
+                                          final now = DateTime.now()
+                                              .toBeijingTime();
+                                          tempStartTime = TimeOfDay(
+                                            hour: now.hour,
+                                            minute: now.minute,
+                                          );
+                                        } else if (start != null) {
+                                          tempStartTime = TimeOfDay(
+                                            hour: start.hour,
+                                            minute: start.minute,
+                                          );
+                                        } else {
+                                          // 如果没有 startTime，使用当前北京时间
+                                          final now = DateTime.now()
+                                              .toBeijingTime();
+                                          tempStartTime = TimeOfDay(
+                                            hour: now.hour,
+                                            minute: now.minute,
+                                          );
+                                        }
+
+                                        TimeOfDay? tempEndTime =
+                                            task.endTime != null
                                             ? TimeOfDay(
-                                                hour: start.hour,
-                                                minute: start.minute,
+                                                hour: task.endTime!.hour,
+                                                minute: task.endTime!.minute,
                                               )
                                             : null;
+                                        DateTime? tempStartDateTime = start;
+                                        DateTime? tempEndDateTime =
+                                            task.endTime;
 
                                         await showModalBottomSheet(
                                           context: context,
                                           isScrollControlled: true,
                                           backgroundColor: Colors.transparent,
                                           builder: (ctx) {
-                                            return CustomDatePicker(
+                                            return CustomDateTimePicker(
                                               selectedDate: tempSelectedDate,
                                               startTime: tempStartTime,
-                                              endTime: null,
+                                              endTime: tempEndTime,
                                               isAllDay: false,
                                               initialRRule: task.rrule,
+                                              isTimeOnlyDate:
+                                                  start != null &&
+                                                  start.hour == 0 &&
+                                                  start.minute == 0,
                                               onDateChanged: (d) {
                                                 tempSelectedDate = d;
                                               },
                                               onTimeChanged: (s, e) {
                                                 tempStartTime = s;
+                                                tempEndTime = e;
                                               },
+                                              onDateTimeChanged:
+                                                  (startDateTime, endDateTime) {
+                                                    tempStartDateTime =
+                                                        startDateTime;
+                                                    tempEndDateTime =
+                                                        endDateTime;
+                                                  },
                                               onAllDayChanged: (_) {},
                                               onClear: () async {
                                                 await context
@@ -221,18 +292,59 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                           },
                                         );
 
-                                        if (tempSelectedDate != null &&
+                                        // 优先使用完整的DateTime信息
+                                        if (tempStartDateTime != null) {
+                                          // 使用完整的DateTime信息
+                                          await context
+                                              .read<TaskProvider>()
+                                              .updateStartTime(
+                                                task,
+                                                tempStartDateTime,
+                                              );
+
+                                          if (tempEndDateTime != null) {
+                                            await context
+                                                .read<TaskProvider>()
+                                                .updateEndTime(
+                                                  task,
+                                                  tempEndDateTime,
+                                                );
+                                          } else {
+                                            await context
+                                                .read<TaskProvider>()
+                                                .updateEndTime(task, null);
+                                          }
+                                        } else if (tempSelectedDate != null &&
                                             tempStartTime != null) {
-                                          final selected = DateTime(
+                                          // 回退到使用分离的日期和时间信息
+                                          final selectedStart = DateTime(
                                             tempSelectedDate!.year,
                                             tempSelectedDate!.month,
                                             tempSelectedDate!.day,
                                             tempStartTime!.hour,
                                             tempStartTime!.minute,
                                           );
+
+                                          // 如果有结束时间，也创建对应的DateTime
+                                          DateTime? selectedEnd;
+                                          if (tempEndTime != null) {
+                                            selectedEnd = DateTime(
+                                              tempSelectedDate!.year,
+                                              tempSelectedDate!.month,
+                                              tempSelectedDate!.day,
+                                              tempEndTime!.hour,
+                                              tempEndTime!.minute,
+                                            );
+                                          }
+
+                                          // 使用新的updateTimeRange方法同时更新开始和结束时间
                                           await context
                                               .read<TaskProvider>()
-                                              .updateStartTime(task, selected);
+                                              .updateTimeRange(
+                                                task,
+                                                selectedStart,
+                                                selectedEnd,
+                                              );
                                         }
                                       },
                                       child: Text(
@@ -388,8 +500,20 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                         ),
                         const SizedBox(width: 8),
                         TextButton.icon(
-                          onPressed: () async {
-                            await _taskProvider.createSubTask(task);
+                          onPressed: () {
+                            showModalBottomSheet(
+                              context: context,
+                              useRootNavigator: true,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) => Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: MediaQuery.of(
+                                    context,
+                                  ).viewInsets.bottom,
+                                ),
+                                child: AddTaskDialog(parentTask: task),
+                              ),
+                            );
                           },
                           icon: const Icon(
                             Icons.subdirectory_arrow_right,

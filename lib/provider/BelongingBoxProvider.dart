@@ -31,8 +31,6 @@ class BelongingBoxProvider extends ChangeNotifier {
   Future<void> loadAllBelongingBoxes() async {
     List<BelongingBox> belongingBoxes = await _belongingBoxRepository
         .getAllData();
-    //loadAllBelongingBoxes: 1
-    logger.i("loadAllBelongingBoxes: ${belongingBoxes.length}");
 
     all_belongingBoxes = [
       for (var belongingBox in belongingBoxes) convertToVO(belongingBox),

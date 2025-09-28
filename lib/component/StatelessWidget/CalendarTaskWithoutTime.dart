@@ -9,6 +9,7 @@ class CalendarTaskWithoutTime extends StatelessWidget {
   final int taskIndex;
   final double availableHeight;
   final BelongingBoxProvider belongingBoxProvider;
+  final int displayedCount;
 
   const CalendarTaskWithoutTime({
     super.key,
@@ -17,6 +18,7 @@ class CalendarTaskWithoutTime extends StatelessWidget {
     required this.taskIndex,
     required this.availableHeight,
     required this.belongingBoxProvider,
+    required this.displayedCount,
   });
 
   Color _getTaskColor() {
@@ -30,8 +32,8 @@ class CalendarTaskWithoutTime extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 动态计算任务在顶部区域的位置（最多6个任务，垂直排列）
-    final taskCount = 6; // 最大任务数
+    // 动态计算任务在顶部区域的位置（基于实际显示数量，最多6个）
+    final taskCount = displayedCount.clamp(1, 6);
     final taskSpacing = 1.0; // 任务间距
     final totalSpacing = (taskCount - 1) * taskSpacing; // 总间距
     final taskHeight = (availableHeight - totalSpacing) / taskCount; // 每个任务高度

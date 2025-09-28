@@ -8,10 +8,12 @@ import 'package:provider/provider.dart';
 
 import '../model/entity/Task.dart';
 import '../provider/TaskProvider.dart';
-import 'CustomDatePicker/CustomDatePicker.dart';
+import 'CustomDatePicker/CustomDateTimePicker.dart';
 
 class AddTaskDialog extends StatefulWidget {
-  const AddTaskDialog({super.key});
+  final Task? parentTask;
+
+  const AddTaskDialog({super.key, this.parentTask});
 
   @override
   State<AddTaskDialog> createState() => _AddTaskDialogState();
@@ -22,6 +24,8 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   DateTime? _selectedDate;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
+  DateTime? _startDateTime;
+  DateTime? _endDateTime;
   bool _isAllDay = false;
   bool _hasError = false;
   late BelongingBoxVO _selectedBelongingBox;
@@ -31,8 +35,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     super.initState();
     // 获取中国北京时区的时间 (UTC+8)
     _selectedDate = DateTime.now().toBeijingTime().dateOnly;
-
-    logger.i("AddTaskDialog initState,_selectedDate == $_selectedDate");
   }
 
   @override
@@ -52,8 +54,22 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     }
 
     Task newTask = Task(name: taskName);
-    newTask.startTime = _selectedDate;
-    newTask.belongingBoxId = _selectedBelongingBox.id;
+    // 优先使用完整的DateTime信息
+    if (_startDateTime != null) {
+      newTask.startTime = _startDateTime;
+      newTask.endTime = _endDateTime;
+    } else {
+      // 回退到使用分离的日期和时间信息
+      newTask.startTime = _selectedDate;
+    }
+
+    // 如果是子任务，设置父任务ID和归属盒子
+    if (widget.parentTask != null) {
+      newTask.parentTaskId = widget.parentTask!.id;
+      newTask.belongingBoxId = widget.parentTask!.belongingBoxId;
+    } else {
+      newTask.belongingBoxId = _selectedBelongingBox.id;
+    }
 
     logger.i("newTask == $newTask");
 
@@ -67,7 +83,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => CustomDatePicker(
+      builder: (context) => CustomDateTimePicker(
         selectedDate: _selectedDate,
         startTime: _startTime,
         endTime: _endTime,
@@ -87,6 +103,15 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             _endTime = end;
           });
         },
+        onDateTimeChanged: (startDateTime, endDateTime) {
+          logger.i(
+            "onDateTimeChanged startDateTime == $startDateTime, endDateTime == $endDateTime",
+          );
+          setState(() {
+            _startDateTime = startDateTime;
+            _endDateTime = endDateTime;
+          });
+        },
         onAllDayChanged: (isAllDay) {
           logger.i("onAllDayChanged isAllDay == $isAllDay");
           setState(() {
@@ -98,11 +123,34 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             _selectedDate = DateTime.now();
             _startTime = null;
             _endTime = null;
+            _startDateTime = null;
+            _endDateTime = null;
             _isAllDay = false;
           });
         },
       ),
     );
+  }
+
+  String _getSelectDateString() {
+    // 优先使用包含完整时间信息的_startDateTime
+    DateTime? displayDate = _startDateTime ?? _selectedDate;
+    if (displayDate == null) {
+      return '选择日期';
+    }
+
+    if (displayDate.isToday()) {
+      if (displayDate.hasTime()) {
+        return '今天 ${displayDate.hour.toString().padLeft(2, '0')}:${displayDate.minute.toString().padLeft(2, '0')}';
+      }
+      return '今天';
+    }
+
+    if (displayDate.hasTime()) {
+      return '${displayDate.month}月${displayDate.day}日 ${displayDate.hour.toString().padLeft(2, '0')}:${displayDate.minute.toString().padLeft(2, '0')}';
+    }
+
+    return '${displayDate.month}月${displayDate.day}日';
   }
 
   @override
@@ -150,9 +198,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                       const Icon(Icons.calendar_today, size: 20),
                       const SizedBox(width: 8),
                       Text(
-                        _selectedDate != null
-                            ? '${_selectedDate!.month}月${_selectedDate!.day}日'
-                            : '选择日期',
+                        _getSelectDateString(),
                         style: TextStyle(
                           fontSize: 14,
                           color: _selectedDate != null
@@ -169,40 +215,41 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 ),
               ),
 
-              // BelongingBox 下拉框
-              Consumer<BelongingBoxProvider>(
-                builder: (context, provider, child) {
-                  // 更新为当前归属盒子，如果当前归属盒子为default_belongingBox则返回all_belongBox
-                  _selectedBelongingBox =
-                      provider.cur_belongingBox ==
-                          BelongingBoxProvider.today_belongingBox
-                      ? BelongingBoxProvider.default_belongingBox
-                      : provider.cur_belongingBox;
+              // BelongingBox 下拉框（仅当不是子任务时显示）
+              if (widget.parentTask == null)
+                Consumer<BelongingBoxProvider>(
+                  builder: (context, provider, child) {
+                    // 更新为当前归属盒子，如果当前归属盒子为default_belongingBox则返回all_belongBox
+                    _selectedBelongingBox =
+                        provider.cur_belongingBox ==
+                            BelongingBoxProvider.today_belongingBox
+                        ? BelongingBoxProvider.default_belongingBox
+                        : provider.cur_belongingBox;
 
-                  return DropdownButton<BelongingBoxVO>(
-                    hint: Text(_selectedBelongingBox.name),
-                    items: provider.all_belongingBoxes
-                        .map<DropdownMenuItem<BelongingBoxVO>>((
-                          BelongingBoxVO value,
-                        ) {
-                          return DropdownMenuItem<BelongingBoxVO>(
-                            value: value,
-                            child: Text(value.name),
-                          );
-                        })
-                        .toList(),
-                    onChanged: (BelongingBoxVO? newValue) {
-                      logger.i(
-                        "newValue: $newValue ,newValue.id: ${newValue?.id}",
-                      );
-                      // 更新State
-                      setState(() {
-                        _selectedBelongingBox = newValue!;
-                      });
-                    },
-                  );
-                },
-              ),
+                    return DropdownButton<BelongingBoxVO>(
+                      hint: Text(_selectedBelongingBox.name),
+                      items: provider.all_belongingBoxes
+                          .map<DropdownMenuItem<BelongingBoxVO>>((
+                            BelongingBoxVO value,
+                          ) {
+                            return DropdownMenuItem<BelongingBoxVO>(
+                              value: value,
+                              child: Text(value.name),
+                            );
+                          })
+                          .toList(),
+                      onChanged: (BelongingBoxVO? newValue) {
+                        logger.i(
+                          "newValue: $newValue ,newValue.id: ${newValue?.id}",
+                        );
+                        // 更新State
+                        setState(() {
+                          _selectedBelongingBox = newValue!;
+                        });
+                      },
+                    );
+                  },
+                ),
               const Spacer(),
               ElevatedButton(
                 child: const Text("确认"),

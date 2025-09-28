@@ -5,6 +5,7 @@ import 'package:my_dida/provider/HabitProvider.dart';
 import 'package:my_dida/provider/OperationStackProvider.dart';
 import 'package:my_dida/router/goRouter.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'config/locator.dart';
 
@@ -80,6 +81,15 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
+
+      // 本地化：强制中文并提供所需 delegate（含 Cupertino）
+      locale: const Locale('zh', 'CN'),
+      supportedLocales: const [Locale('zh', 'CN'), Locale('en', 'US')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
 }

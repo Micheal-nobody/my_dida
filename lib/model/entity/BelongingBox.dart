@@ -11,7 +11,7 @@ class BelongingBox {
 
   BelongingBox({
     required this.name,
-    this.colorValue = 0,
+    this.colorValue = 0xFFFF9800,
     this.taskIds = const [],
   });
 }

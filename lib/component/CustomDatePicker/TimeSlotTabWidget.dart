@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'CustomRepeatPicker.dart';
 
 class TimeSlotTabWidget extends StatefulWidget {
   final DateTime? selectedDate;
@@ -7,7 +9,9 @@ class TimeSlotTabWidget extends StatefulWidget {
   final bool isAllDay;
   final Function(DateTime) onDateChanged;
   final Function(TimeOfDay?, TimeOfDay?) onTimeChanged;
+  final Function(DateTime?, DateTime?)? onStartEndDateChanged;
   final Function(bool) onAllDayChanged;
+  final Function(String?)? onRepeatChanged;
   final VoidCallback onSwitchToDateTab;
 
   const TimeSlotTabWidget({
@@ -19,7 +23,9 @@ class TimeSlotTabWidget extends StatefulWidget {
     required this.onDateChanged,
     required this.onTimeChanged,
     required this.onAllDayChanged,
+    this.onRepeatChanged,
     required this.onSwitchToDateTab,
+    this.onStartEndDateChanged,
   });
 
   @override
@@ -27,35 +33,71 @@ class TimeSlotTabWidget extends StatefulWidget {
 }
 
 class _TimeSlotTabWidgetState extends State<TimeSlotTabWidget> {
-  String _formatDate(DateTime date) {
-    const months = [
-      '1月',
-      '2月',
-      '3月',
-      '4月',
-      '5月',
-      '6月',
-      '7月',
-      '8月',
-      '9月',
-      '10月',
-      '11月',
-      '12月',
-    ];
-    const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  String _repeatSelection = '无';
+  TimeOfDay? _currentStartTime;
+  TimeOfDay? _currentEndTime;
+  DateTime? _startDate;
+  DateTime? _endDate;
 
-    return '${months[date.month - 1]}${date.day}日, ${weekdays[date.weekday - 1]}';
+  @override
+  void initState() {
+    super.initState();
+    _currentStartTime = widget.startTime;
+    _currentEndTime = widget.endTime;
+    _startDate = widget.selectedDate;
+    _endDate = widget.selectedDate;
   }
 
-  String _formatTime(TimeOfDay time) {
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  @override
+  void didUpdateWidget(TimeSlotTabWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.startTime != widget.startTime) {
+      _currentStartTime = widget.startTime;
+    }
+    if (oldWidget.endTime != widget.endTime) {
+      _currentEndTime = widget.endTime;
+    }
+    if (oldWidget.selectedDate != widget.selectedDate) {
+      _startDate = widget.selectedDate;
+      _endDate = widget.selectedDate;
+    }
+  }
+
+  // Map a human selection string to an iCal RRULE string using the base date
+  String? _mapSelectionToRRule(String selection, DateTime? baseDate) {
+    if (selection == '无') return null;
+    if (selection == '每天') return 'RRULE:FREQ=DAILY';
+    // 每周 (周X)
+    if (selection.startsWith('每周')) {
+      // Workdays special case handled below
+      if (selection.startsWith('每周工作日')) {
+        return 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR';
+      }
+      final DateTime d = baseDate ?? DateTime.now();
+      const codes = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+      final code = codes[(d.weekday - 1).clamp(0, 6)];
+      return 'RRULE:FREQ=WEEKLY;BYDAY=$code';
+    }
+    if (selection.startsWith('每月')) {
+      final DateTime d = baseDate ?? DateTime.now();
+      return 'RRULE:FREQ=MONTHLY;BYMONTHDAY=${d.day}';
+    }
+    if (selection.startsWith('每年')) {
+      final DateTime d = baseDate ?? DateTime.now();
+      return 'RRULE:FREQ=YEARLY;BYMONTH=${d.month};BYMONTHDAY=${d.day}';
+    }
+    if (selection.startsWith('每周工作日')) {
+      return 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR';
+    }
+    // Unsupported/custom rules can be implemented later
+    return null;
   }
 
   String _getDuration() {
-    if (widget.startTime != null && widget.endTime != null) {
+    if (_currentStartTime != null && _currentEndTime != null) {
       final startMinutes =
-          widget.startTime!.hour * 60 + widget.startTime!.minute;
-      final endMinutes = widget.endTime!.hour * 60 + widget.endTime!.minute;
+          _currentStartTime!.hour * 60 + _currentStartTime!.minute;
+      final endMinutes = _currentEndTime!.hour * 60 + _currentEndTime!.minute;
       final duration = endMinutes - startMinutes;
       final hours = duration ~/ 60;
       final minutes = duration % 60;
@@ -71,31 +113,90 @@ class _TimeSlotTabWidgetState extends State<TimeSlotTabWidget> {
     return '';
   }
 
-  Future<void> _selectTime(bool isStartTime) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: isStartTime
-          ? (widget.startTime ?? const TimeOfDay(hour: 9, minute: 0))
-          : (widget.endTime ?? const TimeOfDay(hour: 10, minute: 0)),
+  Widget _buildDateTimeWheel({required bool isStart}) {
+    final DateTime? currentDate = isStart ? _startDate : _endDate;
+    final DateTime base = currentDate ?? widget.selectedDate ?? DateTime.now();
+    final TimeOfDay? initialTime = isStart
+        ? _currentStartTime
+        : _currentEndTime;
+    final TimeOfDay fallback = isStart
+        ? const TimeOfDay(hour: 9, minute: 0)
+        : const TimeOfDay(hour: 10, minute: 0);
+
+    final DateTime initialDateTime = DateTime(
+      base.year,
+      base.month,
+      base.day,
+      (initialTime ?? fallback).hour,
+      (initialTime ?? fallback).minute,
     );
 
-    if (picked != null) {
-      TimeOfDay? newStartTime = widget.startTime;
-      TimeOfDay? newEndTime = widget.endTime;
+    return SizedBox(
+      height: 180,
+      child: CupertinoDatePicker(
+        mode: CupertinoDatePickerMode.dateAndTime,
+        use24hFormat: true,
+        minuteInterval: 1,
+        initialDateTime: initialDateTime,
+        onDateTimeChanged: (dt) {
+          // 1) 更新独立的日期
+          final DateTime pickedDateOnly = DateTime(dt.year, dt.month, dt.day);
+          if (isStart) {
+            _startDate = pickedDateOnly;
+          } else {
+            _endDate = pickedDateOnly;
+          }
 
-      if (isStartTime) {
-        newStartTime = picked;
-        // Auto-set end time to 1 hour later if not set
-        if (newEndTime == null) {
-          final endHour = (picked.hour + 1) % 24;
-          newEndTime = TimeOfDay(hour: endHour, minute: picked.minute);
-        }
-      } else {
-        newEndTime = picked;
-      }
+          // 通知父组件日期变化
+          if (widget.onStartEndDateChanged != null) {
+            widget.onStartEndDateChanged!(_startDate, _endDate);
+          }
 
-      widget.onTimeChanged(newStartTime, newEndTime);
-    }
+          // 2) 更新时间并保持开始 < 结束
+          final TimeOfDay pickedTime = TimeOfDay(
+            hour: dt.hour,
+            minute: dt.minute,
+          );
+          if (isStart) {
+            TimeOfDay? end = _currentEndTime;
+            if (end != null) {
+              final s = pickedTime.hour * 60 + pickedTime.minute;
+              final e = end.hour * 60 + end.minute;
+              if (e <= s) {
+                final endTotal = s + 1;
+                end = TimeOfDay(
+                  hour: (endTotal ~/ 60) % 24,
+                  minute: endTotal % 60,
+                );
+              }
+            }
+            setState(() {
+              _currentStartTime = pickedTime;
+              _currentEndTime = end;
+            });
+            widget.onTimeChanged(pickedTime, end);
+          } else {
+            TimeOfDay? start = _currentStartTime;
+            if (start != null) {
+              final s = start.hour * 60 + start.minute;
+              final e = pickedTime.hour * 60 + pickedTime.minute;
+              if (e <= s) {
+                final startTotal = (e - 1).clamp(0, 1439);
+                start = TimeOfDay(
+                  hour: (startTotal ~/ 60) % 24,
+                  minute: startTotal % 60,
+                );
+              }
+            }
+            setState(() {
+              _currentStartTime = start;
+              _currentEndTime = pickedTime;
+            });
+            widget.onTimeChanged(start, pickedTime);
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -104,92 +205,27 @@ class _TimeSlotTabWidgetState extends State<TimeSlotTabWidget> {
       children: [
         const SizedBox(height: 20),
 
-        // Date and Time cards
+        // 开始时间（含日期）
         Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: widget.onSwitchToDateTab,
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '日期',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.selectedDate != null
-                            ? _formatDate(widget.selectedDate!)
-                            : '选择日期',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
-                        ),
-                      ),
-                      if (widget.selectedDate != null)
-                        Text(
-                          '${DateTime.now().difference(widget.selectedDate!).inDays.abs()}天前',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _selectTime(true),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '时间',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.startTime != null && widget.endTime != null
-                            ? '${_formatTime(widget.startTime!)} - ${_formatTime(widget.endTime!)}'
-                            : '选择时间',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
-                        ),
-                      ),
-                      if (widget.startTime != null && widget.endTime != null)
-                        Text(
-                          '持续时间: ${_getDuration()}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          children: const [
+            Text('开始时间', style: TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
+        const SizedBox(height: 8),
+        _buildDateTimeWheel(isStart: true),
+
+        const SizedBox(height: 16),
+
+        // 结束时间（含日期）
+        Row(
+          children: [
+            const Text('结束时间', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Spacer(),
+            Text(_getDuration(), style: const TextStyle(color: Colors.grey)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        _buildDateTimeWheel(isStart: false),
 
         const SizedBox(height: 20),
 
@@ -198,34 +234,66 @@ class _TimeSlotTabWidgetState extends State<TimeSlotTabWidget> {
           children: [
             const Text('全天'),
             const Spacer(),
-            Switch(value: widget.isAllDay, onChanged: widget.onAllDayChanged),
+            Switch(
+              value: widget.isAllDay,
+              onChanged: (v) {
+                if (v) {
+                  widget.onTimeChanged(null, null);
+                }
+                widget.onAllDayChanged(v);
+              },
+            ),
           ],
         ),
 
         const SizedBox(height: 20),
 
         // Reminder setting
-        Row(
-          children: [
-            const Icon(Icons.alarm, color: Colors.grey),
-            const SizedBox(width: 12),
-            const Text('提醒'),
-            const Spacer(),
-            const Text('准时 ×'),
-          ],
-        ),
-
-        const SizedBox(height: 20),
+        // Row(
+        //   children: [
+        //     const Icon(Icons.alarm, color: Colors.grey),
+        //     const Spacer(),
+        //     const Text('准时 ×'),
+        //   ],
+        // ),
+        // const SizedBox(height: 20),
 
         // Repeat setting
-        Row(
-          children: [
-            const Icon(Icons.refresh, color: Colors.grey),
-            const SizedBox(width: 12),
-            const Text('重复'),
-            const Spacer(),
-            const Text('无 >'),
-          ],
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () async {
+            await showDialog(
+              context: context,
+              builder: (context) {
+                return CustomRepeatPicker(
+                  selectedRepeat: _repeatSelection,
+                  baseDate: widget.selectedDate,
+                  onRepeatSelected: (value) {
+                    setState(() {
+                      _repeatSelection = value;
+                    });
+                    // 通知父组件重复规则变化
+                    if (widget.onRepeatChanged != null) {
+                      final rrule = _mapSelectionToRRule(
+                        value,
+                        widget.selectedDate,
+                      );
+                      widget.onRepeatChanged!(rrule);
+                    }
+                  },
+                );
+              },
+            );
+          },
+          child: Row(
+            children: [
+              const Icon(Icons.refresh, color: Colors.grey),
+              const SizedBox(width: 12),
+              const Text('重复'),
+              const Spacer(),
+              Text('$_repeatSelection >'),
+            ],
+          ),
         ),
       ],
     );

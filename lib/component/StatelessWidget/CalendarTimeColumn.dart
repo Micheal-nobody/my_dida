@@ -6,10 +6,9 @@ class CalendarTimeColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<String> timeLabels = [];
-    for (int i = 1; i <= 23; i++) {
+    for (int i = 0; i <= 23; i++) {
       timeLabels.add(i.toString().padLeft(2, '0'));
     }
-    timeLabels.add('00');
 
     return SizedBox(
       width: 60,

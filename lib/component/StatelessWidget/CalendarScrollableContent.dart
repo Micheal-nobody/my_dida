@@ -8,12 +8,16 @@ class CalendarScrollableContent extends StatefulWidget {
   final DateTime selectedDate;
   final List<DateTime> visibleDates;
   final Map<DateTime, List<Task>> tasksForDates;
+  final Map<DateTime, bool> rruleHasMore;
+  final void Function(DateTime date) onLoadMoreRRule;
 
   const CalendarScrollableContent({
     super.key,
     required this.selectedDate,
     required this.visibleDates,
     required this.tasksForDates,
+    required this.rruleHasMore,
+    required this.onLoadMoreRRule,
   });
 
   @override
@@ -23,8 +27,23 @@ class CalendarScrollableContent extends StatefulWidget {
 
 class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
   late ScrollController _scrollController;
-  int? _cachedNoTimeTasksCount;
-  Map<DateTime, List<Task>>? _cachedTasksForDates;
+
+  List<DateTime> _getReorderedVisibleDates() {
+    // Ensure the selected date is the first column, others remain in original order
+    final List<DateTime> dates = List<DateTime>.from(widget.visibleDates);
+    final int indexOfSelected = dates.indexWhere(
+      (d) => _isSameDay(d, widget.selectedDate),
+    );
+    if (indexOfSelected <= 0) {
+      return dates;
+    }
+    final DateTime selected = dates.removeAt(indexOfSelected);
+    return [selected, ...dates];
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
 
   @override
   void initState() {
@@ -38,48 +57,13 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
     super.dispose();
   }
 
-  int _getNoTimeTasksCount() {
-    // 如果tasksForDates没有变化，返回缓存的结果
-    if (_cachedTasksForDates == widget.tasksForDates &&
-        _cachedNoTimeTasksCount != null) {
-      return _cachedNoTimeTasksCount!;
-    }
-
-    int count = 0;
-    for (final tasks in widget.tasksForDates.values) {
-      count += tasks.where((task) {
-        return task.startTime == null ||
-            (task.startTime!.hour == 0 && task.startTime!.minute == 0);
-      }).length;
-    }
-
-    // 缓存结果
-    _cachedNoTimeTasksCount = count;
-    _cachedTasksForDates = widget.tasksForDates;
-    return count;
-  }
-
   @override
   Widget build(BuildContext context) {
-    // 计算没有具体时间的任务数量
-    final noTimeTasksCount = _getNoTimeTasksCount();
-
-
+    // 处理可见日期顺序：将当前选中的日期放置到最左侧，其余任务依次排列在右侧
+    final List<DateTime> reorderedVisibleDates = _getReorderedVisibleDates();
     return Column(
       children: [
-        // 上半部分：没有具体时间的任务区域 - 使用AnimatedContainer确保高度变化有动画
-        if (noTimeTasksCount > 0)
-          AnimatedContainer(
-            duration: Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            child: CalendarNoTimeTaskArea(
-              visibleDates: widget.visibleDates,
-              tasksForDates: widget.tasksForDates,
-              selectedDate: widget.selectedDate,
-            ),
-          ),
-
-        // 下半部分：可滚动的时间轴和任务区域
+        // 可滚动的时间轴和任务区域（包含顶端的“无具体时间任务区域”）
         Expanded(
           child: CustomScrollView(
             controller: _scrollController,
@@ -87,23 +71,38 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
             slivers: [
               // 使用SliverToBoxAdapter包装整个内容
               SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 1440, // 24小时 * 60px = 1440px
-                  child: Row(
-                    children: [
-                      // 4. 左侧时间列
-                      CalendarTimeColumn(),
+                child: Column(
+                  children: [
+                    // 已实现：如果endTime - startTime > 24小时，则仅显示在CalendarNoTimeTaskArea（高度与CalendarNoTimeTaskArea中的任务数量一致，宽度根据endTime - startTime的天数确定），不显示在CalendarTImeTaskArea
+                    // 顶部：没有具体时间（或时间为00:00）的任务区域
+                    CalendarNoTimeTaskArea(
+                      visibleDates: reorderedVisibleDates,
+                      tasksForDates: widget.tasksForDates,
+                      selectedDate: widget.selectedDate,
+                    ),
 
-                      // 5. 任务显示区域
-                      Expanded(
-                        child: CalendarTImeTaskArea(
-                          selectedDate: widget.selectedDate,
-                          visibleDates: widget.visibleDates,
-                          tasksForDates: widget.tasksForDates,
-                        ),
+                    // 下方：24小时时间轴 + 任务区域
+                    SizedBox(
+                      height: 1440, // 24小时 * 60px = 1440px
+                      child: Row(
+                        children: [
+                          // 4. 左侧时间列
+                          CalendarTimeColumn(),
+
+                          // 5. 任务显示区域（不再包含00:00任务）
+                          Expanded(
+                            child: CalendarTImeTaskArea(
+                              selectedDate: widget.selectedDate,
+                              visibleDates: reorderedVisibleDates,
+                              tasksForDates: widget.tasksForDates,
+                              rruleHasMore: widget.rruleHasMore,
+                              onLoadMoreRRule: widget.onLoadMoreRRule,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],

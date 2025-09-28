@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/config/logger.dart';
 import 'package:my_dida/model/vo/BelongingBoxVO.dart';
 import 'package:my_dida/component/TaskDetailPage.dart';
+import 'package:my_dida/utils/TimeUtils.dart';
 import 'package:provider/provider.dart';
 
 import '../model/entity/Task.dart';
@@ -84,7 +85,7 @@ class TaskCard extends StatelessWidget {
 
 
         onTap: () {
-          logger.d('点击了任务：$task');
+          logger.i('点击了任务：$task');
           TaskDetailPage.show(context, task);
         },
       ),
@@ -100,11 +101,20 @@ class TaskCard extends StatelessWidget {
     final tomorrow = today.add(const Duration(days: 1));
 
     if (dateTime.isAtSameMomentAs(today)) {
+      if (dateTime.hasTime()) {
+        return '今天 ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+      }
       return '今天';
     } else if (dateTime.isAtSameMomentAs(tomorrow)) {
+      if (dateTime.hasTime()) {
+        return '明天 ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+      }
       return '明天';
     } else {
-      return dateTime.toString().substring(0, 19);
+      if (dateTime.hasTime()) {
+        return '${dateTime.month}月${dateTime.day}日 ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+      }
+      return '${dateTime.month}月${dateTime.day}日';
     }
   }
 }

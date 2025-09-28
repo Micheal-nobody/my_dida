@@ -4,6 +4,7 @@ import '../../model/entity/Task.dart';
 import '../../provider/BelongingBoxProvider.dart';
 import '../../provider/TaskProvider.dart';
 import 'CalendarTaskWithoutTime.dart';
+import '../TaskDetailPage.dart';
 
 class CalendarNoTimeTaskArea extends StatefulWidget {
   final List<DateTime> visibleDates;
@@ -23,35 +24,58 @@ class CalendarNoTimeTaskArea extends StatefulWidget {
 
 class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
   Offset? _lastDragPosition;
+  static const double _spanBarHeight = 28.0; // 与单项任务高度一致
 
-  // 动态计算高度基于任务数量
+  // 动态计算高度：仅基于"选中日期"的无具体时间任务数量
   double _calculateDynamicHeight() {
-    int maxTasksInAnyDay = 0;
-
-    for (final date in widget.visibleDates) {
-      final normalizedDate = DateTime(date.year, date.month, date.day);
-      final dayTasks = widget.tasksForDates[normalizedDate] ?? [];
-      final noTimeTasks = dayTasks.where((task) {
-        return task.startTime == null ||
-            (task.startTime!.hour == 0 && task.startTime!.minute == 0);
-      }).length;
-
-      maxTasksInAnyDay = maxTasksInAnyDay > noTimeTasks
-          ? maxTasksInAnyDay
-          : noTimeTasks;
-    }
-
-    // 如果没有任务，返回0高度
-    if (maxTasksInAnyDay == 0) return 0;
-
-    // 每个任务高度约28px，加上padding和间距
-    // 最小高度80px，最大高度400px，确保有足够空间显示任务
-    final taskHeight = 28.0;
-    final padding = 16.0; // 上下padding
-    final calculatedHeight = (maxTasksInAnyDay * taskHeight + padding).clamp(
-      80.0,
-      400.0,
+    final normalizedSelected = DateTime(
+      widget.selectedDate.year,
+      widget.selectedDate.month,
+      widget.selectedDate.day,
     );
+    final dayTasks = widget.tasksForDates[normalizedSelected] ?? [];
+
+    // 分别统计不同类型的任务
+    final noTimeTasks = dayTasks.where((task) {
+      if (task.startTime == null) return true;
+      final isZeroTime =
+          task.startTime!.hour == 0 && task.startTime!.minute == 0;
+      return isZeroTime;
+    }).toList();
+
+    // 统计跨日任务或超过24小时的任务（只计算在开始日期显示的任务）
+    final crossDayTasks = dayTasks.where((task) {
+      if (task.startTime == null || task.endTime == null) return false;
+      final st = task.startTime!;
+      final et = task.endTime!;
+      final sameDay =
+          st.year == et.year && st.month == et.month && st.day == et.day;
+
+      // 检查是否跨日
+      final isCrossDay = !sameDay && et.isAfter(st);
+
+      // 检查是否超过24小时（即使在同一日）
+      final duration = et.difference(st);
+      final isOver24Hours = duration.inHours >= 24;
+
+      if (isCrossDay || isOver24Hours) {
+        // 只计算在开始日期显示的任务
+        final taskStartDate = DateTime(st.year, st.month, st.day);
+        return taskStartDate.isAtSameMomentAs(normalizedSelected);
+      }
+      return false;
+    }).toList();
+
+    // 总任务数量 = 无时间任务 + 跨天任务（只在开始日期计算）
+    final totalTaskCount = noTimeTasks.length + crossDayTasks.length;
+
+    if (totalTaskCount == 0) return 0;
+
+    // 仅为实际显示的数量分配高度（最多显示6个）
+    final displayedCount = totalTaskCount.clamp(0, 6);
+    final taskHeight = 28.0;
+    final padding = 16.0;
+    final calculatedHeight = displayedCount * taskHeight + padding;
     return calculatedHeight;
   }
 
@@ -61,6 +85,141 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
     final timeColumnWidth = 60.0; // CalendarTimeColumn的宽度
     final availableWidth = screenWidth - timeColumnWidth;
     return availableWidth / widget.visibleDates.length;
+  }
+
+  // 渲染跨天任务 - 使用单个大任务跨越多个日期
+  List<Widget> _renderCrossDayTasks() {
+    final crossDayTasks = _getAllCrossDayTasks();
+
+    return crossDayTasks.asMap().entries.map((entry) {
+      final taskIndex = entry.key;
+      final task = entry.value;
+
+      return _buildCrossDayTask(task, taskIndex, context);
+    }).toList();
+  }
+
+  // 计算特定日期的跨天任务数量
+  int _getCrossDayTaskCountForDate(DateTime date) {
+    int count = 0;
+    for (final task in _getAllCrossDayTasks()) {
+      final st = task.startTime!;
+      final et = task.endTime!;
+      final stDate = DateTime(st.year, st.month, st.day);
+      final etDate = DateTime(et.year, et.month, et.day);
+
+      // 检查当前日期是否在任务范围内
+      if (!date.isBefore(stDate) && !date.isAfter(etDate)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  // 获取所有跨天任务
+  List<Task> _getAllCrossDayTasks() {
+    final crossDayTasks = <Task>[];
+
+    // 从所有可见日期中收集跨天任务
+    for (final date in widget.visibleDates) {
+      final dateNormalized = DateTime(date.year, date.month, date.day);
+      final tasksForThisDate = widget.tasksForDates[dateNormalized] ?? [];
+
+      for (final task in tasksForThisDate) {
+        if (task.startTime == null || task.endTime == null) continue;
+
+        final st = task.startTime!;
+        final et = task.endTime!;
+        final sameDay =
+            st.year == et.year && st.month == et.month && st.day == et.day;
+
+        // 检查是否跨日或超过24小时
+        final isCrossDay = !sameDay && et.isAfter(st);
+        final duration = et.difference(st);
+        final isOver24Hours = duration.inHours >= 24;
+
+        if ((isCrossDay || isOver24Hours) &&
+            !crossDayTasks.any((t) => t.id == task.id)) {
+          crossDayTasks.add(task);
+        }
+      }
+    }
+
+    return crossDayTasks;
+  }
+
+  // 获取任务颜色
+  Color _getTaskColor(Task task, BelongingBoxProvider belongingBoxProvider) {
+    // Find the belonging box for this task
+    final belongingBox = belongingBoxProvider.all_belongingBoxes.firstWhere(
+      (box) => box.id == task.belongingBoxId,
+      orElse: () => BelongingBoxProvider.default_belongingBox,
+    );
+    return belongingBox.color;
+  }
+
+  // 构建单个跨天任务
+  Widget _buildCrossDayTask(Task task, int taskIndex, BuildContext context) {
+    final st = task.startTime!;
+    final et = task.endTime!;
+    final stDate = DateTime(st.year, st.month, st.day);
+    final etDate = DateTime(et.year, et.month, et.day);
+
+    // 计算任务在可见日期中的范围
+    final visibleDates = widget.visibleDates
+        .map((d) => DateTime(d.year, d.month, d.day))
+        .toList();
+    final startIndex = visibleDates.indexWhere((d) => !d.isBefore(stDate));
+    final endIndex = visibleDates.lastIndexWhere((d) => !d.isAfter(etDate));
+
+    if (startIndex == -1 || endIndex == -1 || endIndex < startIndex) {
+      return const SizedBox.shrink();
+    }
+
+    // 计算任务的位置和大小
+    final timeColumnWidth = 60.0;
+    final dateColumnWidth =
+        (MediaQuery.of(context).size.width - timeColumnWidth) /
+        widget.visibleDates.length;
+    final leftPosition = timeColumnWidth + startIndex * dateColumnWidth;
+    final taskWidth = (endIndex - startIndex + 1) * dateColumnWidth;
+    final topPosition = taskIndex * _spanBarHeight;
+
+    return Consumer<BelongingBoxProvider>(
+      builder: (context, belongingBoxProvider, child) {
+        final taskColor = _getTaskColor(task, belongingBoxProvider);
+
+        return Positioned(
+          left: leftPosition,
+          top: topPosition,
+          width: taskWidth,
+          height: _spanBarHeight,
+          child: GestureDetector(
+            onTap: () {
+              TaskDetailPage.show(context, task);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: taskColor.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                task.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   // 根据拖拽位置计算目标日期
@@ -89,7 +248,8 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
             // 跟踪拖拽位置
             _lastDragPosition = details.offset;
           },
-          onAccept: (Task task) async {
+          onAcceptWithDetails: (DragTargetDetails<Task> details) async {
+            final task = details.data;
             if (_lastDragPosition != null) {
               // 根据最后记录的拖拽位置计算目标日期
               final targetDate = _calculateTargetDate(_lastDragPosition!);
@@ -107,9 +267,8 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
               await taskProvider.updateStartTime(task, newTime);
             }
           },
-          onWillAccept: (Task? task) {
-            // 允许接受任何任务
-            return task != null;
+          onWillAcceptWithDetails: (DragTargetDetails<Task> details) {
+            return true;
           },
           builder: (context, candidateData, rejectedData) {
             final dynamicHeight = _calculateDynamicHeight();
@@ -119,81 +278,113 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
               return const SizedBox.shrink();
             }
 
-            return Container(
-              height: dynamicHeight, // 动态高度基于任务数量
-              decoration: BoxDecoration(
-                color: candidateData.isNotEmpty
-                    ? Colors.blue.withValues(alpha: 0.1)
-                    : Colors.blue.withValues(alpha: 0.05),
-                border: Border(
-                  bottom: BorderSide(
-                    color: candidateData.isNotEmpty
-                        ? Colors.blue
-                        : Colors.grey.withValues(alpha: 0.3),
-                    width: candidateData.isNotEmpty ? 2.0 : 1.0,
+            return AnimatedSize(
+              duration: Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: Container(
+                height: dynamicHeight, // 动态高度基于任务数量
+                decoration: BoxDecoration(
+                  color: candidateData.isNotEmpty
+                      ? Colors.blue.withValues(alpha: 0.1)
+                      : Colors.blue.withValues(alpha: 0.05),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: candidateData.isNotEmpty
+                          ? Colors.blue
+                          : Colors.grey.withValues(alpha: 0.3),
+                      width: candidateData.isNotEmpty ? 2.0 : 1.0,
+                    ),
                   ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  // 左侧时间列占位
-                  SizedBox(width: 60),
-                  // 多日期任务列
-                  ...widget.visibleDates.map((date) {
-                    final normalizedDate = DateTime(
-                      date.year,
-                      date.month,
-                      date.day,
-                    );
-                    final dayTasks = widget.tasksForDates[normalizedDate] ?? [];
-                    final dateColumnWidth = _getDateColumnWidth(context);
+                child: Stack(
+                  children: [
+                    // 跨天任务 - 在顶层渲染单个大任务
+                    ..._renderCrossDayTasks(),
 
-                    // 获取没有具体时间的任务
-                    final noTimeTasks = dayTasks.where((task) {
-                      return task.startTime == null ||
-                          (task.startTime!.hour == 0 &&
-                              task.startTime!.minute == 0);
-                    }).toList();
+                    // 日期列容器
+                    Row(
+                      children: [
+                        // 左侧时间列占位
+                        SizedBox(width: 60),
+                        // 多日期任务列
+                        ...widget.visibleDates.map((date) {
+                          final normalizedDate = DateTime(
+                            date.year,
+                            date.month,
+                            date.day,
+                          );
+                          final dayTasks =
+                              widget.tasksForDates[normalizedDate] ?? [];
+                          final dateColumnWidth = _getDateColumnWidth(context);
 
-                    return Expanded(
-                      child: Container(
-                        height: dynamicHeight,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 8,
-                        ),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            // 动态计算可用高度
-                            final availableHeight = constraints.maxHeight;
-                            return ClipRect(
-                              child: Stack(
-                                children: [
-                                  ...noTimeTasks
-                                      .take(6)
-                                      .toList()
-                                      .asMap()
-                                      .entries
-                                      .map(
-                                        (entry) => CalendarTaskWithoutTime(
-                                          task: entry.value,
-                                          columnWidth:
-                                              dateColumnWidth - 8, // 减去padding
-                                          taskIndex: entry.key,
-                                          availableHeight: availableHeight,
-                                          belongingBoxProvider:
-                                              belongingBoxProvider,
-                                        ),
-                                      ),
-                                ],
+                          // 获取没有具体时间的任务
+                          final noTimeTasks = dayTasks.where((task) {
+                            return task.startTime == null ||
+                                (task.startTime!.hour == 0 &&
+                                    task.startTime!.minute == 0);
+                          }).toList();
+
+                          // 跨天任务现在在顶层单独渲染，这里不再处理
+                          final displayedCountForColumn = noTimeTasks.length
+                              .clamp(0, 6);
+
+                          return Expanded(
+                            child: Container(
+                              height: dynamicHeight,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 8,
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                    );
-                  }),
-                ],
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  // 动态计算可用高度
+                                  final availableHeight = constraints.maxHeight;
+                                  return ClipRect(
+                                    child: Stack(
+                                      children: [
+                                        // 非跨天任务，需要从跨天任务下方开始计算位置
+                                        ...noTimeTasks
+                                            .take(6)
+                                            .toList()
+                                            .asMap()
+                                            .entries
+                                            .map((entry) {
+                                              // 计算跨天任务的数量，用于调整非跨天任务的位置
+                                              final crossDayTaskCount =
+                                                  _getCrossDayTaskCountForDate(
+                                                    normalizedDate,
+                                                  );
+
+                                              return CalendarTaskWithoutTime(
+                                                task: entry.value,
+                                                columnWidth:
+                                                    dateColumnWidth -
+                                                    8, // 减去padding
+                                                taskIndex:
+                                                    crossDayTaskCount +
+                                                    entry.key, // 从跨天任务下方开始
+                                                availableHeight:
+                                                    availableHeight,
+                                                belongingBoxProvider:
+                                                    belongingBoxProvider,
+                                                displayedCount:
+                                                    displayedCountForColumn +
+                                                    crossDayTaskCount, // 包含跨天任务数量
+                                              );
+                                            }),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             );
           },

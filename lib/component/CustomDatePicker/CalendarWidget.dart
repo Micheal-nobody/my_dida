@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/component/CustomDatePicker/CustomTimePicker.dart';
 import 'package:my_dida/component/SelectionRow.dart';
 
-import '../../config/logger.dart';
 import '../../utils/RRuleUtil.dart';
+import '../../utils/TimeUtils.dart';
 import 'CustomRepeatPicker.dart';
 
 class CalendarWidget extends StatefulWidget {
@@ -13,6 +13,7 @@ class CalendarWidget extends StatefulWidget {
   final Function(String?)? onRepeatChanged;
   final TimeOfDay? initialTime;
   final String? initialRRule;
+  final bool isTimeOnlyDate; // 当时间部分为00:00时，是否应该显示为"无"
 
   const CalendarWidget({
     super.key,
@@ -22,6 +23,7 @@ class CalendarWidget extends StatefulWidget {
     this.onRepeatChanged,
     this.initialTime,
     this.initialRRule,
+    this.isTimeOnlyDate = false,
   });
 
   @override
@@ -184,17 +186,28 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         SelectionRow(
           icon: Icons.access_time,
           label: '时间',
-          value: _selectedTime != null
+          value:
+              _selectedTime != null &&
+                  (!widget.isTimeOnlyDate &&
+                      _selectedTime!.hour != 0 &&
+                      _selectedTime!.minute != 0)
               ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
               : '无',
-          valueColor: _selectedTime != null ? Colors.orange : null,
+          valueColor:
+              _selectedTime != null &&
+                  (!widget.isTimeOnlyDate &&
+                      _selectedTime!.hour != 0 &&
+                      _selectedTime!.minute != 0)
+              ? Colors.orange
+              : null,
           onTap: () {
             showDialog(
               context: context,
               builder: (context) => CustomTimePicker(
-                initialTime: _selectedTime ?? TimeOfDay.now(),
+                initialTime:
+                    _selectedTime ??
+                    TimeOfDay.fromDateTime(DateTime.now().toBeijingTime()),
                 onTimeSelected: (time) {
-                  logger.i('time: $time');
                   setState(() {
                     _selectedTime = time;
                   });
@@ -211,7 +224,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         const SizedBox(height: 16),
 
         // Repeat selection section
-        //TODO：并没有成功根据 widget.selectedDate 动态设置 value，明明2Time selection section成功了！
         SelectionRow(
           icon: Icons.repeat,
           label: '重复',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/entity/Habit.dart';
 import '../provider/HabitProvider.dart';
+import '../utils/TimeUtils.dart';
 import 'CustomDatePicker/CustomTimePicker.dart';
 
 class EditHabitDialog extends StatefulWidget {
@@ -45,7 +46,16 @@ class _EditHabitDialogState extends State<EditHabitDialog> {
     super.initState();
     _nameController = TextEditingController(text: widget.habit.name);
     _selectedIcon = widget.habit.icon;
-    _selectedTime = TimeOfDay.fromDateTime(widget.habit.remindTime);
+
+    // 如果 remindTime 的时间部分全为 0，则初始化为当前北京时间，否则使用 remindTime
+    if (widget.habit.remindTime.hour == 0 &&
+        widget.habit.remindTime.minute == 0) {
+      final now = DateTime.now().toBeijingTime();
+      _selectedTime = TimeOfDay(hour: now.hour, minute: now.minute);
+    } else {
+      _selectedTime = TimeOfDay.fromDateTime(widget.habit.remindTime);
+    }
+
     _checkInCount = widget.habit.checkInCount;
   }
 

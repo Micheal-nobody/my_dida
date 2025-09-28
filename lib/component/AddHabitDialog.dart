@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/entity/Habit.dart';
 import '../provider/HabitProvider.dart';
+import '../utils/TimeUtils.dart';
 import 'CustomDatePicker/CustomTimePicker.dart';
 
 class AddHabitDialog extends StatefulWidget {
@@ -19,7 +20,7 @@ class _AddHabitDialogState extends State<AddHabitDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   String _selectedIcon = 'star';
-  TimeOfDay _selectedTime = const TimeOfDay(hour: 8, minute: 0);
+  late TimeOfDay _selectedTime;
   int _checkInCount = 1;
 
   final List<Map<String, dynamic>> _icons = [
@@ -34,6 +35,14 @@ class _AddHabitDialogState extends State<AddHabitDialog> {
     {'name': 'walk', 'icon': Icons.directions_walk, 'label': '散步'},
     {'name': 'music', 'icon': Icons.music_note, 'label': '音乐'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // 初始化为当前北京时间
+    final now = DateTime.now().toBeijingTime();
+    _selectedTime = TimeOfDay(hour: now.hour, minute: now.minute);
+  }
 
   @override
   void dispose() {
