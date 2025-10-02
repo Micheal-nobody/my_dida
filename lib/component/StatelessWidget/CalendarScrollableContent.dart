@@ -3,11 +3,13 @@ import 'CalendarTimeColumn.dart';
 import 'CalendarTImeTaskArea.dart';
 import 'FutureTasksArea.dart';
 import '../../model/entity/Task.dart';
+import '../../model/entity/Habit.dart';
 
 class CalendarScrollableContent extends StatefulWidget {
   final DateTime selectedDate;
   final List<DateTime> visibleDates;
   final Map<DateTime, List<Task>> tasksForDates;
+  final Map<DateTime, List<Habit>> habitsForDates;
   final Map<DateTime, List<Task>> futureTasks;
   final Map<DateTime, bool> rruleHasMore;
   final void Function(DateTime date) onLoadMoreRRule;
@@ -17,6 +19,7 @@ class CalendarScrollableContent extends StatefulWidget {
     required this.selectedDate,
     required this.visibleDates,
     required this.tasksForDates,
+    required this.habitsForDates,
     required this.futureTasks,
     required this.rruleHasMore,
     required this.onLoadMoreRRule,
@@ -89,6 +92,7 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
                               selectedDate: widget.selectedDate,
                               visibleDates: reorderedVisibleDates,
                               tasksForDates: widget.tasksForDates,
+                              habitsForDates: widget.habitsForDates,
                               rruleHasMore: widget.rruleHasMore,
                               onLoadMoreRRule: widget.onLoadMoreRRule,
                             ),

@@ -8,8 +8,7 @@ import 'package:my_dida/component/taskDetailWidgets/SubTaskSection.dart';
 import 'package:provider/provider.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
 import 'dart:async';
-import 'package:my_dida/component/CustomDatePicker/CustomDateTimePicker.dart';
-import 'package:my_dida/utils/TimeUtils.dart';
+import 'package:my_dida/component/CustomDatePicker/TaskDateTimePicker.dart';
 import 'package:my_dida/component/AddTaskDialog.dart';
 
 // 任务详情 BottomSheet（由 TaskCard 的 onTap 触发）
@@ -205,147 +204,11 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
                                     return GestureDetector(
                                       onTap: () async {
-                                        DateTime? tempSelectedDate =
-                                            start ?? DateTime.now();
-
-                                        // 如果 startTime 的时间部分全为 0，则初始化为当前北京时间，否则使用 startTime
-                                        TimeOfDay? tempStartTime;
-                                        if (start != null &&
-                                            start.hour == 0 &&
-                                            start.minute == 0) {
-                                          final now = DateTime.now()
-                                              .toBeijingTime();
-                                          tempStartTime = TimeOfDay(
-                                            hour: now.hour,
-                                            minute: now.minute,
-                                          );
-                                        } else if (start != null) {
-                                          tempStartTime = TimeOfDay(
-                                            hour: start.hour,
-                                            minute: start.minute,
-                                          );
-                                        } else {
-                                          // 如果没有 startTime，使用当前北京时间
-                                          final now = DateTime.now()
-                                              .toBeijingTime();
-                                          tempStartTime = TimeOfDay(
-                                            hour: now.hour,
-                                            minute: now.minute,
-                                          );
-                                        }
-
-                                        TimeOfDay? tempEndTime =
-                                            task.endTime != null
-                                            ? TimeOfDay(
-                                                hour: task.endTime!.hour,
-                                                minute: task.endTime!.minute,
-                                              )
-                                            : null;
-                                        DateTime? tempStartDateTime = start;
-                                        DateTime? tempEndDateTime =
-                                            task.endTime;
-
-                                        await showModalBottomSheet(
+                                        // 使用新的 showForTask 方法，它会自动处理持久化
+                                        await TaskDateTimePicker.showForTask(
                                           context: context,
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          builder: (ctx) {
-                                            return CustomDateTimePicker(
-                                              selectedDate: tempSelectedDate,
-                                              startTime: tempStartTime,
-                                              endTime: tempEndTime,
-                                              isAllDay: false,
-                                              initialRRule: task.rrule,
-                                              isTimeOnlyDate:
-                                                  start != null &&
-                                                  start.hour == 0 &&
-                                                  start.minute == 0,
-                                              onDateChanged: (d) {
-                                                tempSelectedDate = d;
-                                              },
-                                              onTimeChanged: (s, e) {
-                                                tempStartTime = s;
-                                                tempEndTime = e;
-                                              },
-                                              onDateTimeChanged:
-                                                  (startDateTime, endDateTime) {
-                                                    tempStartDateTime =
-                                                        startDateTime;
-                                                    tempEndDateTime =
-                                                        endDateTime;
-                                                  },
-                                              onAllDayChanged: (_) {},
-                                              onClear: () async {
-                                                await context
-                                                    .read<TaskProvider>()
-                                                    .updateStartTime(
-                                                      task,
-                                                      null,
-                                                    );
-                                              },
-                                              onRepeatChanged: (rrule) async {
-                                                await context
-                                                    .read<TaskProvider>()
-                                                    .updateRRule(task, rrule);
-                                              },
-                                            );
-                                          },
+                                          task: updatedTask,
                                         );
-
-                                        // 优先使用完整的DateTime信息
-                                        if (tempStartDateTime != null) {
-                                          // 使用完整的DateTime信息
-                                          await context
-                                              .read<TaskProvider>()
-                                              .updateStartTime(
-                                                task,
-                                                tempStartDateTime,
-                                              );
-
-                                          if (tempEndDateTime != null) {
-                                            await context
-                                                .read<TaskProvider>()
-                                                .updateEndTime(
-                                                  task,
-                                                  tempEndDateTime,
-                                                );
-                                          } else {
-                                            await context
-                                                .read<TaskProvider>()
-                                                .updateEndTime(task, null);
-                                          }
-                                        } else if (tempSelectedDate != null &&
-                                            tempStartTime != null) {
-                                          // 回退到使用分离的日期和时间信息
-                                          final selectedStart = DateTime(
-                                            tempSelectedDate!.year,
-                                            tempSelectedDate!.month,
-                                            tempSelectedDate!.day,
-                                            tempStartTime!.hour,
-                                            tempStartTime!.minute,
-                                          );
-
-                                          // 如果有结束时间，也创建对应的DateTime
-                                          DateTime? selectedEnd;
-                                          if (tempEndTime != null) {
-                                            selectedEnd = DateTime(
-                                              tempSelectedDate!.year,
-                                              tempSelectedDate!.month,
-                                              tempSelectedDate!.day,
-                                              tempEndTime!.hour,
-                                              tempEndTime!.minute,
-                                            );
-                                          }
-
-                                          // 使用新的updateTimeRange方法同时更新开始和结束时间
-                                          await context
-                                              .read<TaskProvider>()
-                                              .updateTimeRange(
-                                                task,
-                                                selectedStart,
-                                                selectedEnd,
-                                              );
-                                        }
                                       },
                                       child: Text(
                                         dateText,

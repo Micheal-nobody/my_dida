@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../model/entity/Task.dart';
+import '../../model/entity/Habit.dart';
 import '../../provider/BelongingBoxProvider.dart';
 import '../../provider/TaskProvider.dart';
 import 'CalendarTaskWithTime.dart';
+import 'CalendarHabitWithTime.dart';
 
 class CalendarTImeTaskArea extends StatefulWidget {
   final DateTime selectedDate;
   final List<DateTime> visibleDates;
   final Map<DateTime, List<Task>> tasksForDates;
+  final Map<DateTime, List<Habit>> habitsForDates;
   final Map<DateTime, bool> rruleHasMore;
   final void Function(DateTime date) onLoadMoreRRule;
 
@@ -17,6 +20,7 @@ class CalendarTImeTaskArea extends StatefulWidget {
     required this.selectedDate,
     required this.visibleDates,
     required this.tasksForDates,
+    required this.habitsForDates,
     required this.rruleHasMore,
     required this.onLoadMoreRRule,
   });
@@ -265,6 +269,38 @@ class _CalendarTImeTaskAreaState extends State<CalendarTImeTaskArea> {
                                   ),
                                 );
                               }),
+
+                          // 有具体时间的习惯
+                          ...(() {
+                            final dayHabits =
+                                widget.habitsForDates[normalizedDate] ?? [];
+                            return dayHabits
+                                .where((habit) {
+                                  // 只渲染有具体时间的习惯（不是00:00）
+                                  return habit.remindTime.hour != 0 ||
+                                      habit.remindTime.minute != 0;
+                                })
+                                .map((habit) {
+                                  final hourIndex = habit.remindTime.hour;
+                                  final minute = habit.remindTime.minute;
+
+                                  // 计算习惯在列中的位置
+                                  final topPosition =
+                                      hourIndex * 60.0 + minute.toDouble();
+
+                                  return Positioned(
+                                    left: 0,
+                                    top: topPosition,
+                                    width: dateColumnWidth,
+                                    height: 15.0, // 固定高度
+                                    child: CalendarHabitWithTime(
+                                      habit: habit,
+                                      columnWidth: dateColumnWidth,
+                                      hourIndex: hourIndex,
+                                    ),
+                                  );
+                                });
+                          })(),
 
                           // 加载更多重复任务按钮（固定在列底部靠下位置）
                           if (widget.rruleHasMore[normalizedDate] == true)

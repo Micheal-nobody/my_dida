@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../model/entity/Task.dart';
 import '../provider/TaskProvider.dart';
-import 'CustomDatePicker/CustomDateTimePicker.dart';
+import 'CustomDatePicker/TaskDateTimePicker.dart';
 
 class AddTaskDialog extends StatefulWidget {
   final Task? parentTask;
@@ -21,20 +21,17 @@ class AddTaskDialog extends StatefulWidget {
 
 class _AddTaskDialogState extends State<AddTaskDialog> {
   final TextEditingController _textController = TextEditingController();
-  DateTime? _selectedDate;
-  TimeOfDay? _startTime;
-  TimeOfDay? _endTime;
-  DateTime? _startDateTime;
-  DateTime? _endDateTime;
-  bool _isAllDay = false;
+  TaskTimeInfo _timeInfo = TaskTimeInfo();
   bool _hasError = false;
   late BelongingBoxVO _selectedBelongingBox;
 
   @override
   void initState() {
     super.initState();
-    // 获取中国北京时区的时间 (UTC+8)
-    _selectedDate = DateTime.now().toBeijingTime().dateOnly;
+    // 初始化时间信息
+    _timeInfo = TaskTimeInfo(
+      selectedDate: DateTime.now().toBeijingTime().dateOnly,
+    );
   }
 
   @override
@@ -54,14 +51,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     }
 
     Task newTask = Task(name: taskName);
-    // 优先使用完整的DateTime信息
-    if (_startDateTime != null) {
-      newTask.startTime = _startDateTime;
-      newTask.endTime = _endDateTime;
-    } else {
-      // 回退到使用分离的日期和时间信息
-      newTask.startTime = _selectedDate;
-    }
+    // 使用 TaskTimeInfo 获取最终时间
+    newTask.startTime = _timeInfo.getFinalStartTime();
+    newTask.endTime = _timeInfo.getFinalEndTime();
+    newTask.rrule = _timeInfo.rrule;
 
     // 如果是子任务，设置父任务ID和归属盒子
     if (widget.parentTask != null) {
@@ -78,79 +71,20 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     Navigator.pop(context);
   }
 
-  void _showCustomDatePicker(BuildContext context) {
-    showModalBottomSheet(
+  void _showCustomDatePicker(BuildContext context) async {
+    await TaskDateTimePicker.showForNewTask(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => CustomDateTimePicker(
-        selectedDate: _selectedDate,
-        startTime: _startTime,
-        endTime: _endTime,
-        isAllDay: _isAllDay,
-        initialRRule: null,
-        onDateChanged: (date) {
-          logger.i("onDateChanged date == $date");
-          setState(() {
-            _selectedDate = date;
-          });
-        },
-        onTimeChanged: (start, end) {
-          // onTimeChanged start == TimeOfDay(09:00), end == TimeOfDay(10:00)
-          logger.i("onTimeChanged start == $start, end == $end");
-          setState(() {
-            _startTime = start;
-            _endTime = end;
-          });
-        },
-        onDateTimeChanged: (startDateTime, endDateTime) {
-          logger.i(
-            "onDateTimeChanged startDateTime == $startDateTime, endDateTime == $endDateTime",
-          );
-          setState(() {
-            _startDateTime = startDateTime;
-            _endDateTime = endDateTime;
-          });
-        },
-        onAllDayChanged: (isAllDay) {
-          logger.i("onAllDayChanged isAllDay == $isAllDay");
-          setState(() {
-            _isAllDay = isAllDay;
-          });
-        },
-        onClear: () {
-          setState(() {
-            _selectedDate = DateTime.now();
-            _startTime = null;
-            _endTime = null;
-            _startDateTime = null;
-            _endDateTime = null;
-            _isAllDay = false;
-          });
-        },
-      ),
+      onTimeInfoUpdated: (timeInfo) {
+        logger.i("Task time updated: $timeInfo");
+        setState(() {
+          _timeInfo = timeInfo;
+        });
+      },
     );
   }
 
   String _getSelectDateString() {
-    // 优先使用包含完整时间信息的_startDateTime
-    DateTime? displayDate = _startDateTime ?? _selectedDate;
-    if (displayDate == null) {
-      return '选择日期';
-    }
-
-    if (displayDate.isToday()) {
-      if (displayDate.hasTime()) {
-        return '今天 ${displayDate.hour.toString().padLeft(2, '0')}:${displayDate.minute.toString().padLeft(2, '0')}';
-      }
-      return '今天';
-    }
-
-    if (displayDate.hasTime()) {
-      return '${displayDate.month}月${displayDate.day}日 ${displayDate.hour.toString().padLeft(2, '0')}:${displayDate.minute.toString().padLeft(2, '0')}';
-    }
-
-    return '${displayDate.month}月${displayDate.day}日';
+    return _timeInfo.getTodayDisplayText();
   }
 
   @override
@@ -201,10 +135,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                         _getSelectDateString(),
                         style: TextStyle(
                           fontSize: 14,
-                          color: _selectedDate != null
+                          color: _timeInfo.getFinalStartTime() != null
                               ? Colors.orange
                               : Colors.grey,
-                          fontWeight: _selectedDate != null
+                          fontWeight: _timeInfo.getFinalStartTime() != null
                               ? FontWeight.bold
                               : FontWeight.normal,
                         ),

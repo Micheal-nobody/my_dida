@@ -3,6 +3,83 @@ import 'package:my_dida/config/logger.dart';
 import 'CalendarWidget.dart';
 import 'TimeSlotTabWidget.dart';
 
+/// 显示自定义日期时间选择器的通用方法
+///
+/// 使用示例:
+/// ```dart
+/// await CustomDateTimePicker.show(
+///   context: context,
+///   selectedDate: _selectedDate,
+///   startTime: _startTime,
+///   endTime: _endTime,
+///   isAllDay: _isAllDay,
+///   onDateChanged: (date) => setState(() => _selectedDate = date),
+///   onTimeChanged: (start, end) => setState(() {
+///     _startTime = start;
+///     _endTime = end;
+///   }),
+///   onDateTimeChanged: (startDateTime, endDateTime) => setState(() {
+///     _startDateTime = startDateTime;
+///     _endDateTime = endDateTime;
+///   }),
+///   onAllDayChanged: (isAllDay) => setState(() => _isAllDay = isAllDay),
+///   onClear: () => setState(() {
+///     _selectedDate = DateTime.now();
+///     _startTime = null;
+///     _endTime = null;
+///     _startDateTime = null;
+///     _endDateTime = null;
+///     _isAllDay = false;
+///   }),
+/// );
+/// ```
+class CustomDateTimePickerModal {
+  static Future<void> show({
+    required BuildContext context,
+    DateTime? selectedDate,
+    TimeOfDay? startTime,
+    TimeOfDay? endTime,
+    bool isAllDay = false,
+    String? initialRRule,
+    bool isTimeOnlyDate = false,
+    required Function(DateTime) onDateChanged,
+    required Function(TimeOfDay?, TimeOfDay?) onTimeChanged,
+    Function(DateTime?, DateTime?)? onDateTimeChanged,
+    required Function(bool) onAllDayChanged,
+    required VoidCallback onClear,
+    Function(String?)? onRepeatChanged,
+    Function(DateTime?, DateTime?)? onStartEndDateChanged,
+  }) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: CustomDateTimePicker(
+            selectedDate: selectedDate,
+            startTime: startTime,
+            endTime: endTime,
+            isAllDay: isAllDay,
+            initialRRule: initialRRule,
+            isTimeOnlyDate: isTimeOnlyDate,
+            onDateChanged: onDateChanged,
+            onTimeChanged: onTimeChanged,
+            onDateTimeChanged: onDateTimeChanged,
+            onAllDayChanged: onAllDayChanged,
+            onClear: onClear,
+            onRepeatChanged: onRepeatChanged,
+            onStartEndDateChanged: onStartEndDateChanged,
+          ),
+        );
+      },
+    );
+  }
+}
+
 class CustomDateTimePicker extends StatefulWidget {
   final DateTime? selectedDate;
   final TimeOfDay? startTime;
@@ -16,6 +93,7 @@ class CustomDateTimePicker extends StatefulWidget {
   final Function(String?)? onRepeatChanged;
   final String? initialRRule;
   final bool isTimeOnlyDate;
+  final Function(DateTime?, DateTime?)? onStartEndDateChanged;
 
   const CustomDateTimePicker({
     super.key,
@@ -31,6 +109,7 @@ class CustomDateTimePicker extends StatefulWidget {
     this.initialRRule,
     this.onDateTimeChanged,
     this.isTimeOnlyDate = false,
+    this.onStartEndDateChanged,
   });
 
   @override
@@ -282,6 +361,10 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
                             _startDate = startDate;
                             _endDate = endDate;
                           });
+                          // 通知外部回调
+                          if (widget.onStartEndDateChanged != null) {
+                            widget.onStartEndDateChanged!(startDate, endDate);
+                          }
                         },
                       );
                     },

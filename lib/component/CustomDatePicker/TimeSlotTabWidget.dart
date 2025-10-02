@@ -94,21 +94,57 @@ class _TimeSlotTabWidgetState extends State<TimeSlotTabWidget> {
   }
 
   String _getDuration() {
-    if (_currentStartTime != null && _currentEndTime != null) {
-      final startMinutes =
-          _currentStartTime!.hour * 60 + _currentStartTime!.minute;
-      final endMinutes = _currentEndTime!.hour * 60 + _currentEndTime!.minute;
-      final duration = endMinutes - startMinutes;
-      final hours = duration ~/ 60;
-      final minutes = duration % 60;
+    if (_currentStartTime != null &&
+        _currentEndTime != null &&
+        _startDate != null &&
+        _endDate != null) {
+      // 构建完整的开始和结束 DateTime
+      final startDateTime = DateTime(
+        _startDate!.year,
+        _startDate!.month,
+        _startDate!.day,
+        _currentStartTime!.hour,
+        _currentStartTime!.minute,
+      );
 
-      if (hours > 0 && minutes > 0) {
-        return '${hours}小时${minutes}分钟';
-      } else if (hours > 0) {
-        return '${hours}小时';
-      } else {
-        return '${minutes}分钟';
+      final endDateTime = DateTime(
+        _endDate!.year,
+        _endDate!.month,
+        _endDate!.day,
+        _currentEndTime!.hour,
+        _currentEndTime!.minute,
+      );
+
+      // 计算时间差
+      final duration = endDateTime.difference(startDateTime);
+
+      if (duration.isNegative) {
+        return '时间无效';
       }
+
+      // 正确计算天、小时、分钟
+      final days = duration.inDays;
+      final hours = duration.inHours % 24;
+      final minutes = duration.inMinutes % 60;
+
+      // 格式化显示
+      List<String> parts = [];
+      if (days > 0) {
+        parts.add('$days天');
+      }
+      if (hours > 0) {
+        parts.add('$hours小时');
+      }
+      if (minutes > 0) {
+        parts.add('$minutes分钟');
+      }
+
+      // 如果所有部分都为0，显示0分钟
+      if (parts.isEmpty) {
+        return '0分钟';
+      }
+
+      return parts.join('');
     }
     return '';
   }
@@ -248,16 +284,6 @@ class _TimeSlotTabWidgetState extends State<TimeSlotTabWidget> {
 
         const SizedBox(height: 20),
 
-        // Reminder setting
-        // Row(
-        //   children: [
-        //     const Icon(Icons.alarm, color: Colors.grey),
-        //     const Spacer(),
-        //     const Text('准时 ×'),
-        //   ],
-        // ),
-        // const SizedBox(height: 20),
-
         // Repeat setting
         GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -285,6 +311,7 @@ class _TimeSlotTabWidgetState extends State<TimeSlotTabWidget> {
               },
             );
           },
+
           child: Row(
             children: [
               const Icon(Icons.refresh, color: Colors.grey),

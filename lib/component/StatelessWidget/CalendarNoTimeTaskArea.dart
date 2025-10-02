@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../model/entity/Task.dart';
+import '../../model/entity/Habit.dart';
 import '../../provider/BelongingBoxProvider.dart';
 import '../../provider/TaskProvider.dart';
 import 'CalendarTaskWithoutTime.dart';
+import 'CalendarHabitWithoutTime.dart';
 import '../TaskDetailPage.dart';
 
 class CalendarNoTimeTaskArea extends StatefulWidget {
   final List<DateTime> visibleDates;
   final Map<DateTime, List<Task>> tasksForDates;
+  final Map<DateTime, List<Habit>> habitsForDates;
   final DateTime selectedDate;
 
   const CalendarNoTimeTaskArea({
     super.key,
     required this.visibleDates,
     required this.tasksForDates,
+    required this.habitsForDates,
     required this.selectedDate,
   });
 
@@ -26,14 +30,16 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
   Offset? _lastDragPosition;
   static const double _spanBarHeight = 28.0; // 与单项任务高度一致
 
-  // 动态计算高度：基于所有可见日期的无具体时间任务和跨天任务数量
+  // 动态计算高度：基于所有可见日期的无具体时间任务、习惯和跨天任务数量
   double _calculateDynamicHeight(TaskProvider taskProvider) {
     // 统计所有可见日期的无时间任务
     final allNoTimeTasks = <Task>[];
+    final allNoTimeHabits = <Habit>[];
 
     for (final date in widget.visibleDates) {
       final normalizedDate = DateTime(date.year, date.month, date.day);
       final dayTasks = widget.tasksForDates[normalizedDate] ?? [];
+      final dayHabits = widget.habitsForDates[normalizedDate] ?? [];
 
       // 统计无时间任务
       final noTimeTasks = dayTasks.where((task) {
@@ -43,21 +49,28 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
         return isZeroTime;
       }).toList();
       allNoTimeTasks.addAll(noTimeTasks);
+
+      // 统计无时间习惯（remindTime为00:00的习惯）
+      final noTimeHabits = dayHabits.where((habit) {
+        return habit.remindTime.hour == 0 && habit.remindTime.minute == 0;
+      }).toList();
+      allNoTimeHabits.addAll(noTimeHabits);
     }
 
     // 获取所有跨天任务（从TaskProvider）
     final crossDayTasks = _getAllCrossDayTasksFromAllTasks(taskProvider);
 
-    // 总任务数量 = 无时间任务 + 跨天任务
-    final totalTaskCount = allNoTimeTasks.length + crossDayTasks.length;
+    // 总数量 = 无时间任务 + 无时间习惯 + 跨天任务
+    final totalCount =
+        allNoTimeTasks.length + allNoTimeHabits.length + crossDayTasks.length;
 
-    if (totalTaskCount == 0) return 0;
+    if (totalCount == 0) return 0;
 
     // 仅为实际显示的数量分配高度（最多显示6个）
-    final displayedCount = totalTaskCount.clamp(0, 6);
-    final taskHeight = 28.0;
+    final displayedCount = totalCount.clamp(0, 6);
+    final itemHeight = 28.0;
     final padding = 16.0;
-    final calculatedHeight = displayedCount * taskHeight + padding;
+    final calculatedHeight = displayedCount * itemHeight + padding;
     return calculatedHeight;
   }
 
@@ -320,9 +333,20 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
                                     task.startTime!.minute == 0);
                           }).toList();
 
+                          // 获取没有具体时间的习惯
+                          final dayHabits =
+                              widget.habitsForDates[normalizedDate] ?? [];
+                          final noTimeHabits = dayHabits.where((habit) {
+                            return habit.remindTime.hour == 0 &&
+                                habit.remindTime.minute == 0;
+                          }).toList();
+
                           // 跨天任务现在在顶层单独渲染，这里不再处理
-                          final displayedCountForColumn = noTimeTasks.length
-                              .clamp(0, 6);
+                          final displayedCountForColumn =
+                              (noTimeTasks.length + noTimeHabits.length).clamp(
+                                0,
+                                6,
+                              );
 
                           return Expanded(
                             child: Container(
@@ -364,6 +388,40 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
                                                     availableHeight,
                                                 belongingBoxProvider:
                                                     belongingBoxProvider,
+                                                displayedCount:
+                                                    displayedCountForColumn +
+                                                    crossDayTaskCount, // 包含跨天任务数量
+                                              );
+                                            }),
+
+                                        // 无时间习惯，需要在任务之后渲染
+                                        ...noTimeHabits
+                                            .take(
+                                              6 - noTimeTasks.length,
+                                            ) // 确保总数不超过6
+                                            .toList()
+                                            .asMap()
+                                            .entries
+                                            .map((entry) {
+                                              // 计算跨天任务和无时间任务的数量，用于调整习惯的位置
+                                              final crossDayTaskCount =
+                                                  _getCrossDayTaskCountForDate(
+                                                    normalizedDate,
+                                                    taskProvider,
+                                                  );
+
+                                              return CalendarHabitWithoutTime(
+                                                habit: entry.value,
+                                                columnWidth:
+                                                    dateColumnWidth -
+                                                    8, // 减去padding
+                                                habitIndex:
+                                                    crossDayTaskCount +
+                                                    noTimeTasks.length +
+                                                    entry
+                                                        .key, // 从跨天任务和无时间任务之后开始
+                                                availableHeight:
+                                                    availableHeight,
                                                 displayedCount:
                                                     displayedCountForColumn +
                                                     crossDayTaskCount, // 包含跨天任务数量

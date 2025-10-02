@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/entity/Habit.dart';
 import '../provider/HabitProvider.dart';
-import 'CheckInDialog.dart';
+import 'HabitCheckInDialog.dart';
 import 'EditHabitDialog.dart';
 
 class HabitCard extends StatefulWidget {
@@ -133,7 +133,7 @@ class _HabitCardState extends State<HabitCard> {
 
               onTap: () {
                 if (!_isSkipped) {
-                  CheckInDialog.show(context, habit);
+                  HabitCheckInDialog.show(context: context, habit: habit);
                 }
               },
             ),

@@ -156,7 +156,7 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
                 ),
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

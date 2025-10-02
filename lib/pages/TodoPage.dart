@@ -171,30 +171,49 @@ class _TodoPageState extends State<TodoPage> {
                 );
               }
 
-              // 添加分界线与习惯卡片（仅在“今天”盒子下显示）
+              // 添加分界线与习惯卡片（仅在"今天"盒子下显示）
               if (isTodayTasks && habits.isNotEmpty) {
-                if (items.isNotEmpty) {
-                  items.add(
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 16,
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(child: Divider()),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8),
-                            child: Text('习惯'),
-                          ),
-                          Expanded(child: Divider()),
-                        ],
-                      ),
-                    ),
-                  );
-                }
+                // 先检查有多少习惯需要显示
+                List<Widget> habitCards = [];
+                final habitProvider = Provider.of<HabitProvider>(
+                  context,
+                  listen: false,
+                );
+
                 for (var habit in habits) {
-                  items.add(HabitCard(habit));
+                  // 如果习惯已完成且不显示已完成项目，则跳过
+                  if (habitProvider.isTodayCompleted(habit) &&
+                      !_showCompletedTasks) {
+                    continue;
+                  }
+                  habitCards.add(HabitCard(habit));
+                }
+
+                // 只有当有习惯要显示时才添加分隔线
+                if (habitCards.isNotEmpty) {
+                  if (items.isNotEmpty) {
+                    items.add(
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 16,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(child: Divider()),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8),
+                              child: Text('习惯'),
+                            ),
+                            Expanded(child: Divider()),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  // 添加所有习惯卡片
+                  items.addAll(habitCards);
                 }
               }
 

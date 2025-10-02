@@ -63,86 +63,88 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         ? _mapSelectionToRRule(_selectedRepeat, widget.selectedDate)
         : null;
 
-    return Column(
-      children: [
-        // Calendar grid
-        CalendarGrid(
-          selectedDate: widget.selectedDate,
-          onDateSelected: widget.onDateChanged,
-        ),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Calendar grid
+          CalendarGrid(
+            selectedDate: widget.selectedDate,
+            onDateSelected: widget.onDateChanged,
+          ),
 
-        const SizedBox(height: 24),
+          const SizedBox(height: 24),
 
-        // Time selection section
-        SelectionRow(
-          icon: Icons.access_time,
-          label: '时间',
-          value:
-              _selectedTime != null &&
-                  (!widget.isTimeOnlyDate &&
-                      _selectedTime!.hour != 0 &&
-                      _selectedTime!.minute != 0)
-              ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
-              : '无',
-          valueColor:
-              _selectedTime != null &&
-                  (!widget.isTimeOnlyDate &&
-                      _selectedTime!.hour != 0 &&
-                      _selectedTime!.minute != 0)
-              ? Colors.orange
-              : null,
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => CustomTimePicker(
-                initialTime:
-                    _selectedTime ??
-                    TimeOfDay.fromDateTime(DateTime.now().toBeijingTime()),
-                onTimeSelected: (time) {
-                  setState(() {
-                    _selectedTime = time;
-                  });
-                  // 调用时间变更回调
-                  if (widget.onTimeChanged != null) {
-                    widget.onTimeChanged!(time, null);
-                  }
-                },
-              ),
-            );
-          },
-        ),
+          // Time selection section
+          SelectionRow(
+            icon: Icons.access_time,
+            label: '时间',
+            value:
+                _selectedTime != null &&
+                    (!widget.isTimeOnlyDate &&
+                        _selectedTime!.hour != 0 &&
+                        _selectedTime!.minute != 0)
+                ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
+                : '无',
+            valueColor:
+                _selectedTime != null &&
+                    (!widget.isTimeOnlyDate &&
+                        _selectedTime!.hour != 0 &&
+                        _selectedTime!.minute != 0)
+                ? Colors.orange
+                : null,
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => CustomTimePicker(
+                  initialTime:
+                      _selectedTime ??
+                      TimeOfDay.fromDateTime(DateTime.now().toBeijingTime()),
+                  onTimeSelected: (time) {
+                    setState(() {
+                      _selectedTime = time;
+                    });
+                    // 调用时间变更回调
+                    if (widget.onTimeChanged != null) {
+                      widget.onTimeChanged!(time, null);
+                    }
+                  },
+                ),
+              );
+            },
+          ),
 
-        const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-        // Repeat selection section
-        SelectionRow(
-          icon: Icons.repeat,
-          label: '重复',
-          value: RRuleUtil.humanize(displayRRule ?? ''),
-          valueColor: displayRRule != null ? Colors.orange : null,
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => CustomRepeatPicker(
-                selectedRepeat: _selectedRepeat,
-                baseDate: widget.selectedDate,
-                onRepeatSelected: (repeat) {
-                  setState(() {
-                    _selectedRepeat = repeat;
-                  });
-                  if (widget.onRepeatChanged != null) {
-                    final rrule = _mapSelectionToRRule(
-                      repeat,
-                      widget.selectedDate,
-                    );
-                    widget.onRepeatChanged!(rrule);
-                  }
-                },
-              ),
-            );
-          },
-        ),
-      ],
+          // Repeat selection section
+          SelectionRow(
+            icon: Icons.repeat,
+            label: '重复',
+            value: RRuleUtil.humanize(displayRRule ?? ''),
+            valueColor: displayRRule != null ? Colors.orange : null,
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => CustomRepeatPicker(
+                  selectedRepeat: _selectedRepeat,
+                  baseDate: widget.selectedDate,
+                  onRepeatSelected: (repeat) {
+                    setState(() {
+                      _selectedRepeat = repeat;
+                    });
+                    if (widget.onRepeatChanged != null) {
+                      final rrule = _mapSelectionToRRule(
+                        repeat,
+                        widget.selectedDate,
+                      );
+                      widget.onRepeatChanged!(rrule);
+                    }
+                  },
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

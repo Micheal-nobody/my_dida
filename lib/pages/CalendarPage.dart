@@ -5,7 +5,9 @@ import 'package:my_dida/component/StatelessWidget/CalendarScrollableContent.dart
 import 'package:my_dida/component/StatelessWidget/CalendarNoTimeTaskArea.dart';
 import 'package:my_dida/component/DatePickerDialog.dart';
 import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/Habit.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
+import 'package:my_dida/provider/HabitProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:my_dida/utils/RRuleUtil.dart';
@@ -21,10 +23,11 @@ class _CalendarPageState extends State<CalendarPage> {
   final DateTime _currentDate = DateTime.now();
   DateTime _selectedDate = DateTime.now();
   int _dateRange = 3; // 3-day view by default
-  bool _showCompleted = false; // 默认不显示已完成任务
   Map<DateTime, List<Task>> _tasksForDates = {};
   Map<DateTime, List<Task>> _futureTasks = {}; // 未来任务
+  Map<DateTime, List<Habit>> _habitsForDates = {}; // 习惯数据
   late TaskProvider _taskProvider;
+  late HabitProvider _habitProvider;
   // 每个日期的重复任务分页限制（每次 +5）
   final Map<DateTime, int> _rruleBatchLimit = {};
   // 每个日期是否还有更多重复任务
@@ -34,15 +37,19 @@ class _CalendarPageState extends State<CalendarPage> {
   void initState() {
     super.initState();
     _taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    _habitProvider = Provider.of<HabitProvider>(context, listen: false);
     _loadTasksForVisibleDates();
 
     // 添加TaskProvider监听器
     _taskProvider.addListener(_onTaskProviderChanged);
+    // 添加HabitProvider监听器
+    _habitProvider.addListener(_onTaskProviderChanged);
   }
 
   @override
   void dispose() {
     _taskProvider.removeListener(_onTaskProviderChanged);
+    _habitProvider.removeListener(_onTaskProviderChanged);
     super.dispose();
   }
 
@@ -64,12 +71,16 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _loadTasksForVisibleDates() async {
     final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    final habitProvider = Provider.of<HabitProvider>(context, listen: false);
     final Map<DateTime, List<Task>> tasksMap = {};
     final Map<DateTime, List<Task>> futureTasksMap = {};
+    final Map<DateTime, List<Habit>> habitsMap = {};
 
-    // 获取所有任务
+    // 获取所有任务和习惯
     await taskProvider.loadAllTasks();
+    await habitProvider.loadAllHabits();
     final allTasks = taskProvider.tasks;
+    final allHabits = habitProvider.habits;
 
     // 预计算可见日期（标准化到 00:00）
     // 预计算可见日期（标准化到 00:00）
@@ -144,11 +155,9 @@ class _CalendarPageState extends State<CalendarPage> {
         }
       }
 
-      // 3) 过滤是否展示已完成任务
+      // 3) 过滤已完成任务（已完成的任务不渲染，类似习惯的处理方式）
       List<Task> combined = [...baseTasksForDate, ...rruleTasksForDate];
-      if (!_showCompleted) {
-        combined = combined.where((t) => !t.isDone).toList();
-      }
+      combined = combined.where((t) => !t.isDone).toList();
 
       // 4) 对重复任务应用分页：每个日期最多显示 _rruleBatchLimit[date] 个重复任务
       final int limit = _rruleBatchLimit[normalizedDate] ?? 5;
@@ -180,6 +189,53 @@ class _CalendarPageState extends State<CalendarPage> {
       tasksMap[normalizedDate] = paged;
     }
 
+    // 处理习惯数据 - 只渲染一个习惯实例，不根据rrule展开
+    for (final date in _visibleDates) {
+      final normalizedDate = DateTime(date.year, date.month, date.day);
+      final List<Habit> habitsForDate = [];
+
+      for (final habit in allHabits) {
+        // 检查习惯是否应该在当前日期显示
+        bool shouldShowToday = false;
+
+        if (habit.rrule != null && habit.rrule!.isNotEmpty) {
+          // 使用习惯的startDate作为起始时间
+          final startTime = DateTime(
+            habit.startDate.year,
+            habit.startDate.month,
+            habit.startDate.day,
+            habit.remindTime.hour,
+            habit.remindTime.minute,
+          );
+
+          // 生成习惯的发生日期
+          final occurrences = RRuleUtil.nextOccurrences(
+            startTime,
+            habit.rrule!,
+            365, // 生成一年的数据
+          );
+
+          // 如果当前日期在发生日期中，则应该显示
+          shouldShowToday = occurrences.any(
+            (d) => d.isAtSameMomentAs(normalizedDate),
+          );
+        } else {
+          // 如果没有rrule，每天都显示
+          shouldShowToday = true;
+        }
+
+        if (shouldShowToday) {
+          // 检查习惯是否已完成，已完成的不渲染
+          final isCompleted = habitProvider.isTodayCompleted(habit);
+          if (!isCompleted) {
+            habitsForDate.add(habit);
+          }
+        }
+      }
+
+      habitsMap[normalizedDate] = habitsForDate;
+    }
+
     // 加载未来任务（从最后一个可见日期之后开始，最多30天）
     final lastVisibleDate = _visibleDates.last;
     final futureHorizon = 30; // 未来30天
@@ -194,8 +250,9 @@ class _CalendarPageState extends State<CalendarPage> {
 
       // 查找开始时间在这个未来日期的任务
       final futureTasksForDate = allTasks.where((task) {
-        if (task.rrule != null && task.rrule!.isNotEmpty)
+        if (task.rrule != null && task.rrule!.isNotEmpty) {
           return false; // 跳过重复任务
+        }
         if (task.startTime == null) return false; // 跳过无时间任务
 
         final taskDate = DateTime(
@@ -206,10 +263,8 @@ class _CalendarPageState extends State<CalendarPage> {
         return taskDate.isAtSameMomentAs(normalizedFutureDate);
       }).toList();
 
-      // 过滤已完成任务
-      if (!_showCompleted) {
-        futureTasksForDate.removeWhere((task) => task.isDone);
-      }
+      // 过滤已完成任务（已完成的任务不渲染）
+      futureTasksForDate.removeWhere((task) => task.isDone);
 
       if (futureTasksForDate.isNotEmpty) {
         futureTasksMap[normalizedFutureDate] = futureTasksForDate;
@@ -219,6 +274,7 @@ class _CalendarPageState extends State<CalendarPage> {
     setState(() {
       _tasksForDates = tasksMap;
       _futureTasks = futureTasksMap;
+      _habitsForDates = habitsMap;
     });
   }
 
@@ -285,20 +341,6 @@ class _CalendarPageState extends State<CalendarPage> {
             icon: Icon(Icons.calendar_today, color: Colors.grey[600]),
             onPressed: _showDatePicker,
           ),
-          SizedBox(width: 8),
-          IconButton(
-            tooltip: _showCompleted ? '隐藏已完成任务' : '显示已完成任务',
-            icon: Icon(
-              _showCompleted ? Icons.visibility : Icons.visibility_off,
-              color: Colors.grey[600],
-            ),
-            onPressed: () {
-              setState(() {
-                _showCompleted = !_showCompleted;
-              });
-              _loadTasksForVisibleDates();
-            },
-          ),
           SizedBox(width: 16),
         ],
       ),
@@ -322,6 +364,7 @@ class _CalendarPageState extends State<CalendarPage> {
           CalendarNoTimeTaskArea(
             visibleDates: _visibleDates,
             tasksForDates: _tasksForDates,
+            habitsForDates: _habitsForDates,
             selectedDate: _selectedDate,
           ),
 
@@ -352,6 +395,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 selectedDate: _selectedDate,
                 visibleDates: _visibleDates,
                 tasksForDates: _tasksForDates,
+                habitsForDates: _habitsForDates,
                 futureTasks: _futureTasks,
                 rruleHasMore: _rruleHasMore,
                 onLoadMoreRRule: _loadMoreRRuleForDate,
