@@ -26,48 +26,30 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
   Offset? _lastDragPosition;
   static const double _spanBarHeight = 28.0; // 与单项任务高度一致
 
-  // 动态计算高度：仅基于"选中日期"的无具体时间任务数量
-  double _calculateDynamicHeight() {
-    final normalizedSelected = DateTime(
-      widget.selectedDate.year,
-      widget.selectedDate.month,
-      widget.selectedDate.day,
-    );
-    final dayTasks = widget.tasksForDates[normalizedSelected] ?? [];
+  // 动态计算高度：基于所有可见日期的无具体时间任务和跨天任务数量
+  double _calculateDynamicHeight(TaskProvider taskProvider) {
+    // 统计所有可见日期的无时间任务
+    final allNoTimeTasks = <Task>[];
 
-    // 分别统计不同类型的任务
-    final noTimeTasks = dayTasks.where((task) {
-      if (task.startTime == null) return true;
-      final isZeroTime =
-          task.startTime!.hour == 0 && task.startTime!.minute == 0;
-      return isZeroTime;
-    }).toList();
+    for (final date in widget.visibleDates) {
+      final normalizedDate = DateTime(date.year, date.month, date.day);
+      final dayTasks = widget.tasksForDates[normalizedDate] ?? [];
 
-    // 统计跨日任务或超过24小时的任务（只计算在开始日期显示的任务）
-    final crossDayTasks = dayTasks.where((task) {
-      if (task.startTime == null || task.endTime == null) return false;
-      final st = task.startTime!;
-      final et = task.endTime!;
-      final sameDay =
-          st.year == et.year && st.month == et.month && st.day == et.day;
+      // 统计无时间任务
+      final noTimeTasks = dayTasks.where((task) {
+        if (task.startTime == null) return true;
+        final isZeroTime =
+            task.startTime!.hour == 0 && task.startTime!.minute == 0;
+        return isZeroTime;
+      }).toList();
+      allNoTimeTasks.addAll(noTimeTasks);
+    }
 
-      // 检查是否跨日
-      final isCrossDay = !sameDay && et.isAfter(st);
+    // 获取所有跨天任务（从TaskProvider）
+    final crossDayTasks = _getAllCrossDayTasksFromAllTasks(taskProvider);
 
-      // 检查是否超过24小时（即使在同一日）
-      final duration = et.difference(st);
-      final isOver24Hours = duration.inHours >= 24;
-
-      if (isCrossDay || isOver24Hours) {
-        // 只计算在开始日期显示的任务
-        final taskStartDate = DateTime(st.year, st.month, st.day);
-        return taskStartDate.isAtSameMomentAs(normalizedSelected);
-      }
-      return false;
-    }).toList();
-
-    // 总任务数量 = 无时间任务 + 跨天任务（只在开始日期计算）
-    final totalTaskCount = noTimeTasks.length + crossDayTasks.length;
+    // 总任务数量 = 无时间任务 + 跨天任务
+    final totalTaskCount = allNoTimeTasks.length + crossDayTasks.length;
 
     if (totalTaskCount == 0) return 0;
 
@@ -87,9 +69,9 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
     return availableWidth / widget.visibleDates.length;
   }
 
-  // 渲染跨天任务 - 使用单个大任务跨越多个日期
-  List<Widget> _renderCrossDayTasks() {
-    final crossDayTasks = _getAllCrossDayTasks();
+  // 渲染跨天任务（从所有任务中获取）
+  List<Widget> _renderCrossDayTasksFromAllTasks(TaskProvider taskProvider) {
+    final crossDayTasks = _getAllCrossDayTasksFromAllTasks(taskProvider);
 
     return crossDayTasks.asMap().entries.map((entry) {
       final taskIndex = entry.key;
@@ -100,9 +82,9 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
   }
 
   // 计算特定日期的跨天任务数量
-  int _getCrossDayTaskCountForDate(DateTime date) {
+  int _getCrossDayTaskCountForDate(DateTime date, TaskProvider taskProvider) {
     int count = 0;
-    for (final task in _getAllCrossDayTasks()) {
+    for (final task in _getAllCrossDayTasksFromAllTasks(taskProvider)) {
       final st = task.startTime!;
       final et = task.endTime!;
       final stDate = DateTime(st.year, st.month, st.day);
@@ -114,38 +96,6 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
       }
     }
     return count;
-  }
-
-  // 获取所有跨天任务
-  List<Task> _getAllCrossDayTasks() {
-    final crossDayTasks = <Task>[];
-
-    // 从所有可见日期中收集跨天任务
-    for (final date in widget.visibleDates) {
-      final dateNormalized = DateTime(date.year, date.month, date.day);
-      final tasksForThisDate = widget.tasksForDates[dateNormalized] ?? [];
-
-      for (final task in tasksForThisDate) {
-        if (task.startTime == null || task.endTime == null) continue;
-
-        final st = task.startTime!;
-        final et = task.endTime!;
-        final sameDay =
-            st.year == et.year && st.month == et.month && st.day == et.day;
-
-        // 检查是否跨日或超过24小时
-        final isCrossDay = !sameDay && et.isAfter(st);
-        final duration = et.difference(st);
-        final isOver24Hours = duration.inHours >= 24;
-
-        if ((isCrossDay || isOver24Hours) &&
-            !crossDayTasks.any((t) => t.id == task.id)) {
-          crossDayTasks.add(task);
-        }
-      }
-    }
-
-    return crossDayTasks;
   }
 
   // 获取任务颜色
@@ -239,6 +189,51 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
     return widget.visibleDates[columnIndex];
   }
 
+  // 获取所有跨天任务（从TaskProvider获取所有任务，然后检查是否与可见日期重叠）
+  List<Task> _getAllCrossDayTasksFromAllTasks(TaskProvider taskProvider) {
+    final crossDayTasks = <Task>[];
+    final allTasks = taskProvider.tasks;
+
+    for (final task in allTasks) {
+      if (task.startTime == null || task.endTime == null) continue;
+
+      final st = task.startTime!;
+      final et = task.endTime!;
+      final sameDay =
+          st.year == et.year && st.month == et.month && st.day == et.day;
+
+      // 检查是否跨日或超过24小时
+      final isCrossDay = !sameDay && et.isAfter(st);
+      final duration = et.difference(st);
+      final isOver24Hours = duration.inHours > 24; // 改为 > 24，排除正好24小时的任务
+
+      if (isCrossDay || isOver24Hours) {
+        // 检查任务的时间范围是否与任何可见日期重叠
+        final stDate = DateTime(st.year, st.month, st.day);
+        final etDate = DateTime(et.year, et.month, et.day);
+
+        final visibleDates = widget.visibleDates
+            .map((d) => DateTime(d.year, d.month, d.day))
+            .toList();
+
+        // 获取可见日期的范围
+        final firstVisibleDate = visibleDates.first;
+        final lastVisibleDate = visibleDates.last;
+
+        // 检查任务是否与可见日期范围重叠
+        final hasOverlap =
+            !stDate.isAfter(lastVisibleDate) &&
+            !etDate.isBefore(firstVisibleDate);
+
+        if (hasOverlap && !crossDayTasks.any((t) => t.id == task.id)) {
+          crossDayTasks.add(task);
+        }
+      }
+    }
+
+    return crossDayTasks;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer2<BelongingBoxProvider, TaskProvider>(
@@ -271,7 +266,7 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
             return true;
           },
           builder: (context, candidateData, rejectedData) {
-            final dynamicHeight = _calculateDynamicHeight();
+            final dynamicHeight = _calculateDynamicHeight(taskProvider);
 
             // 如果没有任务且不在拖拽状态，不显示容器
             if (dynamicHeight == 0 && candidateData.isEmpty) {
@@ -300,7 +295,7 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
                 child: Stack(
                   children: [
                     // 跨天任务 - 在顶层渲染单个大任务
-                    ..._renderCrossDayTasks(),
+                    ..._renderCrossDayTasksFromAllTasks(taskProvider),
 
                     // 日期列容器
                     Row(
@@ -354,6 +349,7 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
                                               final crossDayTaskCount =
                                                   _getCrossDayTaskCountForDate(
                                                     normalizedDate,
+                                                    taskProvider,
                                                   );
 
                                               return CalendarTaskWithoutTime(

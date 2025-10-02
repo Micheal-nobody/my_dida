@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/component/CustomFloatingActionButton.dart';
 import 'package:my_dida/component/StatelessWidget/CalendarDateHeader.dart';
 import 'package:my_dida/component/StatelessWidget/CalendarScrollableContent.dart';
+import 'package:my_dida/component/StatelessWidget/CalendarNoTimeTaskArea.dart';
+import 'package:my_dida/component/DatePickerDialog.dart';
 import 'package:my_dida/model/entity/Task.dart';
 import 'package:my_dida/provider/TaskProvider.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +23,7 @@ class _CalendarPageState extends State<CalendarPage> {
   int _dateRange = 3; // 3-day view by default
   bool _showCompleted = false; // 默认不显示已完成任务
   Map<DateTime, List<Task>> _tasksForDates = {};
+  Map<DateTime, List<Task>> _futureTasks = {}; // 未来任务
   late TaskProvider _taskProvider;
   // 每个日期的重复任务分页限制（每次 +5）
   final Map<DateTime, int> _rruleBatchLimit = {};
@@ -50,8 +53,11 @@ class _CalendarPageState extends State<CalendarPage> {
 
   List<DateTime> get _visibleDates {
     List<DateTime> dates = [];
+    // 从选中的日期开始显示
+    DateTime startDate = _selectedDate;
+
     for (int i = 0; i < _dateRange; i++) {
-      dates.add(_selectedDate.add(Duration(days: i)));
+      dates.add(startDate.add(Duration(days: i)));
     }
     return dates;
   }
@@ -59,6 +65,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _loadTasksForVisibleDates() async {
     final taskProvider = Provider.of<TaskProvider>(context, listen: false);
     final Map<DateTime, List<Task>> tasksMap = {};
+    final Map<DateTime, List<Task>> futureTasksMap = {};
 
     // 获取所有任务
     await taskProvider.loadAllTasks();
@@ -173,8 +180,45 @@ class _CalendarPageState extends State<CalendarPage> {
       tasksMap[normalizedDate] = paged;
     }
 
+    // 加载未来任务（从最后一个可见日期之后开始，最多30天）
+    final lastVisibleDate = _visibleDates.last;
+    final futureHorizon = 30; // 未来30天
+
+    for (int i = 1; i <= futureHorizon; i++) {
+      final futureDate = lastVisibleDate.add(Duration(days: i));
+      final normalizedFutureDate = DateTime(
+        futureDate.year,
+        futureDate.month,
+        futureDate.day,
+      );
+
+      // 查找开始时间在这个未来日期的任务
+      final futureTasksForDate = allTasks.where((task) {
+        if (task.rrule != null && task.rrule!.isNotEmpty)
+          return false; // 跳过重复任务
+        if (task.startTime == null) return false; // 跳过无时间任务
+
+        final taskDate = DateTime(
+          task.startTime!.year,
+          task.startTime!.month,
+          task.startTime!.day,
+        );
+        return taskDate.isAtSameMomentAs(normalizedFutureDate);
+      }).toList();
+
+      // 过滤已完成任务
+      if (!_showCompleted) {
+        futureTasksForDate.removeWhere((task) => task.isDone);
+      }
+
+      if (futureTasksForDate.isNotEmpty) {
+        futureTasksMap[normalizedFutureDate] = futureTasksForDate;
+      }
+    }
+
     setState(() {
       _tasksForDates = tasksMap;
+      _futureTasks = futureTasksMap;
     });
   }
 
@@ -183,6 +227,21 @@ class _CalendarPageState extends State<CalendarPage> {
     final current = _rruleBatchLimit[normalizedDate] ?? 5;
     _rruleBatchLimit[normalizedDate] = current + 5;
     _loadTasksForVisibleDates();
+  }
+
+  void _showDatePicker() {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDatePickerDialog(
+        selectedDate: _selectedDate,
+        onDateSelected: (date) {
+          setState(() {
+            _selectedDate = date;
+          });
+          _loadTasksForVisibleDates();
+        },
+      ),
+    );
   }
 
   @override
@@ -222,6 +281,12 @@ class _CalendarPageState extends State<CalendarPage> {
           ),
           SizedBox(width: 8),
           IconButton(
+            tooltip: '选择日期',
+            icon: Icon(Icons.calendar_today, color: Colors.grey[600]),
+            onPressed: _showDatePicker,
+          ),
+          SizedBox(width: 8),
+          IconButton(
             tooltip: _showCompleted ? '隐藏已完成任务' : '显示已完成任务',
             icon: Icon(
               _showCompleted ? Icons.visibility : Icons.visibility_off,
@@ -253,14 +318,44 @@ class _CalendarPageState extends State<CalendarPage> {
             },
           ),
 
-          // 主要内容区域
+          // 3. 无具体时间任务区域（固定在顶部）
+          CalendarNoTimeTaskArea(
+            visibleDates: _visibleDates,
+            tasksForDates: _tasksForDates,
+            selectedDate: _selectedDate,
+          ),
+
+          // 4. 主要内容区域
           Expanded(
-            child: CalendarScrollableContent(
-              selectedDate: _selectedDate,
-              visibleDates: _visibleDates,
-              tasksForDates: _tasksForDates,
-              rruleHasMore: _rruleHasMore,
-              onLoadMoreRRule: _loadMoreRRuleForDate,
+            child: GestureDetector(
+              onPanEnd: (details) {
+                // 检测水平拖动
+                if (details.velocity.pixelsPerSecond.dx.abs() >
+                    details.velocity.pixelsPerSecond.dy.abs()) {
+                  // 水平拖动速度大于垂直拖动速度
+                  if (details.velocity.pixelsPerSecond.dx > 80) {
+                    // 向右拖动，减去1天
+                    setState(() {
+                      _selectedDate = _selectedDate.subtract(Duration(days: 1));
+                    });
+                    _loadTasksForVisibleDates();
+                  } else if (details.velocity.pixelsPerSecond.dx < -80) {
+                    // 向左拖动，加上1天
+                    setState(() {
+                      _selectedDate = _selectedDate.add(Duration(days: 1));
+                    });
+                    _loadTasksForVisibleDates();
+                  }
+                }
+              },
+              child: CalendarScrollableContent(
+                selectedDate: _selectedDate,
+                visibleDates: _visibleDates,
+                tasksForDates: _tasksForDates,
+                futureTasks: _futureTasks,
+                rruleHasMore: _rruleHasMore,
+                onLoadMoreRRule: _loadMoreRRuleForDate,
+              ),
             ),
           ),
         ],

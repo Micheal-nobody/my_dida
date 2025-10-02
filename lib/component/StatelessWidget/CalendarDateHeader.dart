@@ -32,8 +32,63 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
       padding: EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          // 预留左侧时间列的宽度
-          SizedBox(width: 60), // CalendarTimeColumn的宽度
+          // 左侧时间列区域（包含昨天按钮和时间列）
+          SizedBox(
+            width: 60, // CalendarTimeColumn的宽度
+            child: Column(
+              children: [
+                // 昨天按钮 - 与日期列样式保持一致，位于CalendarTimeColumn正上方
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      final yesterday = widget.selectedDate.subtract(
+                        Duration(days: 1),
+                      );
+                      widget.onDateSelected(yesterday);
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _getWeekdayName(
+                            widget.selectedDate
+                                .subtract(Duration(days: 1))
+                                .weekday,
+                          ),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${widget.selectedDate.subtract(Duration(days: 1)).day}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[800],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // 时间列占位
+                SizedBox(height: 8),
+              ],
+            ),
+          ),
+          SizedBox(width: 8),
           // 日期列
           ...dates.map((date) {
             bool isSelected = _isSameDay(date, widget.selectedDate);

@@ -218,7 +218,7 @@ class _CalendarTImeTaskAreaState extends State<CalendarTImeTaskArea> {
 
                                   // 检查是否超过24小时
                                   final duration = et.difference(st);
-                                  final isOver24Hours = duration.inHours >= 24;
+                                  final isOver24Hours = duration.inHours > 24;
 
                                   if (isCrossDay || isOver24Hours) {
                                     return false;

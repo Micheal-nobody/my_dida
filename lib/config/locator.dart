@@ -14,8 +14,6 @@ import 'package:path_provider/path_provider.dart';
 final GetIt locator = GetIt.instance;
 
 Future<void> setupLocator() async {
-  logger.i("开始初始化 Isar ...");
-
   /// 初始化并注册 Isar 实例
   final isar = await initializeIsar();
   locator.registerSingleton<Isar>(isar);
