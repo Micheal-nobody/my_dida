@@ -1,65 +1,119 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/vo/BelongingBoxVO.dart';
-import 'package:my_dida/utils/RRuleUtil.dart';
 import 'package:my_dida/repository/TaskRepository.dart';
 
 import '../config/locator.dart';
-import '../model/entity/Task.dart';
 import '../model/entity/CheckPoint.dart';
 import '../model/entity/Operation.dart';
+import '../model/entity/Task.dart';
 import '../provider/OperationStackProvider.dart';
+import '../services/task_service.dart';
 
-/// 给TodoPage用的Provider！
+/// Optimized TaskProvider with performance improvements
 class TaskProvider with ChangeNotifier {
+  //endregion
+
+  /// 创建时注入Repository，并且初始化_currentTasks
+  TaskProvider(BelongingBoxVO? newBelongingBox)
+    : _taskRepository = locator<TaskRepository>(),
+      _operationStack = locator<OperationStackProvider>(),
+      _taskService = TaskService(),
+      currentBelongingBox = newBelongingBox {
+    updateCurrentTasks(currentBelongingBox);
+  }
   List<Task> _tasks = [];
   List<Task> _currentTasks = [];
   final TaskRepository _taskRepository;
   final OperationStackProvider _operationStack;
+  final TaskService _taskService;
+
+  // Cache for frequently accessed data
+  final Map<String, List<Task>> _taskCache = {};
+  DateTime? _lastCacheUpdate;
+  static const Duration _cacheValidDuration = Duration(minutes: 5);
 
   //region 一系列getter
   List<Task> get tasks => _tasks;
 
-  List<Task> get cur_tasks => _currentTasks;
+  List<Task> get currentTasks => _currentTasks;
 
-  //endregion
-
-  /// 创建时注入Repository，并且初始化_currentTasks
-  TaskProvider(BelongingBoxVO? new_belongingBox)
-    : _taskRepository = locator<TaskRepository>(),
-      _operationStack = locator<OperationStackProvider>(),
-      cur_belongingBox = new_belongingBox {
-    updateCurTasks(cur_belongingBox);
-  }
-
-  // 依赖 BelongingBoxProvider.cur_belongingBox 更新 _currentTasks
+  // 依赖 BelongingBoxProvider.currentBelongingBox 更新 _currentTasks
   BelongingBoxVO?
-  cur_belongingBox; // 用于性能优化，在更新前会被用来做判断，如果BelongingBoxProvider.cur_belongingBox 和 cur_belongingBox相等，则不更新
-  updateCurTasks(BelongingBoxVO? new_belongingBox) async {
-    // logger.i("因为 cur_belongingBox 改变所以更新 _currentTasks！");
-    cur_belongingBox = new_belongingBox;
+  currentBelongingBox; // 用于性能优化，在更新前会被用来做判断，如果BelongingBoxProvider.currentBelongingBox 和 currentBelongingBox相等，则不更新
 
-    if (new_belongingBox == null || new_belongingBox.id == -1) {
+  Future<void> updateCurrentTasks(BelongingBoxVO? newBelongingBox) async {
+    // logger.i("因为 currentBelongingBox 改变所以更新 _currentTasks！");
+    currentBelongingBox = newBelongingBox;
+
+    if (newBelongingBox == null || newBelongingBox.id == -1) {
       await loadTodayTasks();
     } else {
-      await loadTasksByBelongingBoxId(new_belongingBox.id);
+      await loadTasksByBelongingBoxId(newBelongingBox.id);
     }
   }
 
-  // 获取所有任务
+  // Cache management methods
+  bool _isCacheValid() =>
+      _lastCacheUpdate != null &&
+      DateTime.now().difference(_lastCacheUpdate!) < _cacheValidDuration;
+
+  void _invalidateCache() {
+    _taskCache.clear();
+    _lastCacheUpdate = null;
+  }
+
+  String _getCacheKey(String operation, [String? param]) =>
+      param != null ? '${operation}_$param' : operation;
+
+  // 获取所有任务 - with caching
   Future<void> loadAllTasks() async {
+    const cacheKey = 'all_tasks';
+
+    if (_isCacheValid() && _taskCache.containsKey(cacheKey)) {
+      _tasks = _taskCache[cacheKey]!;
+      notifyListeners();
+      return;
+    }
+
     _tasks = await _taskRepository.getAll();
+    _taskCache[cacheKey] = _tasks;
+    _lastCacheUpdate = DateTime.now();
     notifyListeners();
+  }
+
+  // Optimized method to load tasks for date range
+  Future<List<Task>> loadTasksForDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    final cacheKey = _getCacheKey(
+      'date_range',
+      '${startDate.millisecondsSinceEpoch}_${endDate.millisecondsSinceEpoch}',
+    );
+
+    if (_isCacheValid() && _taskCache.containsKey(cacheKey)) {
+      return _taskCache[cacheKey]!;
+    }
+
+    final tasks = await _taskRepository.getTasksForDateRange(
+      startDate,
+      endDate,
+    );
+    _taskCache[cacheKey] = tasks;
+    _lastCacheUpdate = DateTime.now();
+
+    return tasks;
   }
 
   // 获得当前要显示的任务
   Future<void> loadCurrentBoxTasks() async {
-    if (cur_belongingBox == null || cur_belongingBox!.id == -1) {
+    if (currentBelongingBox == null || currentBelongingBox!.id == -1) {
       await loadTodayTasks();
       return;
     }
     _currentTasks = await _taskRepository.getTasksByBelongingBoxId(
-      cur_belongingBox!.id,
+      currentBelongingBox!.id,
     );
     notifyListeners();
   }
@@ -81,138 +135,43 @@ class TaskProvider with ChangeNotifier {
   Future<void> addTask(Task newTask) async {
     print('TaskProvider: 开始添加任务: ${newTask.name}');
 
-    await _taskRepository.addTask(newTask);
+    try {
+      await _taskService.createTask(
+        name: newTask.name,
+        description: newTask.description,
+        startTime: newTask.startTime,
+        endTime: newTask.endTime,
+        parentTaskId: newTask.parentTaskId,
+        belongingBoxId: newTask.belongingBoxId,
+        rrule: newTask.rrule,
+      );
 
-    // 如果是子任务，需要更新父任务的subTaskIds
-    if (newTask.parentTaskId != null) {
-      final parentTask = await _taskRepository.getById(newTask.parentTaskId!);
-      if (parentTask != null) {
-        final List<int> newIds = List.of(parentTask.subTaskIds)
-          ..add(newTask.id);
-        await _taskRepository.update(parentTask..subTaskIds = newIds);
-      }
+      // Invalidate cache after modification
+      _invalidateCache();
+      await loadCurrentBoxTasks();
+    } catch (e) {
+      print('TaskProvider: Error adding task: $e');
+      rethrow;
     }
-
-    // 记录添加任务操作
-    final operation = Operation.createAddTaskOperation(newTask);
-    print('TaskProvider: 创建操作记录: ${operation.description}');
-    await _operationStack.addOperation(operation);
-
-    loadCurrentBoxTasks();
   }
 
   Future<void> updateTaskIsDone(Task task, bool value) async {
-    // 保存旧状态用于操作记录
-    final oldTask = Task(
-      name: task.name,
-      description: task.description,
-      isDone: task.isDone,
-      checkpoints: task.checkpoints,
-      startTime: task.startTime,
-      endTime: task.endTime,
-      parentTaskId: task.parentTaskId,
-      subTaskIds: task.subTaskIds,
-      belongingBoxId: task.belongingBoxId,
-      rrule: task.rrule,
-    )..id = task.id;
+    try {
+      await _taskService.updateTaskCompletion(task, value);
 
-    // 1、更新数据库
-    await _taskRepository.updateTaskIsDone(task, value);
-
-    // 2、记录操作
-    final newTask = Task(
-      name: task.name,
-      description: task.description,
-      isDone: value,
-      checkpoints: task.checkpoints,
-      startTime: task.startTime,
-      endTime: task.endTime,
-      parentTaskId: task.parentTaskId,
-      subTaskIds: task.subTaskIds,
-      belongingBoxId: task.belongingBoxId,
-      rrule: task.rrule,
-    )..id = task.id;
-
-    final operation = Operation.createUpdateTaskOperation(
-      oldTask,
-      newTask,
-      value ? '完成了任务"${task.name}"' : '取消了任务"${task.name}"的完成状态',
-    );
-    await _operationStack.addOperation(operation);
-
-    // 3、如果是重复任务且被标记为完成，则根据 rrule 生成下一次任务
-    if (value && task.rrule != null && task.rrule!.isNotEmpty) {
-      final DateTime? start = task.startTime;
-      if (start != null) {
-        // 找到“严格大于”当前日期的下一次发生日期
-        final List<DateTime> occ = RRuleUtil.nextOccurrences(
-          start,
-          task.rrule!,
-          10,
-        );
-        final DateTime normalizedCurrent = DateTime(
-          start.year,
-          start.month,
-          start.day,
-        );
-        DateTime? nextDay;
-        for (final d in occ) {
-          if (d.isAfter(normalizedCurrent)) {
-            nextDay = d;
-            break;
-          }
-        }
-        if (nextDay == null && occ.isNotEmpty) {
-          // 兜底：如果生成器只给了当天，尝试再取更多并选择大于当天的
-          final more = RRuleUtil.nextOccurrences(
-            start.add(const Duration(days: 1)),
-            task.rrule!,
-            1,
-          );
-          if (more.isNotEmpty) {
-            nextDay = more.first;
-          }
-        }
-        if (nextDay != null) {
-          final DateTime nextStart = DateTime(
-            nextDay.year,
-            nextDay.month,
-            nextDay.day,
-            start.hour,
-            start.minute,
-          );
-          // 复制任务，除 id 外继承一切；新任务设为未完成，检查点复位为未完成
-          final Task newRecurring = Task(
-            name: task.name,
-            description: task.description,
-            isDone: false,
-            checkpoints: task.checkpoints
-                .map((c) => CheckPoint(name: c.name, isDone: false))
-                .toList(),
-            startTime: nextStart,
-            endTime: task.endTime,
-            parentTaskId: task.parentTaskId,
-            subTaskIds: List<int>.from(task.subTaskIds),
-            belongingBoxId: task.belongingBoxId,
-            rrule: task.rrule,
-          );
-          await _taskRepository.addTask(newRecurring);
-        }
-      }
+      // Invalidate cache after modification
+      _invalidateCache();
+      await loadCurrentBoxTasks();
+    } catch (e) {
+      print('TaskProvider: Error updating task completion: $e');
+      rethrow;
     }
-
-    // 4、更新数据
-    loadCurrentBoxTasks();
   }
 
   //region 任务详情：对单个任务的增删改封装
-  Stream<Task?> watchTaskById(int id) {
-    return _taskRepository.watchById(id);
-  }
+  Stream<Task?> watchTaskById(int id) => _taskRepository.watchById(id);
 
-  Future<Task?> getTaskById(int id) async {
-    return await _taskRepository.getById(id);
-  }
+  Future<Task?> getTaskById(int id) async => _taskRepository.getById(id);
 
   Future<List<Task>> getTasksByIds(List<int> ids) async {
     final List<Task> tasks = [];
@@ -574,18 +533,11 @@ class TaskProvider with ChangeNotifier {
     final copiedTask = Task(
       name: '${originalTask.name} (副本)',
       description: originalTask.description,
-      isDone: false, // 复制的任务默认为未完成状态
       checkpoints: originalTask.checkpoints
-          .map(
-            (checkpoint) => CheckPoint(
-              name: checkpoint.name,
-              isDone: false, // 复制的检查点默认为未完成状态
-            ),
-          )
+          .map((checkpoint) => CheckPoint(name: checkpoint.name))
           .toList(),
       startTime: originalTask.startTime,
       endTime: originalTask.endTime,
-      parentTaskId: null, // 复制的任务不继承父子关系
       subTaskIds: [], // 复制的任务不继承子任务
       belongingBoxId: originalTask.belongingBoxId,
       rrule: originalTask.rrule,

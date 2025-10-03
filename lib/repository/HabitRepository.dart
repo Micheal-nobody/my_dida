@@ -5,9 +5,8 @@ import 'package:my_dida/repository/BaseRepository.dart';
 import '../config/locator.dart';
 
 class HabitRepository extends BaseRepository<Habit> {
-  final Isar _isar;
-
   HabitRepository() : _isar = locator<Isar>();
+  final Isar _isar;
 
   @override
   IsarCollection<Habit> get collection => _isar.habits;
@@ -53,19 +52,25 @@ class HabitRepository extends BaseRepository<Habit> {
   }
 
   // 获取所有习惯
-  Future<List<Habit>> getAllHabits() async {
-    return await _isar.habits.where().findAll();
+  Future<List<Habit>> getAllHabits() async => _isar.habits.where().findAll();
+
+  // Get active habits (not completed today) for better performance
+  Future<List<Habit>> getActiveHabits() async {
+    // This would need additional logic based on your habit completion tracking
+    // For now, return all habits but this can be optimized based on completion status
+    return _isar.habits.where().findAll();
+  }
+
+  // Get habits with pagination for large datasets
+  Future<List<Habit>> getHabitsPaginated(int page, int limit) async {
+    final offset = page * limit;
+    return _isar.habits.where().offset(offset).limit(limit).findAll();
   }
 
   // 根据ID获取习惯
-  Future<Habit?> getHabitById(int id) async {
-    return await _isar.habits.get(id);
-  }
+  Future<Habit?> getHabitById(int id) async => _isar.habits.get(id);
 
   // 删除习惯
-  Future<bool> deleteHabit(int id) async {
-    return await _isar.writeTxn(() async {
-      return await _isar.habits.delete(id);
-    });
-  }
+  Future<bool> deleteHabit(int id) async =>
+      _isar.writeTxn(() async => _isar.habits.delete(id));
 }

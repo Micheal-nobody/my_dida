@@ -3,9 +3,9 @@ import 'package:my_dida/model/entity/BelongingBox.dart';
 import 'package:my_dida/repository/BaseRepository.dart';
 import '../config/locator.dart';
 
-class BelongingBoxRepository extends BaseRepository<BelongingBox>{
-  final Isar _isar;
+class BelongingBoxRepository extends BaseRepository<BelongingBox> {
   BelongingBoxRepository() : _isar = locator<Isar>();
+  final Isar _isar;
 
   @override
   IsarCollection<BelongingBox> get collection => _isar.belongingBoxs;
@@ -18,7 +18,6 @@ class BelongingBoxRepository extends BaseRepository<BelongingBox>{
   }
 
   // 获取所有数据
-  Future<List<BelongingBox>> getAllData() async {
-    return await _isar.belongingBoxs.where().findAll();
-  }
+  Future<List<BelongingBox>> getAllData() async =>
+      _isar.belongingBoxs.where().findAll();
 }

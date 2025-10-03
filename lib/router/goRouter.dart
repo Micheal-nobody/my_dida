@@ -51,7 +51,7 @@ final GoRouter goRouter = GoRouter(
             GoRoute(
               path: '/todoDetails',
               pageBuilder: (context, state) =>
-                  const NoTransitionPage(child: Text("这是还没有做的 todo 详情页面！")),
+                  const NoTransitionPage(child: Text('这是还没有做的 todo 详情页面！')),
             ),
           ],
         ),

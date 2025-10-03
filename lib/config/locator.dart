@@ -3,12 +3,13 @@ import 'package:isar/isar.dart';
 import 'package:my_dida/config/logger.dart';
 import 'package:my_dida/model/entity/BelongingBox.dart';
 import 'package:my_dida/model/entity/Habit.dart';
-import 'package:my_dida/model/entity/Task.dart';
 import 'package:my_dida/model/entity/Operation.dart';
-import 'package:my_dida/repository/BelongingBoxRepository.dart';
-import 'package:my_dida/repository/TaskRepository.dart';
-import 'package:my_dida/repository/HabitRepository.dart';
+import 'package:my_dida/model/entity/Task.dart';
 import 'package:my_dida/provider/OperationStackProvider.dart';
+import 'package:my_dida/repository/BelongingBoxRepository.dart';
+import 'package:my_dida/repository/HabitRepository.dart';
+import 'package:my_dida/repository/TaskRepository.dart';
+import 'package:my_dida/services/task_service.dart';
 import 'package:path_provider/path_provider.dart';
 
 final GetIt locator = GetIt.instance;
@@ -26,7 +27,10 @@ Future<void> setupLocator() async {
   // 注册操作栈管理器
   locator.registerSingleton<OperationStackProvider>(OperationStackProvider());
 
-  logger.i("初始化 Isar 完成！");
+  // 注册业务逻辑服务
+  locator.registerSingleton<TaskService>(TaskService());
+
+  logger.i('初始化 Isar 完成！');
 }
 
 Future<Isar> initializeIsar() async {
@@ -40,7 +44,7 @@ Future<Isar> initializeIsar() async {
     }
   }
 
-  return await Isar.open([
+  return Isar.open([
     TaskSchema,
     BelongingBoxSchema,
     HabitSchema,

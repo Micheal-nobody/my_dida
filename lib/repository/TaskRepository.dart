@@ -1,13 +1,13 @@
 import 'package:isar/isar.dart';
 import 'package:my_dida/model/entity/Task.dart';
 import 'package:my_dida/repository/BaseRepository.dart';
+import 'package:my_dida/utils/TimeUtils.dart';
 
 import '../config/locator.dart';
 
 class TaskRepository extends BaseRepository<Task> {
-  final Isar _isar;
-
   TaskRepository() : _isar = locator<Isar>();
+  final Isar _isar;
 
   @override
   IsarCollection<Task> get collection => _isar.tasks;
@@ -20,29 +20,68 @@ class TaskRepository extends BaseRepository<Task> {
   }
 
   // 获取所有数据
-  Future<List<Task>> getAllData() async {
-    return await _isar.tasks.where().findAll();
-  }
+  Future<List<Task>> getAllData() async => _isar.tasks.where().findAll();
 
   Future<List<Task>> getTodayTasks() async {
-    final now = DateTime.now(); // 包含年月日 时 分 秒
-    final startOfDay = DateTime(now.year, now.month, now.day); // 获取今天00:00:00
-    final endOfDay = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      23,
-      59,
-      59,
-      999,
-    ); // 获取今天23:59:59.999
+    final todayRange = DateTimeUtils.getTodayRange();
 
-    return await _isar.tasks
+    return _isar.tasks
         .where()
         .filter()
-        .startTimeBetween(startOfDay, endOfDay) // Between 是闭区间！
+        .startTimeBetween(todayRange.start, todayRange.end) // Between 是闭区间！
         .or()
-        .endTimeBetween(startOfDay, endOfDay)
+        .endTimeBetween(todayRange.start, todayRange.end)
+        .findAll();
+  }
+
+  // Optimized method to get tasks for a specific date range
+  Future<List<Task>> getTasksForDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    final dateRange = DateTimeUtils.getDateRange(startDate, endDate);
+
+    return _isar.tasks
+        .where()
+        .filter()
+        .startTimeBetween(dateRange.start, dateRange.end)
+        .or()
+        .endTimeBetween(dateRange.start, dateRange.end)
+        .or()
+        .startTimeIsNull() // Include tasks without specific times
+        .findAll();
+  }
+
+  // Get tasks for multiple specific dates (more efficient than individual queries)
+  Future<List<Task>> getTasksForDates(List<DateTime> dates) async {
+    if (dates.isEmpty) return [];
+
+    final startDate = dates.reduce((a, b) => a.isBefore(b) ? a : b);
+    final endDate = dates.reduce((a, b) => a.isAfter(b) ? a : b);
+
+    return getTasksForDateRange(startDate, endDate);
+  }
+
+  // Get only incomplete tasks for better performance when completed tasks aren't needed
+  Future<List<Task>> getIncompleteTasksForDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    final dateRange = DateTimeUtils.getDateRange(startDate, endDate);
+
+    return _isar.tasks
+        .where()
+        .filter()
+        .isDoneEqualTo(false)
+        .and()
+        .group(
+          (q) => q
+              .startTimeBetween(dateRange.start, dateRange.end)
+              .or()
+              .endTimeBetween(dateRange.start, dateRange.end)
+              .or()
+              .startTimeIsNull(),
+        )
         .findAll();
   }
 
@@ -52,13 +91,8 @@ class TaskRepository extends BaseRepository<Task> {
     });
   }
 
-  Future<List<Task>> getTasksByBelongingBoxId(int id) async {
-    return await _isar.tasks
-        .where()
-        .filter()
-        .belongingBoxIdEqualTo(id)
-        .findAll();
-  }
+  Future<List<Task>> getTasksByBelongingBoxId(int id) async =>
+      _isar.tasks.where().filter().belongingBoxIdEqualTo(id).findAll();
 
   Future<void> updateTaskIsDone(Task task, bool value) async {
     await _isar.writeTxn(() async {
@@ -68,15 +102,14 @@ class TaskRepository extends BaseRepository<Task> {
   }
 
   Future<List<Task>> getTasksForDate(DateTime date) async {
-    final startOfDay = DateTime(date.year, date.month, date.day);
-    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
+    final dateRange = DateTimeUtils.getDateRange(date, date);
 
-    return await _isar.tasks
+    return _isar.tasks
         .where()
         .filter()
-        .startTimeBetween(startOfDay, endOfDay)
+        .startTimeBetween(dateRange.start, dateRange.end)
         .or()
-        .endTimeBetween(startOfDay, endOfDay)
+        .endTimeBetween(dateRange.start, dateRange.end)
         .findAll();
   }
 }

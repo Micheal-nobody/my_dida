@@ -5,6 +5,17 @@ part 'Habit.g.dart';
 // 习惯，习惯是每天都要做的，比如刷牙、洗脸、吃饭等
 @Collection()
 class Habit {
+  Habit({
+    required this.name,
+    required this.icon,
+    required this.remindTime,
+    required this.checkInCount,
+    required this.currentCheckInCount,
+    required this.startDate,
+    required this.totalCheckInCount,
+    required this.longestContinuousCheckInDays,
+    this.rrule,
+  });
   Id id = Isar.autoIncrement;
 
   String name;
@@ -20,16 +31,4 @@ class Habit {
 
   /// 重复规则 (RRule)
   String? rrule;
-
-  Habit({
-    required this.name,
-    required this.icon,
-    required this.remindTime,
-    required this.checkInCount,
-    required this.currentCheckInCount,
-    required this.startDate,
-    required this.totalCheckInCount,
-    required this.longestContinuousCheckInDays,
-    this.rrule,
-  });
 }

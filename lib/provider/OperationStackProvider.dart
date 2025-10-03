@@ -1,22 +1,22 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/config/logger.dart';
+import 'package:my_dida/model/entity/CheckPoint.dart';
+import 'package:my_dida/model/entity/Habit.dart';
 import 'package:my_dida/model/entity/Operation.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/model/entity/Habit.dart';
-import 'package:my_dida/model/entity/CheckPoint.dart';
-import 'package:my_dida/repository/TaskRepository.dart';
 import 'package:my_dida/repository/HabitRepository.dart';
+import 'package:my_dida/repository/TaskRepository.dart';
 
 /// 操作栈管理器
 class OperationStackProvider with ChangeNotifier {
+  OperationStackProvider() : _isar = locator<Isar>();
   static const int _maxOperations = 50; // 最大操作数量
   List<Operation> _operations = [];
   final Isar _isar;
-
-  OperationStackProvider() : _isar = locator<Isar>();
 
   /// 获取所有操作
   List<Operation> get operations => List.unmodifiable(_operations);
@@ -37,7 +37,7 @@ class OperationStackProvider with ChangeNotifier {
           .findAll();
 
       // 清理和修复可能存在的格式错误的JSON数据
-      List<Operation> cleanedOperations = [];
+      final List<Operation> cleanedOperations = [];
       for (final operation in operations) {
         try {
           // 尝试解析JSON以验证格式
@@ -246,23 +246,20 @@ class OperationStackProvider with ChangeNotifier {
   }
 
   /// 根据时间范围过滤操作
-  List<Operation> getOperationsByTimeRange(DateTime start, DateTime end) {
-    return _operations
-        .where(
-          (op) => op.timestamp.isAfter(start) && op.timestamp.isBefore(end),
-        )
-        .toList();
-  }
+  List<Operation> getOperationsByTimeRange(DateTime start, DateTime end) =>
+      _operations
+          .where(
+            (op) => op.timestamp.isAfter(start) && op.timestamp.isBefore(end),
+          )
+          .toList();
 
   /// 根据操作类型过滤操作
-  List<Operation> getOperationsByType(OperationType type) {
-    return _operations.where((op) => op.type == type).toList();
-  }
+  List<Operation> getOperationsByType(OperationType type) =>
+      _operations.where((op) => op.type == type).toList();
 
   /// 根据目标类型过滤操作
-  List<Operation> getOperationsByTarget(OperationTarget target) {
-    return _operations.where((op) => op.target == target).toList();
-  }
+  List<Operation> getOperationsByTarget(OperationTarget target) =>
+      _operations.where((op) => op.target == target).toList();
 
   /// 根据描述搜索操作
   List<Operation> searchOperations(String query) {
@@ -289,18 +286,16 @@ class OperationStackProvider with ChangeNotifier {
   }
 
   /// 获取操作详情
-  Map<String, dynamic> getOperationDetails(Operation operation) {
-    return {
-      'id': operation.id,
-      'type': operation.type.name,
-      'target': operation.target.name,
-      'timestamp': operation.timestamp.toIso8601String(),
-      'description': operation.description,
-      'targetId': operation.targetId,
-      'hasPreviousData': operation.previousData != null,
-      'hasNewData': operation.newData != null,
-    };
-  }
+  Map<String, dynamic> getOperationDetails(Operation operation) => {
+    'id': operation.id,
+    'type': operation.type.name,
+    'target': operation.target.name,
+    'timestamp': operation.timestamp.toIso8601String(),
+    'description': operation.description,
+    'targetId': operation.targetId,
+    'hasPreviousData': operation.previousData != null,
+    'hasNewData': operation.newData != null,
+  };
 
   /// 导出操作历史为JSON
   String exportOperationsAsJson() {
@@ -369,7 +364,7 @@ class OperationStackProvider with ChangeNotifier {
               isDone: cp['isDone'] == true,
             );
           }
-          return CheckPoint(name: '');
+          return CheckPoint();
         }).toList();
       }
 

@@ -6,13 +6,12 @@ import '../repository/HabitRepository.dart';
 import 'OperationStackProvider.dart';
 
 class HabitProvider with ChangeNotifier {
-  List<Habit> _habits = [];
-  final HabitRepository _habitRepository;
-  final OperationStackProvider _operationStack;
-
   HabitProvider()
     : _habitRepository = locator<HabitRepository>(),
       _operationStack = locator<OperationStackProvider>();
+  List<Habit> _habits = [];
+  final HabitRepository _habitRepository;
+  final OperationStackProvider _operationStack;
 
   // Getters
   List<Habit> get habits => _habits;
@@ -88,9 +87,8 @@ class HabitProvider with ChangeNotifier {
   }
 
   // 检查今日是否完成打卡
-  bool isTodayCompleted(Habit habit) {
-    return habit.currentCheckInCount >= habit.checkInCount;
-  }
+  bool isTodayCompleted(Habit habit) =>
+      habit.currentCheckInCount >= habit.checkInCount;
 
   // 获取今日打卡进度
   double getTodayProgress(Habit habit) {
@@ -100,21 +98,17 @@ class HabitProvider with ChangeNotifier {
 
   // 重置今日打卡次数（每天开始时调用）
   Future<void> resetTodayCheckInCounts() async {
-    for (Habit habit in _habits) {
+    for (final Habit habit in _habits) {
       await _habitRepository.resetTodayCheckInCount(habit);
     }
     await loadAllHabits();
   }
 
   // 监听习惯变化
-  Stream<List<Habit>> watchHabits() {
-    return _habitRepository.watchAll();
-  }
+  Stream<List<Habit>> watchHabits() => _habitRepository.watchAll();
 
   // 监听特定习惯变化
-  Stream<Habit?> watchHabitById(int id) {
-    return _habitRepository.watchById(id);
-  }
+  Stream<Habit?> watchHabitById(int id) => _habitRepository.watchById(id);
 
   // 撤销一次打卡
   Future<void> undoLastCheckIn(Habit habit) async {

@@ -4,6 +4,28 @@ part 'Task.g.dart';
 
 @Collection()
 class Task {
+  /// Constructor for TodoItem
+  Task({
+    required this.name,
+    this.description = '',
+    this.isDone = false,
+
+    this.checkpoints = const [],
+
+    /// 两个时间默认为 null
+    this.startTime,
+    this.endTime,
+
+    /// 父子任务
+    this.parentTaskId,
+    this.subTaskIds = const [],
+
+    /// 所属收集箱（默认为 "收集箱"）
+    this.belongingBoxId = 1,
+
+    /// 重复规则默认为 null
+    this.rrule,
+  });
   Id id = Isar.autoIncrement;
 
   String name;
@@ -27,32 +49,8 @@ class Task {
   /// 重复规则 (RRule)
   String? rrule;
 
-  /// Constructor for TodoItem
-  Task({
-    required this.name,
-    this.description = '',
-    this.isDone = false,
-
-    this.checkpoints = const [],
-
-    /// 两个时间默认为 null
-    this.startTime,
-    this.endTime,
-
-    /// 父子任务
-    this.parentTaskId,
-    this.subTaskIds = const [],
-
-    /// 所属收集箱（默认为 "收集箱"）
-    this.belongingBoxId = 1,
-
-    /// 重复规则默认为 null
-    this.rrule,
-  });
-
   // toString 方法
   @override
-  String toString() {
-    return 'Task{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, belongingBoxId: $belongingBoxId, rrule: $rrule}';
-  }
+  String toString() =>
+      'Task{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, belongingBoxId: $belongingBoxId, rrule: $rrule}';
 }

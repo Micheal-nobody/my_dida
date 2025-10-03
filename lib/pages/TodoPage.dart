@@ -1,25 +1,26 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:my_dida/component/TaskCard.dart';
 import 'package:provider/provider.dart';
 
-import '../component/AddBelongingBoxDialog.dart';
-import '../component/CustomFloatingActionButton.dart';
-import '../component/HabitCard.dart';
+import '../components/cards/HabitCard.dart';
+import '../components/cards/TaskCard.dart';
+import '../components/common/CustomFloatingActionButton.dart';
+import '../components/dialogs/AddBelongingBoxDialog.dart';
 import '../config/logger.dart';
+import '../constants/app_constants.dart';
+import '../constants/colors.dart';
+import '../constants/dimensions.dart';
+import '../constants/ui_strings.dart';
 import '../model/entity/Task.dart';
 import '../model/vo/BelongingBoxVO.dart';
 import '../provider/BelongingBoxProvider.dart';
-import '../provider/TaskProvider.dart';
 import '../provider/HabitProvider.dart';
+import '../provider/TaskProvider.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
 
   @override
-  State<StatefulWidget> createState() {
-    return _TodoPageState();
-  }
+  State<StatefulWidget> createState() => _TodoPageState();
 }
 
 class _TodoPageState extends State<TodoPage> {
@@ -40,29 +41,29 @@ class _TodoPageState extends State<TodoPage> {
 
     /// 使用 Provider 来获取 TodosProvider 实例
     //Optimize: 可以选择优化，使用Selector
-    final _belongingBoxProvider = Provider.of<BelongingBoxProvider>(context);
+    final belongingBoxProvider = Provider.of<BelongingBoxProvider>(context);
 
-    var cur_belongingBox = _belongingBoxProvider.cur_belongingBox;
+    final currentBelongingBox = belongingBoxProvider.currentBelongingBox;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(cur_belongingBox.name),
+        title: Text(currentBelongingBox.name),
         actions: [
           IconButton(
             onPressed: () async {
               final result = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: Text('确认Dialog'),
-                  content: Text('是否要显示已完成的任务？'),
+                  title: const Text(UIStrings.confirmDialog),
+                  content: const Text(UIStrings.showCompletedTasksQuestion),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
-                      child: Text('不显示'),
+                      child: const Text(UIStrings.hideButton),
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(true),
-                      child: Text('显示'),
+                      child: const Text(UIStrings.showButton),
                     ),
                   ],
                 ),
@@ -80,15 +81,23 @@ class _TodoPageState extends State<TodoPage> {
         ],
       ),
 
-      // 可滑动的列表视图，同时依赖TaskProvider.cur_tasks和HabitProvider.habits
-      body: Selector<TaskProvider, List<Task>>(
-        selector: (_, taskProvider) => taskProvider.cur_tasks,
-        builder: (context, currentTasks, __) {
-          return Selector<HabitProvider, List<dynamic>>(
-            selector: (_, habitProvider) => habitProvider.habits,
-            builder: (context, habits, ___) {
-              // 检查当前是否显示今天的任务（特殊belongingBox id为-1）
-              final bool isTodayTasks = cur_belongingBox.id == -1;
+      // 可滑动的列表视图，同时依赖TaskProvider.currentTasks和HabitProvider.habits
+      body:
+          Selector2<
+            TaskProvider,
+            HabitProvider,
+            ({List<Task> tasks, List<dynamic> habits, bool isTodayTasks})
+          >(
+            selector: (_, taskProvider, habitProvider) => (
+              tasks: taskProvider.currentTasks,
+              habits: habitProvider.habits,
+              isTodayTasks:
+                  currentBelongingBox.id == AppConstants.todayBelongingBoxId,
+            ),
+            builder: (context, data, __) {
+              final currentTasks = data.tasks;
+              final habits = data.habits;
+              final isTodayTasks = data.isTodayTasks;
 
               // 构建列表项
               final List<Widget> items = [];
@@ -104,42 +113,47 @@ class _TodoPageState extends State<TodoPage> {
                 items.add(
                   Dismissible(
                     key: Key(task.id.toString()),
-                    direction: DismissDirection.horizontal,
                     background: Container(
                       alignment: Alignment.centerLeft,
-                      padding: EdgeInsets.only(left: 20),
-                      color: Colors.red,
-                      child: Icon(Icons.delete, color: Colors.white),
+                      padding: const EdgeInsets.only(left: Dimensions.paddingL),
+                      color: AppColors.error,
+                      child: const Icon(
+                        Icons.delete,
+                        color: AppColors.textOnPrimary,
+                      ),
                     ),
                     secondaryBackground: Container(
                       alignment: Alignment.centerRight,
-                      padding: EdgeInsets.only(right: 20),
-                      color: Colors.green,
-                      child: Icon(Icons.check, color: Colors.white),
+                      padding: const EdgeInsets.only(
+                        right: Dimensions.paddingL,
+                      ),
+                      color: AppColors.success,
+                      child: const Icon(
+                        Icons.check,
+                        color: AppColors.textOnPrimary,
+                      ),
                     ),
                     confirmDismiss: (direction) async {
                       if (direction == DismissDirection.startToEnd) {
                         // Left swipe - delete
-                        return await showDialog<bool>(
+                        return showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: Text('Delete Task'),
-                            content: Text(
-                              'Are you sure you want to delete this task?',
-                            ),
+                            title: const Text(UIStrings.deleteTaskTitle),
+                            content: const Text(UIStrings.deleteTaskMessage),
                             actions: [
                               TextButton(
                                 onPressed: () =>
                                     Navigator.of(context).pop(false),
-                                child: Text('Cancel'),
+                                child: const Text(UIStrings.cancel),
                               ),
                               ElevatedButton(
                                 onPressed: () =>
                                     Navigator.of(context).pop(true),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: AppColors.error,
                                 ),
-                                child: Text('Delete'),
+                                child: const Text(UIStrings.delete),
                               ),
                             ],
                           ),
@@ -161,9 +175,9 @@ class _TodoPageState extends State<TodoPage> {
                           context,
                           listen: false,
                         ).deleteTask(task);
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text('Task deleted')));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text(UIStrings.taskDeleted)),
+                        );
                       }
                     },
                     child: TaskCard(task),
@@ -174,13 +188,13 @@ class _TodoPageState extends State<TodoPage> {
               // 添加分界线与习惯卡片（仅在"今天"盒子下显示）
               if (isTodayTasks && habits.isNotEmpty) {
                 // 先检查有多少习惯需要显示
-                List<Widget> habitCards = [];
+                final List<Widget> habitCards = [];
                 final habitProvider = Provider.of<HabitProvider>(
                   context,
                   listen: false,
                 );
 
-                for (var habit in habits) {
+                for (final habit in habits) {
                   // 如果习惯已完成且不显示已完成项目，则跳过
                   if (habitProvider.isTodayCompleted(habit) &&
                       !_showCompletedTasks) {
@@ -193,17 +207,19 @@ class _TodoPageState extends State<TodoPage> {
                 if (habitCards.isNotEmpty) {
                   if (items.isNotEmpty) {
                     items.add(
-                      Padding(
+                      const Padding(
                         padding: EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 16,
+                          vertical: Dimensions.paddingS,
+                          horizontal: Dimensions.paddingM,
                         ),
                         child: Row(
                           children: [
                             Expanded(child: Divider()),
                             Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8),
-                              child: Text('习惯'),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: Dimensions.paddingS,
+                              ),
+                              child: Text(UIStrings.habits),
                             ),
                             Expanded(child: Divider()),
                           ],
@@ -222,25 +238,27 @@ class _TodoPageState extends State<TodoPage> {
                 itemBuilder: (context, index) => items[index],
               );
             },
-          );
-        },
-      ),
+          ),
 
       // 悬浮按钮
-      floatingActionButton: CustomFloatingActionButton(),
+      floatingActionButton: const CustomFloatingActionButton(),
 
       // 侧边栏
       drawer: Drawer(
         child: Column(
           children: [
             // user账户头部
-            UserAccountsDrawerHeader(
-              accountName: Text("my_dida"),
-              accountEmail: Text("这里是简介"),
-              decoration: BoxDecoration(color: Colors.blue),
+            const UserAccountsDrawerHeader(
+              accountName: Text(AppConstants.appName),
+              accountEmail: Text(AppConstants.appDescription),
+              decoration: BoxDecoration(color: AppColors.primary),
               currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Icon(Icons.person, size: 40, color: Colors.blue),
+                backgroundColor: AppColors.background,
+                child: Icon(
+                  Icons.person,
+                  size: Dimensions.iconXL,
+                  color: AppColors.primary,
+                ),
               ),
             ),
 
@@ -250,10 +268,10 @@ class _TodoPageState extends State<TodoPage> {
                 children: [
                   // Add new belonging box button
                   ListTile(
-                    leading: Icon(Icons.add, color: Colors.green),
-                    title: Text("Add New Box"),
+                    leading: const Icon(Icons.add, color: AppColors.success),
+                    title: const Text(UIStrings.addNewBox),
                     onTap: () {
-                      logger.i("点击了 Add New Box");
+                      logger.i('点击了 Add New Box');
                       showDialog(
                         context: context,
                         builder: (context) => const AddBelongingBoxDialog(),
@@ -269,53 +287,60 @@ class _TodoPageState extends State<TodoPage> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.blue.shade50, Colors.blue.shade100],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      border: cur_belongingBox.id == -1
-                          ? Border.all(color: Colors.blue, width: 2)
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                      border:
+                          currentBelongingBox.id ==
+                              AppConstants.todayBelongingBoxId
+                          ? Border.all(
+                              color: AppColors.primary,
+                              width: Dimensions.borderMedium,
+                            )
                           : null,
                     ),
                     child: ListTile(
                       leading: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(8),
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(
+                            Dimensions.radiusM,
+                          ),
                         ),
                         child: const Icon(
                           Icons.today,
-                          color: Colors.white,
-                          size: 20,
+                          color: AppColors.textOnPrimary,
+                          size: Dimensions.iconS,
                         ),
                       ),
                       title: const Text(
-                        "今天",
+                        UIStrings.today,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
-                      trailing: cur_belongingBox.id == -1
+                      trailing:
+                          currentBelongingBox.id ==
+                              AppConstants.todayBelongingBoxId
                           ? Container(
-                              padding: const EdgeInsets.all(4),
+                              padding: const EdgeInsets.all(
+                                Dimensions.paddingXS,
+                              ),
                               decoration: const BoxDecoration(
-                                color: Colors.green,
+                                color: AppColors.success,
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
                                 Icons.check,
-                                color: Colors.white,
-                                size: 16,
+                                color: AppColors.textOnPrimary,
+                                size: Dimensions.iconXS,
                               ),
                             )
                           : null,
                       onTap: () {
-                        _belongingBoxProvider.updateCurBelongingBox(
-                          BelongingBoxProvider.today_belongingBox,
+                        belongingBoxProvider.updateCurBelongingBox(
+                          BelongingBoxProvider.todayBelongingBox,
                         );
                         Navigator.of(context).pop(); // Close drawer
                       },
@@ -323,8 +348,8 @@ class _TodoPageState extends State<TodoPage> {
                   ),
 
                   // User-created belonging boxes
-                  for (var belongingBox
-                      in _belongingBoxProvider.all_belongingBoxes)
+                  for (final belongingBox
+                      in belongingBoxProvider.allBelongingBoxes)
                     ListTile(
                       leading: Container(
                         width: 20,
@@ -339,8 +364,8 @@ class _TodoPageState extends State<TodoPage> {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (cur_belongingBox.id == belongingBox.id)
-                            Icon(Icons.check, color: Colors.green),
+                          if (currentBelongingBox.id == belongingBox.id)
+                            const Icon(Icons.check, color: AppColors.success),
                           PopupMenuButton<String>(
                             onSelected: (value) =>
                                 _handleBelongingBoxAction(value, belongingBox),
@@ -349,9 +374,9 @@ class _TodoPageState extends State<TodoPage> {
                                 value: 'edit',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.edit, size: 20),
-                                    SizedBox(width: 8),
-                                    Text('Edit'),
+                                    Icon(Icons.edit, size: Dimensions.iconS),
+                                    SizedBox(width: Dimensions.paddingS),
+                                    Text(UIStrings.edit),
                                   ],
                                 ),
                               ),
@@ -361,13 +386,13 @@ class _TodoPageState extends State<TodoPage> {
                                   children: [
                                     Icon(
                                       Icons.delete,
-                                      size: 20,
-                                      color: Colors.red,
+                                      size: Dimensions.iconS,
+                                      color: AppColors.error,
                                     ),
-                                    SizedBox(width: 8),
+                                    SizedBox(width: Dimensions.paddingS),
                                     Text(
-                                      'Delete',
-                                      style: TextStyle(color: Colors.red),
+                                      UIStrings.delete,
+                                      style: TextStyle(color: AppColors.error),
                                     ),
                                   ],
                                 ),
@@ -377,7 +402,7 @@ class _TodoPageState extends State<TodoPage> {
                         ],
                       ),
                       onTap: () {
-                        _belongingBoxProvider.updateCurBelongingBox(
+                        belongingBoxProvider.updateCurBelongingBox(
                           belongingBox,
                         );
                         Navigator.of(context).pop(); // Close drawer
@@ -405,14 +430,14 @@ class _TodoPageState extends State<TodoPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Delete Belonging Box'),
+            title: const Text(UIStrings.deleteBelongingBoxTitle),
             content: Text(
               'Are you sure you want to delete "${belongingBox.name}"?',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: const Text(UIStrings.cancel),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -433,13 +458,17 @@ class _TodoPageState extends State<TodoPage> {
                   } catch (e) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error deleting: $e')),
+                        SnackBar(
+                          content: Text('${UIStrings.errorDeleting}: $e'),
+                        ),
                       );
                     }
                   }
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('Delete'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.error,
+                ),
+                child: const Text(UIStrings.delete),
               ),
             ],
           ),

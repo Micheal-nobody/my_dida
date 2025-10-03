@@ -1,6 +1,24 @@
 // No Flutter imports needed
 
 class RRuleUtil {
+  // Cache for memorizing RRule calculations
+  static final Map<String, List<DateTime>> _rruleCache = {};
+  static const int _maxCacheSize = 100;
+
+  // Clear cache when it gets too large
+  static void _clearCacheIfNeeded() {
+    if (_rruleCache.length > _maxCacheSize) {
+      _rruleCache.clear();
+    }
+  }
+
+  // Generate cache key for memoization
+  static String _generateCacheKey(
+    DateTime startTime,
+    String rrule,
+    int count,
+  ) => '${startTime.millisecondsSinceEpoch}_${rrule}_$count';
+
   /// Generate next [count] occurrence dates starting from [startTime]
   /// according to the given iCal RRULE string (supports common fields).
   ///
@@ -16,6 +34,14 @@ class RRuleUtil {
     int count,
   ) {
     if (!rrule.startsWith('RRULE:')) return const [];
+
+    // Check cache first
+    final cacheKey = _generateCacheKey(startTime, rrule, count);
+    if (_rruleCache.containsKey(cacheKey)) {
+      return _rruleCache[cacheKey]!;
+    }
+
+    _clearCacheIfNeeded();
     final rule = rrule.replaceFirst('RRULE:', '');
     final parts = <String, String>{};
     for (final kv in rule.split(';')) {
@@ -118,7 +144,58 @@ class RRuleUtil {
         return const [];
     }
 
+    // Cache the results before returning
+    _rruleCache[cacheKey] = results;
     return results;
+  }
+
+  // Optimized method for getting occurrences within a specific date range
+  static List<DateTime> getOccurrencesInRange(
+    DateTime startTime,
+    String rrule,
+    DateTime rangeStart,
+    DateTime rangeEnd,
+  ) {
+    if (!rrule.startsWith('RRULE:')) return const [];
+
+    // Generate more occurrences than needed, then filter
+    // This is more efficient than generating all possible occurrences
+    final maxOccurrences = _calculateMaxOccurrencesNeeded(
+      rangeStart,
+      rangeEnd,
+      rrule,
+    );
+    final allOccurrences = nextOccurrences(startTime, rrule, maxOccurrences);
+
+    return allOccurrences
+        .where((date) => !date.isBefore(rangeStart) && !date.isAfter(rangeEnd))
+        .toList();
+  }
+
+  // Calculate reasonable maximum occurrences needed for a date range
+  static int _calculateMaxOccurrencesNeeded(
+    DateTime rangeStart,
+    DateTime rangeEnd,
+    String rrule,
+  ) {
+    final daysDifference = rangeEnd.difference(rangeStart).inDays;
+
+    if (rrule.contains('FREQ=DAILY')) {
+      return daysDifference + 1;
+    } else if (rrule.contains('FREQ=WEEKLY')) {
+      return (daysDifference / 7).ceil() * 7 + 7; // Add buffer
+    } else if (rrule.contains('FREQ=MONTHLY')) {
+      return (daysDifference / 30).ceil() + 2; // Add buffer
+    } else if (rrule.contains('FREQ=YEARLY')) {
+      return (daysDifference / 365).ceil() + 1;
+    }
+
+    return daysDifference + 1; // Default fallback
+  }
+
+  // Clear cache manually if needed
+  static void clearCache() {
+    _rruleCache.clear();
   }
 
   static String optionKeyFromSelection(String selection) {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:my_dida/provider/OperationStackProvider.dart';
 import 'package:my_dida/model/entity/Operation.dart';
-import 'package:my_dida/provider/TaskProvider.dart';
 import 'package:my_dida/provider/HabitProvider.dart';
+import 'package:my_dida/provider/OperationStackProvider.dart';
+import 'package:my_dida/provider/TaskProvider.dart';
+import 'package:provider/provider.dart';
 
 class OperationPage extends StatefulWidget {
   const OperationPage({super.key});
@@ -19,93 +19,91 @@ class _OperationPageState extends State<OperationPage> {
   DateTime? _endDate;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('操作历史'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.undo),
-            onPressed: () => _showUndoDialog(context),
-            tooltip: '撤回操作',
-          ),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              switch (value) {
-                case 'clear':
-                  _showClearDialog(context);
-                  break;
-                case 'filter':
-                  _showFilterDialog(context);
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'filter',
-                child: Row(
-                  children: [
-                    Icon(Icons.filter_list),
-                    SizedBox(width: 8),
-                    Text('筛选'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'clear',
-                child: Row(
-                  children: [
-                    Icon(Icons.clear_all),
-                    SizedBox(width: 8),
-                    Text('清空历史'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: Consumer<OperationStackProvider>(
-        builder: (context, operationStack, child) {
-          final operations = _getFilteredOperations(operationStack.operations);
-          if (operations.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const Text('操作历史'),
+      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.undo),
+          onPressed: () => _showUndoDialog(context),
+          tooltip: '撤回操作',
+        ),
+        PopupMenuButton<String>(
+          onSelected: (value) {
+            switch (value) {
+              case 'clear':
+                _showClearDialog(context);
+                break;
+              case 'filter':
+                _showFilterDialog(context);
+                break;
+            }
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: 'filter',
+              child: Row(
                 children: [
-                  Icon(Icons.history, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    '暂无操作记录',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
+                  Icon(Icons.filter_list),
+                  SizedBox(width: 8),
+                  Text('筛选'),
                 ],
               ),
-            );
-          }
-
-          return Column(
-            children: [
-              // 统计信息
-              _buildStatsCard(operationStack),
-
-              // 操作列表
-              Expanded(
-                child: ListView.builder(
-                  itemCount: operations.length,
-                  itemBuilder: (context, index) {
-                    final operation = operations[index];
-                    return _buildOperationCard(operation, index);
-                  },
-                ),
+            ),
+            const PopupMenuItem(
+              value: 'clear',
+              child: Row(
+                children: [
+                  Icon(Icons.clear_all),
+                  SizedBox(width: 8),
+                  Text('清空历史'),
+                ],
               ),
-            ],
+            ),
+          ],
+        ),
+      ],
+    ),
+    body: Consumer<OperationStackProvider>(
+      builder: (context, operationStack, child) {
+        final operations = _getFilteredOperations(operationStack.operations);
+        if (operations.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.history, size: 64, color: Colors.grey),
+                SizedBox(height: 16),
+                Text(
+                  '暂无操作记录',
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+              ],
+            ),
           );
-        },
-      ),
-    );
-  }
+        }
+
+        return Column(
+          children: [
+            // 统计信息
+            _buildStatsCard(operationStack),
+
+            // 操作列表
+            Expanded(
+              child: ListView.builder(
+                itemCount: operations.length,
+                itemBuilder: (context, index) {
+                  final operation = operations[index];
+                  return _buildOperationCard(operation, index);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  );
 
   Widget _buildStatsCard(OperationStackProvider operationStack) {
     final stats = operationStack.getOperationStats();
@@ -150,72 +148,68 @@ class _OperationPageState extends State<OperationPage> {
     );
   }
 
-  Widget _buildStatItem(String label, dynamic value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: Theme.of(context).primaryColor),
-        const SizedBox(height: 4),
-        Text(
-          value.toString(),
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
-      ],
-    );
-  }
-
-  Widget _buildOperationCard(Operation operation, int index) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getOperationColor(operation.type),
-          child: Icon(_getOperationIcon(operation.type), color: Colors.white),
-        ),
-        title: Text(
-          operation.description,
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _formatTimestamp(operation.timestamp),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                _buildOperationChip(operation.type),
-                const SizedBox(width: 8),
-                _buildTargetChip(operation.target),
-              ],
-            ),
-          ],
-        ),
-        trailing: index == 0
-            ? Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '最新',
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              )
-            : null,
-        onTap: () => _showOperationDetails(operation),
+  Widget _buildStatItem(String label, dynamic value, IconData icon) => Column(
+    children: [
+      Icon(icon, color: Theme.of(context).primaryColor),
+      const SizedBox(height: 4),
+      Text(
+        value.toString(),
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
       ),
-    );
-  }
+      Text(label, style: Theme.of(context).textTheme.bodySmall),
+    ],
+  );
+
+  Widget _buildOperationCard(Operation operation, int index) => Card(
+    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    child: ListTile(
+      leading: CircleAvatar(
+        backgroundColor: _getOperationColor(operation.type),
+        child: Icon(_getOperationIcon(operation.type), color: Colors.white),
+      ),
+      title: Text(
+        operation.description,
+        style: const TextStyle(fontWeight: FontWeight.w500),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _formatTimestamp(operation.timestamp),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              _buildOperationChip(operation.type),
+              const SizedBox(width: 8),
+              _buildTargetChip(operation.target),
+            ],
+          ),
+        ],
+      ),
+      trailing: index == 0
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '最新',
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : null,
+      onTap: () => _showOperationDetails(operation),
+    ),
+  );
 
   Widget _buildOperationChip(OperationType type) {
     final colors = {
@@ -309,23 +303,22 @@ class _OperationPageState extends State<OperationPage> {
     }
   }
 
-  List<Operation> _getFilteredOperations(List<Operation> operations) {
-    return operations.where((operation) {
-      if (_selectedType != null && operation.type != _selectedType) {
-        return false;
-      }
-      if (_selectedTarget != null && operation.target != _selectedTarget) {
-        return false;
-      }
-      if (_startDate != null && operation.timestamp.isBefore(_startDate!)) {
-        return false;
-      }
-      if (_endDate != null && operation.timestamp.isAfter(_endDate!)) {
-        return false;
-      }
-      return true;
-    }).toList();
-  }
+  List<Operation> _getFilteredOperations(List<Operation> operations) =>
+      operations.where((operation) {
+        if (_selectedType != null && operation.type != _selectedType) {
+          return false;
+        }
+        if (_selectedTarget != null && operation.target != _selectedTarget) {
+          return false;
+        }
+        if (_startDate != null && operation.timestamp.isBefore(_startDate!)) {
+          return false;
+        }
+        if (_endDate != null && operation.timestamp.isAfter(_endDate!)) {
+          return false;
+        }
+        return true;
+      }).toList();
 
   void _showUndoDialog(BuildContext context) {
     final operationStack = context.read<OperationStackProvider>();
@@ -412,13 +405,13 @@ class _OperationPageState extends State<OperationPage> {
             children: [
               // 操作类型筛选
               DropdownButtonFormField<OperationType?>(
-                value: _selectedType,
+                initialValue: _selectedType,
                 decoration: const InputDecoration(
                   labelText: '操作类型',
                   border: OutlineInputBorder(),
                 ),
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('全部')),
+                  const DropdownMenuItem(child: Text('全部')),
                   ...OperationType.values.map(
                     (type) => DropdownMenuItem(
                       value: type,
@@ -436,13 +429,13 @@ class _OperationPageState extends State<OperationPage> {
 
               // 目标类型筛选
               DropdownButtonFormField<OperationTarget?>(
-                value: _selectedTarget,
+                initialValue: _selectedTarget,
                 decoration: const InputDecoration(
                   labelText: '目标类型',
                   border: OutlineInputBorder(),
                 ),
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('全部')),
+                  const DropdownMenuItem(child: Text('全部')),
                   ...OperationTarget.values.map(
                     (target) => DropdownMenuItem(
                       value: target,
