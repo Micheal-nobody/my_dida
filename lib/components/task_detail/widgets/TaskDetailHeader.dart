@@ -82,6 +82,7 @@ class TaskDetailHeader extends StatelessWidget {
                       }
                       break;
                     case 'copy':
+                      // 递归复制任务及其所有子任务
                       await taskProvider.copyTask(updatedTask);
                       break;
                   }

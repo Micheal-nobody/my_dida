@@ -5,17 +5,33 @@ class PerformanceMonitor {
   static final Map<String, DateTime> _startTimes = {};
   static final Map<String, List<int>> _durations = {};
   static const int _maxSamples = 100;
+  static bool _enabled = false; // 控制是否启用性能监控
+
+  /// Enable or disable performance monitoring
+  static void setEnabled(bool enabled) {
+    _enabled = enabled;
+  }
+
+  /// Check if performance monitoring is enabled
+  static bool get isEnabled => _enabled;
 
   /// Start timing an operation
   static void startTimer(String operationName) {
+    if (!_enabled) return;
     _startTimes[operationName] = DateTime.now();
   }
 
   /// End timing an operation and log the duration
   static void endTimer(String operationName) {
+    if (!_enabled) return;
+
     final startTime = _startTimes[operationName];
     if (startTime == null) {
-      debugPrint('PerformanceMonitor: No start time found for $operationName');
+      if (kDebugMode) {
+        debugPrint(
+          'PerformanceMonitor: No start time found for $operationName',
+        );
+      }
       return;
     }
 
@@ -39,6 +55,7 @@ class PerformanceMonitor {
 
   /// Time a synchronous operation
   static T timeOperation<T>(String operationName, T Function() operation) {
+    if (!_enabled) return operation();
     startTimer(operationName);
     try {
       return operation();
@@ -52,6 +69,7 @@ class PerformanceMonitor {
     String operationName,
     Future<T> Function() operation,
   ) async {
+    if (!_enabled) return await operation();
     startTimer(operationName);
     try {
       return await operation();
@@ -96,7 +114,7 @@ class PerformanceMonitor {
 
   /// Print performance report
   static void printReport() {
-    if (!kDebugMode) return;
+    if (!_enabled || !kDebugMode) return;
 
     debugPrint('\n=== Performance Report ===');
     final allStats = getAllStats();

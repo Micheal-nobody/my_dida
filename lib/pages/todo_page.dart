@@ -94,7 +94,7 @@ class _TodoPageState extends State<TodoPage> {
               isTodayTasks:
                   currentBelongingBox.id == AppConstants.todayBelongingBoxId,
             ),
-            builder: (context, data, __) {
+            builder: (context, data, _) {
               final currentTasks = data.tasks;
               final habits = data.habits;
               final isTodayTasks = data.isTodayTasks;
@@ -116,26 +116,35 @@ class _TodoPageState extends State<TodoPage> {
                     background: Container(
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.only(left: Dimensions.paddingL),
-                      color: AppColors.error,
-                      child: const Icon(
-                        Icons.delete,
-                        color: AppColors.textOnPrimary,
-                      ),
-                    ),
-                    secondaryBackground: Container(
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(
-                        right: Dimensions.paddingL,
-                      ),
                       color: AppColors.success,
                       child: const Icon(
                         Icons.check,
                         color: AppColors.textOnPrimary,
+                        size: 28,
+                      ),
+                    ),
+                    secondaryBackground: Container(
+                      alignment: Alignment.centerRight,
+                      color: AppColors.error,
+                      padding: const EdgeInsets.only(
+                        right: Dimensions.paddingL,
+                      ),
+                      child: const Icon(
+                        Icons.delete,
+                        color: AppColors.textOnPrimary,
+                        size: 28,
                       ),
                     ),
                     confirmDismiss: (direction) async {
                       if (direction == DismissDirection.startToEnd) {
-                        // Left swipe - delete
+                        // Left swipe - complete task
+                        await Provider.of<TaskProvider>(
+                          context,
+                          listen: false,
+                        ).updateTaskIsDone(task, true);
+                        return false; // Don't dismiss, just complete
+                      } else if (direction == DismissDirection.endToStart) {
+                        // Right swipe - delete task
                         return showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
@@ -158,19 +167,12 @@ class _TodoPageState extends State<TodoPage> {
                             ],
                           ),
                         );
-                      } else if (direction == DismissDirection.endToStart) {
-                        // Right swipe - complete
-                        Provider.of<TaskProvider>(
-                          context,
-                          listen: false,
-                        ).updateTaskIsDone(task, true);
-                        return false; // Don't dismiss, just complete
                       }
                       return false;
                     },
                     onDismissed: (direction) {
-                      if (direction == DismissDirection.startToEnd) {
-                        // Delete task
+                      if (direction == DismissDirection.endToStart) {
+                        // Left swipe - delete task
                         Provider.of<TaskProvider>(
                           context,
                           listen: false,
@@ -271,7 +273,6 @@ class _TodoPageState extends State<TodoPage> {
                     leading: const Icon(Icons.add, color: AppColors.success),
                     title: const Text(UIStrings.addNewBox),
                     onTap: () {
-                      logger.i('点击了 Add New Box');
                       showDialog(
                         context: context,
                         builder: (context) => const AddBelongingBoxDialog(),
@@ -310,7 +311,6 @@ class _TodoPageState extends State<TodoPage> {
                         child: const Icon(
                           Icons.today,
                           color: AppColors.textOnPrimary,
-                          size: Dimensions.iconS,
                         ),
                       ),
                       title: const Text(
@@ -320,24 +320,6 @@ class _TodoPageState extends State<TodoPage> {
                           fontSize: 16,
                         ),
                       ),
-                      trailing:
-                          currentBelongingBox.id ==
-                              AppConstants.todayBelongingBoxId
-                          ? Container(
-                              padding: const EdgeInsets.all(
-                                Dimensions.paddingXS,
-                              ),
-                              decoration: const BoxDecoration(
-                                color: AppColors.success,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.check,
-                                color: AppColors.textOnPrimary,
-                                size: Dimensions.iconXS,
-                              ),
-                            )
-                          : null,
                       onTap: () {
                         belongingBoxProvider.updateCurBelongingBox(
                           BelongingBoxProvider.todayBelongingBox,
@@ -350,63 +332,86 @@ class _TodoPageState extends State<TodoPage> {
                   // User-created belonging boxes
                   for (final belongingBox
                       in belongingBoxProvider.allBelongingBoxes)
-                    ListTile(
-                      leading: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: belongingBox.color,
-                          shape: BoxShape.circle,
-                        ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
                       ),
-                      title: Text(belongingBox.name),
-                      // trailing is a popup menu button
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (currentBelongingBox.id == belongingBox.id)
-                            const Icon(Icons.check, color: AppColors.success),
-                          PopupMenuButton<String>(
-                            onSelected: (value) =>
-                                _handleBelongingBoxAction(value, belongingBox),
-                            itemBuilder: (context) => [
-                              const PopupMenuItem(
-                                value: 'edit',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.edit, size: Dimensions.iconS),
-                                    SizedBox(width: Dimensions.paddingS),
-                                    Text(UIStrings.edit),
-                                  ],
-                                ),
-                              ),
-                              const PopupMenuItem(
-                                value: 'delete',
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.delete,
-                                      size: Dimensions.iconS,
-                                      color: AppColors.error,
-                                    ),
-                                    SizedBox(width: Dimensions.paddingS),
-                                    Text(
-                                      UIStrings.delete,
-                                      style: TextStyle(color: AppColors.error),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                      decoration: BoxDecoration(
+                        color: currentBelongingBox.id == belongingBox.id
+                            ? Colors.orange.withValues(alpha: 0.2)
+                            : null,
+                        borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                        border: currentBelongingBox.id == belongingBox.id
+                            ? Border.all(
+                                color: Colors.orange,
+                                width: Dimensions.borderMedium,
+                              )
+                            : null,
+                      ),
+                      child: ListTile(
+                        leading: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: belongingBox.color,
+                            shape: BoxShape.circle,
                           ),
-                        ],
+                          child: const Icon(
+                            Icons.folder
+                          ),
+                        ),
+                        title: Text(belongingBox.name),
+                        // trailing is a popup menu button
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            PopupMenuButton<String>(
+                              onSelected: (value) => _handleBelongingBoxAction(
+                                value,
+                                belongingBox,
+                              ),
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit, size: Dimensions.iconS),
+                                      SizedBox(width: Dimensions.paddingS),
+                                      Text(UIStrings.edit),
+                                    ],
+                                  ),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.delete,
+                                        size: Dimensions.iconS,
+                                        color: AppColors.error,
+                                      ),
+                                      SizedBox(width: Dimensions.paddingS),
+                                      Text(
+                                        UIStrings.delete,
+                                        style: TextStyle(
+                                          color: AppColors.error,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        onTap: () {
+                          belongingBoxProvider.updateCurBelongingBox(
+                            belongingBox,
+                          );
+                          Navigator.of(context).pop(); // Close drawer
+                        },
                       ),
-                      onTap: () {
-                        belongingBoxProvider.updateCurBelongingBox(
-                          belongingBox,
-                        );
-                        Navigator.of(context).pop(); // Close drawer
-                      },
                     ),
                 ],
               ),

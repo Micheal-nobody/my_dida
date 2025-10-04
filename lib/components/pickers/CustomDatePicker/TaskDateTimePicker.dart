@@ -86,14 +86,16 @@ class TaskDateTimePicker {
   ///
   /// [context] - 上下文
   /// [initialTask] - 初始任务信息（可选）
+  /// [initialTimeInfo] - 初始时间信息（可选，优先级高于initialTask）
   /// [onTimeInfoUpdated] - 时间信息更新回调
   static Future<TaskTimeInfo?> showForNewTask({
     required BuildContext context,
     required Function(TaskTimeInfo) onTimeInfoUpdated,
     Task? initialTask,
+    TaskTimeInfo? initialTimeInfo,
   }) async {
-    // 从 Task 对象中提取时间信息，或使用默认值
-    final timeInfo = TaskTimeInfo.fromTask(initialTask);
+    // 优先使用 initialTimeInfo，否则从 Task 对象中提取时间信息，或使用默认值
+    final timeInfo = initialTimeInfo ?? TaskTimeInfo.fromTask(initialTask);
 
     await CustomDateTimePickerModal.show(
       context: context,
@@ -173,12 +175,12 @@ class TaskTimeInfo {
   /// 从 Task 对象创建 TaskTimeInfo
   factory TaskTimeInfo.fromTask(Task? task) {
     if (task == null) {
-      // 为新任务提供默认的开始和结束时间，确保时长计算正常工作
+      // 为新任务不设置默认时间，让用户主动选择
       final now = DateTime.now().toBeijingTime();
       return TaskTimeInfo(
         selectedDate: now.dateOnly,
-        startTime: TimeOfDay(hour: now.hour, minute: now.minute),
-        endTime: TimeOfDay(hour: (now.hour + 1) % 24, minute: now.minute),
+        startTime: null, // 不设置默认时间
+        endTime: null, // 不设置默认时间
       );
     }
 
@@ -189,10 +191,9 @@ class TaskTimeInfo {
 
     // 处理开始时间
     if (task.startTime != null) {
-      if (task.startTime!.hour == 0 && task.startTime!.minute == 0) {
-        // 只有日期信息，使用当前时间作为默认时间
-        final now = DateTime.now().toBeijingTime();
-        startTime = TimeOfDay(hour: now.hour, minute: now.minute);
+      if (task.startTime!.justDate()) {
+        // 只有日期信息，不设置时间，让CalendarWidget显示"无"
+        startTime = null;
       } else {
         startTime = TimeOfDay(
           hour: task.startTime!.hour,
@@ -202,7 +203,7 @@ class TaskTimeInfo {
     }
 
     // 处理结束时间
-    if (task.endTime != null) {
+    if (task.endTime != null && !task.endTime!.justDate()) {
       endTime = TimeOfDay(
         hour: task.endTime!.hour,
         minute: task.endTime!.minute,

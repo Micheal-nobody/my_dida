@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/components/calendar/CalendarGrid.dart';
+import 'package:my_dida/components/calendar/calendar_grid.dart';
 import 'package:my_dida/components/common/SelectionRow.dart';
 import 'package:my_dida/components/pickers/CustomDatePicker/CustomTimePicker.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
@@ -54,6 +54,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         widget.initialRRule != null &&
         widget.initialRRule!.isNotEmpty) {
       _selectedRepeat = _rruleToSelection(widget.initialRRule!);
+    }
+    // If initialTime changes, update _selectedTime
+    if (oldWidget.initialTime != widget.initialTime) {
+      _selectedTime = widget.initialTime;
     }
   }
 

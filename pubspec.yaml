@@ -32,6 +32,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0 # Flutter 代码规范
   isar_generator: ^3.1.0+1 # Isar 数据库代码生成
   build_runner: ^2.4.13 # 代码生成
+  rename: ^3.1.0
 
 flutter:
   uses-material-design: true

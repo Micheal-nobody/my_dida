@@ -133,6 +133,40 @@ class OperationStackProvider with ChangeNotifier {
     }
   }
 
+  /// 撤回指定的操作
+  Future<bool> undoOperation(Operation operation) async {
+    try {
+      bool success = false;
+
+      switch (operation.target) {
+        case OperationTarget.task:
+          success = await _undoTaskOperation(operation);
+          break;
+        case OperationTarget.habit:
+          success = await _undoHabitOperation(operation);
+          break;
+      }
+
+      if (success) {
+        // 从栈中移除操作
+        _operations.removeWhere((op) => op.id == operation.id);
+
+        // 从数据库删除操作记录
+        await _isar.writeTxn(() async {
+          await _isar.operations.delete(operation.id);
+        });
+
+        notifyListeners();
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      logger.e('撤回指定操作失败: $e');
+      return false;
+    }
+  }
+
   /// 撤回任务操作
   Future<bool> _undoTaskOperation(Operation operation) async {
     try {

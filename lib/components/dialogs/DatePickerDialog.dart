@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/components/calendar/CalendarGrid.dart';
+import 'package:my_dida/components/calendar/calendar_grid.dart';
 
 class CustomDatePickerDialog extends StatelessWidget {
   const CustomDatePickerDialog({

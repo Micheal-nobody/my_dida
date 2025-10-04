@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_dida/pages/CalendarPage.dart';
-import 'package:my_dida/pages/HabitsPage.dart';
-import 'package:my_dida/pages/OperationPage.dart';
-import 'package:my_dida/pages/TodoPage.dart';
+import 'package:my_dida/pages/calendar_page.dart';
+import 'package:my_dida/pages/habits_page.dart';
+import 'package:my_dida/pages/operation_page.dart';
+import 'package:my_dida/pages/todo_page.dart';
 
 final GoRouter goRouter = GoRouter(
   // 初始路由

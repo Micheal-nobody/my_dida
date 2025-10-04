@@ -527,8 +527,20 @@ class TaskProvider with ChangeNotifier {
     await loadCurrentBoxTasks();
   }
 
-  // 复制任务
+  // 复制任务（递归复制子任务）
   Future<void> copyTask(Task originalTask) async {
+    // 递归复制任务及其所有子任务
+    await _copyTaskRecursively(originalTask, null);
+
+    // 更新当前任务列表
+    await loadCurrentBoxTasks();
+  }
+
+  // 递归复制任务及其子任务的私有方法
+  Future<Task> _copyTaskRecursively(
+    Task originalTask,
+    int? newParentTaskId,
+  ) async {
     // 创建新任务，继承除了id以外的一切属性
     final copiedTask = Task(
       name: '${originalTask.name} (副本)',
@@ -538,7 +550,8 @@ class TaskProvider with ChangeNotifier {
           .toList(),
       startTime: originalTask.startTime,
       endTime: originalTask.endTime,
-      subTaskIds: [], // 复制的任务不继承子任务
+      parentTaskId: newParentTaskId, // 设置新的父任务ID
+      subTaskIds: [], // 先设为空，稍后会递归复制子任务
       belongingBoxId: originalTask.belongingBoxId,
       rrule: originalTask.rrule,
     );
@@ -550,8 +563,23 @@ class TaskProvider with ChangeNotifier {
     final operation = Operation.createAddTaskOperation(copiedTask);
     await _operationStack.addOperation(operation);
 
-    // 更新当前任务列表
-    await loadCurrentBoxTasks();
+    // 递归复制所有子任务
+    final List<int> newSubTaskIds = [];
+    for (final subTaskId in originalTask.subTaskIds) {
+      final subTask = await _taskRepository.getById(subTaskId);
+      if (subTask != null) {
+        final copiedSubTask = await _copyTaskRecursively(
+          subTask,
+          copiedTask.id,
+        );
+        newSubTaskIds.add(copiedSubTask.id);
+      }
+    }
+
+    // 更新复制任务的子任务ID列表
+    await _taskRepository.update(copiedTask..subTaskIds = newSubTaskIds);
+
+    return copiedTask;
   }
 
   //endregion

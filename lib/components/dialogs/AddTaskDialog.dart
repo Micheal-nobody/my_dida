@@ -73,6 +73,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   void _showCustomDatePicker(BuildContext context) async {
     await TaskDateTimePicker.showForNewTask(
       context: context,
+      initialTimeInfo: _timeInfo, // 传递当前的时间信息
       onTimeInfoUpdated: (timeInfo) {
         logger.i('Task time updated: $timeInfo');
         setState(() {
