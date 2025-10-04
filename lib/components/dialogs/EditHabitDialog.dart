@@ -29,7 +29,7 @@ class _EditHabitDialogState extends BaseFormDialogState<EditHabitDialog> {
   late TextEditingController _nameController;
   late String _selectedIcon;
   late TimeOfDay _selectedTime;
-  late int _checkInCount;
+  late int _checkInCount; 
 
   @override
   String get dialogTitle => '编辑习惯';
