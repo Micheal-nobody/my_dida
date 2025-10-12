@@ -33,6 +33,6 @@ dev_dependencies:
   isar_generator: ^3.1.0+1 # Isar 数据库代码生成
   build_runner: ^2.4.13 # 代码生成
   rename: ^3.1.0
-
+  dart_code_metrics: ^5.7.6
 flutter:
   uses-material-design: true
