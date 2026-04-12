@@ -11,6 +11,7 @@ class CheckpointItemWidget extends StatefulWidget {
     required this.checkpoint,
     super.key,
   });
+
   final Task task;
   final int index;
   final CheckPoint checkpoint;

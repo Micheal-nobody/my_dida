@@ -1,3 +1,5 @@
+import '../model/vo/checklist_vo.dart';
+
 /// Application-wide constants
 class AppConstants {
   // App Information
@@ -5,8 +7,8 @@ class AppConstants {
   static const String appDescription = '这里是简介';
 
   // Special IDs
-  static const int todayCheckListBoxId = -1;
-  static const int defaultCheckListId = 1;
+  static ChecklistVO todayCheckList = ChecklistVO(id: -1, name: '今天');
+  static ChecklistVO defaultCheckList = ChecklistVO(id: 1, name: '收集箱');
 
   // UI Constants
   static const double defaultPadding = 16.0;

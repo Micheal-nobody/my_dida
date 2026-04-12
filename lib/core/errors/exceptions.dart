@@ -1,6 +1,7 @@
 /// Base exception class for the application
 abstract class AppException implements Exception {
   const AppException(this.message, {this.code});
+
   final String message;
   final String? code;
 
@@ -17,6 +18,7 @@ class DatabaseException extends AppException {
 /// Validation related exceptions
 class ValidationException extends AppException {
   const ValidationException(super.message, {super.code, this.fieldErrors});
+
   final Map<String, String>? fieldErrors;
 }
 

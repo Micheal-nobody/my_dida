@@ -4,13 +4,12 @@ import 'package:provider/provider.dart';
 import '../components/cards/habit_card.dart';
 import '../components/cards/task_card.dart';
 import '../components/common/CustomFloatingActionButton.dart';
-import '../components/dialogs/AddBelongingBoxDialog.dart';
+import '../components/todo_drawer.dart';
 import '../constants/app_constants.dart';
-import '../constants/colors.dart';
-import '../constants/dimensions.dart';
-import '../constants/ui_strings.dart';
+import '../constants/colors_constants.dart';
+import '../constants/dimension_constants.dart';
+import '../constants/ui_constants.dart';
 import '../model/entity/Task.dart';
-import '../model/vo/checklist_vo.dart';
 import '../provider/checklist_provider.dart';
 import '../provider/habit_provider.dart';
 import '../provider/task_provider.dart';
@@ -42,7 +41,7 @@ class _TodoPageState extends State<TodoPage> {
     //Optimize: 可以选择优化，使用Selector
     final belongingBoxProvider = Provider.of<ChecklistProvider>(context);
 
-    final currentBelongingBox = belongingBoxProvider.currentBelongingBox;
+    final currentBelongingBox = belongingBoxProvider.currentCheckList;
 
     return Scaffold(
       appBar: AppBar(
@@ -91,7 +90,7 @@ class _TodoPageState extends State<TodoPage> {
               tasks: taskProvider.currentTasks,
               habits: habitProvider.habits,
               isTodayTasks:
-                  currentBelongingBox.id == AppConstants.todayCheckListBoxId,
+                  currentBelongingBox.id == AppConstants.todayCheckList.id,
             ),
             builder: (context, data, _) {
               final currentTasks = data.tasks;
@@ -245,239 +244,7 @@ class _TodoPageState extends State<TodoPage> {
       floatingActionButton: const CustomFloatingActionButton(),
 
       // 侧边栏
-      drawer: Drawer(
-        child: Column(
-          children: [
-            // user账户头部
-            const UserAccountsDrawerHeader(
-              accountName: Text(AppConstants.appName),
-              accountEmail: Text(AppConstants.appDescription),
-              decoration: BoxDecoration(color: AppColors.primary),
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: AppColors.background,
-                child: Icon(
-                  Icons.person,
-                  size: Dimensions.iconXL,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
-
-            // 侧边栏菜单项
-            Expanded(
-              child: ListView(
-                children: [
-                  // Add new belonging box button
-                  ListTile(
-                    leading: const Icon(Icons.add, color: AppColors.success),
-                    title: const Text(UIStrings.addNewBox),
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => const AddBelongingBoxDialog(),
-                      );
-                    },
-                  ),
-                  const Divider(),
-
-                  // Today special box
-                  Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                      border:
-                          currentBelongingBox.id ==
-                              AppConstants.todayCheckListBoxId
-                          ? Border.all(
-                              color: AppColors.primary,
-                              width: Dimensions.borderMedium,
-                            )
-                          : null,
-                    ),
-                    child: ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(
-                            Dimensions.radiusM,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.today,
-                          color: AppColors.textOnPrimary,
-                        ),
-                      ),
-                      title: const Text(
-                        UIStrings.today,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      onTap: () {
-                        belongingBoxProvider.updateCurBelongingBox(
-                          ChecklistProvider.todayBelongingBox,
-                        );
-                        Navigator.of(context).pop(); // Close drawer
-                      },
-                    ),
-                  ),
-
-                  // User-created belonging boxes
-                  for (final belongingBox
-                      in belongingBoxProvider.allBelongingBoxes)
-                    Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: currentBelongingBox.id == belongingBox.id
-                            ? Colors.orange.withValues(alpha: 0.2)
-                            : null,
-                        borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                        border: currentBelongingBox.id == belongingBox.id
-                            ? Border.all(
-                                color: Colors.orange,
-                                width: Dimensions.borderMedium,
-                              )
-                            : null,
-                      ),
-                      child: ListTile(
-                        leading: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: belongingBox.color,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.folder
-                          ),
-                        ),
-                        title: Text(belongingBox.name),
-                        // trailing is a popup menu button
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            PopupMenuButton<String>(
-                              onSelected: (value) => _handleBelongingBoxAction(
-                                value,
-                                belongingBox,
-                              ),
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.edit, size: Dimensions.iconS),
-                                      SizedBox(width: Dimensions.paddingS),
-                                      Text(UIStrings.edit),
-                                    ],
-                                  ),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.delete,
-                                        size: Dimensions.iconS,
-                                        color: AppColors.error,
-                                      ),
-                                      SizedBox(width: Dimensions.paddingS),
-                                      Text(
-                                        UIStrings.delete,
-                                        style: TextStyle(
-                                          color: AppColors.error,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          belongingBoxProvider.updateCurBelongingBox(
-                            belongingBox,
-                          );
-                          Navigator.of(context).pop(); // Close drawer
-                        },
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      drawer: const TodoDrawer(),
     );
-  }
-
-  void _handleBelongingBoxAction(String action, ChecklistVO belongingBox) {
-    switch (action) {
-      case 'edit':
-        showDialog(
-          context: context,
-          builder: (context) =>
-              AddBelongingBoxDialog(belongingBox: belongingBox),
-        );
-        break;
-      case 'delete':
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text(UIStrings.deleteBelongingBoxTitle),
-            content: Text(
-              'Are you sure you want to delete "${belongingBox.name}"?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text(UIStrings.cancel),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  try {
-                    final provider = Provider.of<ChecklistProvider>(
-                      context,
-                      listen: false,
-                    );
-                    await provider.deleteBelongingBox(belongingBox);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Deleted "${belongingBox.name}"'),
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${UIStrings.errorDeleting}: $e'),
-                        ),
-                      );
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.error,
-                ),
-                child: const Text(UIStrings.delete),
-              ),
-            ],
-          ),
-        );
-        break;
-    }
   }
 }

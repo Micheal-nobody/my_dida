@@ -158,7 +158,9 @@ class _OperationPageState extends State<OperationPage> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                        color: Theme.of(
+                          context,
+                        ).primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -294,7 +296,9 @@ class _OperationPageState extends State<OperationPage> {
                         end: Alignment.bottomRight,
                         colors: [
                           _getOperationColor(operation.type),
-                          _getOperationColor(operation.type).withValues(alpha: 0.8),
+                          _getOperationColor(
+                            operation.type,
+                          ).withValues(alpha: 0.8),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -351,7 +355,9 @@ class _OperationPageState extends State<OperationPage> {
                         gradient: LinearGradient(
                           colors: [
                             Theme.of(context).primaryColor,
-                            Theme.of(context).primaryColor.withValues(alpha: 0.8),
+                            Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.8),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
@@ -694,7 +700,9 @@ class _OperationPageState extends State<OperationPage> {
                     end: Alignment.bottomRight,
                     colors: [
                       _getOperationColor(operation.type).withValues(alpha: 0.1),
-                      _getOperationColor(operation.type).withValues(alpha: 0.05),
+                      _getOperationColor(
+                        operation.type,
+                      ).withValues(alpha: 0.05),
                     ],
                   ),
                   borderRadius: const BorderRadius.only(
@@ -861,30 +869,30 @@ class _OperationPageState extends State<OperationPage> {
   }
 
   Widget _buildInfoRow(String label, String value) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              '$label:',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 80,
+          child: Text(
+            '$label:',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
 
   Widget _buildDataRenderer(
     String jsonData,

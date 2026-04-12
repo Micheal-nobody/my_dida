@@ -30,6 +30,7 @@ class Operation {
     this.previousData,
     this.newData,
   });
+
   Id id = Isar.autoIncrement;
 
   /// 操作类型
@@ -216,4 +217,3 @@ class Operation {
   String toString() =>
       'Operation{id: $id, type: $type, target: $target, timestamp: $timestamp, description: $description, targetId: $targetId}';
 }
-

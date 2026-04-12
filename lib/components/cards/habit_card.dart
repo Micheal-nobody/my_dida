@@ -8,6 +8,7 @@ import '../dialogs/HabitCheckInDialog.dart';
 
 class HabitCard extends StatefulWidget {
   const HabitCard(this.habit, {super.key});
+
   final Habit habit;
 
   @override

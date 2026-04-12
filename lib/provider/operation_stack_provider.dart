@@ -13,7 +13,7 @@ import 'package:my_dida/repository/task_repository.dart';
 
 /// 操作栈管理器
 class OperationStackProvider with ChangeNotifier {
-  OperationStackProvider() : _isar = locator<Isar>();
+  OperationStackProvider() : _isar = getIt<Isar>();
   static const int _maxOperations = 50; // 最大操作数量
   List<Operation> _operations = [];
   final Isar _isar;
@@ -170,7 +170,7 @@ class OperationStackProvider with ChangeNotifier {
   /// 撤回任务操作
   Future<bool> _undoTaskOperation(Operation operation) async {
     try {
-      final taskRepository = locator<TaskRepository>();
+      final taskRepository = getIt<TaskRepository>();
 
       switch (operation.type) {
         case OperationType.add:
@@ -213,7 +213,7 @@ class OperationStackProvider with ChangeNotifier {
   /// 撤回习惯操作
   Future<bool> _undoHabitOperation(Operation operation) async {
     try {
-      final habitRepository = locator<HabitRepository>();
+      final habitRepository = getIt<HabitRepository>();
 
       switch (operation.type) {
         case OperationType.add:
@@ -499,4 +499,3 @@ class OperationStackProvider with ChangeNotifier {
     }
   }
 }
-

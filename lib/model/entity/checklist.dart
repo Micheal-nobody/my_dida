@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+
 part 'checklist.g.dart';
 
 /// 任务所属的家庭

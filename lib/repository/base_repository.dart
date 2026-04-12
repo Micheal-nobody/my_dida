@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+
 import '../config/locator.dart';
 
 abstract class BaseRepository<T> {
@@ -6,7 +7,7 @@ abstract class BaseRepository<T> {
   IsarCollection<T> get collection;
 
   // 获取 Isar 实例
-  Isar get _isar => locator<Isar>();
+  Isar get _isar => getIt<Isar>();
 
   // 插入单个实体
   Future<Id> insert(T entity) async =>

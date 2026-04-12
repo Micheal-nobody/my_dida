@@ -16,6 +16,7 @@ class Habit {
     required this.longestContinuousCheckInDays,
     this.rrule,
   });
+
   Id id = Isar.autoIncrement;
 
   String name;

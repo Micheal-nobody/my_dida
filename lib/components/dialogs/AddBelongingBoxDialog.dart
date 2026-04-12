@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../constants/colors.dart';
+import '../../constants/colors_constants.dart';
 import '../../core/validators/form_validators.dart';
 import '../../model/vo/checklist_vo.dart';
 import '../../provider/checklist_provider.dart';
@@ -12,6 +12,7 @@ class AddBelongingBoxDialog extends BaseFormDialog {
   // null for create, not null for edit
 
   const AddBelongingBoxDialog({super.key, this.belongingBox});
+
   final ChecklistVO? belongingBox;
 
   @override
@@ -26,7 +27,7 @@ class _AddBelongingBoxDialogState
 
   @override
   String get dialogTitle =>
-      belongingBox == null ? 'Add Belonging Box' : 'Edit Belonging Box';
+      belongingBox == null ? '创建清单' : '编辑清单';
 
   @override
   String get confirmButtonText => belongingBox == null ? 'Add' : 'Update';

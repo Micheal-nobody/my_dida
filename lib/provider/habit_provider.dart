@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../config/locator.dart';
 import '../model/entity/Habit.dart';
 import '../model/entity/Operation.dart';
@@ -7,8 +8,8 @@ import 'operation_stack_provider.dart';
 
 class HabitProvider with ChangeNotifier {
   HabitProvider()
-    : _habitRepository = locator<HabitRepository>(),
-      _operationStack = locator<OperationStackProvider>();
+    : _habitRepository = getIt<HabitRepository>(),
+      _operationStack = getIt<OperationStackProvider>();
   List<Habit> _habits = [];
   final HabitRepository _habitRepository;
   final OperationStackProvider _operationStack;

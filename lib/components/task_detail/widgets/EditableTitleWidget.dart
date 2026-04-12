@@ -8,6 +8,7 @@ class EditableTitleWidget extends StatefulWidget {
     super.key,
     this.onFieldSubmitted,
   });
+
   final Task task;
   final Future<void> Function(String value) onSubmit;
   final void Function(String value)? onFieldSubmitted;

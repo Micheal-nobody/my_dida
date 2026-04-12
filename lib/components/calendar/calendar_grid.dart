@@ -6,6 +6,7 @@ class CalendarGrid extends StatefulWidget {
     super.key,
     this.selectedDate,
   });
+
   final DateTime? selectedDate;
   final Function(DateTime) onDateSelected;
 

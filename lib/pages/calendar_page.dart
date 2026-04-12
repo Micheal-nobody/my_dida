@@ -29,8 +29,10 @@ class _CalendarPageState extends State<CalendarPage> {
   Map<DateTime, List<Habit>> _habitsForDates = {}; // 习惯数据
   late TaskProvider _taskProvider;
   late HabitProvider _habitProvider;
+
   // 每个日期的重复任务分页限制（每次 +5）
   final Map<DateTime, int> _rruleBatchLimit = {};
+
   // 每个日期是否还有更多重复任务
   final Map<DateTime, bool> _rruleHasMore = {};
 

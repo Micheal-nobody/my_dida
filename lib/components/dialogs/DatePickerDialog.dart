@@ -7,6 +7,7 @@ class CustomDatePickerDialog extends StatelessWidget {
     super.key,
     this.selectedDate,
   });
+
   final DateTime? selectedDate;
   final Function(DateTime) onDateSelected;
 

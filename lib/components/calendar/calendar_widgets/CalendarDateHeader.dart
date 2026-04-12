@@ -9,6 +9,7 @@ class CalendarDateHeader extends StatefulWidget {
     this.dateRange = 3,
     this.tasksForDates = const {},
   });
+
   final DateTime selectedDate;
   final Function(DateTime) onDateSelected;
   final int dateRange; // 3 for 3-day view, 7 for 7-day view

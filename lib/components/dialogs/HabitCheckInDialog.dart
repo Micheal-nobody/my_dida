@@ -10,6 +10,7 @@ import '../../provider/habit_provider.dart';
 /// 直接处理习惯的持久化更新
 class HabitCheckInDialog extends StatefulWidget {
   const HabitCheckInDialog({required this.habit, super.key});
+
   final Habit habit;
 
   /// 显示习惯打卡对话框

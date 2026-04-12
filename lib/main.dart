@@ -17,7 +17,7 @@ void main() async {
   await setupLocator();
 
   // 初始化操作栈
-  final operationStack = locator<OperationStackProvider>();
+  final operationStack = getIt<OperationStackProvider>();
   await operationStack.initialize();
 
   runApp(
@@ -34,24 +34,24 @@ void main() async {
             Provider.of<ChecklistProvider>(
               context,
               listen: false,
-            ).currentBelongingBox,
+            ).currentCheckList,
           ),
           // update 的返回值应该是 TaskProvider
           update: (context, belongingBoxProvider, previousTaskProvider) {
             /// 只有 belongingBoxProvider.currentBelongingBox 发生变化时才进行更新
             if (previousTaskProvider != null &&
-                belongingBoxProvider.currentBelongingBox !=
+                belongingBoxProvider.currentCheckList !=
                     previousTaskProvider.currentBelongingBox) {
               // 更新 TaskProvider 中的依赖，级联操作符会返回 updateCurrentTasks 之后的自身！
               return previousTaskProvider
-                ..updateCurrentTasks(belongingBoxProvider.currentBelongingBox);
+                ..updateCurrentTasks(belongingBoxProvider.currentCheckList);
             }
 
             return TaskProvider(
               Provider.of<ChecklistProvider>(
                 context,
                 listen: false,
-              ).currentBelongingBox,
+              ).currentCheckList,
             );
           },
         ),

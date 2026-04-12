@@ -11,6 +11,7 @@ import '../../provider/task_provider.dart';
 
 class TaskCard extends StatelessWidget {
   const TaskCard(this.task, {super.key});
+
   final Task task;
 
   @override
@@ -61,7 +62,7 @@ class TaskCard extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Selector<ChecklistProvider, List<ChecklistVO>>(
-                selector: (context, provider) => provider.allBelongingBoxes,
+                selector: (context, provider) => provider.allCheckLists,
                 builder: (context, allBoxes, child) {
                   // 安全地查找BelongingBox，如果找不到则显示默认名称
                   final belongingBox = allBoxes

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../constants/app_constants.dart';
 import '../../../model/entity/Task.dart';
 import '../../../provider/checklist_provider.dart';
 import '../../task_detail/TaskDetailPage.dart';
@@ -20,9 +21,9 @@ class CalendarTaskWithTime extends StatelessWidget {
 
   Color _getTaskColor() {
     // Find the belonging box for this task
-    final belongingBox = belongingBoxProvider.allBelongingBoxes.firstWhere(
+    final belongingBox = belongingBoxProvider.allCheckLists.firstWhere(
       (box) => box.id == task.belongingBoxId,
-      orElse: () => ChecklistProvider.defaultBelongingBox,
+      orElse: () => AppConstants.defaultCheckList,
     );
     return belongingBox.color;
   }

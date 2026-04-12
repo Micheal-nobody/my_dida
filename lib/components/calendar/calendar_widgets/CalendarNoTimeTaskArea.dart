@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/constants/app_constants.dart';
 import 'package:provider/provider.dart';
 
 import '../../../model/entity/Habit.dart';
@@ -17,6 +18,7 @@ class CalendarNoTimeTaskArea extends StatefulWidget {
     required this.selectedDate,
     super.key,
   });
+
   final List<DateTime> visibleDates;
   final Map<DateTime, List<Task>> tasksForDates;
   final Map<DateTime, List<Habit>> habitsForDates;
@@ -118,9 +120,9 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
   // 获取任务颜色
   Color _getTaskColor(Task task, ChecklistProvider belongingBoxProvider) {
     // Find the belonging box for this task
-    final belongingBox = belongingBoxProvider.allBelongingBoxes.firstWhere(
+    final belongingBox = belongingBoxProvider.allCheckLists.firstWhere(
       (box) => box.id == task.belongingBoxId,
-      orElse: () => ChecklistProvider.defaultBelongingBox,
+      orElse: () => AppConstants.defaultCheckList,
     );
     return belongingBox.color;
   }
@@ -387,11 +389,12 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
                                               return CalendarTaskWithoutTime(
                                                 task: entry.value,
                                                 columnWidth:
-                                                    dateColumnWidth -
-                                                    8, // 减去padding
+                                                    dateColumnWidth - 8,
+                                                // 减去padding
                                                 taskIndex:
                                                     crossDayTaskCount +
-                                                    entry.key, // 从跨天任务下方开始
+                                                    entry.key,
+                                                // 从跨天任务下方开始
                                                 availableHeight:
                                                     availableHeight,
                                                 belongingBoxProvider:
@@ -421,13 +424,13 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
                                               return CalendarHabitWithoutTime(
                                                 habit: entry.value,
                                                 columnWidth:
-                                                    dateColumnWidth -
-                                                    8, // 减去padding
+                                                    dateColumnWidth - 8,
+                                                // 减去padding
                                                 habitIndex:
                                                     crossDayTaskCount +
                                                     noTimeTasks.length +
-                                                    entry
-                                                        .key, // 从跨天任务和无时间任务之后开始
+                                                    entry.key,
+                                                // 从跨天任务和无时间任务之后开始
                                                 availableHeight:
                                                     availableHeight,
                                                 displayedCount:

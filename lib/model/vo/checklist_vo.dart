@@ -12,6 +12,7 @@ class ChecklistVO {
     this.color = const Color(0xFF000000), // 默认颜色为黑色
     this.taskIds = const [],
   });
+
   Id id;
   String name;
   Color color; // 任务列表的颜色

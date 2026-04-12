@@ -1,6 +1,7 @@
 /// Base failure class for error handling
 abstract class Failure {
   const Failure(this.message, {this.code});
+
   final String message;
   final String? code;
 
@@ -28,6 +29,7 @@ class DatabaseFailure extends Failure {
 /// Validation failures
 class ValidationFailure extends Failure {
   const ValidationFailure(super.message, {super.code, this.fieldErrors});
+
   final Map<String, String>? fieldErrors;
 }
 

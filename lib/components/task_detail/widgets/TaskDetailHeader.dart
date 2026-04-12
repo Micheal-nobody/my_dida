@@ -9,6 +9,7 @@ import '../../../model/vo/checklist_vo.dart';
 
 class TaskDetailHeader extends StatelessWidget {
   const TaskDetailHeader({required this.task, super.key});
+
   final Task task;
 
   @override
@@ -48,7 +49,7 @@ class TaskDetailHeader extends StatelessWidget {
 
               //通过Selector构建BelongingBoxDropdown - 居中显示
               Selector<ChecklistProvider, List<ChecklistVO>>(
-                selector: (context, provider) => provider.allBelongingBoxes,
+                selector: (context, provider) => provider.allCheckLists,
                 builder: (context, allBoxes, child) => DropdownButton<int?>(
                   value: updatedTask.belongingBoxId,
                   underline: const SizedBox.shrink(),

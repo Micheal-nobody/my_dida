@@ -8,6 +8,7 @@ class CheckPoint {
   // Whether the checkpoint is completed
 
   CheckPoint({this.name = '', this.isDone = false});
+
   String name; // The name of the checkpoint
   bool isDone;
 }

@@ -160,6 +160,7 @@ class PerformanceStats {
     required this.minDuration,
     required this.maxDuration,
   });
+
   final String operationName;
   final int sampleCount;
   final double averageDuration;

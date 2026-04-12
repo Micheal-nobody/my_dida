@@ -17,6 +17,7 @@ class TimeSlotTabWidget extends StatefulWidget {
     this.onRepeatChanged,
     this.onStartEndDateChanged,
   });
+
   final DateTime? selectedDate;
   final TimeOfDay? startTime;
   final TimeOfDay? endTime;

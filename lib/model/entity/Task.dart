@@ -1,5 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/model/entity/CheckPoint.dart';
+
 part 'Task.g.dart';
 
 @Collection()
@@ -29,6 +30,7 @@ class Task {
     /// 重复规则默认为 null
     this.rrule,
   });
+
   Id id = Isar.autoIncrement;
 
   String name;
@@ -60,4 +62,3 @@ class Task {
   String toString() =>
       'Task{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints,isAllDay: $isAllDay, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, belongingBoxId: $belongingBoxId, rrule: $rrule}';
 }
-

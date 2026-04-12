@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 // 任务详情 BottomSheet（由 TaskCard 的 onTap 触发）
 class TaskDetailPage extends StatefulWidget {
   const TaskDetailPage(this.taskId, {super.key, this.scrollController});
+
   final int taskId;
   final ScrollController? scrollController;
 

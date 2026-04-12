@@ -94,6 +94,7 @@ class CustomDateTimePicker extends StatefulWidget {
     this.isTimeOnlyDate = false,
     this.onStartEndDateChanged,
   });
+
   final DateTime? selectedDate;
   final TimeOfDay? startTime;
   final TimeOfDay? endTime;

@@ -10,6 +10,7 @@ class CalendarHabitWithTime extends StatelessWidget {
     required this.hourIndex,
     super.key,
   });
+
   final Habit habit;
   final double columnWidth;
   final int hourIndex;

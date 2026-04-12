@@ -12,6 +12,7 @@ class CalendarHabitWithoutTime extends StatelessWidget {
     required this.displayedCount,
     super.key,
   });
+
   final Habit habit;
   final double columnWidth;
   final int habitIndex;

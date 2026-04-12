@@ -7,6 +7,7 @@ class CustomRepeatPicker extends StatefulWidget {
     super.key,
     this.baseDate,
   });
+
   final String selectedRepeat;
   final Function(String) onRepeatSelected;
   final DateTime? baseDate;

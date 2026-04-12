@@ -19,6 +19,7 @@ class VirtualizedCalendarTimeArea extends StatefulWidget {
     required this.onLoadMoreRRule,
     super.key,
   });
+
   final DateTime selectedDate;
   final List<DateTime> visibleDates;
   final Map<DateTime, List<Task>> tasksForDates;

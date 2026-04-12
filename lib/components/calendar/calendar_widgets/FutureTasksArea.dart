@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../constants/app_constants.dart';
 import '../../../model/entity/Task.dart';
 import '../../../provider/checklist_provider.dart';
 import '../../../provider/task_provider.dart';
@@ -8,6 +9,7 @@ import '../../task_detail/TaskDetailPage.dart';
 
 class FutureTasksArea extends StatefulWidget {
   const FutureTasksArea({required this.futureTasks, super.key});
+
   final Map<DateTime, List<Task>> futureTasks;
 
   @override
@@ -75,14 +77,11 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
     );
   }
 
-  Widget _buildFutureTask(
-    Task task,
-    ChecklistProvider belongingBoxProvider,
-  ) {
+  Widget _buildFutureTask(Task task, ChecklistProvider belongingBoxProvider) {
     // 获取任务颜色
-    final belongingBox = belongingBoxProvider.allBelongingBoxes.firstWhere(
+    final belongingBox = belongingBoxProvider.allCheckLists.firstWhere(
       (box) => box.id == task.belongingBoxId,
-      orElse: () => ChecklistProvider.defaultBelongingBox,
+      orElse: () => AppConstants.defaultCheckList,
     );
     final taskColor = belongingBox.color;
 

@@ -6,6 +6,7 @@ import '../../provider/habit_provider.dart';
 
 class CheckInDialog extends StatefulWidget {
   const CheckInDialog({required this.habit, super.key});
+
   final Habit habit;
 
   static void show(BuildContext context, Habit habit) {

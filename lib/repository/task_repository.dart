@@ -6,7 +6,7 @@ import 'package:my_dida/utils/TimeUtils.dart';
 import '../config/locator.dart';
 
 class TaskRepository extends BaseRepository<Task> {
-  TaskRepository() : _isar = locator<Isar>();
+  TaskRepository() : _isar = getIt<Isar>();
   final Isar _isar;
 
   @override

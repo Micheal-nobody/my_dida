@@ -5,12 +5,14 @@ import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
 import 'package:provider/provider.dart';
 
+import '../../constants/app_constants.dart';
 import '../../model/entity/Task.dart';
 import '../../provider/task_provider.dart';
 import '../pickers/CustomDatePicker/TaskDateTimePicker.dart';
 
 class AddTaskDialog extends StatefulWidget {
   const AddTaskDialog({super.key, this.parentTask});
+
   final Task? parentTask;
 
   @override
@@ -60,21 +62,24 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     final Task newTask = Task(name: taskName, isAllDay: isAllDay);
 
     if (!isAllDay) {
-      newTask..startTime = finalStart
-              ..endTime = finalEnd;
+      newTask
+        ..startTime = finalStart
+        ..endTime = finalEnd;
     } else {
       // 全天任务：确保有 startTime（所选日期 00:00）用于各页面展示
       final DateTime date =
           (_timeInfo.selectedDate ?? DateTime.now().toBeijingTime()).dateOnly;
-      newTask.startTime = DateTime(date.year, date.month, date.day);
-      newTask.endTime = null;
+      newTask
+        ..startTime = DateTime(date.year, date.month, date.day)
+        ..endTime = null;
     }
     newTask.rrule = _timeInfo.rrule;
 
     // 如果是子任务，设置父任务ID和归属盒子
     if (parentTask != null) {
-      newTask.parentTaskId = parentTask!.id;
-      newTask.belongingBoxId = parentTask!.belongingBoxId;
+      newTask
+        ..parentTaskId = parentTask!.id
+        ..belongingBoxId = parentTask!.belongingBoxId;
     } else {
       newTask.belongingBoxId = _selectedBelongingBox.id;
     }
@@ -168,14 +173,13 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 builder: (context, provider, child) {
                   // 更新为当前归属盒子，如果当前归属盒子为defaultBelongingBox则返回allBelongingBox
                   _selectedBelongingBox =
-                      provider.currentBelongingBox ==
-                          ChecklistProvider.todayBelongingBox
-                      ? ChecklistProvider.defaultBelongingBox
-                      : provider.currentBelongingBox;
+                      provider.currentCheckList == AppConstants.todayCheckList
+                      ? AppConstants.defaultCheckList
+                      : provider.currentCheckList;
 
                   return DropdownButton<ChecklistVO>(
                     hint: Text(_selectedBelongingBox.name),
-                    items: provider.allBelongingBoxes
+                    items: provider.allCheckLists
                         .map<DropdownMenuItem<ChecklistVO>>(
                           (value) => DropdownMenuItem<ChecklistVO>(
                             value: value,

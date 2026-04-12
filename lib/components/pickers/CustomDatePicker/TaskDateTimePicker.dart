@@ -229,6 +229,7 @@ class TaskTimeInfo {
           : null,
     );
   }
+
   DateTime? selectedDate;
   TimeOfDay? startTime;
   TimeOfDay? endTime;

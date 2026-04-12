@@ -1,6 +1,6 @@
 import '../config/locator.dart';
 import '../constants/app_constants.dart';
-import '../constants/ui_strings.dart';
+import '../constants/ui_constants.dart';
 import '../core/errors/exceptions.dart';
 import '../core/validators/task_validator.dart';
 import '../model/entity/CheckPoint.dart';
@@ -13,8 +13,8 @@ import '../utils/RRuleUtil.dart';
 /// Service class for task-related business logic
 class TaskService {
   TaskService()
-    : _taskRepository = locator<TaskRepository>(),
-      _operationStack = locator<OperationStackProvider>();
+    : _taskRepository = getIt<TaskRepository>(),
+      _operationStack = getIt<OperationStackProvider>();
   final TaskRepository _taskRepository;
   final OperationStackProvider _operationStack;
 
@@ -44,7 +44,7 @@ class TaskService {
         startTime: startTime,
         endTime: endTime,
         parentTaskId: parentTaskId,
-        belongingBoxId: belongingBoxId ?? AppConstants.defaultCheckListId,
+        belongingBoxId: belongingBoxId ?? AppConstants.defaultCheckList.id,
         rrule: rrule,
       );
 

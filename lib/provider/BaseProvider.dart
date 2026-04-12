@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+
 import '../config/logger.dart';
 
 /// 通用Provider基类，提取Provider中的重复逻辑

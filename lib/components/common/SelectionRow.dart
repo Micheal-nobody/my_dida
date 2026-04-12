@@ -9,6 +9,7 @@ class SelectionRow extends StatelessWidget {
     super.key,
     this.valueColor,
   });
+
   final IconData icon;
   final String label;
   final String value;

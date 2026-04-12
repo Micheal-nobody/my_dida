@@ -16,12 +16,13 @@ class TaskProvider with ChangeNotifier {
 
   /// 创建时注入Repository，并且初始化_currentTasks
   TaskProvider(ChecklistVO? newBelongingBox)
-    : _taskRepository = locator<TaskRepository>(),
-      _operationStack = locator<OperationStackProvider>(),
+    : _taskRepository = getIt<TaskRepository>(),
+      _operationStack = getIt<OperationStackProvider>(),
       _taskService = TaskService(),
       currentBelongingBox = newBelongingBox {
     updateCurrentTasks(currentBelongingBox);
   }
+
   List<Task> _tasks = [];
   List<Task> _currentTasks = [];
   final TaskRepository _taskRepository;
@@ -565,8 +566,10 @@ class TaskProvider with ChangeNotifier {
           .toList(),
       startTime: originalTask.startTime,
       endTime: originalTask.endTime,
-      parentTaskId: newParentTaskId, // 设置新的父任务ID
-      subTaskIds: [], // 先设为空，稍后会递归复制子任务
+      parentTaskId: newParentTaskId,
+      // 设置新的父任务ID
+      subTaskIds: [],
+      // 先设为空，稍后会递归复制子任务
       belongingBoxId: originalTask.belongingBoxId,
       rrule: originalTask.rrule,
     );

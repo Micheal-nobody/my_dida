@@ -9,6 +9,7 @@ class SubTaskSection extends StatelessWidget {
     required this.onOpenSubTask,
     super.key,
   });
+
   final Task task;
   final void Function(int subTaskId) onOpenSubTask;
 

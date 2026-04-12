@@ -20,6 +20,7 @@ class CalendarWidget extends StatefulWidget {
     this.initialRRule,
     this.isTimeOnlyDate = false,
   });
+
   final DateTime? selectedDate;
   final Function(DateTime) onDateChanged;
   final Function(TimeOfDay?, TimeOfDay?)? onTimeChanged;

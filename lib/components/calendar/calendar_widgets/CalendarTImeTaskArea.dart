@@ -296,7 +296,8 @@ class _CalendarTImeTaskAreaState extends State<CalendarTImeTaskArea> {
                               left: 0,
                               top: topPosition,
                               width: dateColumnWidth,
-                              height: 15.0, // 固定高度
+                              height: 15.0,
+                              // 固定高度
                               child: CalendarHabitWithTime(
                                 habit: habit,
                                 columnWidth: dateColumnWidth,

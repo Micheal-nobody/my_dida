@@ -10,6 +10,7 @@ class OperationTaskRenderer extends StatelessWidget {
     super.key,
     this.isPreviousData = false,
   });
+
   final Task task;
   final bool isPreviousData;
 
@@ -173,7 +174,7 @@ class OperationTaskRenderer extends StatelessWidget {
               const SizedBox(width: 8),
               Consumer<ChecklistProvider>(
                 builder: (context, provider, child) {
-                  final box = provider.allBelongingBoxes
+                  final box = provider.allCheckLists
                       .where((b) => b.id == task.belongingBoxId)
                       .firstOrNull;
                   return Text(

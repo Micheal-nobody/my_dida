@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 class AssociateMainTaskDialog extends StatefulWidget {
   const AssociateMainTaskDialog({required this.currentTask, super.key});
+
   final Task currentTask;
 
   @override

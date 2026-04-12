@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 class TaskTimeSection extends StatelessWidget {
   const TaskTimeSection({required this.task, super.key});
+
   final Task task;
 
   @override

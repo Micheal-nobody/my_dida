@@ -1,10 +1,11 @@
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/model/entity/checklist.dart';
 import 'package:my_dida/repository/base_repository.dart';
+
 import '../config/locator.dart';
 
 class ChecklistRepository extends BaseRepository<Checklist> {
-  ChecklistRepository() : _isar = locator<Isar>();
+  ChecklistRepository() : _isar = getIt<Isar>();
   final Isar _isar;
 
   @override
@@ -18,7 +19,5 @@ class ChecklistRepository extends BaseRepository<Checklist> {
   }
 
   // 获取所有数据
-  Future<List<Checklist>> getAllData() async =>
-      collection.where().findAll();
+  Future<List<Checklist>> getAllData() async => collection.where().findAll();
 }
-

@@ -1,5 +1,5 @@
-import 'package:my_dida/model/entity/checklist.dart';
 import 'package:my_dida/model/entity/CheckPoint.dart';
+import 'package:my_dida/model/entity/checklist.dart';
 
 class TaskVO {
   /// Constructor for TodoItem
@@ -22,6 +22,7 @@ class TaskVO {
     /// 所属收集箱
     this.belongingBox,
   });
+
   int id;
   String name;
   String description;

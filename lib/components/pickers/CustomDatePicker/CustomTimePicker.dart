@@ -7,6 +7,7 @@ class CustomTimePicker extends StatefulWidget {
     required this.onTimeSelected,
     super.key,
   });
+
   final TimeOfDay initialTime;
   final Function(TimeOfDay) onTimeSelected;
 

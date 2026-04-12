@@ -5,7 +5,7 @@ import 'package:my_dida/repository/base_repository.dart';
 import '../config/locator.dart';
 
 class HabitRepository extends BaseRepository<Habit> {
-  HabitRepository() : _isar = locator<Isar>();
+  HabitRepository() : _isar = getIt<Isar>();
   final Isar _isar;
 
   @override

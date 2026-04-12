@@ -3,6 +3,7 @@
 // @collection
 import 'package:isar_community/isar.dart';
 
+
 part 'User.g.dart';
 
 @Collection()
