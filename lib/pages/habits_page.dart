@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../components/cards/HabitCard.dart';
+import '../components/cards/habit_card.dart';
 import '../components/dialogs/AddHabitDialog.dart';
-import '../provider/HabitProvider.dart';
+import '../provider/habit_provider.dart';
 
 class HabitsPage extends StatefulWidget {
   const HabitsPage({super.key});

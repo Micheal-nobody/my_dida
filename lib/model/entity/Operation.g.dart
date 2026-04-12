@@ -47,6 +47,7 @@ const OperationSchema = CollectionSchema(
       enumMap: _OperationtypeEnumValueMap,
     ),
   },
+
   estimateSize: _operationEstimateSize,
   serialize: _operationSerialize,
   deserialize: _operationDeserialize,
@@ -55,10 +56,11 @@ const OperationSchema = CollectionSchema(
   indexes: {},
   links: {},
   embeddedSchemas: {},
+
   getId: _operationGetId,
   getLinks: _operationGetLinks,
   attach: _operationAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _operationEstimateSize(

@@ -5,8 +5,8 @@ class AppConstants {
   static const String appDescription = '这里是简介';
 
   // Special IDs
-  static const int todayBelongingBoxId = -1;
-  static const int defaultBelongingBoxId = 1;
+  static const int todayCheckListBoxId = -1;
+  static const int defaultCheckListId = 1;
 
   // UI Constants
   static const double defaultPadding = 16.0;

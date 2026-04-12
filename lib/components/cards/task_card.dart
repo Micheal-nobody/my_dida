@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/components/task_detail/TaskDetailPage.dart';
 import 'package:my_dida/config/logger.dart';
-import 'package:my_dida/model/vo/BelongingBoxVO.dart';
+import 'package:my_dida/model/vo/checklist_vo.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
 import 'package:provider/provider.dart';
 
 import '../../model/entity/Task.dart';
-import '../../provider/BelongingBoxProvider.dart';
-import '../../provider/TaskProvider.dart';
+import '../../provider/checklist_provider.dart';
+import '../../provider/task_provider.dart';
 
 class TaskCard extends StatelessWidget {
   const TaskCard(this.task, {super.key});
@@ -60,7 +60,7 @@ class TaskCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Selector<BelongingBoxProvider, List<BelongingBoxVO>>(
+              child: Selector<ChecklistProvider, List<ChecklistVO>>(
                 selector: (context, provider) => provider.allBelongingBoxes,
                 builder: (context, allBoxes, child) {
                   // 安全地查找BelongingBox，如果找不到则显示默认名称

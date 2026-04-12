@@ -1,14 +1,15 @@
 import 'package:get_it/get_it.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:my_dida/config/logger.dart';
-import 'package:my_dida/model/entity/BelongingBox.dart';
+import 'package:my_dida/constants/app_constants.dart';
+import 'package:my_dida/model/entity/checklist.dart';
 import 'package:my_dida/model/entity/Habit.dart';
 import 'package:my_dida/model/entity/Operation.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/provider/OperationStackProvider.dart';
-import 'package:my_dida/repository/BelongingBoxRepository.dart';
-import 'package:my_dida/repository/HabitRepository.dart';
-import 'package:my_dida/repository/TaskRepository.dart';
+import 'package:my_dida/provider/operation_stack_provider.dart';
+import 'package:my_dida/repository/task_repository.dart';
+import 'package:my_dida/repository/checklist_repository.dart';
+import 'package:my_dida/repository/habit_repository.dart';
 import 'package:my_dida/services/task_service.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -19,9 +20,11 @@ Future<void> setupLocator() async {
   final isar = await initializeIsar();
   locator.registerSingleton<Isar>(isar);
 
+  await ensureDefaultBelongingBox(isar);
+
   // 注册数据库操作服务
   locator.registerSingleton<TaskRepository>(TaskRepository());
-  locator.registerSingleton<BelongingBoxRepository>(BelongingBoxRepository());
+  locator.registerSingleton<ChecklistRepository>(ChecklistRepository());
   locator.registerSingleton<HabitRepository>(HabitRepository());
 
   // 注册操作栈管理器
@@ -31,6 +34,28 @@ Future<void> setupLocator() async {
   locator.registerSingleton<TaskService>(TaskService());
 
   logger.i('初始化 Isar 完成！');
+}
+
+Future<void> ensureDefaultBelongingBox(Isar isar) async {
+  final defaultBox = await isar.checklists.get(
+    AppConstants.defaultCheckListId,
+  );
+  if (defaultBox != null) {
+    return;
+  }
+
+  final existingDefaultBox =
+      await isar.checklists.filter().nameEqualTo('收集箱').findFirst();
+  if (existingDefaultBox != null) {
+    logger.w('已存在名为“收集箱”的归属盒子，但默认 ID 缺失，跳过重复初始化。');
+    return;
+  }
+
+  await isar.writeTxn(() async {
+    final box = Checklist(name: '收集箱')
+      ..id = AppConstants.defaultCheckListId;
+    await isar.checklists.put(box);
+  });
 }
 
 Future<Isar> initializeIsar() async {
@@ -46,7 +71,7 @@ Future<Isar> initializeIsar() async {
 
   return Isar.open([
     TaskSchema,
-    BelongingBoxSchema,
+    ChecklistSchema,
     HabitSchema,
     OperationSchema,
   ], directory: dir.path);

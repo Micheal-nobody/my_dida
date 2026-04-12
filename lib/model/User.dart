@@ -1,7 +1,7 @@
-// import 'package:isar/isar.dart';
+// import 'package:isar_community/isar.dart';
 
 // @collection
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 part 'User.g.dart';
 

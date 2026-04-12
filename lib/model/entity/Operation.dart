@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:my_dida/model/entity/Habit.dart';
 import 'package:my_dida/model/entity/Task.dart';
 
@@ -216,3 +216,4 @@ class Operation {
   String toString() =>
       'Operation{id: $id, type: $type, target: $target, timestamp: $timestamp, description: $description, targetId: $targetId}';
 }
+

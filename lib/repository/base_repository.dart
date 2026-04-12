@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import '../config/locator.dart';
 
 abstract class BaseRepository<T> {

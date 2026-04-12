@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../config/locator.dart';
 import '../model/entity/Habit.dart';
 import '../model/entity/Operation.dart';
-import '../repository/HabitRepository.dart';
-import 'OperationStackProvider.dart';
+import '../repository/habit_repository.dart';
+import 'operation_stack_provider.dart';
 
 class HabitProvider with ChangeNotifier {
   HabitProvider()

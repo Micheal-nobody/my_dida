@@ -1,7 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-<!--    我打算将 <application android:name="${applicationName}"
-                    <activity    android:name=".MainActivity"   化为为具体值 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.my_dida">
     <application
         android:label="my_dida"
         android:name="${applicationName}"

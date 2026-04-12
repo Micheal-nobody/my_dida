@@ -1,6 +1,6 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/repository/BaseRepository.dart';
+import 'package:my_dida/repository/base_repository.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
 
 import '../config/locator.dart';
@@ -15,17 +15,17 @@ class TaskRepository extends BaseRepository<Task> {
   // 添加数据
   Future<void> addData(Task data) async {
     await _isar.writeTxn(() async {
-      await _isar.tasks.put(data);
+      await collection.put(data);
     });
   }
 
   // 获取所有数据
-  Future<List<Task>> getAllData() async => _isar.tasks.where().findAll();
+  Future<List<Task>> getAllData() async => collection.where().findAll();
 
   Future<List<Task>> getTodayTasks() async {
     final todayRange = DateTimeUtils.getTodayRange();
 
-    return _isar.tasks
+    return collection
         .where()
         .filter()
         .startTimeBetween(todayRange.start, todayRange.end) // Between 是闭区间！
@@ -41,7 +41,7 @@ class TaskRepository extends BaseRepository<Task> {
   ) async {
     final dateRange = DateTimeUtils.getDateRange(startDate, endDate);
 
-    return _isar.tasks
+    return collection
         .where()
         .filter()
         .startTimeBetween(dateRange.start, dateRange.end)
@@ -69,7 +69,7 @@ class TaskRepository extends BaseRepository<Task> {
   ) async {
     final dateRange = DateTimeUtils.getDateRange(startDate, endDate);
 
-    return _isar.tasks
+    return collection
         .where()
         .filter()
         .isDoneEqualTo(false)
@@ -87,24 +87,24 @@ class TaskRepository extends BaseRepository<Task> {
 
   Future<void> addTask(Task newTask) async {
     await _isar.writeTxn(() async {
-      await _isar.tasks.put(newTask);
+      await collection.put(newTask);
     });
   }
 
   Future<List<Task>> getTasksByBelongingBoxId(int id) async =>
-      _isar.tasks.where().filter().belongingBoxIdEqualTo(id).findAll();
+      collection.where().filter().belongingBoxIdEqualTo(id).findAll();
 
   Future<void> updateTaskIsDone(Task task, bool value) async {
     await _isar.writeTxn(() async {
       task.isDone = value;
-      await _isar.tasks.put(task);
+      await collection.put(task);
     });
   }
 
   Future<List<Task>> getTasksForDate(DateTime date) async {
     final dateRange = DateTimeUtils.getDateRange(date, date);
 
-    return _isar.tasks
+    return collection
         .where()
         .filter()
         .startTimeBetween(dateRange.start, dateRange.end)

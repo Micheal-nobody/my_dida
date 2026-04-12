@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/components/dialogs/AssociateMainTaskDialog.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/provider/BelongingBoxProvider.dart';
-import 'package:my_dida/provider/TaskProvider.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../../model/vo/BelongingBoxVO.dart';
+import '../../../model/vo/checklist_vo.dart';
 
 class TaskDetailHeader extends StatelessWidget {
   const TaskDetailHeader({required this.task, super.key});
@@ -47,7 +47,7 @@ class TaskDetailHeader extends StatelessWidget {
               const Spacer(),
 
               //通过Selector构建BelongingBoxDropdown - 居中显示
-              Selector<BelongingBoxProvider, List<BelongingBoxVO>>(
+              Selector<ChecklistProvider, List<ChecklistVO>>(
                 selector: (context, provider) => provider.allBelongingBoxes,
                 builder: (context, allBoxes, child) => DropdownButton<int?>(
                   value: updatedTask.belongingBoxId,

@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../../model/entity/Habit.dart';
 import '../../../model/entity/Task.dart';
-import '../../../provider/BelongingBoxProvider.dart';
-import '../../../provider/TaskProvider.dart';
+import '../../../provider/checklist_provider.dart';
+import '../../../provider/task_provider.dart';
 import 'CalendarHabitWithTime.dart';
 import 'CalendarTaskWithTime.dart';
 
@@ -222,7 +222,7 @@ class _VirtualizedCalendarTimeAreaState
         ...tasksForHour.asMap().entries.map((entry) {
           final taskIndex = entry.key;
           final task = entry.value;
-          final belongingBoxProvider = Provider.of<BelongingBoxProvider>(
+          final belongingBoxProvider = Provider.of<ChecklistProvider>(
             context,
             listen: false,
           );

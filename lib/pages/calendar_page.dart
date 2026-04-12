@@ -7,8 +7,8 @@ import 'package:my_dida/components/common/CustomFloatingActionButton.dart';
 import 'package:my_dida/components/dialogs/DatePickerDialog.dart';
 import 'package:my_dida/model/entity/Habit.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/provider/HabitProvider.dart';
-import 'package:my_dida/provider/TaskProvider.dart';
+import 'package:my_dida/provider/habit_provider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:my_dida/utils/PerformanceMonitor.dart';
 import 'package:my_dida/utils/RRuleUtil.dart';
 import 'package:provider/provider.dart';
@@ -113,19 +113,13 @@ class _CalendarPageState extends State<CalendarPage> {
         final normalizedDate = DateTime(date.year, date.month, date.day);
 
         // 1) 非重复任务（rrule == null）
+        // 规则：
+        // - startTime == null → 不渲染
+        // - isAllDay == true → 放入对应日期（无具体时间区域使用）
+        // - isAllDay == false → 放入对应日期与具体时间（时间区域使用）
         final List<Task> baseTasksForDate = allTasks.where((task) {
           if (task.rrule != null && task.rrule!.isNotEmpty) return false;
-          if (task.startTime == null) {
-            // 无时间任务显示在今天列
-            return normalizedDate.isAtSameMomentAs(
-              _currentDate.toLocal().copyWith(
-                hour: 0,
-                minute: 0,
-                second: 0,
-                millisecond: 0,
-              ),
-            );
-          }
+          if (task.startTime == null) return false; // 不渲染无开始时间任务
           final taskDate = DateTime(
             task.startTime!.year,
             task.startTime!.month,
@@ -134,7 +128,7 @@ class _CalendarPageState extends State<CalendarPage> {
           return taskDate.isAtSameMomentAs(normalizedDate);
         }).toList();
 
-        // 2) 重复任务（根据 rrule 展开，仅将发生在可见日期集合中的加入）
+        // 2) 重复任务（根据 rrule 展开，仅将发生在当前 normalizedDate 的加入）
         final List<Task> rruleTasksForDate = [];
         for (final task in allTasks) {
           if (task.rrule == null || task.rrule!.isEmpty) continue;
@@ -166,6 +160,7 @@ class _CalendarPageState extends State<CalendarPage> {
             // 复制一个任务实例用于渲染（使用相同 id，不改数据库）
             final Task instance = Task(
               name: task.name,
+              isAllDay: task.isAllDay,
               description: task.description,
               isDone: task.isDone,
               checkpoints: task.checkpoints,
@@ -180,36 +175,46 @@ class _CalendarPageState extends State<CalendarPage> {
           }
         }
 
-        // 3) 过滤已完成任务（已完成的任务不渲染，类似习惯的处理方式）
-        List<Task> combined = [...baseTasksForDate, ...rruleTasksForDate];
-        combined = combined.where((t) => !t.isDone).toList();
+        // 3) 过滤已完成任务（已完成的任务不渲染）
+        List<Task> combined = [
+          ...baseTasksForDate,
+          ...rruleTasksForDate,
+        ].where((t) => !t.isDone).toList();
 
-        // 4) 对重复任务应用分页：每个日期最多显示 _rruleBatchLimit[date] 个重复任务
+        // 4) 拆分：全天任务 vs 有具体时间任务
+        final List<Task> allDayTasks = combined
+            .where((t) => t.isAllDay)
+            .toList();
+        final List<Task> timedNonRRuleTasks = combined
+            .where((t) => (t.rrule == null || t.rrule!.isEmpty) && !t.isAllDay)
+            .toList();
+        final List<Task> timedRRuleTasks = combined
+            .where((t) => t.rrule != null && t.rrule!.isNotEmpty && !t.isAllDay)
+            .toList();
+
+        // 排序：有具体时间任务按时间排序（全天任务不需要时间排序）
+        timedNonRRuleTasks.sort((a, b) {
+          final aT = a.startTime ?? DateTime(0);
+          final bT = b.startTime ?? DateTime(0);
+          return aT.compareTo(bT);
+        });
+        timedRRuleTasks.sort((a, b) {
+          final aT = a.startTime ?? DateTime(0);
+          final bT = b.startTime ?? DateTime(0);
+          return aT.compareTo(bT);
+        });
+
+        // 仅对“有具体时间的重复任务”分页
         final int limit = _rruleBatchLimit[normalizedDate] ?? 5;
-        final List<Task> nonRRule = combined
-            .where((t) => t.rrule == null || t.rrule!.isEmpty)
-            .toList();
-        final List<Task> rruleOnly = combined
-            .where((t) => t.rrule != null && t.rrule!.isNotEmpty)
-            .toList();
-
-        // 排序以获得稳定显示（先按时间）
-        nonRRule.sort((a, b) {
-          final aT = a.startTime ?? DateTime(0);
-          final bT = b.startTime ?? DateTime(0);
-          return aT.compareTo(bT);
-        });
-        rruleOnly.sort((a, b) {
-          final aT = a.startTime ?? DateTime(0);
-          final bT = b.startTime ?? DateTime(0);
-          return aT.compareTo(bT);
-        });
-
-        final bool hasMore = rruleOnly.length > limit;
+        final bool hasMore = timedRRuleTasks.length > limit;
         _rruleHasMore[normalizedDate] = hasMore;
         _rruleBatchLimit.putIfAbsent(normalizedDate, () => 5);
 
-        final List<Task> paged = [...nonRRule, ...rruleOnly.take(limit)];
+        final List<Task> paged = [
+          ...allDayTasks,
+          ...timedNonRRuleTasks,
+          ...timedRRuleTasks.take(limit),
+        ];
 
         tasksMap[normalizedDate] = paged;
       }
@@ -358,6 +363,11 @@ class _CalendarPageState extends State<CalendarPage> {
       elevation: 0,
       actions: [
         IconButton(
+          tooltip: '刷新',
+          icon: Icon(Icons.refresh, color: Colors.grey[600]),
+          onPressed: _loadTasksForVisibleDates,
+        ),
+        IconButton(
           icon: Icon(
             _dateRange == 7 ? Icons.view_list : Icons.view_week,
             color: Colors.grey[600],
@@ -394,7 +404,9 @@ class _CalendarPageState extends State<CalendarPage> {
           },
         ),
 
-        // 3. 无具体时间任务区域（固定在顶部）
+        // 根据 isAllDay 判断是否显示无具体时间任务区域；
+        // 若 isAllDay 为 true，则显示在无具体时间任务区域，并且具体时间区域不再显示
+        // 3. 无具体时间任务区域（固定在顶部；isAllDay 视为无具体时间）
         CalendarNoTimeTaskArea(
           visibleDates: _visibleDates,
           tasksForDates: _tasksForDates,

@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../components/cards/HabitCard.dart';
-import '../components/cards/TaskCard.dart';
+import '../components/cards/habit_card.dart';
+import '../components/cards/task_card.dart';
 import '../components/common/CustomFloatingActionButton.dart';
 import '../components/dialogs/AddBelongingBoxDialog.dart';
-import '../config/logger.dart';
 import '../constants/app_constants.dart';
 import '../constants/colors.dart';
 import '../constants/dimensions.dart';
 import '../constants/ui_strings.dart';
 import '../model/entity/Task.dart';
-import '../model/vo/BelongingBoxVO.dart';
-import '../provider/BelongingBoxProvider.dart';
-import '../provider/HabitProvider.dart';
-import '../provider/TaskProvider.dart';
+import '../model/vo/checklist_vo.dart';
+import '../provider/checklist_provider.dart';
+import '../provider/habit_provider.dart';
+import '../provider/task_provider.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -41,7 +40,7 @@ class _TodoPageState extends State<TodoPage> {
 
     /// 使用 Provider 来获取 TodosProvider 实例
     //Optimize: 可以选择优化，使用Selector
-    final belongingBoxProvider = Provider.of<BelongingBoxProvider>(context);
+    final belongingBoxProvider = Provider.of<ChecklistProvider>(context);
 
     final currentBelongingBox = belongingBoxProvider.currentBelongingBox;
 
@@ -92,7 +91,7 @@ class _TodoPageState extends State<TodoPage> {
               tasks: taskProvider.currentTasks,
               habits: habitProvider.habits,
               isTodayTasks:
-                  currentBelongingBox.id == AppConstants.todayBelongingBoxId,
+                  currentBelongingBox.id == AppConstants.todayCheckListBoxId,
             ),
             builder: (context, data, _) {
               final currentTasks = data.tasks;
@@ -292,7 +291,7 @@ class _TodoPageState extends State<TodoPage> {
                       borderRadius: BorderRadius.circular(Dimensions.radiusL),
                       border:
                           currentBelongingBox.id ==
-                              AppConstants.todayBelongingBoxId
+                              AppConstants.todayCheckListBoxId
                           ? Border.all(
                               color: AppColors.primary,
                               width: Dimensions.borderMedium,
@@ -322,7 +321,7 @@ class _TodoPageState extends State<TodoPage> {
                       ),
                       onTap: () {
                         belongingBoxProvider.updateCurBelongingBox(
-                          BelongingBoxProvider.todayBelongingBox,
+                          ChecklistProvider.todayBelongingBox,
                         );
                         Navigator.of(context).pop(); // Close drawer
                       },
@@ -422,7 +421,7 @@ class _TodoPageState extends State<TodoPage> {
     );
   }
 
-  void _handleBelongingBoxAction(String action, BelongingBoxVO belongingBox) {
+  void _handleBelongingBoxAction(String action, ChecklistVO belongingBox) {
     switch (action) {
       case 'edit':
         showDialog(
@@ -448,7 +447,7 @@ class _TodoPageState extends State<TodoPage> {
                 onPressed: () async {
                   Navigator.of(context).pop();
                   try {
-                    final provider = Provider.of<BelongingBoxProvider>(
+                    final provider = Provider.of<ChecklistProvider>(
                       context,
                       listen: false,
                     );

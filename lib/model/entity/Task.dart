@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:my_dida/model/entity/CheckPoint.dart';
 part 'Task.g.dart';
 
@@ -7,6 +7,9 @@ class Task {
   /// Constructor for TodoItem
   Task({
     required this.name,
+    // this.isAllDay = false,
+    required this.isAllDay,
+
     this.description = '',
     this.isDone = false,
 
@@ -35,6 +38,9 @@ class Task {
   /// 检查点
   List<CheckPoint> checkpoints;
 
+  /// 表示是否为全天任务
+  bool isAllDay;
+
   /// 时间（两个时间是因为任务可以接受 时间段/时间点）
   DateTime? startTime;
   DateTime? endTime;
@@ -52,5 +58,6 @@ class Task {
   // toString 方法
   @override
   String toString() =>
-      'Task{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, belongingBoxId: $belongingBoxId, rrule: $rrule}';
+      'Task{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints,isAllDay: $isAllDay, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, belongingBoxId: $belongingBoxId, rrule: $rrule}';
 }
+

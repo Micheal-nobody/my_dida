@@ -3,16 +3,16 @@ import 'package:provider/provider.dart';
 
 import '../../constants/colors.dart';
 import '../../core/validators/form_validators.dart';
-import '../../model/vo/BelongingBoxVO.dart';
-import '../../provider/BelongingBoxProvider.dart';
-import '../common/BaseFormDialog.dart';
-import '../common/CommonWidgets.dart';
+import '../../model/vo/checklist_vo.dart';
+import '../../provider/checklist_provider.dart';
+import '../common/base_form_dialog.dart';
+import '../common/common_widgets.dart';
 
 class AddBelongingBoxDialog extends BaseFormDialog {
   // null for create, not null for edit
 
   const AddBelongingBoxDialog({super.key, this.belongingBox});
-  final BelongingBoxVO? belongingBox;
+  final ChecklistVO? belongingBox;
 
   @override
   State<AddBelongingBoxDialog> createState() => _AddBelongingBoxDialogState();
@@ -21,7 +21,7 @@ class AddBelongingBoxDialog extends BaseFormDialog {
 class _AddBelongingBoxDialogState
     extends BaseFormDialogState<AddBelongingBoxDialog> {
   final _nameController = TextEditingController();
-  late final BelongingBoxVO? belongingBox;
+  late final ChecklistVO? belongingBox;
   Color _selectedColor = Colors.blue;
 
   @override
@@ -73,7 +73,7 @@ class _AddBelongingBoxDialogState
 
   @override
   Future<void> onConfirm() async {
-    final provider = Provider.of<BelongingBoxProvider>(context, listen: false);
+    final provider = Provider.of<ChecklistProvider>(context, listen: false);
 
     if (belongingBox == null) {
       // Create new belonging box

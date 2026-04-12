@@ -56,7 +56,9 @@ abstract class BaseFormDialogState<T extends BaseFormDialog> extends State<T> {
 
   /// 执行确认操作
   Future<void> _handleConfirm() async {
-    if (!formKey.currentState!.validate()) return;
+    if (!formKey.currentState!.validate()) {
+      return;
+    }
 
     setLoading(true);
     try {

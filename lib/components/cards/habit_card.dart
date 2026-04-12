@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../model/entity/Habit.dart';
-import '../../provider/HabitProvider.dart';
+import '../../provider/habit_provider.dart';
 import '../dialogs/EditHabitDialog.dart';
 import '../dialogs/HabitCheckInDialog.dart';
 

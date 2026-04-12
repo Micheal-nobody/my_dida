@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/config/logger.dart';
-import 'package:my_dida/model/vo/BelongingBoxVO.dart';
-import 'package:my_dida/provider/BelongingBoxProvider.dart';
+import 'package:my_dida/model/vo/checklist_vo.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
 import 'package:provider/provider.dart';
 
 import '../../model/entity/Task.dart';
-import '../../provider/TaskProvider.dart';
+import '../../provider/task_provider.dart';
 import '../pickers/CustomDatePicker/TaskDateTimePicker.dart';
 
 class AddTaskDialog extends StatefulWidget {
@@ -17,12 +17,13 @@ class AddTaskDialog extends StatefulWidget {
   State<AddTaskDialog> createState() => _AddTaskDialogState();
 }
 
+//TODO：一个任务如果是全天任务，仍然应该具有startTime（选择的日期，时间为00:00）,用于显示在calendar_page,todo_page等页面中。
 class _AddTaskDialogState extends State<AddTaskDialog> {
   final TextEditingController _textController = TextEditingController();
   late final Task? parentTask;
   TaskTimeInfo _timeInfo = TaskTimeInfo();
   bool _hasError = false;
-  late BelongingBoxVO _selectedBelongingBox;
+  late ChecklistVO _selectedBelongingBox;
 
   @override
   void initState() {
@@ -30,7 +31,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     parentTask = widget.parentTask;
     final now = DateTime.now();
     // 初始化时间信息
-    _timeInfo = TaskTimeInfo(selectedDate: now.toBeijingTime().dateOnly);
+    _timeInfo = TaskTimeInfo(
+      selectedDate: now.toBeijingTime().dateOnly,
+      isAllDay: true, // 默认全天任务
+    );
   }
 
   @override
@@ -49,10 +53,22 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       return;
     }
 
-    final Task newTask = Task(name: taskName);
-    // 使用 TaskTimeInfo 获取最终时间
-    newTask.startTime = _timeInfo.getFinalStartTime();
-    newTask.endTime = _timeInfo.getFinalEndTime();
+    final DateTime? finalStart = _timeInfo.getFinalStartTime();
+    final DateTime? finalEnd = _timeInfo.getFinalEndTime();
+    final bool isAllDay = _timeInfo.isAllDay; // 以选择器状态为准
+
+    final Task newTask = Task(name: taskName, isAllDay: isAllDay);
+
+    if (!isAllDay) {
+      newTask..startTime = finalStart
+              ..endTime = finalEnd;
+    } else {
+      // 全天任务：确保有 startTime（所选日期 00:00）用于各页面展示
+      final DateTime date =
+          (_timeInfo.selectedDate ?? DateTime.now().toBeijingTime()).dateOnly;
+      newTask.startTime = DateTime(date.year, date.month, date.day);
+      newTask.endTime = null;
+    }
     newTask.rrule = _timeInfo.rrule;
 
     // 如果是子任务，设置父任务ID和归属盒子
@@ -148,20 +164,20 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
 
             // BelongingBox 下拉框（仅当不是子任务时显示）
             if (parentTask == null)
-              Consumer<BelongingBoxProvider>(
+              Consumer<ChecklistProvider>(
                 builder: (context, provider, child) {
                   // 更新为当前归属盒子，如果当前归属盒子为defaultBelongingBox则返回allBelongingBox
                   _selectedBelongingBox =
                       provider.currentBelongingBox ==
-                          BelongingBoxProvider.todayBelongingBox
-                      ? BelongingBoxProvider.defaultBelongingBox
+                          ChecklistProvider.todayBelongingBox
+                      ? ChecklistProvider.defaultBelongingBox
                       : provider.currentBelongingBox;
 
-                  return DropdownButton<BelongingBoxVO>(
+                  return DropdownButton<ChecklistVO>(
                     hint: Text(_selectedBelongingBox.name),
                     items: provider.allBelongingBoxes
-                        .map<DropdownMenuItem<BelongingBoxVO>>(
-                          (value) => DropdownMenuItem<BelongingBoxVO>(
+                        .map<DropdownMenuItem<ChecklistVO>>(
+                          (value) => DropdownMenuItem<ChecklistVO>(
                             value: value,
                             child: Text(value.name),
                           ),

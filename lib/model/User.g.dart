@@ -20,6 +20,7 @@ const UserSchema = CollectionSchema(
     r'age': PropertySchema(id: 0, name: r'age', type: IsarType.long),
     r'name': PropertySchema(id: 1, name: r'name', type: IsarType.string),
   },
+
   estimateSize: _userEstimateSize,
   serialize: _userSerialize,
   deserialize: _userDeserialize,
@@ -28,10 +29,11 @@ const UserSchema = CollectionSchema(
   indexes: {},
   links: {},
   embeddedSchemas: {},
+
   getId: _userGetId,
   getLinks: _userGetLinks,
   attach: _userAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _userEstimateSize(

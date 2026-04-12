@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/CheckPoint.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/provider/TaskProvider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
 
 class CheckpointItemWidget extends StatefulWidget {

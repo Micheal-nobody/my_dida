@@ -3,10 +3,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'config/locator.dart';
-import 'provider/BelongingBoxProvider.dart';
-import 'provider/HabitProvider.dart';
-import 'provider/OperationStackProvider.dart';
-import 'provider/TaskProvider.dart';
+import 'provider/checklist_provider.dart';
+import 'provider/habit_provider.dart';
+import 'provider/operation_stack_provider.dart';
+import 'provider/task_provider.dart';
 import 'router/goRouter.dart';
 
 void main() async {
@@ -23,15 +23,15 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => BelongingBoxProvider()),
+        ChangeNotifierProvider(create: (context) => ChecklistProvider()),
         ChangeNotifierProvider(create: (context) => HabitProvider()),
         ChangeNotifierProvider.value(value: operationStack),
 
         // 使用 ChangeNotifierProxyProvider
-        ChangeNotifierProxyProvider<BelongingBoxProvider, TaskProvider>(
+        ChangeNotifierProxyProvider<ChecklistProvider, TaskProvider>(
           // 首次创建时调用，就传入 belongingBoxProvider.currentBelongingBox
           create: (context) => TaskProvider(
-            Provider.of<BelongingBoxProvider>(
+            Provider.of<ChecklistProvider>(
               context,
               listen: false,
             ).currentBelongingBox,
@@ -48,7 +48,7 @@ void main() async {
             }
 
             return TaskProvider(
-              Provider.of<BelongingBoxProvider>(
+              Provider.of<ChecklistProvider>(
                 context,
                 listen: false,
               ).currentBelongingBox,

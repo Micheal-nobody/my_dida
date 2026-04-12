@@ -6,9 +6,9 @@ import 'package:my_dida/components/operation/operation_task_renderer.dart';
 import 'package:my_dida/model/entity/Habit.dart';
 import 'package:my_dida/model/entity/Operation.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/provider/HabitProvider.dart';
-import 'package:my_dida/provider/OperationStackProvider.dart';
-import 'package:my_dida/provider/TaskProvider.dart';
+import 'package:my_dida/provider/habit_provider.dart';
+import 'package:my_dida/provider/operation_stack_provider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
 
 class OperationPage extends StatefulWidget {
@@ -963,6 +963,7 @@ class _OperationPageState extends State<OperationPage> {
         belongingBoxId: data['belongingBoxId'] == 0
             ? null
             : data['belongingBoxId'],
+        isAllDay: data['isAllDay'] == true,
       )..id = data['id'] ?? 0;
     } catch (e) {
       return null;

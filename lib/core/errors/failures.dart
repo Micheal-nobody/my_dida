@@ -47,6 +47,6 @@ class HabitFailure extends Failure {
 }
 
 /// BelongingBox operation failures
-class BelongingBoxFailure extends Failure {
-  const BelongingBoxFailure(super.message, {super.code});
+class ChecklistFailure extends Failure {
+  const ChecklistFailure(super.message, {super.code});
 }

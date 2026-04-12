@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../../model/entity/Habit.dart';
 import '../../../model/entity/Task.dart';
-import '../../../provider/BelongingBoxProvider.dart';
-import '../../../provider/TaskProvider.dart';
+import '../../../provider/checklist_provider.dart';
+import '../../../provider/task_provider.dart';
 import 'CalendarHabitWithTime.dart';
 import 'CalendarTaskWithTime.dart';
 
@@ -265,7 +265,7 @@ class _CalendarTImeTaskAreaState extends State<CalendarTImeTaskArea> {
                               columnWidth: dateColumnWidth,
                               hourIndex: hourIndex,
                               belongingBoxProvider:
-                                  Provider.of<BelongingBoxProvider>(
+                                  Provider.of<ChecklistProvider>(
                                     context,
                                     listen: false,
                                   ),

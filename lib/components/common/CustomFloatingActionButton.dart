@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../dialogs/AddTaskDialog.dart';
+import '../dialogs/add_task_dialog.dart';
 
 class CustomFloatingActionButton extends StatelessWidget {
   const CustomFloatingActionButton({super.key});

@@ -6,8 +6,8 @@ import '../core/validators/task_validator.dart';
 import '../model/entity/CheckPoint.dart';
 import '../model/entity/Operation.dart';
 import '../model/entity/Task.dart';
-import '../provider/OperationStackProvider.dart';
-import '../repository/TaskRepository.dart';
+import '../provider/operation_stack_provider.dart';
+import '../repository/task_repository.dart';
 import '../utils/RRuleUtil.dart';
 
 /// Service class for task-related business logic
@@ -21,6 +21,7 @@ class TaskService {
   /// Creates a new task with validation
   Future<Task> createTask({
     required String name,
+    bool isAllDay = false,
     String description = '',
     DateTime? startTime,
     DateTime? endTime,
@@ -38,11 +39,12 @@ class TaskService {
 
       final task = Task(
         name: name.trim(),
+        isAllDay: isAllDay,
         description: description.trim(),
         startTime: startTime,
         endTime: endTime,
         parentTaskId: parentTaskId,
-        belongingBoxId: belongingBoxId ?? AppConstants.defaultBelongingBoxId,
+        belongingBoxId: belongingBoxId ?? AppConstants.defaultCheckListId,
         rrule: rrule,
       );
 
@@ -195,6 +197,7 @@ class TaskService {
   /// Copies a task for operation recording
   Task _copyTask(Task task) => Task(
     name: task.name,
+    isAllDay: task.isAllDay,
     description: task.description,
     isDone: task.isDone,
     checkpoints: task.checkpoints,
@@ -255,6 +258,7 @@ class TaskService {
       // Create new recurring task
       final Task newRecurring = Task(
         name: task.name,
+        isAllDay: task.isAllDay,
         description: task.description,
         checkpoints: task.checkpoints
             .map((c) => CheckPoint(name: c.name))

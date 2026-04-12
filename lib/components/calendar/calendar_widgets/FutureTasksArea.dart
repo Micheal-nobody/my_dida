@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../model/entity/Task.dart';
-import '../../../provider/BelongingBoxProvider.dart';
-import '../../../provider/TaskProvider.dart';
+import '../../../provider/checklist_provider.dart';
+import '../../../provider/task_provider.dart';
 import '../../task_detail/TaskDetailPage.dart';
 
 class FutureTasksArea extends StatefulWidget {
@@ -21,7 +21,7 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
       return const SizedBox.shrink();
     }
 
-    return Consumer2<BelongingBoxProvider, TaskProvider>(
+    return Consumer2<ChecklistProvider, TaskProvider>(
       builder: (context, belongingBoxProvider, taskProvider, child) =>
           Container(
             padding: const EdgeInsets.all(16),
@@ -77,12 +77,12 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
 
   Widget _buildFutureTask(
     Task task,
-    BelongingBoxProvider belongingBoxProvider,
+    ChecklistProvider belongingBoxProvider,
   ) {
     // 获取任务颜色
     final belongingBox = belongingBoxProvider.allBelongingBoxes.firstWhere(
       (box) => box.id == task.belongingBoxId,
-      orElse: () => BelongingBoxProvider.defaultBelongingBox,
+      orElse: () => ChecklistProvider.defaultBelongingBox,
     );
     final taskColor = belongingBox.color;
 

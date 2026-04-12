@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:my_dida/components/dialogs/AddTaskDialog.dart';
+import 'package:my_dida/components/dialogs/add_task_dialog.dart';
 import 'package:my_dida/components/pickers/CustomDatePicker/TaskDateTimePicker.dart';
 import 'package:my_dida/components/task_detail/widgets/CheckpointItemWidget.dart';
 import 'package:my_dida/components/task_detail/widgets/EditableDescriptionWidget.dart';
@@ -9,7 +9,7 @@ import 'package:my_dida/components/task_detail/widgets/EditableTitleWidget.dart'
 import 'package:my_dida/components/task_detail/widgets/SubTaskSection.dart';
 import 'package:my_dida/components/task_detail/widgets/TaskDetailHeader.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/provider/TaskProvider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
 
 // 任务详情 BottomSheet（由 TaskCard 的 onTap 触发）

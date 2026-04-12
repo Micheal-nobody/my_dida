@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../../model/entity/Habit.dart';
 import '../../../model/entity/Task.dart';
-import '../../../provider/BelongingBoxProvider.dart';
-import '../../../provider/TaskProvider.dart';
+import '../../../provider/checklist_provider.dart';
+import '../../../provider/task_provider.dart';
 import '../../task_detail/TaskDetailPage.dart';
 import 'CalendarHabitWithoutTime.dart';
 import 'CalendarTaskWithoutTime.dart';
@@ -41,8 +41,9 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
       final dayTasks = widget.tasksForDates[normalizedDate] ?? [];
       final dayHabits = widget.habitsForDates[normalizedDate] ?? [];
 
-      // 统计无时间任务
+      // 统计无时间任务（包含全天任务）
       final noTimeTasks = dayTasks.where((task) {
+        if (task.isAllDay) return true;
         if (task.startTime == null) return true;
         final isZeroTime =
             task.startTime!.hour == 0 && task.startTime!.minute == 0;
@@ -115,11 +116,11 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
   }
 
   // 获取任务颜色
-  Color _getTaskColor(Task task, BelongingBoxProvider belongingBoxProvider) {
+  Color _getTaskColor(Task task, ChecklistProvider belongingBoxProvider) {
     // Find the belonging box for this task
     final belongingBox = belongingBoxProvider.allBelongingBoxes.firstWhere(
       (box) => box.id == task.belongingBoxId,
-      orElse: () => BelongingBoxProvider.defaultBelongingBox,
+      orElse: () => ChecklistProvider.defaultBelongingBox,
     );
     return belongingBox.color;
   }
@@ -151,7 +152,7 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
     final taskWidth = (endIndex - startIndex + 1) * dateColumnWidth;
     final topPosition = taskIndex * _spanBarHeight;
 
-    return Consumer<BelongingBoxProvider>(
+    return Consumer<ChecklistProvider>(
       builder: (context, belongingBoxProvider, child) {
         final taskColor = _getTaskColor(task, belongingBoxProvider);
 
@@ -253,7 +254,7 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
   @override
   Widget build(
     BuildContext context,
-  ) => Consumer2<BelongingBoxProvider, TaskProvider>(
+  ) => Consumer2<ChecklistProvider, TaskProvider>(
     builder: (context, belongingBoxProvider, taskProvider, child) =>
         DragTarget<Task>(
           onMove: (details) {
@@ -326,10 +327,11 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
                               widget.tasksForDates[normalizedDate] ?? [];
                           final dateColumnWidth = _getDateColumnWidth(context);
 
-                          // 获取没有具体时间的任务
+                          // 获取没有具体时间的任务（包含全天任务）
                           final noTimeTasks = dayTasks
                               .where(
                                 (task) =>
+                                    task.isAllDay ||
                                     task.startTime == null ||
                                     (task.startTime!.hour == 0 &&
                                         task.startTime!.minute == 0),

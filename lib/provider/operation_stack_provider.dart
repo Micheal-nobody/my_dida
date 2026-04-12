@@ -1,15 +1,15 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/config/logger.dart';
 import 'package:my_dida/model/entity/CheckPoint.dart';
 import 'package:my_dida/model/entity/Habit.dart';
 import 'package:my_dida/model/entity/Operation.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/repository/HabitRepository.dart';
-import 'package:my_dida/repository/TaskRepository.dart';
+import 'package:my_dida/repository/habit_repository.dart';
+import 'package:my_dida/repository/task_repository.dart';
 
 /// 操作栈管理器
 class OperationStackProvider with ChangeNotifier {
@@ -423,6 +423,7 @@ class OperationStackProvider with ChangeNotifier {
       // 创建Task对象
       final task = Task(
         name: data['name']?.toString() ?? '',
+        isAllDay: data['isAllDay'] == true,
         description: data['description']?.toString() ?? '',
         isDone: data['isDone'] == true,
         rrule: data['rrule']?.toString().isEmpty == true
@@ -498,3 +499,4 @@ class OperationStackProvider with ChangeNotifier {
     }
   }
 }
+

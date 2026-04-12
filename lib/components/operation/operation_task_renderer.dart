@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/Task.dart';
-import 'package:my_dida/provider/BelongingBoxProvider.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:provider/provider.dart';
 
 /// 用于在操作详情中渲染Task的组件
@@ -171,7 +171,7 @@ class OperationTaskRenderer extends StatelessWidget {
             children: [
               Icon(Icons.folder, size: 16, color: Colors.grey[600]),
               const SizedBox(width: 8),
-              Consumer<BelongingBoxProvider>(
+              Consumer<ChecklistProvider>(
                 builder: (context, provider, child) {
                   final box = provider.allBelongingBoxes
                       .where((b) => b.id == task.belongingBoxId)

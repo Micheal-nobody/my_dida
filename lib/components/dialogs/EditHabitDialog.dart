@@ -5,9 +5,9 @@ import 'package:provider/provider.dart';
 import '../../constants/icon_constants.dart';
 import '../../core/validators/form_validators.dart';
 import '../../model/entity/Habit.dart';
-import '../../provider/HabitProvider.dart';
-import '../common/BaseFormDialog.dart';
-import '../common/CommonWidgets.dart';
+import '../../provider/habit_provider.dart';
+import '../common/base_form_dialog.dart';
+import '../common/common_widgets.dart';
 import '../pickers/CustomDatePicker/CustomTimePicker.dart';
 
 class EditHabitDialog extends BaseFormDialog {

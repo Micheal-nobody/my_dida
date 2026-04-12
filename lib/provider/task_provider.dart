@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:my_dida/model/vo/BelongingBoxVO.dart';
-import 'package:my_dida/repository/TaskRepository.dart';
+import 'package:my_dida/model/vo/checklist_vo.dart';
+import 'package:my_dida/repository/task_repository.dart';
 
 import '../config/locator.dart';
 import '../model/entity/CheckPoint.dart';
 import '../model/entity/Operation.dart';
 import '../model/entity/Task.dart';
-import '../provider/OperationStackProvider.dart';
+import '../provider/operation_stack_provider.dart';
 import '../services/task_service.dart';
 
 /// Optimized TaskProvider with performance improvements
@@ -15,7 +15,7 @@ class TaskProvider with ChangeNotifier {
   //endregion
 
   /// 创建时注入Repository，并且初始化_currentTasks
-  TaskProvider(BelongingBoxVO? newBelongingBox)
+  TaskProvider(ChecklistVO? newBelongingBox)
     : _taskRepository = locator<TaskRepository>(),
       _operationStack = locator<OperationStackProvider>(),
       _taskService = TaskService(),
@@ -39,10 +39,10 @@ class TaskProvider with ChangeNotifier {
   List<Task> get currentTasks => _currentTasks;
 
   // 依赖 BelongingBoxProvider.currentBelongingBox 更新 _currentTasks
-  BelongingBoxVO?
+  ChecklistVO?
   currentBelongingBox; // 用于性能优化，在更新前会被用来做判断，如果BelongingBoxProvider.currentBelongingBox 和 currentBelongingBox相等，则不更新
 
-  Future<void> updateCurrentTasks(BelongingBoxVO? newBelongingBox) async {
+  Future<void> updateCurrentTasks(ChecklistVO? newBelongingBox) async {
     // logger.i("因为 currentBelongingBox 改变所以更新 _currentTasks！");
     currentBelongingBox = newBelongingBox;
 
@@ -138,6 +138,7 @@ class TaskProvider with ChangeNotifier {
     try {
       await _taskService.createTask(
         name: newTask.name,
+        isAllDay: newTask.isAllDay,
         description: newTask.description,
         startTime: newTask.startTime,
         endTime: newTask.endTime,
@@ -186,6 +187,7 @@ class TaskProvider with ChangeNotifier {
     // 保存旧状态
     final oldTask = Task(
       name: task.name,
+      isAllDay: task.isAllDay,
       description: task.description,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -202,6 +204,7 @@ class TaskProvider with ChangeNotifier {
     // 记录操作
     final newTask = Task(
       name: newTitle,
+      isAllDay: task.isAllDay,
       description: task.description,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -225,6 +228,7 @@ class TaskProvider with ChangeNotifier {
     // 保存旧状态
     final oldTask = Task(
       name: task.name,
+      isAllDay: task.isAllDay,
       description: task.description,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -241,6 +245,7 @@ class TaskProvider with ChangeNotifier {
     // 记录操作
     final newTask = Task(
       name: task.name,
+      isAllDay: task.isAllDay,
       description: newDesc,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -286,6 +291,7 @@ class TaskProvider with ChangeNotifier {
   Future<int> createSubTask(Task parent) async {
     final Task sub = Task(
       name: '子任务',
+      isAllDay: false,
       parentTaskId: parent.id,
       belongingBoxId: parent.belongingBoxId,
     );
@@ -310,6 +316,7 @@ class TaskProvider with ChangeNotifier {
     // 保存旧状态
     final oldTask = Task(
       name: task.name,
+      isAllDay: task.isAllDay,
       description: task.description,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -326,6 +333,7 @@ class TaskProvider with ChangeNotifier {
     // 记录操作
     final newTask = Task(
       name: task.name,
+      isAllDay: task.isAllDay,
       description: task.description,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -351,6 +359,7 @@ class TaskProvider with ChangeNotifier {
     // 保存旧状态
     final oldTask = Task(
       name: task.name,
+      isAllDay: task.isAllDay,
       description: task.description,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -367,6 +376,7 @@ class TaskProvider with ChangeNotifier {
     // 记录操作
     final newTask = Task(
       name: task.name,
+      isAllDay: task.isAllDay,
       description: task.description,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -396,6 +406,7 @@ class TaskProvider with ChangeNotifier {
     // 保存旧状态
     final oldTask = Task(
       name: task.name,
+      isAllDay: task.isAllDay,
       description: task.description,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -416,6 +427,7 @@ class TaskProvider with ChangeNotifier {
     // 记录操作
     final newTask = Task(
       name: task.name,
+      isAllDay: task.isAllDay,
       description: task.description,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -490,6 +502,7 @@ class TaskProvider with ChangeNotifier {
     // 保存旧状态
     final oldTask = Task(
       name: task.name,
+      isAllDay: task.isAllDay,
       description: task.description,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -506,6 +519,7 @@ class TaskProvider with ChangeNotifier {
     // 记录操作
     final newTask = Task(
       name: task.name,
+      isAllDay: task.isAllDay,
       description: task.description,
       isDone: task.isDone,
       checkpoints: task.checkpoints,
@@ -544,6 +558,7 @@ class TaskProvider with ChangeNotifier {
     // 创建新任务，继承除了id以外的一切属性
     final copiedTask = Task(
       name: '${originalTask.name} (副本)',
+      isAllDay: originalTask.isAllDay,
       description: originalTask.description,
       checkpoints: originalTask.checkpoints
           .map((checkpoint) => CheckPoint(name: checkpoint.name))
