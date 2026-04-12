@@ -50,3 +50,5 @@ app.*.map.json
 /temp
 /lib/model/entity/Habit.g.dart
 /log
+/AGENTS.md
+/lib/model/entity/checklist.g.dart
