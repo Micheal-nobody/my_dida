@@ -50,10 +50,7 @@ class TaskDateTimePicker {
         timeInfo.isAllDay = isAllDay;
       },
       onClear: () async {
-        // 直接清除任务时间并持久化
-        await taskProvider.updateStartTime(task, null);
-        await taskProvider.updateEndTime(task, null);
-        await taskProvider.updateRRule(task, null);
+        await taskProvider.clearTaskSchedule(task);
       },
       onRepeatChanged: (rrule) {
         timeInfo.rrule = rrule;
@@ -69,12 +66,10 @@ class TaskDateTimePicker {
     final endTime = timeInfo.getFinalEndTime();
 
     // 使用 updateTimeRange 方法同时更新开始和结束时间
-    await taskProvider.updateTimeRange(task, startTime, endTime);
-
-    // 更新重复规则
     if (timeInfo.rrule != task.rrule) {
       await taskProvider.updateRRule(task, timeInfo.rrule);
     }
+    await taskProvider.updateTimeRange(task, startTime, endTime);
 
     // 调用更新完成回调
     onUpdated?.call();

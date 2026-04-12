@@ -9,7 +9,7 @@ import '../model/entity/Task.dart';
 import '../model/vo/checklist_vo.dart';
 import '../provider/checklist_provider.dart';
 import '../provider/task_provider.dart';
-import 'dialogs/AddBelongingBoxDialog.dart';
+import 'dialogs/add_checklist_dialog.dart';
 
 class TodoDrawer extends StatefulWidget {
   const TodoDrawer({super.key});
@@ -423,7 +423,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
 
       showDialog(
         context: context,
-        builder: (context) => const AddBelongingBoxDialog(),
+        builder: (context) => const AddChecklistDialog(),
       );
     });
   }
@@ -448,7 +448,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
   void _showEditBelongingBoxDialog(ChecklistVO belongingBox) {
     showDialog(
       context: context,
-      builder: (context) => AddBelongingBoxDialog(belongingBox: belongingBox),
+      builder: (context) => AddChecklistDialog(belongingBox: belongingBox),
     );
   }
 

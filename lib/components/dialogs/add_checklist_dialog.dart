@@ -8,19 +8,19 @@ import '../../provider/checklist_provider.dart';
 import '../common/base_form_dialog.dart';
 import '../common/common_widgets.dart';
 
-class AddBelongingBoxDialog extends BaseFormDialog {
+class AddChecklistDialog extends BaseFormDialog {
   // null for create, not null for edit
 
-  const AddBelongingBoxDialog({super.key, this.belongingBox});
+  const AddChecklistDialog({super.key, this.belongingBox});
 
   final ChecklistVO? belongingBox;
 
   @override
-  State<AddBelongingBoxDialog> createState() => _AddBelongingBoxDialogState();
+  State<AddChecklistDialog> createState() => _AddChecklistDialogState();
 }
 
-class _AddBelongingBoxDialogState
-    extends BaseFormDialogState<AddBelongingBoxDialog> {
+class _AddChecklistDialogState
+    extends BaseFormDialogState<AddChecklistDialog> {
   final _nameController = TextEditingController();
   late final ChecklistVO? belongingBox;
   Color _selectedColor = Colors.blue;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../components/cards/habit_card.dart';
-import '../components/dialogs/AddHabitDialog.dart';
+import '../components/dialogs/add_habit_dialog.dart';
 import '../provider/habit_provider.dart';
 
 class HabitsPage extends StatefulWidget {
