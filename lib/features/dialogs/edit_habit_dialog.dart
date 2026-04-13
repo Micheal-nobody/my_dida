@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/constants/icon_constants.dart';
+import 'package:my_dida/core/validators/form_validators.dart';
+import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/provider/habit_provider.dart';
+import 'package:my_dida/shared/common/base_form_dialog.dart';
+import 'package:my_dida/shared/common/common_widgets.dart';
+import 'package:my_dida/shared/widgets/datetime/custom_time_picker.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
 import 'package:provider/provider.dart';
-
-import '../../constants/icon_constants.dart';
-import '../../core/validators/form_validators.dart';
-import '../../model/entity/Habit.dart';
-import '../../provider/habit_provider.dart';
-import '../../shared/common/base_form_dialog.dart';
-import '../../shared/common/common_widgets.dart';
-import '../../shared/widgets/datetime/custom_time_picker.dart';
 
 class EditHabitDialog extends BaseFormDialog {
   const EditHabitDialog({required this.habit, super.key});
@@ -130,19 +129,20 @@ class _EditHabitDialogState extends BaseFormDialogState<EditHabitDialog> {
     final now = DateTime.now();
 
     // Create updated habit with same id
-    final updatedHabit = Habit(
-      name: _nameController.text.trim(),
-      icon: _selectedIcon,
-      remindTime: DateTimeUtils.createDateTime(now, _selectedTime),
-      checkInCount: _checkInCount,
-      currentCheckInCount: widget.habit.currentCheckInCount,
-      startDate: widget.habit.startDate,
-      totalCheckInCount: widget.habit.totalCheckInCount,
-      longestContinuousCheckInDays: widget.habit.longestContinuousCheckInDays,
-    )
-
-    // Set the id to match the original habit
-    ..id = widget.habit.id;
+    final updatedHabit =
+        Habit(
+            name: _nameController.text.trim(),
+            icon: _selectedIcon,
+            remindTime: DateTimeUtils.createDateTime(now, _selectedTime),
+            checkInCount: _checkInCount,
+            currentCheckInCount: widget.habit.currentCheckInCount,
+            startDate: widget.habit.startDate,
+            totalCheckInCount: widget.habit.totalCheckInCount,
+            longestContinuousCheckInDays:
+                widget.habit.longestContinuousCheckInDays,
+          )
+          // Set the id to match the original habit
+          ..id = widget.habit.id;
 
     await habitProvider.updateHabit(updatedHabit);
     showSuccess('习惯"${updatedHabit.name}"更新成功！');

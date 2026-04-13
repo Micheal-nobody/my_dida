@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/config/logger.dart';
+import 'package:my_dida/constants/app_constants.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/vo/checklist_vo.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:my_dida/shared/widgets/checklist_selector.dart';
 import 'package:my_dida/shared/widgets/task_schedule_trigger.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
 import 'package:provider/provider.dart';
 
-import '../../constants/app_constants.dart';
-import '../../model/entity/Task.dart';
-import '../../provider/task_provider.dart';
 import '../pickers/custom_date_picker/task_date_time_picker.dart';
 
 class AddTaskDialog extends StatefulWidget {
@@ -27,7 +27,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   late final Task? parentTask;
   TaskTimeInfo _timeInfo = TaskTimeInfo();
   bool _hasError = false;
-  ChecklistVO? _selectedBelongingBox;
+  ChecklistVO? _selectedChecklist;
 
   @override
   void initState() {
@@ -87,18 +87,18 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
 
   String _getSelectDateString() => _timeInfo.getTodayDisplayText();
 
-  void _ensureSelectedBelongingBox(ChecklistProvider provider) {
-    if (_selectedBelongingBox != null) {
+  void _ensureSelectedChecklist(ChecklistProvider provider) {
+    if (_selectedChecklist != null) {
       final matchedChecklist = provider.allCheckLists
-          .where((item) => item.id == _selectedBelongingBox!.id)
+          .where((item) => item.id == _selectedChecklist!.id)
           .firstOrNull;
       if (matchedChecklist != null) {
-        _selectedBelongingBox = matchedChecklist;
+        _selectedChecklist = matchedChecklist;
         return;
       }
     }
 
-    _selectedBelongingBox = _resolveInitialChecklist(provider);
+    _selectedChecklist = _resolveInitialChecklist(provider);
   }
 
   ChecklistVO _resolveInitialChecklist(ChecklistProvider provider) {
@@ -139,13 +139,13 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     if (parentTask != null) {
       newTask
         ..parentTaskId = parentTask!.id
-        ..belongingBoxId = parentTask!.belongingBoxId;
+        ..checklistId = parentTask!.checklistId;
       return newTask;
     }
 
     final selectedChecklist =
-        _selectedBelongingBox ?? _resolveInitialChecklist(checklistProvider);
-    newTask.belongingBoxId = selectedChecklist.id;
+        _selectedChecklist ?? _resolveInitialChecklist(checklistProvider);
+    newTask.checklistId = selectedChecklist.id;
     return newTask;
   }
 
@@ -183,18 +183,18 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             if (parentTask == null)
               Consumer<ChecklistProvider>(
                 builder: (context, provider, child) {
-                  _ensureSelectedBelongingBox(provider);
+                  _ensureSelectedChecklist(provider);
 
                   return ChecklistSelector(
                     items: provider.allCheckLists,
-                    selectedValue: _selectedBelongingBox,
-                    hintText: _selectedBelongingBox?.name ?? '选择清单',
+                    selectedValue: _selectedChecklist,
+                    hintText: _selectedChecklist?.name ?? '选择清单',
                     onChanged: (newValue) {
                       logger.i(
                         'newValue: $newValue ,newValue.id: ${newValue?.id}',
                       );
                       setState(() {
-                        _selectedBelongingBox = newValue;
+                        _selectedChecklist = newValue;
                       });
                     },
                   );

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/model/entity/CheckPoint.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/check_point.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 class CheckpointItemWidget extends StatefulWidget {
   const CheckpointItemWidget({
@@ -22,19 +23,19 @@ class CheckpointItemWidget extends StatefulWidget {
 
 class _CheckpointItemWidgetState extends State<CheckpointItemWidget> {
   late final TextEditingController _controller;
-  late final Task task;
-  late final int index;
-  late final CheckPoint checkpoint;
   final FocusNode _focusNode = FocusNode();
+  Timer? _renameDebounce;
   bool _isEditing = false;
 
   @override
   void initState() {
     super.initState();
-    task = widget.task;
-    index = widget.index;
-    checkpoint = widget.checkpoint;
-    _controller = TextEditingController(text: checkpoint.name);
+    _controller = TextEditingController(text: widget.checkpoint.name);
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus && _isEditing) {
+        _flushRename();
+      }
+    });
   }
 
   @override
@@ -47,14 +48,45 @@ class _CheckpointItemWidgetState extends State<CheckpointItemWidget> {
 
   @override
   void dispose() {
+    _renameDebounce?.cancel();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
+  void _scheduleRename() {
+    _renameDebounce?.cancel();
+    _renameDebounce = Timer(const Duration(milliseconds: 400), _flushRename);
+  }
+
+  Future<void> _flushRename() async {
+    _renameDebounce?.cancel();
+    final trimmedValue = _controller.text.trim();
+    if (trimmedValue.isEmpty || trimmedValue == widget.checkpoint.name) {
+      if (mounted) {
+        setState(() {
+          _isEditing = false;
+        });
+      }
+      return;
+    }
+
+    await context.read<TaskProvider>().renameCheckpoint(
+      widget.task,
+      widget.index,
+      trimmedValue,
+    );
+    if (mounted) {
+      setState(() {
+        _isEditing = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final taskProvider = context.read<TaskProvider>();
+    final checkpoint = widget.checkpoint;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -64,7 +96,7 @@ class _CheckpointItemWidgetState extends State<CheckpointItemWidget> {
           value: checkpoint.isDone,
           onChanged: (v) async {
             if (v == null) return;
-            await taskProvider.toggleCheckpoint(task, index, v);
+            await taskProvider.toggleCheckpoint(widget.task, widget.index, v);
           },
         ),
         title: _isEditing
@@ -80,25 +112,13 @@ class _CheckpointItemWidgetState extends State<CheckpointItemWidget> {
                   contentPadding: EdgeInsets.zero,
                 ),
                 onSubmitted: (value) async {
-                  final trimmedValue = value.trim();
-                  if (trimmedValue.isNotEmpty &&
-                      trimmedValue != checkpoint.name) {
-                    await taskProvider.renameCheckpoint(
-                      task,
-                      index,
-                      trimmedValue,
-                    );
-                  }
-                  if (mounted) {
-                    setState(() {
-                      _isEditing = false;
-                    });
-                  }
+                  await _flushRename();
                 },
-                onEditingComplete: () {
-                  setState(() {
-                    _isEditing = false;
-                  });
+                onChanged: (_) {
+                  _scheduleRename();
+                },
+                onEditingComplete: () async {
+                  await _flushRename();
                 },
               )
             : GestureDetector(
@@ -118,7 +138,7 @@ class _CheckpointItemWidgetState extends State<CheckpointItemWidget> {
         trailing: IconButton(
           icon: const Icon(Icons.delete_outline, color: Colors.red),
           onPressed: () async {
-            await taskProvider.removeCheckpoint(task, index);
+            await taskProvider.removeCheckpoint(widget.task, widget.index);
           },
         ),
       ),

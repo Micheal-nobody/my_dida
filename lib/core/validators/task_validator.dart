@@ -32,8 +32,8 @@ class TaskValidator {
   }
 
   /// Validates belonging box ID
-  static void validateBelongingBoxId(int? belongingBoxId) {
-    if (belongingBoxId != null && belongingBoxId < -1) {
+  static void validateChecklistId(int? checklistId) {
+    if (checklistId != null && checklistId < -1) {
       throw const ValidationException('Invalid belonging box ID');
     }
   }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/shared/widgets/datetime/time_axis_column.dart';
 
-import '../../../model/entity/Habit.dart';
-import '../../../model/entity/Task.dart';
 import 'future_tasks_area.dart';
 import 'virtualized_calendar_time_area.dart';
 

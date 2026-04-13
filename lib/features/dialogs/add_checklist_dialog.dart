@@ -1,44 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/constants/colors_constants.dart';
+import 'package:my_dida/core/validators/form_validators.dart';
+import 'package:my_dida/model/vo/checklist_vo.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/shared/common/base_form_dialog.dart';
+import 'package:my_dida/shared/common/common_widgets.dart';
 import 'package:provider/provider.dart';
-
-import '../../constants/colors_constants.dart';
-import '../../core/validators/form_validators.dart';
-import '../../model/vo/checklist_vo.dart';
-import '../../provider/checklist_provider.dart';
-import '../../shared/common/base_form_dialog.dart';
-import '../../shared/common/common_widgets.dart';
 
 class AddChecklistDialog extends BaseFormDialog {
   // null for create, not null for edit
 
-  const AddChecklistDialog({super.key, this.belongingBox});
+  const AddChecklistDialog({super.key, this.checklist});
 
-  final ChecklistVO? belongingBox;
+  final ChecklistVO? checklist;
 
   @override
   State<AddChecklistDialog> createState() => _AddChecklistDialogState();
 }
 
-class _AddChecklistDialogState
-    extends BaseFormDialogState<AddChecklistDialog> {
+class _AddChecklistDialogState extends BaseFormDialogState<AddChecklistDialog> {
   final _nameController = TextEditingController();
-  late final ChecklistVO? belongingBox;
+  late final ChecklistVO? checklist;
   Color _selectedColor = Colors.blue;
 
   @override
-  String get dialogTitle =>
-      belongingBox == null ? '创建清单' : '编辑清单';
+  String get dialogTitle => checklist == null ? '创建清单' : '编辑清单';
 
   @override
-  String get confirmButtonText => belongingBox == null ? 'Add' : 'Update';
+  String get confirmButtonText => checklist == null ? 'Add' : 'Update';
 
   @override
   void initState() {
     super.initState();
-    belongingBox = widget.belongingBox;
-    if (belongingBox != null) {
-      _nameController.text = belongingBox!.name;
-      _selectedColor = belongingBox!.color;
+    checklist = widget.checklist;
+    if (checklist != null) {
+      _nameController.text = checklist!.name;
+      _selectedColor = checklist!.color;
     }
   }
 
@@ -76,19 +73,19 @@ class _AddChecklistDialogState
   Future<void> onConfirm() async {
     final provider = Provider.of<ChecklistProvider>(context, listen: false);
 
-    if (belongingBox == null) {
+    if (checklist == null) {
       // Create new belonging box
-      await provider.createBelongingBox(
+      await provider.createChecklist(
         _nameController.text.trim(),
         _selectedColor,
       );
       showSuccess('归属盒子创建成功！');
     } else {
       // Update existing belonging box
-      final updatedBox = belongingBox!
-      ..name = _nameController.text.trim()
-      ..color = _selectedColor;
-      await provider.updateBelongingBox(updatedBox);
+      final updatedBox = checklist!
+        ..name = _nameController.text.trim()
+        ..color = _selectedColor;
+      await provider.updateChecklist(updatedBox);
       showSuccess('归属盒子更新成功！');
     }
   }

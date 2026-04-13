@@ -2,10 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CustomTimePicker extends StatefulWidget {
-  const CustomTimePicker({
-    required this.initialTime,
-    super.key,
-  });
+  const CustomTimePicker({required this.initialTime, super.key});
 
   static Future<TimeOfDay?> show({
     required BuildContext context,

@@ -1,17 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:my_dida/features/dialogs/add_task_dialog.dart';
+import 'package:my_dida/features/pickers/custom_date_picker/task_date_time_picker.dart';
 import 'package:my_dida/features/task_detail/widgets/checkpoint_item_widget.dart';
 import 'package:my_dida/features/task_detail/widgets/sub_task_section.dart';
 import 'package:my_dida/features/task_detail/widgets/task_detail_header.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/task_provider.dart';
 import 'package:my_dida/shared/widgets/inline_editable_multiline_text_field.dart';
 import 'package:my_dida/shared/widgets/inline_editable_text_field.dart';
 import 'package:provider/provider.dart';
 
-import '../dialogs/add_task_dialog.dart';
-import '../pickers/custom_date_picker/task_date_time_picker.dart';
 
 // 任务详情 BottomSheet（由 TaskCard 的 onTap 触发）
 class TaskDetailPage extends StatefulWidget {
@@ -72,6 +72,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   late TaskProvider _taskProvider;
   Task? _task;
   StreamSubscription<Task?>? _taskSub;
+  Timer? _descriptionDebounce;
+  String _lastSavedDescription = '';
 
   @override
   void initState() {
@@ -81,14 +83,34 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       if (!mounted) return;
       setState(() {
         _task = t;
+        _lastSavedDescription = t?.description ?? '';
       });
     });
   }
 
   @override
   void dispose() {
+    _descriptionDebounce?.cancel();
     _taskSub?.cancel();
     super.dispose();
+  }
+
+  void _scheduleDescriptionUpdate(Task task, String value) {
+    _descriptionDebounce?.cancel();
+    _descriptionDebounce = Timer(
+      const Duration(milliseconds: 400),
+      () => _persistDescription(task, value),
+    );
+  }
+
+  Future<void> _persistDescription(Task task, String value) async {
+    final normalizedValue = value.trim();
+    if (normalizedValue == _lastSavedDescription) {
+      return;
+    }
+
+    await _taskProvider.updateDescription(task, normalizedValue);
+    _lastSavedDescription = normalizedValue;
   }
 
   void _navigateToSubTask(int subTaskId) {
@@ -129,6 +151,15 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   @override
   Widget build(BuildContext context) {
     final task = _task;
+    final sortedCheckpointEntries =
+        task?.checkpoints.asMap().entries.toList() ?? const [];
+    sortedCheckpointEntries.sort((a, b) {
+      if (a.value.isDone == b.value.isDone) {
+        return a.key.compareTo(b.key);
+      }
+      return a.value.isDone ? 1 : -1;
+    });
+
     return Material(
       child: SafeArea(
         child: task == null
@@ -276,10 +307,11 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                             key: ValueKey('desc_${task.id}'),
                             value: task.description,
                             onSubmit: (newDesc) async {
-                              await _taskProvider.updateDescription(
-                                task,
-                                newDesc,
-                              );
+                              _descriptionDebounce?.cancel();
+                              await _persistDescription(task, newDesc);
+                            },
+                            onChanged: (value) {
+                              _scheduleDescriptionUpdate(task, value);
                             },
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -303,10 +335,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                             children: [
                               if (task.checkpoints.isEmpty)
                                 const SizedBox.shrink(),
-                              for (final entry in [
-                                ...task.checkpoints.where((e) => !e.isDone),
-                                ...task.checkpoints.where((e) => e.isDone),
-                              ].asMap().entries)
+
+                              for (final entry in sortedCheckpointEntries)
                                 CheckpointItemWidget(
                                   key: ValueKey(
                                     'cp_${widget.taskId}_${entry.key}_${entry.value.isDone}',

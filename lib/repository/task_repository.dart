@@ -1,5 +1,5 @@
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/repository/base_repository.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
 
@@ -91,8 +91,8 @@ class TaskRepository extends BaseRepository<Task> {
     });
   }
 
-  Future<List<Task>> getTasksByBelongingBoxId(int id) async =>
-      collection.where().filter().belongingBoxIdEqualTo(id).findAll();
+  Future<List<Task>> getTasksByChecklistId(int id) async =>
+      collection.where().filter().checklistIdEqualTo(id).findAll();
 
   Future<void> updateTaskIsDone(Task task, bool value) async {
     await _isar.writeTxn(() async {

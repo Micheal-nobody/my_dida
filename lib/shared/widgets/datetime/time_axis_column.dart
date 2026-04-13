@@ -39,7 +39,9 @@ class TimeAxisColumn extends StatelessWidget {
           return Container(
             height: hourHeight,
             decoration: BoxDecoration(
-              color: isHighlighted ? highlightColor.withValues(alpha: 0.1) : null,
+              color: isHighlighted
+                  ? highlightColor.withValues(alpha: 0.1)
+                  : null,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Center(

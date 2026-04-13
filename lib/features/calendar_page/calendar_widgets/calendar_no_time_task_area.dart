@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/constants/app_constants.dart';
+import 'package:my_dida/features/task_detail/task_detail_page.dart';
+import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../../model/entity/Habit.dart';
-import '../../../model/entity/Task.dart';
-import '../../../provider/checklist_provider.dart';
-import '../../../provider/task_provider.dart';
-import '../../task_detail/task_detail_page.dart';
 import 'calendar_habit_without_time.dart';
 import 'calendar_task_without_time.dart';
 
@@ -118,13 +118,13 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
   }
 
   // 获取任务颜色
-  Color _getTaskColor(Task task, ChecklistProvider belongingBoxProvider) {
+  Color _getTaskColor(Task task, ChecklistProvider checklistProvider) {
     // Find the belonging box for this task
-    final belongingBox = belongingBoxProvider.allCheckLists.firstWhere(
-      (box) => box.id == task.belongingBoxId,
+    final checklist = checklistProvider.allCheckLists.firstWhere(
+      (box) => box.id == task.checklistId,
       orElse: () => AppConstants.defaultCheckList,
     );
-    return belongingBox.color;
+    return checklist.color;
   }
 
   // 构建单个跨天任务
@@ -155,8 +155,8 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
     final topPosition = taskIndex * _spanBarHeight;
 
     return Consumer<ChecklistProvider>(
-      builder: (context, belongingBoxProvider, child) {
-        final taskColor = _getTaskColor(task, belongingBoxProvider);
+      builder: (context, checklistProvider, child) {
+        final taskColor = _getTaskColor(task, checklistProvider);
 
         return Positioned(
           left: leftPosition,
@@ -257,7 +257,7 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
   Widget build(
     BuildContext context,
   ) => Consumer2<ChecklistProvider, TaskProvider>(
-    builder: (context, belongingBoxProvider, taskProvider, child) =>
+    builder: (context, checklistProvider, taskProvider, child) =>
         DragTarget<Task>(
           onMove: (details) {
             // 跟踪拖拽位置
@@ -397,8 +397,8 @@ class _CalendarNoTimeTaskAreaState extends State<CalendarNoTimeTaskArea> {
                                                 // 从跨天任务下方开始
                                                 availableHeight:
                                                     availableHeight,
-                                                belongingBoxProvider:
-                                                    belongingBoxProvider,
+                                                checklistProvider:
+                                                    checklistProvider,
                                                 displayedCount:
                                                     displayedCountForColumn +
                                                     crossDayTaskCount, // 包含跨天任务数量

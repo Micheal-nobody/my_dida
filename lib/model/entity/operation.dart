@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/model/entity/Habit.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/task.dart';
 
-part 'Operation.g.dart';
+part 'operation.g.dart';
 
 /// 操作类型枚举
 enum OperationType {
@@ -186,7 +186,7 @@ class Operation {
       'endTime': task.endTime?.toIso8601String(),
       'parentTaskId': task.parentTaskId,
       'subTaskIds': task.subTaskIds,
-      'belongingBoxId': task.belongingBoxId,
+      'checklistId': task.checklistId,
       'checkpoints': task.checkpoints
           .map((cp) => {'name': cp.name, 'isDone': cp.isDone})
           .toList(),

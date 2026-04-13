@@ -15,10 +15,8 @@ class CustomRepeatPicker extends StatefulWidget {
     DateTime? baseDate,
   }) => showDialog<String>(
     context: context,
-    builder: (context) => CustomRepeatPicker(
-      selectedRepeat: selectedRepeat,
-      baseDate: baseDate,
-    ),
+    builder: (context) =>
+        CustomRepeatPicker(selectedRepeat: selectedRepeat, baseDate: baseDate),
   );
 
   final String selectedRepeat;

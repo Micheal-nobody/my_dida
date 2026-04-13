@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../utils/TimeUtils.dart';
+import 'package:my_dida/utils/TimeUtils.dart';
 
 /// 通用UI组件工具类，提取重复的UI组件
 class CommonWidgets {

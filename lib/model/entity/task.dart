@@ -1,7 +1,7 @@
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/model/entity/CheckPoint.dart';
+import 'package:my_dida/model/entity/check_point.dart';
 
-part 'Task.g.dart';
+part 'task.g.dart';
 
 @Collection()
 class Task {
@@ -25,7 +25,7 @@ class Task {
     this.subTaskIds = const [],
 
     /// 所属收集箱（默认为 "收集箱"）
-    this.belongingBoxId = 1,
+    this.checklistId = 1,
 
     /// 重复规则默认为 null
     this.rrule,
@@ -52,7 +52,7 @@ class Task {
   List<int> subTaskIds;
 
   /// 所属收集箱
-  int? belongingBoxId;
+  int? checklistId;
 
   /// 重复规则 (RRule)
   String? rrule;
@@ -60,5 +60,5 @@ class Task {
   // toString 方法
   @override
   String toString() =>
-      'Task{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints,isAllDay: $isAllDay, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, belongingBoxId: $belongingBoxId, rrule: $rrule}';
+      'Task{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints,isAllDay: $isAllDay, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, checklistId: $checklistId, rrule: $rrule}';
 }

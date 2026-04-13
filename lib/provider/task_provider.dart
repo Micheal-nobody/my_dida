@@ -2,20 +2,20 @@ import 'package:flutter/foundation.dart';
 import 'package:my_dida/model/vo/checklist_vo.dart';
 
 import '../config/locator.dart';
-import '../model/entity/Task.dart';
+import '../model/entity/task.dart';
 import '../model/vo/task_calendar_view_data.dart';
 import '../repository/task_repository.dart';
 import '../services/task_service.dart';
 
 class TaskProvider with ChangeNotifier {
   TaskProvider(
-    ChecklistVO? newBelongingBox, {
+    ChecklistVO? newChecklist, {
     TaskRepository? taskRepository,
     TaskService? taskService,
   }) : _taskRepository = taskRepository ?? getIt<TaskRepository>(),
        _taskService = taskService ?? getIt<TaskService>(),
-       currentBelongingBox = newBelongingBox {
-    updateCurrentTasks(currentBelongingBox);
+       currentChecklist = newChecklist {
+    updateCurrentTasks(currentChecklist);
   }
 
   final TaskRepository _taskRepository;
@@ -29,19 +29,20 @@ class TaskProvider with ChangeNotifier {
   static const Duration _cacheValidDuration = Duration(minutes: 5);
 
   List<Task> get tasks => _tasks;
+
   List<Task> get currentTasks => _currentTasks;
 
-  ChecklistVO? currentBelongingBox;
+  ChecklistVO? currentChecklist;
 
-  Future<void> updateCurrentTasks(ChecklistVO? newBelongingBox) async {
-    currentBelongingBox = newBelongingBox;
+  Future<void> updateCurrentTasks(ChecklistVO? newChecklist) async {
+    currentChecklist = newChecklist;
 
-    if (newBelongingBox == null || newBelongingBox.id == -1) {
+    if (newChecklist == null || newChecklist.id == -1) {
       await loadTodayTasks();
       return;
     }
 
-    await loadTasksByBelongingBoxId(newBelongingBox.id);
+    await loadTasksByChecklistId(newChecklist.id);
   }
 
   bool _isCacheValid() {
@@ -86,7 +87,10 @@ class TaskProvider with ChangeNotifier {
       return _taskCache[cacheKey]!;
     }
 
-    final tasks = await _taskRepository.getTasksForDateRange(startDate, endDate);
+    final tasks = await _taskRepository.getTasksForDateRange(
+      startDate,
+      endDate,
+    );
     _tasks = tasks;
     _taskCache[cacheKey] = tasks;
     _lastCacheUpdate = DateTime.now();
@@ -94,13 +98,13 @@ class TaskProvider with ChangeNotifier {
   }
 
   Future<void> loadCurrentBoxTasks() async {
-    if (currentBelongingBox == null || currentBelongingBox!.id == -1) {
+    if (currentChecklist == null || currentChecklist!.id == -1) {
       await loadTodayTasks();
       return;
     }
 
-    _currentTasks = await _taskRepository.getTasksByBelongingBoxId(
-      currentBelongingBox!.id,
+    _currentTasks = await _taskRepository.getTasksByChecklistId(
+      currentChecklist!.id,
     );
     notifyListeners();
   }
@@ -110,10 +114,8 @@ class TaskProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadTasksByBelongingBoxId(int belongingBoxId) async {
-    _currentTasks = await _taskRepository.getTasksByBelongingBoxId(
-      belongingBoxId,
-    );
+  Future<void> loadTasksByChecklistId(int checklistId) async {
+    _currentTasks = await _taskRepository.getTasksByChecklistId(checklistId);
     notifyListeners();
   }
 
@@ -132,6 +134,15 @@ class TaskProvider with ChangeNotifier {
     return tasks;
   }
 
+  Future<Map<int, int>> getTaskCountsByChecklistIds(Iterable<int> ids) async {
+    final counts = <int, int>{};
+    for (final id in ids.toSet()) {
+      final tasks = await _taskRepository.getTasksByChecklistId(id);
+      counts[id] = tasks.length;
+    }
+    return counts;
+  }
+
   Future<void> addTask(Task newTask) async {
     await _taskService.createTask(
       name: newTask.name,
@@ -140,7 +151,7 @@ class TaskProvider with ChangeNotifier {
       startTime: newTask.startTime,
       endTime: newTask.endTime,
       parentTaskId: newTask.parentTaskId,
-      belongingBoxId: newTask.belongingBoxId,
+      checklistId: newTask.checklistId,
       rrule: newTask.rrule,
     );
     await _reloadAfterMutation();
@@ -192,8 +203,8 @@ class TaskProvider with ChangeNotifier {
     await _reloadAfterMutation();
   }
 
-  Future<void> updateBelongingBox(Task task, int? newBelongingBoxId) async {
-    await _taskService.updateBelongingBox(task, newBelongingBoxId);
+  Future<void> updateChecklist(Task task, int? newChecklistId) async {
+    await _taskService.updateChecklist(task, newChecklistId);
     await _reloadAfterMutation();
   }
 

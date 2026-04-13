@@ -37,7 +37,7 @@ class HabitException extends AppException {
   const HabitException(super.message, {super.code});
 }
 
-/// BelongingBox related exceptions
+/// Checklist related exceptions
 class ChecklistException extends AppException {
   const ChecklistException(super.message, {super.code});
 }

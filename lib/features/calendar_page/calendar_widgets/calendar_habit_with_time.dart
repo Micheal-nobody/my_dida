@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-import '../../../model/entity/Habit.dart';
-import '../../dialogs/habit_check_in_dialog.dart';
+import 'package:my_dida/features/dialogs/habit_check_in_dialog.dart';
+import 'package:my_dida/model/entity/habit.dart';
 
 class CalendarHabitWithTime extends StatelessWidget {
   const CalendarHabitWithTime({

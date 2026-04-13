@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/constants/app_constants.dart';
+import 'package:my_dida/features/task_detail/task_detail_page.dart';
+import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
-
-import '../../../constants/app_constants.dart';
-import '../../../model/entity/Task.dart';
-import '../../../provider/checklist_provider.dart';
-import '../../../provider/task_provider.dart';
-import '../../task_detail/task_detail_page.dart';
 
 class FutureTasksArea extends StatefulWidget {
   const FutureTasksArea({required this.futureTasks, super.key});
@@ -24,7 +23,7 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
     }
 
     return Consumer2<ChecklistProvider, TaskProvider>(
-      builder: (context, belongingBoxProvider, taskProvider, child) =>
+      builder: (context, checklistProvider, taskProvider, child) =>
           Container(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -65,7 +64,7 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
                         // 任务列表
                         ...tasks.map(
                           (task) =>
-                              _buildFutureTask(task, belongingBoxProvider),
+                              _buildFutureTask(task, checklistProvider),
                         ),
                       ],
                     ),
@@ -77,13 +76,13 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
     );
   }
 
-  Widget _buildFutureTask(Task task, ChecklistProvider belongingBoxProvider) {
+  Widget _buildFutureTask(Task task, ChecklistProvider checklistProvider) {
     // 获取任务颜色
-    final belongingBox = belongingBoxProvider.allCheckLists.firstWhere(
-      (box) => box.id == task.belongingBoxId,
+    final checklist = checklistProvider.allCheckLists.firstWhere(
+      (box) => box.id == task.checklistId,
       orElse: () => AppConstants.defaultCheckList,
     );
-    final taskColor = belongingBox.color;
+    final taskColor = checklist.color;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),

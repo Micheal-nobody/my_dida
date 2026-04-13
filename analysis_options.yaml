@@ -32,7 +32,10 @@ linter:
     prefer_final_fields: true
     prefer_final_locals: true
     prefer_final_in_for_each: true
-    
+
+    always_use_package_imports: true
+    implementation_imports: true
+
     # Naming conventions
     camel_case_types: true
     camel_case_extensions: true

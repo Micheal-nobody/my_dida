@@ -1,4 +1,4 @@
-import 'package:my_dida/model/entity/CheckPoint.dart';
+import 'package:my_dida/model/entity/check_point.dart';
 import 'package:my_dida/model/entity/checklist.dart';
 
 class TaskVO {
@@ -20,7 +20,7 @@ class TaskVO {
     this.subTasks = const [],
 
     /// 所属收集箱
-    this.belongingBox,
+    this.checklist,
   });
 
   int id;
@@ -40,5 +40,5 @@ class TaskVO {
   List<TaskVO> subTasks;
 
   /// 所属收集箱
-  Checklist? belongingBox;
+  Checklist? checklist;
 }

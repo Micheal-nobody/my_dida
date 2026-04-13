@@ -141,7 +141,12 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
             _value.endDate ??
             _value.selectedDate ??
             DateTime.now();
-        startDateTime = DateTime(baseDate.year, baseDate.month, baseDate.day, 9);
+        startDateTime = DateTime(
+          baseDate.year,
+          baseDate.month,
+          baseDate.day,
+          9,
+        );
         endDateTime = DateTime(baseDate.year, baseDate.month, baseDate.day, 10);
       } else if (startDateTime != null && endDateTime == null) {
         endDateTime = startDateTime.add(const Duration(hours: 1));
@@ -192,7 +197,10 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
               Expanded(
                 child: TabBar(
                   controller: _tabController,
-                  tabs: const [Tab(text: '日期'), Tab(text: '时间段')],
+                  tabs: const [
+                    Tab(text: '日期'),
+                    Tab(text: '时间段'),
+                  ],
                   labelColor: Colors.orange,
                   unselectedLabelColor: Colors.grey,
                   indicatorColor: Colors.orange,
@@ -226,7 +234,8 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
                         selectedDate: calendarValue.selectedDate,
                         startTime: calendarValue.selectedTime,
                         endTime: _value.endTime,
-                        startDate: calendarValue.selectedDate ?? _value.startDate,
+                        startDate:
+                            calendarValue.selectedDate ?? _value.startDate,
                         endDate: _value.endDate ?? calendarValue.selectedDate,
                         rrule: calendarValue.rrule,
                         isTimeOnlyDate: calendarValue.isTimeOnlyDate,

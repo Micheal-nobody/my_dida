@@ -1,6 +1,6 @@
 import 'package:isar_community/isar.dart';
 
-part 'Habit.g.dart';
+part 'habit.g.dart';
 
 // 习惯，习惯是每天都要做的，比如刷牙、洗脸、吃饭等
 @Collection()

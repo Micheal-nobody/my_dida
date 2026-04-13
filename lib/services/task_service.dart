@@ -3,9 +3,9 @@ import '../constants/app_constants.dart';
 import '../constants/ui_constants.dart';
 import '../core/errors/exceptions.dart';
 import '../core/validators/task_validator.dart';
-import '../model/entity/CheckPoint.dart';
-import '../model/entity/Operation.dart';
-import '../model/entity/Task.dart';
+import '../model/entity/check_point.dart';
+import '../model/entity/operation.dart';
+import '../model/entity/task.dart';
 import '../model/vo/task_calendar_view_data.dart';
 import '../provider/operation_stack_provider.dart';
 import '../repository/task_repository.dart';
@@ -29,14 +29,14 @@ class TaskService {
     DateTime? startTime,
     DateTime? endTime,
     int? parentTaskId,
-    int? belongingBoxId,
+    int? checklistId,
     String? rrule,
   }) async {
     try {
       TaskValidator.validateTaskName(name);
       TaskValidator.validateTaskDescription(description);
       TaskValidator.validateTaskTimeRange(startTime, endTime);
-      TaskValidator.validateBelongingBoxId(belongingBoxId);
+      TaskValidator.validateChecklistId(checklistId);
       TaskValidator.validateRRule(rrule);
 
       final task = Task(
@@ -46,7 +46,7 @@ class TaskService {
         startTime: startTime,
         endTime: endTime,
         parentTaskId: parentTaskId,
-        belongingBoxId: belongingBoxId ?? AppConstants.defaultCheckList.id,
+        checklistId: checklistId ?? AppConstants.defaultCheckList.id,
         rrule: rrule,
       );
 
@@ -156,12 +156,12 @@ class TaskService {
     }
   }
 
-  Future<void> updateBelongingBox(Task task, int? newBelongingBoxId) async {
+  Future<void> updateChecklist(Task task, int? newChecklistId) async {
     try {
-      TaskValidator.validateBelongingBoxId(newBelongingBoxId);
+      TaskValidator.validateChecklistId(newChecklistId);
       await _updateTask(
         task: task,
-        mutate: (draft) => draft.belongingBoxId = newBelongingBoxId,
+        mutate: (draft) => draft.checklistId = newChecklistId,
         description: '修改了任务"${task.name}"的清单归属',
       );
     } catch (e) {
@@ -195,7 +195,7 @@ class TaskService {
     }
   }
 
-  Future<void> addCheckpoint(Task task, {String name = '新检查点'}) async {
+  Future<void> addCheckpoint(Task task, {String name = ''}) async {
     try {
       TaskValidator.validateCheckpointName(name);
       final updated = List<CheckPoint>.from(task.checkpoints)
@@ -223,7 +223,7 @@ class TaskService {
       name: name,
       isAllDay: false,
       parentTaskId: parent.id,
-      belongingBoxId: parent.belongingBoxId,
+      checklistId: parent.checklistId,
     );
     return task.id;
   }
@@ -421,7 +421,7 @@ class TaskService {
     endTime: task.endTime,
     parentTaskId: task.parentTaskId,
     subTaskIds: List<int>.from(task.subTaskIds),
-    belongingBoxId: task.belongingBoxId,
+    checklistId: task.checklistId,
     rrule: task.rrule,
   )..id = task.id;
 
@@ -480,7 +480,7 @@ class TaskService {
       endTime: task.endTime,
       parentTaskId: task.parentTaskId,
       subTaskIds: List<int>.from(task.subTaskIds),
-      belongingBoxId: task.belongingBoxId,
+      checklistId: task.checklistId,
       rrule: task.rrule,
     );
 
@@ -523,7 +523,7 @@ class TaskService {
       endTime: originalTask.endTime,
       parentTaskId: newParentTaskId,
       subTaskIds: [],
-      belongingBoxId: originalTask.belongingBoxId,
+      checklistId: originalTask.checklistId,
       rrule: originalTask.rrule,
     );
 

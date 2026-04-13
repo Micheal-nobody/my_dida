@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/features//task_detail/task_detail_page.dart';
 import 'package:my_dida/config/logger.dart';
+import 'package:my_dida/features//task_detail/task_detail_page.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/vo/checklist_vo.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
 import 'package:provider/provider.dart';
-
-import '../../model/entity/Task.dart';
-import '../../provider/checklist_provider.dart';
-import '../../provider/task_provider.dart';
 
 class TaskCard extends StatelessWidget {
   const TaskCard(this.task, {super.key});
@@ -64,13 +63,13 @@ class TaskCard extends StatelessWidget {
               child: Selector<ChecklistProvider, List<ChecklistVO>>(
                 selector: (context, provider) => provider.allCheckLists,
                 builder: (context, allBoxes, child) {
-                  // 安全地查找BelongingBox，如果找不到则显示默认名称
-                  final belongingBox = allBoxes
-                      .where((element) => element.id == task.belongingBoxId)
+                  // 安全地查找Checklist，如果找不到则显示默认名称
+                  final checklist = allBoxes
+                      .where((element) => element.id == task.checklistId)
                       .firstOrNull;
 
                   return Text(
-                    belongingBox?.name ?? '未知收藏夹',
+                    checklist?.name ?? '未知收藏夹',
                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.end,

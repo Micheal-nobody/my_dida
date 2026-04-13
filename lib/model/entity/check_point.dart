@@ -1,6 +1,6 @@
 import 'package:isar_community/isar.dart';
 
-part 'CheckPoint.g.dart';
+part 'check_point.g.dart';
 
 /// 每个任务可以有多个检查点
 @Embedded()

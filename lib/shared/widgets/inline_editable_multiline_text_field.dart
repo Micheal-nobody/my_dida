@@ -5,13 +5,14 @@ class InlineEditableMultilineTextField extends StatefulWidget {
     required this.value,
     required this.onSubmit,
     super.key,
+    this.onChanged,
     this.onFieldSubmitted,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     this.minLines = 1,
     this.maxLines = 3,
-    this.hintText = '添加备注...',
+    this.hintText = '',
     this.decoration = const InputDecoration(
-      hintText: '添加备注...',
+      hintText: '',
       border: InputBorder.none,
     ),
     this.clearIcon = const Icon(Icons.clear, color: Colors.black38),
@@ -19,6 +20,7 @@ class InlineEditableMultilineTextField extends StatefulWidget {
 
   final String value;
   final Future<void> Function(String value) onSubmit;
+  final void Function(String value)? onChanged;
   final void Function(String value)? onFieldSubmitted;
   final EdgeInsetsGeometry padding;
   final int minLines;
@@ -95,6 +97,7 @@ class _InlineEditableMultilineTextFieldState
                 _focusNode.requestFocus();
               }
             },
+            onChanged: widget.onChanged,
             onSubmitted: _commit,
             onEditingComplete: () async {
               await _commit(_controller.text);

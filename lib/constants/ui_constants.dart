@@ -8,7 +8,7 @@ class UIStrings {
   static const String deleteTaskTitle = 'Delete Task';
   static const String deleteTaskMessage =
       'Are you sure you want to delete this task?';
-  static const String deleteBelongingBoxTitle = 'Delete Belonging Box';
+  static const String deleteChecklistTitle = 'Delete Belonging Box';
   static const String cancel = 'Cancel';
   static const String delete = 'Delete';
   static const String edit = 'Edit';

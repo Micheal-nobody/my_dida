@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/task_provider.dart';
 import 'package:my_dida/shared/widgets/datetime/custom_date_time_picker.dart';
 import 'package:provider/provider.dart';

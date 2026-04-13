@@ -2,10 +2,10 @@ import 'package:get_it/get_it.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/config/logger.dart';
 import 'package:my_dida/constants/app_constants.dart';
-import 'package:my_dida/model/entity/Habit.dart';
-import 'package:my_dida/model/entity/Operation.dart';
-import 'package:my_dida/model/entity/Task.dart';
 import 'package:my_dida/model/entity/checklist.dart';
+import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/operation.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/repository/checklist_repository.dart';
 import 'package:my_dida/repository/habit_repository.dart';
@@ -20,7 +20,7 @@ Future<void> setupLocator() async {
   final isar = await initializeIsar();
   getIt.registerSingleton<Isar>(isar);
 
-  await ensureDefaultBelongingBox(isar);
+  await ensureDefaultChecklist(isar);
 
   // 注册数据库操作服务
   getIt
@@ -35,7 +35,7 @@ Future<void> setupLocator() async {
   logger.i('初始化 Isar 完成！');
 }
 
-Future<void> ensureDefaultBelongingBox(Isar isar) async {
+Future<void> ensureDefaultChecklist(Isar isar) async {
   final defaultBox = await isar.checklists.get(
     AppConstants.defaultCheckList.id,
   );

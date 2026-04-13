@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/provider/habit_provider.dart';
 import 'package:provider/provider.dart';
-
-import '../../model/entity/Habit.dart';
-import '../../provider/habit_provider.dart';
 
 /// 专门用于处理 Habit 打卡的对话框
 ///

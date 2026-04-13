@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:my_dida/model/entity/Habit.dart';
-import 'package:my_dida/model/entity/Operation.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/operation.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/habit_provider.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
@@ -969,9 +969,9 @@ class _OperationPageState extends State<OperationPage> {
         endTime: data['endTime'] != null
             ? DateTime.parse(data['endTime'])
             : null,
-        belongingBoxId: data['belongingBoxId'] == 0
+        checklistId: data['checklistId'] == 0
             ? null
-            : data['belongingBoxId'],
+            : data['checklistId'],
         isAllDay: data['isAllDay'] == true,
       )..id = data['id'] ?? 0;
     } catch (e) {

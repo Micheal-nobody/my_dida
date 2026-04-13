@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/vo/checklist_vo.dart';
 import 'package:my_dida/provider/task_provider.dart';
 
@@ -28,7 +28,7 @@ void main() {
         name: 'Original',
         isAllDay: false,
         startTime: DateTime(2026, 4, 12, 9),
-        belongingBoxId: 1,
+        checklistId: 1,
       );
 
       await provider.addTask(task);
@@ -45,7 +45,7 @@ void main() {
           name: 'Visible',
           isAllDay: false,
           startTime: DateTime(2026, 4, 12, 9),
-          belongingBoxId: 1,
+          checklistId: 1,
         ),
       );
       await provider.addTask(
@@ -53,7 +53,7 @@ void main() {
           name: 'Future',
           isAllDay: false,
           startTime: DateTime(2026, 4, 20, 9),
-          belongingBoxId: 1,
+          checklistId: 1,
         ),
       );
 

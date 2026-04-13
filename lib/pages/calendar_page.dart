@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:my_dida/model/entity/Habit.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/vo/task_calendar_view_data.dart';
 import 'package:my_dida/provider/habit_provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
@@ -78,84 +78,90 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _loadTasksForVisibleDates() async {
-    await PerformanceMonitor.timeAsyncOperation('calendar_load_tasks', () async {
-      final habitProvider = Provider.of<HabitProvider>(context, listen: false);
-      final habitsMap = <DateTime, List<Habit>>{};
+    await PerformanceMonitor.timeAsyncOperation(
+      'calendar_load_tasks',
+      () async {
+        final habitProvider = Provider.of<HabitProvider>(
+          context,
+          listen: false,
+        );
+        final habitsMap = <DateTime, List<Habit>>{};
 
-      final visibleDates = _visibleDates;
-      if (visibleDates.isEmpty) return;
+        final visibleDates = _visibleDates;
+        if (visibleDates.isEmpty) return;
 
-      final taskViewData = await PerformanceMonitor.timeAsyncOperation(
-        'load_calendar_task_view',
-        () => _taskProvider.loadCalendarTaskViewData(
-          visibleDates: visibleDates,
-          rruleBatchLimit: _rruleBatchLimit,
-        ),
-      );
+        final taskViewData = await PerformanceMonitor.timeAsyncOperation(
+          'load_calendar_task_view',
+          () => _taskProvider.loadCalendarTaskViewData(
+            visibleDates: visibleDates,
+            rruleBatchLimit: _rruleBatchLimit,
+          ),
+        );
 
-      await PerformanceMonitor.timeAsyncOperation(
-        'load_all_habits',
-        habitProvider.loadAllHabits,
-      );
-      final allHabits = habitProvider.habits;
+        await PerformanceMonitor.timeAsyncOperation(
+          'load_all_habits',
+          habitProvider.loadAllHabits,
+        );
+        final allHabits = habitProvider.habits;
 
-      for (final date in visibleDates) {
-        final normalizedDate = DateTime(date.year, date.month, date.day);
-        final List<Habit> habitsForDate = [];
+        for (final date in visibleDates) {
+          final normalizedDate = DateTime(date.year, date.month, date.day);
+          final List<Habit> habitsForDate = [];
 
-        for (final habit in allHabits) {
-          // 检查习惯是否应该在当前日期显示
-          bool shouldShowToday = false;
+          for (final habit in allHabits) {
+            // 检查习惯是否应该在当前日期显示
+            bool shouldShowToday = false;
 
-          if (habit.rrule != null && habit.rrule!.isNotEmpty) {
-            // 使用习惯的startDate作为起始时间
-            final startTime = DateTime(
-              habit.startDate.year,
-              habit.startDate.month,
-              habit.startDate.day,
-              habit.remindTime.hour,
-              habit.remindTime.minute,
-            );
+            if (habit.rrule != null && habit.rrule!.isNotEmpty) {
+              // 使用习惯的startDate作为起始时间
+              final startTime = DateTime(
+                habit.startDate.year,
+                habit.startDate.month,
+                habit.startDate.day,
+                habit.remindTime.hour,
+                habit.remindTime.minute,
+              );
 
-            // Optimized: Use range-based RRule method for habits too
-            final rangeStart = normalizedDate;
-            final rangeEnd = normalizedDate.add(const Duration(days: 1));
-            final occurrences = PerformanceMonitor.timeOperation(
-              'rrule_habit_processing',
-              () => RRuleUtil.getOccurrencesInRange(
-                startTime,
-                habit.rrule!,
-                rangeStart,
-                rangeEnd,
-              ),
-            );
+              // Optimized: Use range-based RRule method for habits too
+              final rangeStart = normalizedDate;
+              final rangeEnd = normalizedDate.add(const Duration(days: 1));
+              final occurrences = PerformanceMonitor.timeOperation(
+                'rrule_habit_processing',
+                () => RRuleUtil.getOccurrencesInRange(
+                  startTime,
+                  habit.rrule!,
+                  rangeStart,
+                  rangeEnd,
+                ),
+              );
 
-            // 如果当前日期在发生日期中，则应该显示
-            shouldShowToday = occurrences.any(
-              (d) => d.isAtSameMomentAs(normalizedDate),
-            );
-          } else {
-            // 如果没有rrule，每天都显示
-            shouldShowToday = true;
-          }
+              // 如果当前日期在发生日期中，则应该显示
+              shouldShowToday = occurrences.any(
+                (d) => d.isAtSameMomentAs(normalizedDate),
+              );
+            } else {
+              // 如果没有rrule，每天都显示
+              shouldShowToday = true;
+            }
 
-          if (shouldShowToday) {
-            // 检查习惯是否已完成，已完成的不渲染
-            final isCompleted = habitProvider.isTodayCompleted(habit);
-            if (!isCompleted) {
-              habitsForDate.add(habit);
+            if (shouldShowToday) {
+              // 检查习惯是否已完成，已完成的不渲染
+              final isCompleted = habitProvider.isTodayCompleted(habit);
+              if (!isCompleted) {
+                habitsForDate.add(habit);
+              }
             }
           }
+
+          habitsMap[normalizedDate] = habitsForDate;
         }
 
-        habitsMap[normalizedDate] = habitsForDate;
-      }
-
-      setState(() {
-        _applyTaskViewData(taskViewData);
-        _habitsForDates = habitsMap;
-      });
-    });
+        setState(() {
+          _applyTaskViewData(taskViewData);
+          _habitsForDates = habitsMap;
+        });
+      },
+    );
 
     // Print performance report in debug mode
     PerformanceMonitor.printReport();

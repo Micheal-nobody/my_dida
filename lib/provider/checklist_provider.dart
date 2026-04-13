@@ -12,7 +12,7 @@ class ChecklistProvider extends ChangeNotifier {
   ChecklistProvider()
     : _checkListRepository = getIt<ChecklistRepository>(),
       _currentCheckList = AppConstants.todayCheckList {
-    loadAllBelongingBoxes();
+    loadAllChecklistes();
   }
 
   List<ChecklistVO> allCheckLists = [];
@@ -24,11 +24,11 @@ class ChecklistProvider extends ChangeNotifier {
   final ChecklistRepository _checkListRepository;
 
   /// 获取所有的收藏夹
-  Future<void> loadAllBelongingBoxes() async {
-    final belongingBoxes = await _checkListRepository.getAllData();
+  Future<void> loadAllChecklistes() async {
+    final checklistes = await _checkListRepository.getAllData();
 
     allCheckLists = [
-      for (final belongingBox in belongingBoxes) convertToVO(belongingBox),
+      for (final checklist in checklistes) convertToVO(checklist),
     ];
 
     notifyListeners();
@@ -49,39 +49,39 @@ class ChecklistProvider extends ChangeNotifier {
 
   //endregion
 
-  void updateCurBelongingBox(ChecklistVO belongingBox) {
-    logger.i('updateCurBelongingBox 更新了 cur_belongingBox ！！');
-    _currentCheckList = belongingBox;
+  void updateCurChecklist(ChecklistVO checklist) {
+    logger.i('updateCurChecklist 更新了 cur_checklist ！！');
+    _currentCheckList = checklist;
     notifyListeners();
   }
 
   // Create a new belonging box
-  Future<void> createBelongingBox(String name, Color color) async {
-    final belongingBox = Checklist(name: name, colorValue: color.toARGB32());
-    await _checkListRepository.addData(belongingBox);
-    await loadAllBelongingBoxes();
+  Future<void> createChecklist(String name, Color color) async {
+    final checklist = Checklist(name: name, colorValue: color.toARGB32());
+    await _checkListRepository.addData(checklist);
+    await loadAllChecklistes();
   }
 
   // Update an existing belonging box
-  Future<void> updateBelongingBox(ChecklistVO belongingBox) async {
-    final entity = convertToEntity(belongingBox);
+  Future<void> updateChecklist(ChecklistVO checklist) async {
+    final entity = convertToEntity(checklist);
     await _checkListRepository.addData(entity); // put() updates if exists
-    await loadAllBelongingBoxes();
+    await loadAllChecklistes();
   }
 
   // Delete a belonging box
-  Future<void> deleteBelongingBox(ChecklistVO checkListVO) async {
+  Future<void> deleteChecklist(ChecklistVO checkListVO) async {
     if (checkListVO.id == AppConstants.todayCheckList.id ||
         checkListVO.id == AppConstants.defaultCheckList.id) {
       return; // Don't delete special "today" box
     }
 
     await _checkListRepository.deleteById(checkListVO.id);
-    await loadAllBelongingBoxes();
+    await loadAllChecklistes();
 
     // If we deleted the current box, switch to "today"
     if (_currentCheckList.id == checkListVO.id) {
-      updateCurBelongingBox(AppConstants.todayCheckList);
+      updateCurChecklist(AppConstants.todayCheckList);
     }
   }
 }

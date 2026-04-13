@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/constants/app_constants.dart';
+import 'package:my_dida/constants/colors_constants.dart';
+import 'package:my_dida/constants/dimension_constants.dart';
+import 'package:my_dida/constants/ui_constants.dart';
+import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/vo/checklist_vo.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../constants/app_constants.dart';
-import '../../constants/colors_constants.dart';
-import '../../constants/dimension_constants.dart';
-import '../../constants/ui_constants.dart';
-import '../../model/entity/Task.dart';
-import '../../model/vo/checklist_vo.dart';
-import '../../provider/checklist_provider.dart';
-import '../../provider/task_provider.dart';
 import '../dialogs/add_checklist_dialog.dart';
 
 class TodoDrawer extends StatefulWidget {
@@ -22,11 +22,16 @@ class _TodoDrawerState extends State<TodoDrawer> {
   @override
   Widget build(BuildContext context) {
     final checklistProvider = Provider.of<ChecklistProvider>(context);
-    final currentBelongingBox = checklistProvider.currentCheckList;
-    final defaultBelongingBox = _findDefaultBelongingBox(checklistProvider);
-    final userDefinedBoxes = checklistProvider.allCheckLists
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    final currentChecklist = checklistProvider.currentCheckList;
+    final defaultChecklist = _findDefaultChecklistt(checklistProvider);
+    final userDefinedChecklists = checklistProvider.allCheckLists
         .where((checkList) => checkList.id != AppConstants.defaultCheckList.id)
         .toList();
+    final checklistIds = [
+      if (defaultChecklist != null) defaultChecklist.id,
+      ...userDefinedChecklists.map((checklist) => checklist.id),
+    ];
 
     return Drawer(
       backgroundColor: AppColors.background,
@@ -35,52 +40,62 @@ class _TodoDrawerState extends State<TodoDrawer> {
           children: [
             _buildDrawerHeader(),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Dimensions.paddingM,
-                ),
-                children: [
-                  _buildTodayChecklistTile(currentBelongingBox),
-                  _buildStaticChecklistTile(
-                    icon: Icons.inbox_rounded,
-                    iconColor: Colors.deepOrange,
-                    title: '收集箱',
-                    count: defaultBelongingBox?.taskIds.length ?? 0,
-                    selected:
-                        currentBelongingBox.id ==
-                        AppConstants.defaultCheckList.id,
-                    onTap: () => _switchChecklist(
-                      defaultBelongingBox ?? AppConstants.defaultCheckList,
+              child: FutureBuilder<Map<int, int>>(
+                future: taskProvider.getTaskCountsByChecklistIds(checklistIds),
+                builder: (context, snapshot) {
+                  final checklistCounts = snapshot.data ?? const <int, int>{};
+
+                  return ListView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Dimensions.paddingM,
                     ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: Dimensions.paddingM,
-                    ),
-                    child: Divider(
-                      height: 1,
-                      thickness: Dimensions.borderThin,
-                      color: AppColors.border,
-                    ),
-                  ),
-                  if (userDefinedBoxes.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: Dimensions.paddingXL,
+                    children: [
+                      _buildTodayChecklistTile(currentChecklist),
+                      _buildStaticChecklistTile(
+                        icon: Icons.inbox_rounded,
+                        iconColor: Colors.deepOrange,
+                        title: '收集箱',
+                        count:
+                            checklistCounts[AppConstants.defaultCheckList.id] ??
+                            0,
+                        selected:
+                            currentChecklist.id ==
+                            AppConstants.defaultCheckList.id,
+                        onTap: () => _switchChecklist(
+                          defaultChecklist ?? AppConstants.defaultCheckList,
+                        ),
                       ),
-                      child: Text(
-                        '暂无自定义清单',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.textSecondary),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: Dimensions.paddingM,
+                        ),
+                        child: Divider(
+                          height: 1,
+                          thickness: Dimensions.borderThin,
+                          color: AppColors.border,
+                        ),
                       ),
-                    ),
-                  for (final belongingBox in userDefinedBoxes)
-                    _buildCustomChecklistTile(
-                      belongingBox: belongingBox,
-                      selected: currentBelongingBox.id == belongingBox.id,
-                      onTap: () => _switchChecklist(belongingBox),
-                    ),
-                ],
+                      if (userDefinedChecklists.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: Dimensions.paddingXL,
+                          ),
+                          child: Text(
+                            '暂无自定义清单',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+                        ),
+                      for (final checklist in userDefinedChecklists)
+                        _buildCustomChecklistTile(
+                          checklist: checklist,
+                          count: checklistCounts[checklist.id] ?? 0,
+                          selected: currentChecklist.id == checklist.id,
+                          onTap: () => _switchChecklist(checklist),
+                        ),
+                    ],
+                  );
+                },
               ),
             ),
             _buildDrawerFooter(),
@@ -90,7 +105,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
     );
   }
 
-  ChecklistVO? _findDefaultBelongingBox(ChecklistProvider checklistProvider) {
+  ChecklistVO? _findDefaultChecklistt(ChecklistProvider checklistProvider) {
     for (final box in checklistProvider.allCheckLists) {
       if (box.id == AppConstants.defaultCheckList.id) {
         return box;
@@ -167,7 +182,10 @@ class _TodoDrawerState extends State<TodoDrawer> {
           ),
         ),
         _buildHeaderAction(icon: Icons.search_rounded, label: '搜索功能暂未开放'),
-        _buildHeaderAction(icon: Icons.notifications_none_rounded, label: '通知功能暂未开放',),
+        _buildHeaderAction(
+          icon: Icons.notifications_none_rounded,
+          label: '通知功能暂未开放',
+        ),
         _buildHeaderAction(icon: Icons.settings_outlined, label: '设置功能暂未开放'),
       ],
     ),
@@ -243,7 +261,8 @@ class _TodoDrawerState extends State<TodoDrawer> {
   );
 
   Widget _buildCustomChecklistTile({
-    required ChecklistVO belongingBox,
+    required ChecklistVO checklist,
+    required int count,
     required bool selected,
     required VoidCallback onTap,
   }) => Material(
@@ -264,12 +283,12 @@ class _TodoDrawerState extends State<TodoDrawer> {
           children: [
             SizedBox(
               width: 36,
-              child: Icon(Icons.folder_rounded, color: belongingBox.color),
+              child: Icon(Icons.folder_rounded, color: checklist.color),
             ),
             const SizedBox(width: Dimensions.paddingS),
             Expanded(
               child: Text(
-                belongingBox.name,
+                checklist.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -280,7 +299,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
               ),
             ),
             Text(
-              '${belongingBox.taskIds.length}',
+              '$count',
               style: const TextStyle(
                 fontSize: 16,
                 color: AppColors.textSecondary,
@@ -294,8 +313,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
                 Icons.more_horiz_rounded,
                 color: AppColors.textDisabled,
               ),
-              onSelected: (value) =>
-                  _handleBelongingBoxAction(value, belongingBox),
+              onSelected: (value) => _handleChecklistAction(value, checklist),
               itemBuilder: (context) => [
                 const PopupMenuItem(
                   value: 'edit',
@@ -347,7 +365,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(Dimensions.radiusL),
-          onTap: _openAddBelongingBoxDialog,
+          onTap: _openAddChecklistDialog,
           child: const Padding(
             padding: EdgeInsets.symmetric(
               horizontal: Dimensions.paddingS,
@@ -376,7 +394,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
     ),
   );
 
-  Widget _buildTodayChecklistTile(ChecklistVO currentBelongingBox) =>
+  Widget _buildTodayChecklistTile(ChecklistVO currentChecklist) =>
       FutureBuilder<List<Task>>(
         future: Provider.of<TaskProvider>(context, listen: false)
             .loadTasksForDateRange(
@@ -402,21 +420,21 @@ class _TodoDrawerState extends State<TodoDrawer> {
             iconColor: Colors.deepOrange,
             title: UIStrings.today,
             count: count,
-            selected: currentBelongingBox.id == AppConstants.todayCheckList.id,
+            selected: currentChecklist.id == AppConstants.todayCheckList.id,
             onTap: () => _switchChecklist(AppConstants.todayCheckList),
           );
         },
       );
 
-  void _switchChecklist(ChecklistVO belongingBox) {
+  void _switchChecklist(ChecklistVO checklist) {
     Provider.of<ChecklistProvider>(
       context,
       listen: false,
-    ).updateCurBelongingBox(belongingBox);
+    ).updateCurChecklist(checklist);
     Navigator.of(context).pop();
   }
 
-  void _openAddBelongingBoxDialog() {
+  void _openAddChecklistDialog() {
     Navigator.of(context).pop();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -434,32 +452,30 @@ class _TodoDrawerState extends State<TodoDrawer> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void _handleBelongingBoxAction(String action, ChecklistVO belongingBox) {
+  void _handleChecklistAction(String action, ChecklistVO checklist) {
     switch (action) {
       case 'edit':
-        _showEditBelongingBoxDialog(belongingBox);
+        _showEditChecklistDialog(checklist);
         break;
       case 'delete':
-        _showDeleteBelongingBoxDialog(belongingBox);
+        _showDeleteChecklistDialog(checklist);
         break;
     }
   }
 
-  void _showEditBelongingBoxDialog(ChecklistVO belongingBox) {
+  void _showEditChecklistDialog(ChecklistVO checklist) {
     showDialog(
       context: context,
-      builder: (context) => AddChecklistDialog(belongingBox: belongingBox),
+      builder: (context) => AddChecklistDialog(checklist: checklist),
     );
   }
 
-  void _showDeleteBelongingBoxDialog(ChecklistVO belongingBox) {
+  void _showDeleteChecklistDialog(ChecklistVO checklist) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(UIStrings.deleteBelongingBoxTitle),
-        content: Text(
-          'Are you sure you want to delete "${belongingBox.name}"?',
-        ),
+        title: const Text(UIStrings.deleteChecklistTitle),
+        content: Text('Are you sure you want to delete "${checklist.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -473,10 +489,10 @@ class _TodoDrawerState extends State<TodoDrawer> {
                   context,
                   listen: false,
                 );
-                await provider.deleteBelongingBox(belongingBox);
+                await provider.deleteChecklist(checklist);
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Deleted "${belongingBox.name}"')),
+                  SnackBar(content: Text('Deleted "${checklist.name}"')),
                 );
               } catch (e) {
                 if (!mounted) return;

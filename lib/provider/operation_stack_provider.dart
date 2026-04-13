@@ -4,10 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/config/logger.dart';
-import 'package:my_dida/model/entity/CheckPoint.dart';
-import 'package:my_dida/model/entity/Habit.dart';
-import 'package:my_dida/model/entity/Operation.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/check_point.dart';
+import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/operation.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/repository/habit_repository.dart';
 import 'package:my_dida/repository/task_repository.dart';
 
@@ -434,9 +434,9 @@ class OperationStackProvider with ChangeNotifier {
         endTime: endTime,
         parentTaskId: data['parentTaskId'] == 0 ? null : data['parentTaskId'],
         subTaskIds: subTaskIds,
-        belongingBoxId: data['belongingBoxId'] == 0
+        checklistId: data['checklistId'] == 0
             ? null
-            : data['belongingBoxId'],
+            : data['checklistId'],
       );
 
       // 设置ID

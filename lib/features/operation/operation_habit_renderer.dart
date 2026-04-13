@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/model/entity/Habit.dart';
+import 'package:my_dida/model/entity/habit.dart';
 
 /// 用于在操作详情中渲染Habit的组件
 class OperationHabitRenderer extends StatelessWidget {

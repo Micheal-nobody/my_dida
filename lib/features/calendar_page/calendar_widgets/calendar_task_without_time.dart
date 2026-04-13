@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
-import '../../../constants/app_constants.dart';
-import '../../../model/entity/Task.dart';
-import '../../../provider/checklist_provider.dart';
-import '../../task_detail/task_detail_page.dart';
+import 'package:my_dida/constants/app_constants.dart';
+import 'package:my_dida/features/task_detail/task_detail_page.dart';
+import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
 
 class CalendarTaskWithoutTime extends StatelessWidget {
   const CalendarTaskWithoutTime({
@@ -11,7 +10,7 @@ class CalendarTaskWithoutTime extends StatelessWidget {
     required this.columnWidth,
     required this.taskIndex,
     required this.availableHeight,
-    required this.belongingBoxProvider,
+    required this.checklistProvider,
     required this.displayedCount,
     super.key,
   });
@@ -20,16 +19,16 @@ class CalendarTaskWithoutTime extends StatelessWidget {
   final double columnWidth;
   final int taskIndex;
   final double availableHeight;
-  final ChecklistProvider belongingBoxProvider;
+  final ChecklistProvider checklistProvider;
   final int displayedCount;
 
   Color _getTaskColor() {
     // Find the belonging box for this task
-    final belongingBox = belongingBoxProvider.allCheckLists.firstWhere(
-      (box) => box.id == task.belongingBoxId,
+    final checklist = checklistProvider.allCheckLists.firstWhere(
+      (box) => box.id == task.checklistId,
       orElse: () => AppConstants.defaultCheckList,
     );
-    return belongingBox.color;
+    return checklist.color;
   }
 
   @override

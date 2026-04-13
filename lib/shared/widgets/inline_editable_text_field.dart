@@ -19,7 +19,8 @@ class InlineEditableTextField extends StatefulWidget {
   final InputDecoration decoration;
 
   @override
-  State<InlineEditableTextField> createState() => _InlineEditableTextFieldState();
+  State<InlineEditableTextField> createState() =>
+      _InlineEditableTextFieldState();
 }
 
 class _InlineEditableTextFieldState extends State<InlineEditableTextField> {
@@ -70,10 +71,7 @@ class _InlineEditableTextFieldState extends State<InlineEditableTextField> {
       decoration: widget.decoration,
       style:
           widget.style ??
-          const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
       onTap: () {
         if (!_isEditing) {
           setState(() {

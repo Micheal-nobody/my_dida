@@ -7,7 +7,7 @@ import 'provider/checklist_provider.dart';
 import 'provider/habit_provider.dart';
 import 'provider/operation_stack_provider.dart';
 import 'provider/task_provider.dart';
-import 'router/goRouter.dart';
+import 'router/go_router.dart';
 
 void main() async {
   // ensureInitialized() 方法的作用是确保 Flutter 运行时环境已经初始化完毕。
@@ -29,7 +29,7 @@ void main() async {
 
         // 使用 ChangeNotifierProxyProvider
         ChangeNotifierProxyProvider<ChecklistProvider, TaskProvider>(
-          // 首次创建时调用，就传入 belongingBoxProvider.currentBelongingBox
+          // 首次创建时调用，就传入 checklistProvider.currentChecklist
           create: (context) => TaskProvider(
             Provider.of<ChecklistProvider>(
               context,
@@ -37,14 +37,14 @@ void main() async {
             ).currentCheckList,
           ),
           // update 的返回值应该是 TaskProvider
-          update: (context, belongingBoxProvider, previousTaskProvider) {
-            /// 只有 belongingBoxProvider.currentBelongingBox 发生变化时才进行更新
+          update: (context, checklistProvider, previousTaskProvider) {
+            /// 只有 checklistProvider.currentChecklist 发生变化时才进行更新
             if (previousTaskProvider != null &&
-                belongingBoxProvider.currentCheckList !=
-                    previousTaskProvider.currentBelongingBox) {
+                checklistProvider.currentCheckList !=
+                    previousTaskProvider.currentChecklist) {
               // 更新 TaskProvider 中的依赖，级联操作符会返回 updateCurrentTasks 之后的自身！
               return previousTaskProvider
-                ..updateCurrentTasks(belongingBoxProvider.currentCheckList);
+                ..updateCurrentTasks(checklistProvider.currentCheckList);
             }
 
             return TaskProvider(

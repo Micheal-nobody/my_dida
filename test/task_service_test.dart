@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/services/task_service.dart';
 
 import 'test_support/task_test_harness.dart';
@@ -26,12 +26,12 @@ void main() {
 
       final parent = await service.createTask(
         name: 'Parent',
-        belongingBoxId: 1,
+        checklistId: 1,
       );
       final child = await service.createTask(
         name: 'Child',
         parentTaskId: parent.id,
-        belongingBoxId: 1,
+        checklistId: 1,
       );
 
       final reloadedParent = await harness.taskRepository.getById(parent.id);
@@ -42,12 +42,12 @@ void main() {
     test('deleteTask removes subtree and cleans parent reference', () async {
       final parent = await service.createTask(
         name: 'Parent',
-        belongingBoxId: 1,
+        checklistId: 1,
       );
       final child = await service.createTask(
         name: 'Child',
         parentTaskId: parent.id,
-        belongingBoxId: 1,
+        checklistId: 1,
       );
 
       await service.deleteTask(child);
@@ -61,12 +61,12 @@ void main() {
     test('copyTask copies nested subtasks', () async {
       final parent = await service.createTask(
         name: 'Parent',
-        belongingBoxId: 1,
+        checklistId: 1,
       );
       final child = await service.createTask(
         name: 'Child',
         parentTaskId: parent.id,
-        belongingBoxId: 1,
+        checklistId: 1,
       );
 
       await service.copyTask(parent);
@@ -86,7 +86,7 @@ void main() {
           name: 'Recurring $index',
           isAllDay: false,
           startTime: baseDate.add(Duration(minutes: index)),
-          belongingBoxId: 1,
+          checklistId: 1,
           rrule: 'FREQ=DAILY',
         )..id = index + 1;
         return task;

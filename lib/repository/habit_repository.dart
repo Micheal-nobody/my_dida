@@ -1,5 +1,5 @@
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/model/entity/Habit.dart';
+import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/repository/base_repository.dart';
 
 import '../config/locator.dart';

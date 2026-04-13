@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../../model/entity/Habit.dart';
-import '../../../model/entity/Task.dart';
-import '../../../provider/checklist_provider.dart';
-import '../../../provider/task_provider.dart';
 import 'calendar_habit_with_time.dart';
 import 'calendar_task_with_time.dart';
 
-class CalendarTImeTaskArea extends StatefulWidget {
-  const CalendarTImeTaskArea({
+class CalendarTimeTaskArea extends StatefulWidget {
+  const CalendarTimeTaskArea({
     required this.selectedDate,
     required this.visibleDates,
     required this.tasksForDates,
@@ -27,10 +27,10 @@ class CalendarTImeTaskArea extends StatefulWidget {
   final void Function(DateTime date) onLoadMoreRRule;
 
   @override
-  State<CalendarTImeTaskArea> createState() => _CalendarTImeTaskAreaState();
+  State<CalendarTimeTaskArea> createState() => _CalendarTimeTaskAreaState();
 }
 
-class _CalendarTImeTaskAreaState extends State<CalendarTImeTaskArea> {
+class _CalendarTimeTaskAreaState extends State<CalendarTimeTaskArea> {
   Offset? _lastDragPosition;
   final GlobalKey _containerKey = GlobalKey();
 
@@ -264,7 +264,7 @@ class _CalendarTImeTaskAreaState extends State<CalendarTImeTaskArea> {
                               task: task,
                               columnWidth: dateColumnWidth,
                               hourIndex: hourIndex,
-                              belongingBoxProvider:
+                              checklistProvider:
                                   Provider.of<ChecklistProvider>(
                                     context,
                                     listen: false,

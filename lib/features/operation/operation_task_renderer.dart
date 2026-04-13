@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -166,7 +166,7 @@ class OperationTaskRenderer extends StatelessWidget {
         ],
 
         // 所属收集箱
-        if (task.belongingBoxId != null) ...[
+        if (task.checklistId != null) ...[
           const SizedBox(height: 8),
           Row(
             children: [
@@ -175,7 +175,7 @@ class OperationTaskRenderer extends StatelessWidget {
               Consumer<ChecklistProvider>(
                 builder: (context, provider, child) {
                   final box = provider.allCheckLists
-                      .where((b) => b.id == task.belongingBoxId)
+                      .where((b) => b.id == task.checklistId)
                       .firstOrNull;
                   return Text(
                     '收集箱: ${box?.name ?? '未知'}',

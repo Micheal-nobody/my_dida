@@ -7,8 +7,8 @@ import '../constants/dimension_constants.dart';
 import '../constants/ui_constants.dart';
 import '../features/cards/habit_card.dart';
 import '../features/cards/task_card.dart';
-import '../features/todo_page//todo_drawer.dart';
-import '../model/entity/Task.dart';
+import '../features/todo_page/todo_drawer.dart';
+import '../model/entity/task.dart';
 import '../provider/checklist_provider.dart';
 import '../provider/habit_provider.dart';
 import '../provider/task_provider.dart';
@@ -39,13 +39,13 @@ class _TodoPageState extends State<TodoPage> {
 
     /// 使用 Provider 来获取 TodosProvider 实例
     //Optimize: 可以选择优化，使用Selector
-    final belongingBoxProvider = Provider.of<ChecklistProvider>(context);
+    final checklistProvider = Provider.of<ChecklistProvider>(context);
 
-    final currentBelongingBox = belongingBoxProvider.currentCheckList;
+    final currentChecklist = checklistProvider.currentCheckList;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentBelongingBox.name),
+        title: Text(currentChecklist.name),
         actions: [
           IconButton(
             onPressed: () async {
@@ -90,7 +90,7 @@ class _TodoPageState extends State<TodoPage> {
               tasks: taskProvider.currentTasks,
               habits: habitProvider.habits,
               isTodayTasks:
-                  currentBelongingBox.id == AppConstants.todayCheckList.id,
+                  currentChecklist.id == AppConstants.todayCheckList.id,
             ),
             builder: (context, data, _) {
               final currentTasks = data.tasks;

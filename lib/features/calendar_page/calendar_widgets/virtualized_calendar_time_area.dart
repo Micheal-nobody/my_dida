@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../../model/entity/Habit.dart';
-import '../../../model/entity/Task.dart';
-import '../../../provider/checklist_provider.dart';
-import '../../../provider/task_provider.dart';
 import 'calendar_habit_with_time.dart';
 import 'calendar_task_with_time.dart';
 
@@ -223,7 +223,7 @@ class _VirtualizedCalendarTimeAreaState
         ...tasksForHour.asMap().entries.map((entry) {
           final taskIndex = entry.key;
           final task = entry.value;
-          final belongingBoxProvider = Provider.of<ChecklistProvider>(
+          final checklistProvider = Provider.of<ChecklistProvider>(
             context,
             listen: false,
           );
@@ -236,7 +236,7 @@ class _VirtualizedCalendarTimeAreaState
               task: task,
               columnWidth: columnWidth - 4,
               hourIndex: hourIndex,
-              belongingBoxProvider: belongingBoxProvider,
+              checklistProvider: checklistProvider,
             ),
           );
         }),

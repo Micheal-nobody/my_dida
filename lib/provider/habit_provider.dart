@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../config/locator.dart';
-import '../model/entity/Habit.dart';
-import '../model/entity/Operation.dart';
+import '../model/entity/habit.dart';
+import '../model/entity/operation.dart';
 import '../repository/habit_repository.dart';
 import 'operation_stack_provider.dart';
 

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/model/entity/Task.dart';
+import 'package:my_dida/features/dialogs/associate_main_task_dialog.dart';
+import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/vo/checklist_vo.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
-
-import '../../../model/vo/checklist_vo.dart';
-import '../../dialogs/associate_main_task_dialog.dart';
 
 class TaskDetailHeader extends StatelessWidget {
   const TaskDetailHeader({required this.task, super.key});
@@ -47,11 +46,11 @@ class TaskDetailHeader extends StatelessWidget {
               const SizedBox(width: 6),
               const Spacer(),
 
-              //通过Selector构建BelongingBoxDropdown - 居中显示
+              //通过Selector构建ChecklistDropdown - 居中显示
               Selector<ChecklistProvider, List<ChecklistVO>>(
                 selector: (context, provider) => provider.allCheckLists,
                 builder: (context, allBoxes, child) => DropdownButton<int?>(
-                  value: updatedTask.belongingBoxId,
+                  value: updatedTask.checklistId,
                   underline: const SizedBox.shrink(),
                   items: [
                     for (final box in allBoxes)
@@ -61,7 +60,7 @@ class TaskDetailHeader extends StatelessWidget {
                       ),
                   ],
                   onChanged: (v) async {
-                    await taskProvider.updateBelongingBox(updatedTask, v);
+                    await taskProvider.updateChecklist(updatedTask, v);
                   },
                 ),
               ),
