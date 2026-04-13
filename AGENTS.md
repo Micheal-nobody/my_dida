@@ -13,12 +13,13 @@
 ## 目录职责
 
 - `lib/pages`：页面级 UI，负责页面布局、路由承接、事件分发和订阅 Provider 状态。
-- `lib/components`：可复用 UI 组件，按业务域拆分，例如 `calendar`、`dialogs`、`task_detail`、`pickers`。
+- `lib/features`：可复用 UI 组件，按业务域拆分，例如 `calendar`、`dialogs`、`task_detail`、`pickers`。
 - `lib/provider`：页面状态与交互协调层，负责持有页面状态、把 UI 事件转换为应用动作、协调调用 Service/Repository，并通知界面刷新。
 - `lib/services`：业务逻辑层，负责规则校验、业务编排、异常转换、跨 Repository 协同。
 - `lib/repository`：数据访问层，负责 Isar 查询、写入、监听等持久化交互。
 - `lib/model/entity`：持久化实体，与 Isar schema 对应。
 - `lib/model/vo`：面向 UI 或业务聚合的视图对象。
+- `lib/shared`：共享代码目录，放置跨项目复用的基础能力，例如通用Widget、工具函数、常量定义、错误定义、基础类型或通用适配逻辑。该目录不依赖任何项目内代码，仅作为基础能力被调用。
 - `lib/core`：通用错误定义、校验器等基础能力。
 - `lib/config`：依赖注入、日志、应用级初始化配置。
 - `lib/constants`：常量定义，避免散落的 magic number / magic string。
@@ -70,7 +71,7 @@
 
 ## 当前工程约定
 
-- 项目当前同时存在 `pages/components`、`provider`、`services`、`repository` 的职责划分，后续新增代码必须继续遵守该边界。
+- 项目当前同时存在 `pages/features`、`provider`、`services`、`repository` 的职责划分，后续新增代码必须继续遵守该边界。
 - 依赖注入统一通过 `lib/config/locator.dart` 中的 `GetIt` 管理；新增全局单例时优先在此注册。
 - 状态管理以 `provider` 为主；新增页面状态优先复用现有 Provider 模式，而不是再引入新的状态管理方案。
 - 路由统一收敛到 `lib/router/goRouter.dart`。
@@ -95,11 +96,18 @@
 ## 生成文件约束
 
 - `*.g.dart` 属于生成文件，除非明确必要，不直接手改。
-- 修改 Isar 实体后，应通过代码生成工具更新生成文件，而不是人工同步。
+- 修改 Isar 实体后，应通过 `dart run build_runner build` 更新生成文件，而不是人工同步。
+
+## Git 规范
+
+- 执行一次完整的功能扩展、代码重构、bug 修复等“需要修改代码”的操作前，应先基于当前工作区状态进行一次 `git commit`，避免新任务与未归档改动混杂。
+- 提交信息必须符合 `Conventional Commits` 规范，例如 `feat: ...`、`fix: ...`、`refactor: ...`、`docs: ...`、`test: ...`。
+- 若工作区中存在与当前任务无关的改动，不要擅自覆盖或清理；应先通过一次独立提交将其归档，再开始新的代码修改。
+- 在一次任务内，提交粒度应与可回滚的变更单元保持一致，避免把互不相关的修改合并到同一次提交中。
 
 ## 测试与验证
 
-- 没有明确要求，则不进行任何测试。
+- 没有明确要求，则不进行任何测试，但需要给出人工核对的场景建议。
 - 如果有明确要求，则按照以下步骤进行测试：
   - 涉及业务逻辑调整时，优先补充或更新 `test` 目录中的测试。
   - 至少保证改动范围内的关键流程可运行；若未执行测试，需要在交付说明中明确指出。

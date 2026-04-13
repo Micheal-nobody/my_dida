@@ -13,7 +13,9 @@ analyzer:
   errors:
     always_put_control_body_on_new_line: ignore
   exclude:
-    - "**/*.g.dart"
+    - "bin/**"
+    - "lib/generated/**" # 排除自动生成的代码
+    - "**/*.g.dart"      # 排除 json_serializable 等生成的中间文件
     - "**/*.freezed.dart"
   strong-mode:
     implicit-casts: false

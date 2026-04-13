@@ -1,8 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:my_dida/components/operation/operation_habit_renderer.dart';
-import 'package:my_dida/components/operation/operation_task_renderer.dart';
 import 'package:my_dida/model/entity/Habit.dart';
 import 'package:my_dida/model/entity/Operation.dart';
 import 'package:my_dida/model/entity/Task.dart';
@@ -10,6 +8,9 @@ import 'package:my_dida/provider/habit_provider.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
+
+import '../features/operation/operation_habit_renderer.dart';
+import '../features/operation/operation_task_renderer.dart';
 
 class OperationPage extends StatefulWidget {
   const OperationPage({super.key});

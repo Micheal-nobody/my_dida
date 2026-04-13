@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:my_dida/components/calendar/calendar_widgets/CalendarDateHeader.dart';
-import 'package:my_dida/components/calendar/calendar_widgets/CalendarNoTimeTaskArea.dart';
-import 'package:my_dida/components/calendar/calendar_widgets/CalendarScrollableContent.dart';
-import 'package:my_dida/components/common/CustomFloatingActionButton.dart';
-import 'package:my_dida/components/dialogs/DatePickerDialog.dart';
 import 'package:my_dida/model/entity/Habit.dart';
 import 'package:my_dida/model/entity/Task.dart';
 import 'package:my_dida/model/vo/task_calendar_view_data.dart';
@@ -13,6 +8,12 @@ import 'package:my_dida/provider/task_provider.dart';
 import 'package:my_dida/utils/PerformanceMonitor.dart';
 import 'package:my_dida/utils/RRuleUtil.dart';
 import 'package:provider/provider.dart';
+
+import '../features/calendar_page/calendar_widgets/calendar_date_header.dart';
+import '../features/calendar_page/calendar_widgets/calendar_no_time_task_area.dart';
+import '../features/calendar_page/calendar_widgets/calendar_scrollable_content.dart';
+import '../shared/common/custom_floating_action_button.dart';
+import '../shared/widgets/datetime/custom_date_picker_dialog.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});

@@ -1,0 +1,213 @@
+import 'package:flutter/material.dart';
+import 'package:my_dida/config/logger.dart';
+import 'package:my_dida/model/vo/checklist_vo.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/shared/widgets/checklist_selector.dart';
+import 'package:my_dida/shared/widgets/task_schedule_trigger.dart';
+import 'package:my_dida/utils/TimeUtils.dart';
+import 'package:provider/provider.dart';
+
+import '../../constants/app_constants.dart';
+import '../../model/entity/Task.dart';
+import '../../provider/task_provider.dart';
+import '../pickers/custom_date_picker/task_date_time_picker.dart';
+
+class AddTaskDialog extends StatefulWidget {
+  const AddTaskDialog({super.key, this.parentTask});
+
+  final Task? parentTask;
+
+  @override
+  State<AddTaskDialog> createState() => _AddTaskDialogState();
+}
+
+//TODO：一个任务如果是全天任务，仍然应该具有startTime（选择的日期，时间为00:00）,用于显示在calendar_page,todo_page等页面中。
+class _AddTaskDialogState extends State<AddTaskDialog> {
+  final TextEditingController _textController = TextEditingController();
+  late final Task? parentTask;
+  TaskTimeInfo _timeInfo = TaskTimeInfo();
+  bool _hasError = false;
+  ChecklistVO? _selectedBelongingBox;
+
+  @override
+  void initState() {
+    super.initState();
+    parentTask = widget.parentTask;
+    final now = DateTime.now();
+    // 初始化时间信息
+    _timeInfo = TaskTimeInfo(
+      selectedDate: now.toBeijingTime().dateOnly,
+      isAllDay: true, // 默认全天任务
+    );
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _addTask(BuildContext context) async {
+    final String taskName = _textController.text.trim();
+
+    if (taskName.isEmpty) {
+      setState(() {
+        _hasError = true;
+      });
+      return;
+    }
+
+    final Task newTask = _buildTaskFromForm(
+      taskName: taskName,
+      checklistProvider: context.read<ChecklistProvider>(),
+    );
+
+    logger.i('newTask == $newTask');
+
+    await context.read<TaskProvider>().addTask(newTask);
+
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  void _showCustomDatePicker(BuildContext context) async {
+    final updatedTimeInfo = await TaskDateTimePicker.showForNewTask(
+      context: context,
+      initialTimeInfo: _timeInfo, // 传递当前的时间信息
+    );
+    if (updatedTimeInfo == null) {
+      return;
+    }
+    logger.i('Task time updated: $updatedTimeInfo');
+    setState(() {
+      _timeInfo = updatedTimeInfo;
+    });
+  }
+
+  String _getSelectDateString() => _timeInfo.getTodayDisplayText();
+
+  void _ensureSelectedBelongingBox(ChecklistProvider provider) {
+    if (_selectedBelongingBox != null) {
+      final matchedChecklist = provider.allCheckLists
+          .where((item) => item.id == _selectedBelongingBox!.id)
+          .firstOrNull;
+      if (matchedChecklist != null) {
+        _selectedBelongingBox = matchedChecklist;
+        return;
+      }
+    }
+
+    _selectedBelongingBox = _resolveInitialChecklist(provider);
+  }
+
+  ChecklistVO _resolveInitialChecklist(ChecklistProvider provider) {
+    final preferredChecklist =
+        provider.currentCheckList == AppConstants.todayCheckList
+        ? AppConstants.defaultCheckList
+        : provider.currentCheckList;
+
+    return provider.allCheckLists
+            .where((item) => item.id == preferredChecklist.id)
+            .firstOrNull ??
+        preferredChecklist;
+  }
+
+  Task _buildTaskFromForm({
+    required String taskName,
+    required ChecklistProvider checklistProvider,
+  }) {
+    final DateTime? finalStart = _timeInfo.getFinalStartTime();
+    final DateTime? finalEnd = _timeInfo.getFinalEndTime();
+    final bool isAllDay = _timeInfo.isAllDay;
+    final Task newTask = Task(name: taskName, isAllDay: isAllDay);
+
+    if (isAllDay) {
+      final DateTime date =
+          (_timeInfo.selectedDate ?? DateTime.now().toBeijingTime()).dateOnly;
+      newTask
+        ..startTime = DateTime(date.year, date.month, date.day)
+        ..endTime = null;
+    } else {
+      newTask
+        ..startTime = finalStart
+        ..endTime = finalEnd;
+    }
+
+    newTask.rrule = _timeInfo.rrule;
+
+    if (parentTask != null) {
+      newTask
+        ..parentTaskId = parentTask!.id
+        ..belongingBoxId = parentTask!.belongingBoxId;
+      return newTask;
+    }
+
+    final selectedChecklist =
+        _selectedBelongingBox ?? _resolveInitialChecklist(checklistProvider);
+    newTask.belongingBoxId = selectedChecklist.id;
+    return newTask;
+  }
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: _textController,
+          decoration: InputDecoration(
+            labelText: '准备做点什么？',
+            errorText: _hasError ? '请输入任务名称！' : null,
+            errorStyle: const TextStyle(color: Colors.red),
+          ),
+          onSubmitted: (value) => _addTask(context),
+          onChanged: (value) {
+            if (_hasError && value.isNotEmpty) {
+              setState(() {
+                _hasError = false;
+              });
+            }
+          },
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TaskScheduleTrigger(
+              text: _getSelectDateString(),
+              hasSelection: _timeInfo.getFinalStartTime() != null,
+              onTap: () => _showCustomDatePicker(context),
+            ),
+            if (parentTask == null)
+              Consumer<ChecklistProvider>(
+                builder: (context, provider, child) {
+                  _ensureSelectedBelongingBox(provider);
+
+                  return ChecklistSelector(
+                    items: provider.allCheckLists,
+                    selectedValue: _selectedBelongingBox,
+                    hintText: _selectedBelongingBox?.name ?? '选择清单',
+                    onChanged: (newValue) {
+                      logger.i(
+                        'newValue: $newValue ,newValue.id: ${newValue?.id}',
+                      );
+                      setState(() {
+                        _selectedBelongingBox = newValue;
+                      });
+                    },
+                  );
+                },
+              ),
+            const Spacer(),
+            ElevatedButton(
+              onPressed: () => _addTask(context),
+              child: const Text('确认'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}

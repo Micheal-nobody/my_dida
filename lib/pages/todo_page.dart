@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../components/cards/habit_card.dart';
-import '../components/cards/task_card.dart';
-import '../components/common/CustomFloatingActionButton.dart';
-import '../components/todo_drawer.dart';
 import '../constants/app_constants.dart';
 import '../constants/colors_constants.dart';
 import '../constants/dimension_constants.dart';
 import '../constants/ui_constants.dart';
+import '../features/cards/habit_card.dart';
+import '../features/cards/task_card.dart';
+import '../features/todo_page//todo_drawer.dart';
 import '../model/entity/Task.dart';
 import '../provider/checklist_provider.dart';
 import '../provider/habit_provider.dart';
 import '../provider/task_provider.dart';
+import '../shared/common/custom_floating_action_button.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
