@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../constants/app_constants.dart';
-import '../constants/colors_constants.dart';
-import '../constants/dimension_constants.dart';
-import '../constants/ui_constants.dart';
-import '../features/cards/habit_card.dart';
-import '../features/cards/task_card.dart';
-import '../features/todo_page/todo_drawer.dart';
-import '../model/entity/task.dart';
-import '../provider/checklist_provider.dart';
-import '../provider/habit_provider.dart';
-import '../provider/task_provider.dart';
-import '../shared/common/custom_floating_action_button.dart';
+import 'package:my_dida/constants/app_constants.dart';
+import 'package:my_dida/constants/colors_constants.dart';
+import 'package:my_dida/constants/dimension_constants.dart';
+import 'package:my_dida/constants/ui_constants.dart';
+import 'package:my_dida/features/cards/habit_card.dart';
+import 'package:my_dida/features/cards/task_card.dart';
+import 'package:my_dida/features/todo_page/todo_drawer.dart';
+import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/provider/habit_provider.dart';
+import 'package:my_dida/provider/task_provider.dart';
+import 'package:my_dida/shared/common/custom_floating_action_button.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -35,8 +35,6 @@ class _TodoPageState extends State<TodoPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('TodoPage build');
-
     /// 使用 Provider 来获取 TodosProvider 实例
     //Optimize: 可以选择优化，使用Selector
     final checklistProvider = Provider.of<ChecklistProvider>(context);

@@ -8,14 +8,10 @@ import 'package:my_dida/pages/todo_page.dart';
 final GoRouter goRouter = GoRouter(
   // 初始路由
   initialLocation: '/todoList',
-  // initialLocation: '/calendarView',
   routes: [
     StatefulShellRoute.indexedStack(
       /// 整个页面的内容，其中 Branch 中的内容会填充到 body 中
       builder: (context, state, navigationShell) => Scaffold(
-        //? 路由跳转时，这个函数会被调用！这意味着页面重新渲染！
-        // appBar: _getAppBar(context, navigationShell.currentIndex),
-
         //? StatefulNavigationShell 是一个特殊的路由组件，它允许在底部导航栏中切换不同的分支（branch），每个分支都有自己的导航栈。
         body: navigationShell,
 
@@ -23,8 +19,11 @@ final GoRouter goRouter = GoRouter(
           type: BottomNavigationBarType.fixed,
           currentIndex: navigationShell.currentIndex,
 
-          /// index 参数表示当前选中的底部导航项索引，当前项目中
-          onTap: (index) => _onTap(context, index, navigationShell),
+          //? index 参数表示当前选中的底部导航项索引， initialLocation 表示是否初始化页面导航栈（可以理解为是否切换分支），如果为 true，则该分支的导航栈将初始化为该分支的根路由。
+          onTap: (index) => navigationShell.goBranch(
+            index,
+            initialLocation: index == navigationShell.currentIndex,
+          ),
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.masks), label: '待办清单'),
             BottomNavigationBarItem(
@@ -92,17 +91,3 @@ final GoRouter goRouter = GoRouter(
     body: Center(child: Text('Error: ${state.error}')),
   ),
 );
-
-/// 底部导航栏点击处理
-void _onTap(
-  BuildContext context,
-  int index,
-  StatefulNavigationShell navigationShell,
-) {
-  navigationShell.goBranch(
-    index,
-    //? initialLocation 表示是否初始化该分支的导航栈，如果为 true，则该分支的导航栈将初始化为该分支的根路由。
-    //? 在这里 index == navigationShell.currentIndex 表示是否跳转到当前分支，如果是，则不需要初始化导航栈
-    initialLocation: index == navigationShell.currentIndex,
-  );
-}
