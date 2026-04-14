@@ -120,7 +120,11 @@ class _CalendarTimeTaskAreaState extends State<CalendarTimeTaskArea> {
             context,
             listen: false,
           );
-          await taskProvider.updateStartTime(details.data, newTime);
+          await taskProvider.updateStartTime(
+            details.data,
+            newTime,
+            isAllDay: false,
+          );
         }
       },
       // 允许接受任何任务
@@ -198,6 +202,9 @@ class _CalendarTimeTaskAreaState extends State<CalendarTimeTaskArea> {
                     // 有具体时间的任务
                     ...dayTasks
                         .where((task) {
+                          if (task.isAllDay) {
+                            return false;
+                          }
                           if (task.startTime == null) {
                             return false;
                           }
@@ -264,11 +271,10 @@ class _CalendarTimeTaskAreaState extends State<CalendarTimeTaskArea> {
                               task: task,
                               columnWidth: dateColumnWidth,
                               hourIndex: hourIndex,
-                              checklistProvider:
-                                  Provider.of<ChecklistProvider>(
-                                    context,
-                                    listen: false,
-                                  ),
+                              checklistProvider: Provider.of<ChecklistProvider>(
+                                context,
+                                listen: false,
+                              ),
                             ),
                           );
                         }),

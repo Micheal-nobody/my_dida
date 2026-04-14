@@ -17,6 +17,7 @@ class VirtualizedCalendarTimeArea extends StatefulWidget {
     required this.habitsForDates,
     required this.rruleHasMore,
     required this.onLoadMoreRRule,
+    required this.onDragPreviewChanged,
     super.key,
   });
 
@@ -26,6 +27,7 @@ class VirtualizedCalendarTimeArea extends StatefulWidget {
   final Map<DateTime, List<Habit>> habitsForDates;
   final Map<DateTime, bool> rruleHasMore;
   final void Function(DateTime date) onLoadMoreRRule;
+  final ValueChanged<DateTime?> onDragPreviewChanged;
 
   @override
   State<VirtualizedCalendarTimeArea> createState() =>
@@ -35,7 +37,6 @@ class VirtualizedCalendarTimeArea extends StatefulWidget {
 class _VirtualizedCalendarTimeAreaState
     extends State<VirtualizedCalendarTimeArea> {
   final ScrollController _scrollController = ScrollController();
-  Offset? _lastDragPosition;
   final GlobalKey _containerKey = GlobalKey();
 
   // Performance optimization: Only render hours that are likely to be visible
@@ -43,9 +44,13 @@ class _VirtualizedCalendarTimeAreaState
   static const int _bufferHours =
       2; // Buffer hours above and below visible area
   static const double _hourHeight = 60.0;
+  static const int _minutesPerDay = 24 * 60;
+  static const int _snapGranularityMinutes = 15;
+  DateTime? _dragPreviewTime;
 
   @override
   void dispose() {
+    widget.onDragPreviewChanged(null);
     _scrollController.dispose();
     super.dispose();
   }
@@ -75,29 +80,38 @@ class _VirtualizedCalendarTimeAreaState
     return availableWidth / widget.visibleDates.length;
   }
 
+  int _calculateSnappedMinutesFromPosition(Offset globalPosition) {
+    final RenderBox? renderBox =
+        _containerKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) {
+      return 0;
+    }
+
+    final localPosition = renderBox.globalToLocal(globalPosition);
+    final relativeY = localPosition.dy.clamp(0.0, _minutesPerDay.toDouble());
+    final totalMinutes = relativeY.round();
+    final snappedMinutes =
+        ((totalMinutes / _snapGranularityMinutes).round() *
+                _snapGranularityMinutes)
+            .clamp(0, _minutesPerDay - _snapGranularityMinutes);
+    return snappedMinutes;
+  }
+
   // Calculate time from drag position
   DateTime _calculateTimeFromPosition(
     Offset globalPosition,
     DateTime targetDate,
   ) {
-    final RenderBox? renderBox =
-        _containerKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox == null) return targetDate;
-
-    final localPosition = renderBox.globalToLocal(globalPosition);
-    final relativeY = localPosition.dy.clamp(0.0, 1440.0);
-    final totalMinutes = (relativeY / 1440.0 * 1440).round();
-    final hour = (totalMinutes / 60).floor();
-    final minute = totalMinutes % 60;
-    final discreteMinute = ((minute / 15).round() * 15) % 60;
-    final discreteHour = minute >= 45 ? (hour + 1) % 24 : hour;
+    final snappedMinutes = _calculateSnappedMinutesFromPosition(globalPosition);
+    final hour = snappedMinutes ~/ 60;
+    final minute = snappedMinutes % 60;
 
     return DateTime(
       targetDate.year,
       targetDate.month,
       targetDate.day,
-      discreteHour.clamp(0, 23),
-      discreteMinute.clamp(0, 59),
+      hour,
+      minute,
     );
   }
 
@@ -115,51 +129,97 @@ class _VirtualizedCalendarTimeAreaState
     return widget.visibleDates[columnIndex];
   }
 
+  void _updateDragPreview(Offset globalPosition) {
+    final targetDate = _calculateTargetDate(globalPosition);
+    final previewTime = _calculateTimeFromPosition(globalPosition, targetDate);
+    if (_dragPreviewTime == previewTime) {
+      return;
+    }
+
+    setState(() {
+      _dragPreviewTime = previewTime;
+    });
+    widget.onDragPreviewChanged(previewTime);
+  }
+
+  void _clearDragPreview() {
+    if (_dragPreviewTime == null) {
+      return;
+    }
+    setState(() {
+      _dragPreviewTime = null;
+    });
+    widget.onDragPreviewChanged(null);
+  }
+
   @override
   Widget build(BuildContext context) => Selector<TaskProvider, List<Task>>(
     selector: (_, taskProvider) => taskProvider.tasks,
     builder: (context, tasks, child) => DragTarget<Task>(
       onMove: (details) {
-        _lastDragPosition = details.offset;
+        _updateDragPreview(details.offset);
       },
+      onLeave: (_) => _clearDragPreview(),
       onAcceptWithDetails: (details) async {
-        if (_lastDragPosition != null) {
-          final targetDate = _calculateTargetDate(_lastDragPosition!);
-          final newTime = _calculateTimeFromPosition(
-            _lastDragPosition!,
-            targetDate,
-          );
+        if (_dragPreviewTime != null) {
           final taskProvider = Provider.of<TaskProvider>(
             context,
             listen: false,
           );
-          await taskProvider.updateStartTime(details.data, newTime);
+          await taskProvider.updateStartTime(
+            details.data,
+            _dragPreviewTime,
+            isAllDay: false,
+          );
         }
+        _clearDragPreview();
       },
       onWillAcceptWithDetails: (details) => true,
-      builder: (context, candidateData, rejectedData) => Container(
-        key: _containerKey,
-        height: 1440, // 24 hours * 60px
-        decoration: BoxDecoration(
-          color: candidateData.isNotEmpty
-              ? Colors.orange.withValues(alpha: 0.1)
-              : null,
-        ),
-        child: ListView.builder(
-          controller: _scrollController,
-          itemCount: 24, // 24 hours
-          itemExtent: _hourHeight,
-          itemBuilder: (context, hourIndex) {
-            // Only build widgets for visible hours
-            final visibleHours = _getVisibleHours();
-            if (!visibleHours.contains(hourIndex)) {
-              return const SizedBox(height: _hourHeight);
-            }
+      builder: (context, candidateData, rejectedData) {
+        final previewMinuteOfDay = _dragPreviewTime == null
+            ? null
+            : _dragPreviewTime!.hour * 60 + _dragPreviewTime!.minute;
+        final previewLineTop = previewMinuteOfDay == null
+            ? null
+            : (previewMinuteOfDay.toDouble() - 1).clamp(0.0, 1438.0);
 
-            return _buildHourRow(hourIndex);
-          },
-        ),
-      ),
+        return Container(
+          key: _containerKey,
+          height: 1440, // 24 hours * 60px
+          decoration: BoxDecoration(
+            color: candidateData.isNotEmpty
+                ? Colors.orange.withValues(alpha: 0.1)
+                : null,
+          ),
+          child: Stack(
+            children: [
+              ListView.builder(
+                controller: _scrollController,
+                itemCount: 24, // 24 hours
+                itemExtent: _hourHeight,
+                itemBuilder: (context, hourIndex) {
+                  // Only build widgets for visible hours
+                  final visibleHours = _getVisibleHours();
+                  if (!visibleHours.contains(hourIndex)) {
+                    return const SizedBox(height: _hourHeight);
+                  }
+
+                  return _buildHourRow(hourIndex);
+                },
+              ),
+              if (candidateData.isNotEmpty && previewLineTop != null)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: previewLineTop,
+                  child: IgnorePointer(
+                    child: Container(height: 2, color: Colors.orange),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     ),
   );
 
@@ -200,6 +260,7 @@ class _VirtualizedCalendarTimeAreaState
     // Filter tasks and habits for this specific hour
     final tasksForHour = tasksForDate.where((task) {
       if (task.startTime == null) return false;
+      if (task.isAllDay) return false;
       return task.startTime!.hour == hourIndex;
     }).toList();
 

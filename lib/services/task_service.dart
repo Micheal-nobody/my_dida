@@ -117,8 +117,9 @@ class TaskService {
   Future<void> updateTaskTimeRange(
     Task task,
     DateTime? startTime,
-    DateTime? endTime,
-  ) async {
+    DateTime? endTime, {
+    bool? isAllDay,
+  }) async {
     try {
       TaskValidator.validateTaskTimeRange(startTime, endTime);
       await _updateTask(
@@ -127,6 +128,9 @@ class TaskService {
           draft
             ..startTime = startTime
             ..endTime = endTime;
+          if (isAllDay != null) {
+            draft.isAllDay = isAllDay;
+          }
         },
         description:
             '${UIStrings.modifiedTimeRange}"${task.name}"${UIStrings.timeRangeSuffix}',

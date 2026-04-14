@@ -10,8 +10,8 @@ import 'package:my_dida/utils/RRuleUtil.dart';
 import 'package:provider/provider.dart';
 
 import 'package:my_dida/features/calendar_page/calendar_widgets/calendar_date_header.dart';
-import 'package:my_dida/features/calendar_page/calendar_widgets/calendar_no_time_task_area.dart';
-import 'package:my_dida/features/calendar_page/calendar_widgets/calendar_scrollable_content.dart';
+import 'package:my_dida/features/calendar_page/calendar_all_day_task_section.dart';
+import 'package:my_dida/features/calendar_page/calendar_time_task_section.dart';
 import 'package:my_dida/shared/common/custom_floating_action_button.dart';
 import 'package:my_dida/shared/widgets/datetime/custom_date_picker_dialog.dart';
 
@@ -268,7 +268,7 @@ class _CalendarPageState extends State<CalendarPage> {
         // 根据 isAllDay 判断是否显示无具体时间任务区域；
         // 若 isAllDay 为 true，则显示在无具体时间任务区域，并且具体时间区域不再显示
         // 3. 无具体时间任务区域（固定在顶部；isAllDay 视为无具体时间）
-        CalendarNoTimeTaskArea(
+        CalendarAllDayTaskSection(
           visibleDates: _visibleDates,
           tasksForDates: _tasksForDates,
           habitsForDates: _habitsForDates,
@@ -276,40 +276,20 @@ class _CalendarPageState extends State<CalendarPage> {
         ),
 
         // 4. 主要内容区域
-        Expanded(
-          child: GestureDetector(
-            onPanEnd: (details) {
-              // 检测水平拖动
-              if (details.velocity.pixelsPerSecond.dx.abs() >
-                  details.velocity.pixelsPerSecond.dy.abs()) {
-                // 水平拖动速度大于垂直拖动速度
-                if (details.velocity.pixelsPerSecond.dx > 80) {
-                  // 向右拖动，减去1天
-                  setState(() {
-                    _selectedDate = _selectedDate.subtract(
-                      const Duration(days: 1),
-                    );
-                  });
-                  _loadTasksForVisibleDates();
-                } else if (details.velocity.pixelsPerSecond.dx < -80) {
-                  // 向左拖动，加上1天
-                  setState(() {
-                    _selectedDate = _selectedDate.add(const Duration(days: 1));
-                  });
-                  _loadTasksForVisibleDates();
-                }
-              }
-            },
-            child: CalendarScrollableContent(
-              selectedDate: _selectedDate,
-              visibleDates: _visibleDates,
-              tasksForDates: _tasksForDates,
-              habitsForDates: _habitsForDates,
-              futureTasks: _futureTasks,
-              rruleHasMore: _rruleHasMore,
-              onLoadMoreRRule: _loadMoreRRuleForDate,
-            ),
-          ),
+        CalendarTimeTaskSection(
+          selectedDate: _selectedDate,
+          visibleDates: _visibleDates,
+          tasksForDates: _tasksForDates,
+          habitsForDates: _habitsForDates,
+          futureTasks: _futureTasks,
+          rruleHasMore: _rruleHasMore,
+          onLoadMoreRRule: _loadMoreRRuleForDate,
+          onDateChanged: (date) {
+            setState(() {
+              _selectedDate = date;
+            });
+            _loadTasksForVisibleDates();
+          },
         ),
       ],
     ),

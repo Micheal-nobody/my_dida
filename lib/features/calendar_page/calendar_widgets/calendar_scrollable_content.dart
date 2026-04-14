@@ -33,6 +33,7 @@ class CalendarScrollableContent extends StatefulWidget {
 
 class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
   late ScrollController _scrollController;
+  DateTime? _dragPreviewTime;
 
   List<DateTime> _getReorderedVisibleDates() {
     // Ensure the selected date is the first column, others remain in original order
@@ -49,6 +50,15 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
+
+  void _handleDragPreviewChanged(DateTime? previewTime) {
+    if (_dragPreviewTime == previewTime) {
+      return;
+    }
+    setState(() {
+      _dragPreviewTime = previewTime;
+    });
+  }
 
   @override
   void initState() {
@@ -84,7 +94,7 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
                       child: Row(
                         children: [
                           // 左侧时间列
-                          const TimeAxisColumn(),
+                          TimeAxisColumn(previewTime: _dragPreviewTime),
 
                           // 任务显示区域 - Using virtualized component for better performance
                           Expanded(
@@ -95,6 +105,7 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
                               habitsForDates: widget.habitsForDates,
                               rruleHasMore: widget.rruleHasMore,
                               onLoadMoreRRule: widget.onLoadMoreRRule,
+                              onDragPreviewChanged: _handleDragPreviewChanged,
                             ),
                           ),
                         ],

@@ -208,22 +208,46 @@ class TaskProvider with ChangeNotifier {
     await _reloadAfterMutation();
   }
 
-  Future<void> updateStartTime(Task task, DateTime? newStartTime) async {
-    await _taskService.updateTaskTimeRange(task, newStartTime, task.endTime);
+  Future<void> updateStartTime(
+    Task task,
+    DateTime? newStartTime, {
+    bool? isAllDay,
+  }) async {
+    await _taskService.updateTaskTimeRange(
+      task,
+      newStartTime,
+      task.endTime,
+      isAllDay: isAllDay,
+    );
     await _reloadAfterMutation();
   }
 
-  Future<void> updateEndTime(Task task, DateTime? newEndTime) async {
-    await _taskService.updateTaskTimeRange(task, task.startTime, newEndTime);
+  Future<void> updateEndTime(
+    Task task,
+    DateTime? newEndTime, {
+    bool? isAllDay,
+  }) async {
+    await _taskService.updateTaskTimeRange(
+      task,
+      task.startTime,
+      newEndTime,
+      isAllDay: isAllDay,
+    );
     await _reloadAfterMutation();
   }
 
   Future<void> updateTimeRange(
     Task task,
     DateTime? newStartTime,
-    DateTime? newEndTime,
-  ) async {
-    await _taskService.updateTaskTimeRange(task, newStartTime, newEndTime);
+    DateTime? newEndTime, {
+    bool? isAllDay,
+  }) async {
+    await _taskService.updateTaskTimeRange(
+      task,
+      newStartTime,
+      newEndTime,
+      isAllDay: isAllDay,
+    );
     await _reloadAfterMutation();
   }
 
