@@ -27,9 +27,6 @@ class _AddChecklistDialogState extends BaseFormDialogState<AddChecklistDialog> {
   String get dialogTitle => checklist == null ? '创建清单' : '编辑清单';
 
   @override
-  String get confirmButtonText => checklist == null ? 'Add' : 'Update';
-
-  @override
   void initState() {
     super.initState();
     checklist = widget.checklist;
@@ -51,11 +48,11 @@ class _AddChecklistDialogState extends BaseFormDialogState<AddChecklistDialog> {
     children: [
       CommonWidgets.buildTextFormField(
         controller: _nameController,
-        labelText: 'Name',
+        labelText: '清单名',
         validator: FormValidators.name,
       ),
       CommonWidgets.buildSpacing(),
-      const Text('Select Color:', style: TextStyle(fontSize: 16)),
+      const Text('选择颜色:', style: TextStyle(fontSize: 16)),
       CommonWidgets.buildSpacing(height: 10),
       CommonWidgets.buildColorSelector(
         colors: AppColors.selectorColors,
@@ -79,14 +76,14 @@ class _AddChecklistDialogState extends BaseFormDialogState<AddChecklistDialog> {
         _nameController.text.trim(),
         _selectedColor,
       );
-      showSuccess('归属盒子创建成功！');
+      showSuccess('清单创建成功！');
     } else {
       // Update existing belonging box
       final updatedBox = checklist!
         ..name = _nameController.text.trim()
         ..color = _selectedColor;
       await provider.updateChecklist(updatedBox);
-      showSuccess('归属盒子更新成功！');
+      showSuccess('清单更新成功！');
     }
   }
 }

@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/check_point.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/task_provider.dart';
 import 'package:provider/provider.dart';
-import 'dart:async';
 
 class CheckpointItemWidget extends StatefulWidget {
   const CheckpointItemWidget({

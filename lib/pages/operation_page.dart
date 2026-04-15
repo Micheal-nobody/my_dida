@@ -969,9 +969,7 @@ class _OperationPageState extends State<OperationPage> {
         endTime: data['endTime'] != null
             ? DateTime.parse(data['endTime'])
             : null,
-        checklistId: data['checklistId'] == 0
-            ? null
-            : data['checklistId'],
+        checklistId: data['checklistId'] == 0 ? null : data['checklistId'],
         isAllDay: data['isAllDay'] == true,
       )..id = data['id'] ?? 0;
     } catch (e) {

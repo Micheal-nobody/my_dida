@@ -288,6 +288,9 @@ class TaskProvider with ChangeNotifier {
     if (visibleDates.isEmpty) {
       return const TaskCalendarViewData(
         tasksForDates: {},
+        allDayTasksForDates: {},
+        crossDayTasks: [],
+        crossDayTaskCountForDates: {},
         futureTasks: {},
         rruleHasMore: {},
       );

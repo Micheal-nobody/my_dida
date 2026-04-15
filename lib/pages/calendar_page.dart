@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:my_dida/constants/app_constants.dart';
+import 'package:my_dida/features/calendar_page/calendar_all_day_task_section.dart';
+import 'package:my_dida/features/calendar_page/calendar_time_task_section.dart';
+import 'package:my_dida/features/calendar_page/calendar_widgets/calendar_date_header.dart';
+import 'package:my_dida/features/calendar_page/calendar_widgets/calendar_entry_card.dart';
+import 'package:my_dida/features/dialogs/habit_check_in_dialog.dart';
+import 'package:my_dida/features/task_detail/task_detail_page.dart';
 import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/vo/task_calendar_view_data.dart';
+import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:my_dida/provider/habit_provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
+import 'package:my_dida/shared/common/custom_floating_action_button.dart';
+import 'package:my_dida/shared/widgets/datetime/custom_date_picker_dialog.dart';
+import 'package:my_dida/shared/widgets/datetime/time_axis_column.dart';
 import 'package:my_dida/utils/PerformanceMonitor.dart';
 import 'package:my_dida/utils/RRuleUtil.dart';
 import 'package:provider/provider.dart';
-
-import 'package:my_dida/features/calendar_page/calendar_widgets/calendar_date_header.dart';
-import 'package:my_dida/features/calendar_page/calendar_all_day_task_section.dart';
-import 'package:my_dida/features/calendar_page/calendar_time_task_section.dart';
-import 'package:my_dida/shared/common/custom_floating_action_button.dart';
-import 'package:my_dida/shared/widgets/datetime/custom_date_picker_dialog.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -23,19 +28,28 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
+  static const double _timeAxisWidth = 60.0;
+  static const double _timeAxisGap = 8.0;
+  static const double _timeAreaHeight = 1440.0;
+  static const double _timeAxisSpacerHeight = 4000.0;
+  static const double _timedEntryHeight = 15.0;
+  static const double _allDayEntryHeight = 28.0;
+
   late final DateTime _currentDate;
   late DateTime _selectedDate;
-  int _dateRange = 3; // 3-day view by default
+  int _dateRange = 3;
   Map<DateTime, List<Task>> _tasksForDates = {};
-  Map<DateTime, List<Task>> _futureTasks = {}; // 未来任务
-  Map<DateTime, List<Habit>> _habitsForDates = {}; // 习惯数据
+  Map<DateTime, List<Task>> _allDayTasksForDates = {};
+  List<Task> _crossDayTasks = [];
+  Map<DateTime, int> _crossDayTaskCountForDates = {};
+  Map<DateTime, List<Task>> _futureTasks = {};
+  Map<DateTime, List<Habit>> _habitsForDates = {};
+  DateTime? _dragPreviewTime;
+  double _timeContentScrollOffset = 0;
   late TaskProvider _taskProvider;
   late HabitProvider _habitProvider;
 
-  // 每个日期的重复任务分页限制（每次 +5）
   final Map<DateTime, int> _rruleBatchLimit = {};
-
-  // 每个日期是否还有更多重复任务
   final Map<DateTime, bool> _rruleHasMore = {};
 
   @override
@@ -47,10 +61,7 @@ class _CalendarPageState extends State<CalendarPage> {
     _taskProvider = Provider.of<TaskProvider>(context, listen: false);
     _habitProvider = Provider.of<HabitProvider>(context, listen: false);
     _loadTasksForVisibleDates();
-
-    // 添加TaskProvider监听器
     _taskProvider.addListener(_onTaskProviderChanged);
-    // 添加HabitProvider监听器
     _habitProvider.addListener(_onTaskProviderChanged);
   }
 
@@ -62,17 +73,15 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _onTaskProviderChanged() {
-    // 当TaskProvider发生变化时，重新加载任务数据
     _loadTasksForVisibleDates();
   }
 
   List<DateTime> get _visibleDates {
-    final List<DateTime> dates = [];
-    // 从选中的日期开始显示
-    final DateTime startDate = _selectedDate;
+    final dates = <DateTime>[];
+    final startDate = _selectedDate;
 
-    for (int i = 0; i < _dateRange; i++) {
-      dates.add(startDate.add(Duration(days: i)));
+    for (var index = 0; index < _dateRange; index++) {
+      dates.add(startDate.add(Duration(days: index)));
     }
     return dates;
   }
@@ -86,9 +95,10 @@ class _CalendarPageState extends State<CalendarPage> {
           listen: false,
         );
         final habitsMap = <DateTime, List<Habit>>{};
-
         final visibleDates = _visibleDates;
-        if (visibleDates.isEmpty) return;
+        if (visibleDates.isEmpty) {
+          return;
+        }
 
         final taskViewData = await PerformanceMonitor.timeAsyncOperation(
           'load_calendar_task_view',
@@ -106,14 +116,12 @@ class _CalendarPageState extends State<CalendarPage> {
 
         for (final date in visibleDates) {
           final normalizedDate = DateTime(date.year, date.month, date.day);
-          final List<Habit> habitsForDate = [];
+          final habitsForDate = <Habit>[];
 
           for (final habit in allHabits) {
-            // 检查习惯是否应该在当前日期显示
-            bool shouldShowToday = false;
+            var shouldShowToday = false;
 
             if (habit.rrule != null && habit.rrule!.isNotEmpty) {
-              // 使用习惯的startDate作为起始时间
               final startTime = DateTime(
                 habit.startDate.year,
                 habit.startDate.month,
@@ -121,8 +129,6 @@ class _CalendarPageState extends State<CalendarPage> {
                 habit.remindTime.hour,
                 habit.remindTime.minute,
               );
-
-              // Optimized: Use range-based RRule method for habits too
               final rangeStart = normalizedDate;
               final rangeEnd = normalizedDate.add(const Duration(days: 1));
               final occurrences = PerformanceMonitor.timeOperation(
@@ -134,22 +140,15 @@ class _CalendarPageState extends State<CalendarPage> {
                   rangeEnd,
                 ),
               );
-
-              // 如果当前日期在发生日期中，则应该显示
               shouldShowToday = occurrences.any(
-                (d) => d.isAtSameMomentAs(normalizedDate),
+                (occurrence) => occurrence.isAtSameMomentAs(normalizedDate),
               );
             } else {
-              // 如果没有rrule，每天都显示
               shouldShowToday = true;
             }
 
-            if (shouldShowToday) {
-              // 检查习惯是否已完成，已完成的不渲染
-              final isCompleted = habitProvider.isTodayCompleted(habit);
-              if (!isCompleted) {
-                habitsForDate.add(habit);
-              }
+            if (shouldShowToday && !habitProvider.isTodayCompleted(habit)) {
+              habitsForDate.add(habit);
             }
           }
 
@@ -163,7 +162,6 @@ class _CalendarPageState extends State<CalendarPage> {
       },
     );
 
-    // Print performance report in debug mode
     PerformanceMonitor.printReport();
   }
 
@@ -176,10 +174,14 @@ class _CalendarPageState extends State<CalendarPage> {
 
   void _applyTaskViewData(TaskCalendarViewData taskViewData) {
     _tasksForDates = taskViewData.tasksForDates;
+    _allDayTasksForDates = taskViewData.allDayTasksForDates;
+    _crossDayTasks = taskViewData.crossDayTasks;
+    _crossDayTaskCountForDates = taskViewData.crossDayTaskCountForDates;
     _futureTasks = taskViewData.futureTasks;
     _rruleHasMore
       ..clear()
       ..addAll(taskViewData.rruleHasMore);
+
     for (final date in _visibleDates) {
       final normalizedDate = DateTime(date.year, date.month, date.day);
       _rruleBatchLimit.putIfAbsent(normalizedDate, () => 5);
@@ -191,19 +193,267 @@ class _CalendarPageState extends State<CalendarPage> {
       context: context,
       builder: (context) => CustomDatePickerDialog(
         selectedDate: _selectedDate,
-        onDateSelected: (date) {
-          setState(() {
-            _selectedDate = date;
-          });
-          _loadTasksForVisibleDates();
+        onDateSelected: _setSelectedDate,
+      ),
+    );
+  }
+
+  void _setSelectedDate(DateTime date) {
+    setState(() {
+      _selectedDate = date;
+    });
+    _loadTasksForVisibleDates();
+  }
+
+  void _handleDragPreviewChanged(DateTime? previewTime) {
+    if (_dragPreviewTime == previewTime) {
+      return;
+    }
+
+    setState(() {
+      _dragPreviewTime = previewTime;
+    });
+  }
+
+  void _handleTimeContentScrollOffsetChanged(double offset) {
+    if ((_timeContentScrollOffset - offset).abs() < 0.5) {
+      return;
+    }
+
+    setState(() {
+      _timeContentScrollOffset = offset;
+    });
+  }
+
+  Color _getTaskColor(BuildContext context, Task task) {
+    final checklistProvider = Provider.of<ChecklistProvider>(
+      context,
+      listen: false,
+    );
+    final checklist = checklistProvider.allCheckLists.firstWhere(
+      (item) => item.id == task.checklistId,
+      orElse: () => AppConstants.defaultCheckList,
+    );
+    return checklist.color;
+  }
+
+  Widget _buildTimedTaskEntry(
+    BuildContext context, {
+    required Task task,
+    required double columnWidth,
+  }) {
+    if (task.startTime == null) {
+      return const SizedBox.shrink();
+    }
+
+    final taskColor = _getTaskColor(context, task);
+
+    Widget buildCard({
+      required Color backgroundColor,
+      Color? borderColor,
+      required VoidCallback onPressed,
+    }) => SizedBox(
+      width: columnWidth,
+      height: _timedEntryHeight,
+      child: CalendarEntryCard(
+        text: task.name,
+        backgroundColor: backgroundColor,
+        borderColor: borderColor,
+        onPressed: onPressed,
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        opacity: task.isDone ? 0.4 : 1,
+      ),
+    );
+
+    return Draggable<Task>(
+      data: task,
+      feedback: Material(
+        color: Colors.transparent,
+        child: buildCard(
+          backgroundColor: taskColor.withValues(alpha: 0.9),
+          onPressed: () {},
+        ),
+      ),
+      childWhenDragging: buildCard(
+        backgroundColor: taskColor.withValues(alpha: 0.3),
+        borderColor: taskColor,
+        onPressed: () {},
+      ),
+      child: buildCard(
+        backgroundColor: taskColor.withValues(alpha: 0.8),
+        onPressed: () {
+          TaskDetailPage.show(context, task);
         },
       ),
     );
   }
 
+  Widget _buildTimedHabitEntry(
+    BuildContext context, {
+    required Habit habit,
+    required double columnWidth,
+  }) => SizedBox(
+    width: columnWidth,
+    child: CalendarEntryCard(
+      text: habit.name,
+      backgroundColor: Colors.orange.withValues(alpha: 0.8),
+      onPressed: () {
+        HabitCheckInDialog.show(context: context, habit: habit);
+      },
+      margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+    ),
+  );
+
+  Widget _buildAllDayTaskEntry(
+    BuildContext context, {
+    required Task task,
+    required double columnWidth,
+    required int stackIndex,
+    required double availableHeight,
+    required int displayedCount,
+    required bool isCrossDay,
+    double left = 0,
+    double? width,
+  }) {
+    final taskColor = _getTaskColor(context, task);
+
+    if (isCrossDay) {
+      return Positioned(
+        left: left,
+        top: stackIndex * _allDayEntryHeight,
+        width: width ?? columnWidth,
+        height: _allDayEntryHeight,
+        child: CalendarEntryCard(
+          text: task.name,
+          backgroundColor: taskColor.withValues(alpha: 0.9),
+          onPressed: () {
+            TaskDetailPage.show(context, task);
+          },
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          borderRadius: 6,
+          alignment: Alignment.centerLeft,
+          textStyle: const TextStyle(
+            fontSize: 12,
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+          opacity: task.isDone ? 0.4 : 1,
+        ),
+      );
+    }
+
+    final taskCount = displayedCount.clamp(1, 6);
+    const taskSpacing = 1.0;
+    final totalSpacing = (taskCount - 1) * taskSpacing;
+    final taskHeight = (availableHeight - totalSpacing) / taskCount;
+    final topPosition = stackIndex * (taskHeight + taskSpacing);
+
+    Widget buildCard({
+      required Color backgroundColor,
+      Color? borderColor,
+      required VoidCallback onPressed,
+    }) => SizedBox(
+      width: width ?? columnWidth,
+      height: taskHeight,
+      child: CalendarEntryCard(
+        text: task.name,
+        backgroundColor: backgroundColor,
+        borderColor: borderColor,
+        onPressed: onPressed,
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+        useFittedBox: true,
+        opacity: task.isDone ? 0.4 : 1,
+      ),
+    );
+
+    return Positioned(
+      top: topPosition,
+      left: left,
+      width: width ?? columnWidth,
+      height: taskHeight,
+      child: Draggable<Task>(
+        data: task,
+        feedback: Material(
+          color: Colors.transparent,
+          child: buildCard(
+            backgroundColor: taskColor.withValues(alpha: 0.9),
+            onPressed: () {},
+          ),
+        ),
+        childWhenDragging: buildCard(
+          backgroundColor: taskColor.withValues(alpha: 0.3),
+          borderColor: taskColor,
+          onPressed: () {},
+        ),
+        child: buildCard(
+          backgroundColor: taskColor.withValues(alpha: 0.8),
+          onPressed: () {
+            TaskDetailPage.show(context, task);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAllDayHabitEntry(
+    BuildContext context, {
+    required Habit habit,
+    required double columnWidth,
+    required int stackIndex,
+    required double availableHeight,
+    required int displayedCount,
+  }) {
+    final topPosition = stackIndex * _allDayEntryHeight;
+    if (topPosition + _allDayEntryHeight > availableHeight) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      left: 0,
+      top: topPosition,
+      width: columnWidth,
+      height: _allDayEntryHeight,
+      child: CalendarEntryCard(
+        text: habit.name,
+        backgroundColor: Colors.orange.withValues(alpha: 0.8),
+        onPressed: () {
+          HabitCheckInDialog.show(context: context, habit: habit);
+        },
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        borderRadius: 6,
+        alignment: Alignment.centerLeft,
+        textStyle: const TextStyle(
+          fontSize: 12,
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeAxisViewport() => ClipRect(
+    child: IgnorePointer(
+      child: Transform.translate(
+        offset: Offset(0, -_timeContentScrollOffset),
+        child: Column(
+          children: [
+            TimeAxisColumn(
+              width: _timeAxisWidth,
+              previewTime: _dragPreviewTime,
+            ),
+            const SizedBox(height: _timeAxisSpacerHeight),
+          ],
+        ),
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    // 1. AppBar 区域：左侧是当前月份
     appBar: AppBar(
       title: GestureDetector(
         onTap: () {
@@ -249,52 +499,60 @@ class _CalendarPageState extends State<CalendarPage> {
         const SizedBox(width: 16),
       ],
     ),
-
     body: Column(
       children: [
-        // 2. Header：显示日期和对应的星期
         CalendarDateHeader(
           selectedDate: _selectedDate,
           dateRange: _dateRange,
           tasksForDates: _tasksForDates,
-          onDateSelected: (date) {
-            setState(() {
-              _selectedDate = date;
-            });
-            _loadTasksForVisibleDates();
-          },
+          onDateSelected: _setSelectedDate,
         ),
-
-        // 根据 isAllDay 判断是否显示无具体时间任务区域；
-        // 若 isAllDay 为 true，则显示在无具体时间任务区域，并且具体时间区域不再显示
-        // 3. 无具体时间任务区域（固定在顶部；isAllDay 视为无具体时间）
-        CalendarAllDayTaskSection(
-          visibleDates: _visibleDates,
-          tasksForDates: _tasksForDates,
-          habitsForDates: _habitsForDates,
-          selectedDate: _selectedDate,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(width: _timeAxisWidth),
+            const SizedBox(width: _timeAxisGap),
+            Expanded(
+              child: CalendarAllDayTaskSection(
+                visibleDates: _visibleDates,
+                habitsForDates: _habitsForDates,
+                allDayTasksForDates: _allDayTasksForDates,
+                crossDayTasks: _crossDayTasks,
+                crossDayTaskCountForDates: _crossDayTaskCountForDates,
+                allDayTaskEntryBuilder: _buildAllDayTaskEntry,
+                allDayHabitEntryBuilder: _buildAllDayHabitEntry,
+              ),
+            ),
+          ],
         ),
-
-        // 4. 主要内容区域
-        CalendarTimeTaskSection(
-          selectedDate: _selectedDate,
-          visibleDates: _visibleDates,
-          tasksForDates: _tasksForDates,
-          habitsForDates: _habitsForDates,
-          futureTasks: _futureTasks,
-          rruleHasMore: _rruleHasMore,
-          onLoadMoreRRule: _loadMoreRRuleForDate,
-          onDateChanged: (date) {
-            setState(() {
-              _selectedDate = date;
-            });
-            _loadTasksForVisibleDates();
-          },
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(width: _timeAxisWidth, child: _buildTimeAxisViewport()),
+              const SizedBox(width: _timeAxisGap),
+              Expanded(
+                child: CalendarTimeTaskSection(
+                  selectedDate: _selectedDate,
+                  visibleDates: _visibleDates,
+                  tasksForDates: _tasksForDates,
+                  habitsForDates: _habitsForDates,
+                  futureTasks: _futureTasks,
+                  rruleHasMore: _rruleHasMore,
+                  onLoadMoreRRule: _loadMoreRRuleForDate,
+                  onDateChanged: _setSelectedDate,
+                  timeAreaHeight: _timeAreaHeight,
+                  timedTaskEntryBuilder: _buildTimedTaskEntry,
+                  timedHabitEntryBuilder: _buildTimedHabitEntry,
+                  onDragPreviewChanged: _handleDragPreviewChanged,
+                  onScrollOffsetChanged: _handleTimeContentScrollOffsetChanged,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     ),
-
-    // 3. FloatingActionButton：用于添加任务
     floatingActionButton: const CustomFloatingActionButton(),
   );
 }

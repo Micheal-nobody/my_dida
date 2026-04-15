@@ -10,7 +10,7 @@ import 'package:my_dida/shared/widgets/task_schedule_trigger.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
 import 'package:provider/provider.dart';
 
-import '../pickers/custom_date_picker/task_date_time_picker.dart';
+import '../pickers/task_date_time_picker.dart';
 
 class AddTaskDialog extends StatefulWidget {
   const AddTaskDialog({super.key, this.parentTask});

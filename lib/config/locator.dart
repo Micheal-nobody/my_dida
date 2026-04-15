@@ -48,7 +48,7 @@ Future<void> ensureDefaultChecklist(Isar isar) async {
       .nameEqualTo('收集箱')
       .findFirst();
   if (existingDefaultBox != null) {
-    logger.w('已存在名为“收集箱”的归属盒子，但默认 ID 缺失，跳过重复初始化。');
+    logger.w('已存在名为“收集箱”的清单，但默认 ID 缺失，跳过重复初始化。');
     return;
   }
 

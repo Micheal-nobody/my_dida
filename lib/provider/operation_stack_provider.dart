@@ -434,9 +434,7 @@ class OperationStackProvider with ChangeNotifier {
         endTime: endTime,
         parentTaskId: data['parentTaskId'] == 0 ? null : data['parentTaskId'],
         subTaskIds: subTaskIds,
-        checklistId: data['checklistId'] == 0
-            ? null
-            : data['checklistId'],
+        checklistId: data['checklistId'] == 0 ? null : data['checklistId'],
       );
 
       // 设置ID

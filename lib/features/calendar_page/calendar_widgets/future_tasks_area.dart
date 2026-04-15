@@ -23,56 +23,54 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
     }
 
     return Consumer2<ChecklistProvider, TaskProvider>(
-      builder: (context, checklistProvider, taskProvider, child) =>
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 标题
-                Text(
-                  '未来任务',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // 未来任务列表
-                ...widget.futureTasks.entries.map((entry) {
-                  final date = entry.key;
-                  final tasks = entry.value;
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // 日期标题
-                        Text(
-                          _formatDate(date),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-
-                        // 任务列表
-                        ...tasks.map(
-                          (task) =>
-                              _buildFutureTask(task, checklistProvider),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              ],
+      builder: (context, checklistProvider, taskProvider, child) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 标题
+            Text(
+              '未来任务',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
             ),
-          ),
+            const SizedBox(height: 12),
+
+            // 未来任务列表
+            ...widget.futureTasks.entries.map((entry) {
+              final date = entry.key;
+              final tasks = entry.value;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 日期标题
+                    Text(
+                      _formatDate(date),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // 任务列表
+                    ...tasks.map(
+                      (task) => _buildFutureTask(task, checklistProvider),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
     );
   }
 

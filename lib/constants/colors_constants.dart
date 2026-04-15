@@ -35,7 +35,7 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
-  /// 预定义的选择器颜色列表（用于归属盒子、标签等）
+  /// 预定义的选择器颜色列表（用于清单、标签等）
   static const List<Color> selectorColors = [
     Colors.red,
     Colors.pink,

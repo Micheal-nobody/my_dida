@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
 import 'package:my_dida/constants/app_constants.dart';
 import 'package:my_dida/constants/colors_constants.dart';
 import 'package:my_dida/constants/dimension_constants.dart';
 import 'package:my_dida/constants/ui_constants.dart';
 import 'package:my_dida/features/cards/habit_card.dart';
 import 'package:my_dida/features/cards/task_card.dart';
-import 'package:my_dida/features/todo_page/todo_drawer.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:my_dida/provider/habit_provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
+import 'package:my_dida/router/shell_scaffold_key.dart';
 import 'package:my_dida/shared/common/custom_floating_action_button.dart';
+import 'package:provider/provider.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -43,6 +42,10 @@ class _TodoPageState extends State<TodoPage> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => shellScaffoldKey.currentState?.openDrawer(),
+        ),
         title: Text(currentChecklist.name),
         actions: [
           IconButton(
@@ -240,9 +243,6 @@ class _TodoPageState extends State<TodoPage> {
 
       // 悬浮按钮
       floatingActionButton: const CustomFloatingActionButton(),
-
-      // 侧边栏
-      drawer: const TodoDrawer(),
     );
   }
 }

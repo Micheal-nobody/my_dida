@@ -339,6 +339,9 @@ class TaskService {
     int futureHorizonDays = 30,
   }) {
     final tasksMap = <DateTime, List<Task>>{};
+    final allDayTasksForDates = <DateTime, List<Task>>{};
+    final crossDayTasks = _buildCrossDayTasks(tasks, visibleDates);
+    final crossDayTaskCountForDates = <DateTime, int>{};
     final futureTasksMap = <DateTime, List<Task>>{};
     final rruleHasMore = <DateTime, bool>{};
 
@@ -351,6 +354,15 @@ class TaskService {
       );
 
       tasksMap[normalizedDate] = tasksForDate.tasks;
+      allDayTasksForDates[normalizedDate] = tasksForDate.tasks
+          .where(
+            (task) =>
+                _shouldRenderInAllDaySection(task) && !_isCrossDayTask(task),
+          )
+          .toList();
+      crossDayTaskCountForDates[normalizedDate] = crossDayTasks
+          .where((task) => _doesCrossDayTaskOverlapDate(task, normalizedDate))
+          .length;
       rruleHasMore[normalizedDate] = tasksForDate.hasMoreRRule;
     }
 
@@ -388,6 +400,9 @@ class TaskService {
 
     return TaskCalendarViewData(
       tasksForDates: tasksMap,
+      allDayTasksForDates: allDayTasksForDates,
+      crossDayTasks: crossDayTasks,
+      crossDayTaskCountForDates: crossDayTaskCountForDates,
       futureTasks: futureTasksMap,
       rruleHasMore: rruleHasMore,
     );
@@ -641,6 +656,98 @@ class TaskService {
       ],
       hasMoreRRule: timedRRuleTasks.length > limit,
     );
+  }
+
+  List<Task> _buildCrossDayTasks(
+    List<Task> tasks,
+    List<DateTime> visibleDates,
+  ) {
+    if (visibleDates.isEmpty) {
+      return const [];
+    }
+
+    final normalizedVisibleDates = visibleDates
+        .map((date) => DateTime(date.year, date.month, date.day))
+        .toList();
+    final firstVisibleDate = normalizedVisibleDates.first;
+    final lastVisibleDate = normalizedVisibleDates.last;
+
+    return tasks
+        .where(
+          (task) =>
+              !task.isDone &&
+              _isCrossDayTask(task) &&
+              _doesTaskOverlapVisibleRange(
+                task,
+                firstVisibleDate,
+                lastVisibleDate,
+              ),
+        )
+        .toList()
+      ..sort((a, b) {
+        final startComparison = (a.startTime ?? DateTime(0)).compareTo(
+          b.startTime ?? DateTime(0),
+        );
+        if (startComparison != 0) {
+          return startComparison;
+        }
+        return a.id.compareTo(b.id);
+      });
+  }
+
+  bool _shouldRenderInAllDaySection(Task task) {
+    if (task.startTime == null) {
+      return true;
+    }
+
+    return task.isAllDay ||
+        (task.startTime!.hour == 0 && task.startTime!.minute == 0);
+  }
+
+  bool _isCrossDayTask(Task task) {
+    if (task.startTime == null || task.endTime == null) {
+      return false;
+    }
+
+    final startTime = task.startTime!;
+    final endTime = task.endTime!;
+    final sameDay =
+        startTime.year == endTime.year &&
+        startTime.month == endTime.month &&
+        startTime.day == endTime.day;
+    final isCrossDay = !sameDay && endTime.isAfter(startTime);
+    final isOver24Hours = endTime.difference(startTime).inHours > 24;
+    return isCrossDay || isOver24Hours;
+  }
+
+  bool _doesTaskOverlapVisibleRange(
+    Task task,
+    DateTime firstVisibleDate,
+    DateTime lastVisibleDate,
+  ) {
+    final startTime = task.startTime;
+    final endTime = task.endTime;
+    if (startTime == null || endTime == null) {
+      return false;
+    }
+
+    final startDate = DateTime(startTime.year, startTime.month, startTime.day);
+    final endDate = DateTime(endTime.year, endTime.month, endTime.day);
+    return !startDate.isAfter(lastVisibleDate) &&
+        !endDate.isBefore(firstVisibleDate);
+  }
+
+  bool _doesCrossDayTaskOverlapDate(Task task, DateTime normalizedDate) {
+    final startTime = task.startTime;
+    final endTime = task.endTime;
+    if (startTime == null || endTime == null) {
+      return false;
+    }
+
+    final startDate = DateTime(startTime.year, startTime.month, startTime.day);
+    final endDate = DateTime(endTime.year, endTime.month, endTime.day);
+    return !normalizedDate.isBefore(startDate) &&
+        !normalizedDate.isAfter(endDate);
   }
 }
 

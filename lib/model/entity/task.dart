@@ -8,7 +8,6 @@ class Task {
   /// Constructor for TodoItem
   Task({
     required this.name,
-    // this.isAllDay = false,
     required this.isAllDay,
 
     this.description = '',

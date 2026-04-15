@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_dida/features/todo_page/todo_drawer.dart';
 import 'package:my_dida/pages/calendar_page.dart';
 import 'package:my_dida/pages/habits_page.dart';
 import 'package:my_dida/pages/operation_page.dart';
 import 'package:my_dida/pages/todo_page.dart';
+import 'package:my_dida/router/shell_scaffold_key.dart';
 
 final GoRouter goRouter = GoRouter(
   // 初始路由
@@ -12,6 +14,9 @@ final GoRouter goRouter = GoRouter(
     StatefulShellRoute.indexedStack(
       /// 整个页面的内容，其中 Branch 中的内容会填充到 body 中
       builder: (context, state, navigationShell) => Scaffold(
+        key: shellScaffoldKey,
+        drawer: navigationShell.currentIndex == 0 ? const TodoDrawer() : null,
+        drawerEnableOpenDragGesture: navigationShell.currentIndex == 0,
         //? StatefulNavigationShell 是一个特殊的路由组件，它允许在底部导航栏中切换不同的分支（branch），每个分支都有自己的导航栈。
         body: navigationShell,
 
