@@ -76,14 +76,12 @@ class _AddChecklistDialogState extends BaseFormDialogState<AddChecklistDialog> {
         _nameController.text.trim(),
         _selectedColor,
       );
-      showSuccess('清单创建成功！');
     } else {
       // Update existing belonging box
       final updatedBox = checklist!
         ..name = _nameController.text.trim()
         ..color = _selectedColor;
       await provider.updateChecklist(updatedBox);
-      showSuccess('清单更新成功！');
     }
   }
 }

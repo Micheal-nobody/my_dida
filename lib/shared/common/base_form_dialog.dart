@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/config/locator.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
 
 /// 通用表单对话框基类，提取对话框的通用逻辑
 abstract class BaseFormDialog extends StatefulWidget {
@@ -7,6 +9,7 @@ abstract class BaseFormDialog extends StatefulWidget {
 
 abstract class BaseFormDialogState<T extends BaseFormDialog> extends State<T> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final AppMessageService _messageService = getIt<AppMessageService>();
   bool isLoading = false;
 
   /// 对话框标题
@@ -38,20 +41,12 @@ abstract class BaseFormDialogState<T extends BaseFormDialog> extends State<T> {
 
   /// 显示错误消息
   void showError(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), backgroundColor: Colors.red),
-      );
-    }
+    _messageService.showError(message);
   }
 
   /// 显示成功消息
   void showSuccess(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), backgroundColor: Colors.green),
-      );
-    }
+    _messageService.showSuccess(message);
   }
 
   /// 执行确认操作

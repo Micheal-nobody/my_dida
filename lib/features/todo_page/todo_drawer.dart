@@ -3,10 +3,12 @@ import 'package:my_dida/constants/app_constants.dart';
 import 'package:my_dida/constants/colors_constants.dart';
 import 'package:my_dida/constants/dimension_constants.dart';
 import 'package:my_dida/constants/ui_constants.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/vo/checklist_vo.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
+import 'package:my_dida/config/locator.dart';
 import 'package:provider/provider.dart';
 
 import '../dialogs/add_checklist_dialog.dart';
@@ -19,6 +21,8 @@ class TodoDrawer extends StatefulWidget {
 }
 
 class _TodoDrawerState extends State<TodoDrawer> {
+  final AppMessageService _messageService = getIt<AppMessageService>();
+
   @override
   Widget build(BuildContext context) {
     final checklistProvider = Provider.of<ChecklistProvider>(context);
@@ -447,9 +451,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
   }
 
   void _showPlaceholderSnackBar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    _messageService.showInfo(message);
   }
 
   void _handleChecklistAction(String action, ChecklistVO checklist) {
@@ -484,22 +486,11 @@ class _TodoDrawerState extends State<TodoDrawer> {
           ElevatedButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              try {
-                final provider = Provider.of<ChecklistProvider>(
-                  context,
-                  listen: false,
-                );
-                await provider.deleteChecklist(checklist);
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Deleted "${checklist.name}"')),
-                );
-              } catch (e) {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${UIStrings.errorDeleting}: $e')),
-                );
-              }
+              final provider = Provider.of<ChecklistProvider>(
+                context,
+                listen: false,
+              );
+              await provider.deleteChecklist(checklist);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text(UIStrings.delete),

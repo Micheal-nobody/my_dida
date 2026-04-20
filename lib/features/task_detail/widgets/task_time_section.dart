@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/config/locator.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/task_provider.dart';
 import 'package:my_dida/shared/widgets/datetime/custom_date_time_picker.dart';
@@ -12,6 +14,7 @@ class TaskTimeSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final taskProvider = context.read<TaskProvider>();
+    final messageService = getIt<AppMessageService>();
 
     return Consumer<TaskProvider>(
       builder: (context, provider, child) {
@@ -30,14 +33,11 @@ class TaskTimeSection extends StatelessWidget {
                   !updatedTask.isDone,
                 );
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(updatedTask.isDone ? '任务已取消完成' : '任务已完成！'),
-                    backgroundColor: updatedTask.isDone
-                        ? Colors.orange
-                        : Colors.green,
-                  ),
-                );
+                if (updatedTask.isDone) {
+                  messageService.showInfo('任务已取消完成');
+                } else {
+                  messageService.showSuccess('任务已完成！');
+                }
               },
               child: Container(
                 width: 24,

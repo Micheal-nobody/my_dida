@@ -3,12 +3,14 @@ import 'package:my_dida/constants/app_constants.dart';
 import 'package:my_dida/constants/colors_constants.dart';
 import 'package:my_dida/constants/dimension_constants.dart';
 import 'package:my_dida/constants/ui_constants.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/cards/habit_card.dart';
 import 'package:my_dida/features/cards/task_card.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:my_dida/provider/habit_provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
+import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/router/shell_scaffold_key.dart';
 import 'package:my_dida/shared/common/custom_floating_action_button.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +23,7 @@ class TodoPage extends StatefulWidget {
 }
 
 class _TodoPageState extends State<TodoPage> {
+  final AppMessageService _messageService = getIt<AppMessageService>();
   bool _showCompletedTasks = false;
 
   @override
@@ -169,16 +172,20 @@ class _TodoPageState extends State<TodoPage> {
                       }
                       return false;
                     },
-                    onDismissed: (direction) {
+                    onDismissed: (direction) async {
                       if (direction == DismissDirection.endToStart) {
                         // Left swipe - delete task
-                        Provider.of<TaskProvider>(
-                          context,
-                          listen: false,
-                        ).deleteTask(task);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text(UIStrings.taskDeleted)),
-                        );
+                        try {
+                          await Provider.of<TaskProvider>(
+                            context,
+                            listen: false,
+                          ).deleteTask(task);
+                          _messageService.showSuccess(UIStrings.taskDeleted);
+                        } catch (e) {
+                          _messageService.showError(
+                            '${UIStrings.errorDeleting}: $e',
+                          );
+                        }
                       }
                     },
                     child: TaskCard(task),

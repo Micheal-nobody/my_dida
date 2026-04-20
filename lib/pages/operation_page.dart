@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:my_dida/config/locator.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
@@ -20,6 +22,7 @@ class OperationPage extends StatefulWidget {
 }
 
 class _OperationPageState extends State<OperationPage> {
+  final AppMessageService _messageService = getIt<AppMessageService>();
   OperationType? _selectedType;
   OperationTarget? _selectedTarget;
   DateTime? _startDate;
@@ -533,9 +536,7 @@ class _OperationPageState extends State<OperationPage> {
     final operationStack = context.read<OperationStackProvider>();
 
     if (!operationStack.canUndo) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('没有可撤回的操作')));
+      _messageService.showInfo('没有可撤回的操作');
       return;
     }
 
@@ -559,13 +560,9 @@ class _OperationPageState extends State<OperationPage> {
                   context.read<TaskProvider>().loadCurrentBoxTasks();
                   context.read<HabitProvider>().loadAllHabits();
                 }
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('操作已撤回')));
+                _messageService.showSuccess('操作已撤回');
               } else {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('撤回失败')));
+                _messageService.showError('撤回失败');
               }
             },
             child: const Text('确定'),
@@ -591,9 +588,7 @@ class _OperationPageState extends State<OperationPage> {
               Navigator.of(context).pop();
               await context.read<OperationStackProvider>().clearOperations();
               if (mounted) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('操作历史已清空')));
+                _messageService.showSuccess('操作历史已清空');
               }
             },
             child: const Text('确定'),
@@ -858,14 +853,10 @@ class _OperationPageState extends State<OperationPage> {
       if (mounted) {
         await context.read<TaskProvider>().loadCurrentBoxTasks();
         await context.read<HabitProvider>().loadAllHabits();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('操作已撤回')));
+        _messageService.showSuccess('操作已撤回');
       }
     } else if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('撤回失败')));
+      _messageService.showError('撤回失败');
     }
   }
 

@@ -1,16 +1,19 @@
 import 'package:flutter/cupertino.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/model/entity/checklist.dart';
 import 'package:my_dida/repository/checklist_repository.dart';
 
 import '../config/locator.dart';
 import '../config/logger.dart';
 import '../constants/app_constants.dart';
+import '../constants/ui_constants.dart';
 import '../model/vo/checklist_vo.dart';
 
 ///1、记录todoList页面当前所属收藏夹
 class ChecklistProvider extends ChangeNotifier {
   ChecklistProvider()
     : _checkListRepository = getIt<ChecklistRepository>(),
+      _messageService = getIt<AppMessageService>(),
       _currentCheckList = AppConstants.todayCheckList {
     loadAllChecklistes();
   }
@@ -22,6 +25,7 @@ class ChecklistProvider extends ChangeNotifier {
   /// 注入 Repository，设置默认收藏夹为 “今天”
   ChecklistVO _currentCheckList;
   final ChecklistRepository _checkListRepository;
+  final AppMessageService _messageService;
 
   /// 获取所有的收藏夹
   Future<void> loadAllChecklistes() async {
@@ -60,6 +64,7 @@ class ChecklistProvider extends ChangeNotifier {
     final checklist = Checklist(name: name, colorValue: color.toARGB32());
     await _checkListRepository.addData(checklist);
     await loadAllChecklistes();
+    _messageService.showSuccess('清单创建成功！');
   }
 
   // Update an existing belonging box
@@ -67,6 +72,7 @@ class ChecklistProvider extends ChangeNotifier {
     final entity = convertToEntity(checklist);
     await _checkListRepository.addData(entity); // put() updates if exists
     await loadAllChecklistes();
+    _messageService.showSuccess('清单更新成功！');
   }
 
   // Delete a belonging box
@@ -76,12 +82,17 @@ class ChecklistProvider extends ChangeNotifier {
       return; // Don't delete special "today" box
     }
 
-    await _checkListRepository.deleteById(checkListVO.id);
-    await loadAllChecklistes();
+    try {
+      await _checkListRepository.deleteById(checkListVO.id);
+      await loadAllChecklistes();
 
-    // If we deleted the current box, switch to "today"
-    if (_currentCheckList.id == checkListVO.id) {
-      updateCurChecklist(AppConstants.todayCheckList);
+      // If we deleted the current box, switch to "today"
+      if (_currentCheckList.id == checkListVO.id) {
+        updateCurChecklist(AppConstants.todayCheckList);
+      }
+      _messageService.showSuccess('Deleted "${checkListVO.name}"');
+    } catch (e) {
+      _messageService.showError('${UIStrings.errorDeleting}: $e');
     }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+import 'core/ui/app_message_service.dart';
 import 'config/locator.dart';
 import 'provider/checklist_provider.dart';
 import 'provider/habit_provider.dart';
@@ -67,6 +68,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp.router(
     title: 'My dida',
+    scaffoldMessengerKey: getIt<AppMessageService>().scaffoldMessengerKey,
 
     /// 路由配置
     routerConfig: goRouter,

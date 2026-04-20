@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/config/logger.dart';
 import 'package:my_dida/constants/app_constants.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/model/entity/checklist.dart';
 import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/operation.dart';
@@ -24,6 +25,7 @@ Future<void> setupLocator() async {
 
   // 注册数据库操作服务
   getIt
+    ..registerSingleton<AppMessageService>(AppMessageService())
     ..registerSingleton<TaskRepository>(TaskRepository())
     ..registerSingleton<ChecklistRepository>(ChecklistRepository())
     ..registerSingleton<HabitRepository>(HabitRepository())
