@@ -42,6 +42,7 @@ class Operation {
   OperationTarget target;
 
   /// 操作时间戳
+  @Index()
   DateTime timestamp;
 
   /// 操作描述

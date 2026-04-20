@@ -1,9 +1,8 @@
 import 'package:isar_community/isar.dart';
+import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/repository/base_repository.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
-
-import '../config/locator.dart';
 
 class TaskRepository extends BaseRepository<Task> {
   TaskRepository() : _isar = getIt<Isar>();
@@ -92,7 +91,7 @@ class TaskRepository extends BaseRepository<Task> {
   }
 
   Future<List<Task>> getTasksByChecklistId(int id) async =>
-      collection.where().filter().checklistIdEqualTo(id).findAll();
+      collection.where().checklistIdEqualTo(id).findAll();
 
   Future<void> updateTaskIsDone(Task task, bool value) async {
     await _isar.writeTxn(() async {

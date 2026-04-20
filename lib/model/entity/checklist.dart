@@ -14,6 +14,7 @@ class Checklist {
   });
 
   Id id = Isar.autoIncrement;
+  @Index()
   String name;
   int colorValue; // 任务列表的颜色
   List<Id> taskIds;

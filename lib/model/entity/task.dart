@@ -34,6 +34,14 @@ class Task {
 
   String name;
   String description;
+  @Index(
+    name: 'is_done_start_time',
+    composite: [CompositeIndex('startTime')],
+  )
+  @Index(
+    name: 'is_done_end_time',
+    composite: [CompositeIndex('endTime')],
+  )
   bool isDone;
 
   /// 检查点
@@ -43,7 +51,9 @@ class Task {
   bool isAllDay;
 
   /// 时间（两个时间是因为任务可以接受 时间段/时间点）
+  @Index()
   DateTime? startTime;
+  @Index()
   DateTime? endTime;
 
   /// 父子任务
@@ -51,6 +61,7 @@ class Task {
   List<int> subTaskIds;
 
   /// 所属收集箱
+  @Index()
   int? checklistId;
 
   /// 重复规则 (RRule)

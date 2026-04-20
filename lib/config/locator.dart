@@ -44,7 +44,7 @@ Future<void> ensureDefaultChecklist(Isar isar) async {
   }
 
   final existingDefaultBox = await isar.checklists
-      .filter()
+      .where()
       .nameEqualTo('收集箱')
       .findFirst();
   if (existingDefaultBox != null) {
