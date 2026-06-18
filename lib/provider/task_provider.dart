@@ -18,6 +18,11 @@ import '../services/task_reminder_scheduler_port.dart';
 import '../services/task_reminder_service.dart';
 import '../utils/RRuleUtil.dart';
 
+enum TaskViewMode { list, board }
+enum TaskGroupBy { date, checklist, priority, tag, none }
+enum TaskSortBy { dueDate, priority, title, createTime, custom }
+enum TaskVisibleRange { all, undone, done }
+
 class TaskProvider with ChangeNotifier {
   TaskProvider(
     ChecklistVO? newChecklist, {
@@ -54,6 +59,190 @@ class TaskProvider with ChangeNotifier {
   List<Task> get currentTasks => _currentTasks;
 
   ChecklistVO? currentChecklist;
+
+  // UI 筛选与视图状态
+  TaskViewMode _viewMode = TaskViewMode.list;
+  TaskGroupBy _groupBy = TaskGroupBy.date;
+  TaskSortBy _sortBy = TaskSortBy.dueDate;
+  TaskVisibleRange _visibleRange = TaskVisibleRange.undone;
+
+  TaskViewMode get viewMode => _viewMode;
+  TaskGroupBy get groupBy => _groupBy;
+  TaskSortBy get sortBy => _sortBy;
+  TaskVisibleRange get visibleRange => _visibleRange;
+
+  void setViewMode(TaskViewMode val) {
+    if (_viewMode != val) {
+      _viewMode = val;
+      notifyListeners();
+    }
+  }
+
+  void setGroupBy(TaskGroupBy val) {
+    if (_groupBy != val) {
+      _groupBy = val;
+      notifyListeners();
+    }
+  }
+
+  void setSortBy(TaskSortBy val) {
+    if (_sortBy != val) {
+      _sortBy = val;
+      notifyListeners();
+    }
+  }
+
+  void setVisibleRange(TaskVisibleRange val) {
+    if (_visibleRange != val) {
+      _visibleRange = val;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updatePriority(Task task, int newPriority) async {
+    try {
+      await _updateTaskHelper(
+        task: task,
+        mutate: (draft) => draft.priority = newPriority,
+        description: '修改了任务"${task.name}"的优先级',
+      );
+    } catch (e) {
+      throw TaskException('Failed to update task priority: ${e.toString()}');
+    }
+  }
+
+  Future<void> updateTags(Task task, List<String> newTags) async {
+    try {
+      await _updateTaskHelper(
+        task: task,
+        mutate: (draft) => draft.tags = List.from(newTags),
+        description: '修改了任务"${task.name}"的标签',
+      );
+    } catch (e) {
+      throw TaskException('Failed to update task tags: ${e.toString()}');
+    }
+  }
+
+  Map<String, List<Task>> getGroupedCurrentTasks(List<ChecklistVO> allChecklists) {
+    // 1. 过滤可见范围
+    List<Task> filtered = List.from(_currentTasks);
+    if (_visibleRange == TaskVisibleRange.undone) {
+      filtered = filtered.where((t) => !t.isDone).toList();
+    } else if (_visibleRange == TaskVisibleRange.done) {
+      filtered = filtered.where((t) => t.isDone).toList();
+    }
+
+    // 2. 按照 selected sortBy 进行排序
+    filtered.sort((a, b) {
+      if (_sortBy == TaskSortBy.dueDate) {
+        if (a.startTime == null && b.startTime == null) return 0;
+        if (a.startTime == null) return 1;
+        if (b.startTime == null) return -1;
+        return a.startTime!.compareTo(b.startTime!);
+      } else if (_sortBy == TaskSortBy.priority) {
+        return b.priority.compareTo(a.priority);
+      } else if (_sortBy == TaskSortBy.title) {
+        return a.name.compareTo(b.name);
+      } else if (_sortBy == TaskSortBy.createTime) {
+        return b.id.compareTo(a.id);
+      }
+      return 0;
+    });
+
+    // 3. 根据 groupBy 进行分组
+    final Map<String, List<Task>> grouped = {};
+
+    if (_groupBy == TaskGroupBy.none) {
+      grouped['所有任务'] = filtered;
+      return grouped;
+    }
+
+    if (_groupBy == TaskGroupBy.priority) {
+      const keys = ['高优先级', '中优先级', '低优先级', '无优先级'];
+      for (final k in keys) {
+        grouped[k] = [];
+      }
+      for (final t in filtered) {
+        if (t.priority == 3) {
+          grouped['高优先级']!.add(t);
+        } else if (t.priority == 2) {
+          grouped['中优先级']!.add(t);
+        } else if (t.priority == 1) {
+          grouped['低优先级']!.add(t);
+        } else {
+          grouped['无优先级']!.add(t);
+        }
+      }
+      grouped.removeWhere((key, value) => value.isEmpty);
+      return grouped;
+    }
+
+    if (_groupBy == TaskGroupBy.checklist) {
+      final Map<int, String> checklistMap = {
+        for (final cl in allChecklists) cl.id: cl.name
+      };
+      for (final t in filtered) {
+        final clName = checklistMap[t.checklistId] ?? '其他清单';
+        grouped.putIfAbsent(clName, () => []).add(t);
+      }
+      return grouped;
+    }
+
+    if (_groupBy == TaskGroupBy.tag) {
+      for (final t in filtered) {
+        if (t.tags.isNotEmpty) {
+          for (final tag in t.tags) {
+            grouped.putIfAbsent(tag, () => []).add(t);
+          }
+        } else {
+          grouped.putIfAbsent('无标签', () => []).add(t);
+        }
+      }
+      return grouped;
+    }
+
+    if (_groupBy == TaskGroupBy.date) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final tomorrow = today.add(const Duration(days: 1));
+      final sevenDaysLater = today.add(const Duration(days: 7));
+
+      grouped['已过期'] = [];
+      grouped['今天'] = [];
+      grouped['明天'] = [];
+      grouped['最近7天'] = [];
+      grouped['稍后'] = [];
+      grouped['无日期'] = [];
+
+      for (final t in filtered) {
+        if (t.startTime == null) {
+          grouped['无日期']!.add(t);
+        } else {
+          final date = DateTime(t.startTime!.year, t.startTime!.month, t.startTime!.day);
+          if (date.isBefore(today)) {
+            if (!t.isDone) {
+              grouped['已过期']!.add(t);
+            } else {
+              grouped['今天']!.add(t);
+            }
+          } else if (date.isAtSameMomentAs(today)) {
+            grouped['今天']!.add(t);
+          } else if (date.isAtSameMomentAs(tomorrow)) {
+            grouped['明天']!.add(t);
+          } else if (date.isAfter(tomorrow) && date.isBefore(sevenDaysLater)) {
+            grouped['最近7天']!.add(t);
+          } else {
+            grouped['稍后']!.add(t);
+          }
+        }
+      }
+
+      grouped.removeWhere((key, value) => value.isEmpty);
+      return grouped;
+    }
+
+    return grouped;
+  }
 
   // ==================================================================
   // 查询方法 (direct Repository access)

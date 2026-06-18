@@ -17,6 +17,12 @@ import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/router/shell_scaffold_key.dart';
 import 'package:my_dida/shared/common/custom_floating_action_button.dart';
 import 'package:provider/provider.dart';
+import 'package:my_dida/features/dialogs/view_changer_dialog.dart';
+import 'package:my_dida/features/dialogs/sort_and_group_dialog.dart';
+import 'package:my_dida/features/dialogs/visible_range_dialog.dart';
+import 'package:my_dida/features/dialogs/add_checklist_dialog.dart';
+import 'package:my_dida/features/todo_page/board_view.dart';
+import 'package:my_dida/model/vo/checklist_vo.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -27,15 +33,21 @@ class TodoPage extends StatefulWidget {
 
 class _TodoPageState extends State<TodoPage> {
   final AppMessageService _messageService = getIt<AppMessageService>();
-  bool _showCompletedTasks = false;
+
+  String _getChecklistName(int? id, List<ChecklistVO> allChecklists) {
+    if (id == null) return '';
+    final cl = allChecklists.firstWhere(
+      (c) => c.id == id,
+      orElse: () => allChecklists.first,
+    );
+    return cl.name;
+  }
 
   @override
   Widget build(BuildContext context) {
-    /// 使用 Provider 来获取 TodosProvider 实例
-    //Optimize: 可以选择优化，使用Selector
     final checklistProvider = Provider.of<ChecklistProvider>(context);
-
     final currentChecklist = checklistProvider.currentCheckList;
+    final allChecklists = checklistProvider.allCheckLists;
 
     return Scaffold(
       appBar: AppBar(
@@ -46,250 +58,352 @@ class _TodoPageState extends State<TodoPage> {
         title: Text(currentChecklist.name),
         actions: [
           IconButton(
-            onPressed: () async {
-              final result = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text(UIStrings.confirmDialog),
-                  content: const Text(UIStrings.showCompletedTasksQuestion),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text(UIStrings.hideButton),
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // 可引入全局任务搜索，这里我们可以做简单提示或后续实现
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.view_quilt),
+            onPressed: () => ViewChangerDialog.show(context),
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              if (value == 'sort_group') {
+                SortAndGroupDialog.show(context);
+              } else if (value == 'visible_range') {
+                VisibleRangeDialog.show(context);
+              } else if (value == 'list_settings') {
+                if (currentChecklist.id != AppConstants.todayCheckList.id &&
+                    currentChecklist.id != AppConstants.defaultCheckList.id) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AddChecklistDialog(checklist: currentChecklist),
+                  );
+                }
+              } else if (value == 'delete_list') {
+                if (currentChecklist.id != AppConstants.todayCheckList.id &&
+                    currentChecklist.id != AppConstants.defaultCheckList.id) {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('删除清单'),
+                      content: Text('确认要删除清单 "${currentChecklist.name}" 吗？'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('取消'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('删除', style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      child: const Text(UIStrings.showButton),
-                    ),
-                  ],
-                ),
-              );
-              if (result != null) {
-                setState(() {
-                  _showCompletedTasks = result;
-                });
+                  );
+                  if (confirmed == true && context.mounted) {
+                    await checklistProvider.deleteChecklist(currentChecklist);
+                  }
+                }
               }
             },
-            icon: Icon(
-              _showCompletedTasks ? Icons.visibility : Icons.visibility_off,
-            ),
+            itemBuilder: (context) {
+              final isSystemList = currentChecklist.id == AppConstants.todayCheckList.id ||
+                  currentChecklist.id == AppConstants.defaultCheckList.id;
+
+              return [
+                const PopupMenuItem(
+                  value: 'sort_group',
+                  child: Row(
+                    children: [
+                      Icon(Icons.sort, color: Colors.grey),
+                      SizedBox(width: 8),
+                      Text('排序与分组'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'visible_range',
+                  child: Row(
+                    children: [
+                      Icon(Icons.visibility, color: Colors.grey),
+                      SizedBox(width: 8),
+                      Text('可见范围'),
+                    ],
+                  ),
+                ),
+                if (!isSystemList) ...[
+                  const PopupMenuItem(
+                    value: 'list_settings',
+                    child: Row(
+                      children: [
+                        Icon(Icons.settings, color: Colors.grey),
+                        SizedBox(width: 8),
+                        Text('清单设置'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete_list',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_forever, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('放入垃圾桶', style: TextStyle(color: Colors.red)),
+                      ],
+                    ),
+                  ),
+                ],
+              ];
+            },
           ),
         ],
       ),
 
-      // 可滑动的列表视图，同时依赖TaskProvider.currentTasks和HabitProvider.habits
-      body:
-          Selector2<
-            TaskProvider,
-            HabitProvider,
-            ({List<Task> tasks, List<dynamic> habits, bool isTodayTasks})
-          >(
-            selector: (_, taskProvider, habitProvider) => (
-              tasks: taskProvider.currentTasks,
-              habits: habitProvider.habits,
-              isTodayTasks:
-                  currentChecklist.id == AppConstants.todayCheckList.id,
-            ),
-            builder: (context, data, _) {
-              final currentTasks = data.tasks;
-              final habits = data.habits;
-              final isTodayTasks = data.isTodayTasks;
+      body: Consumer3<TaskProvider, HabitProvider, ChecklistProvider>(
+        builder: (context, taskProvider, habitProvider, _, __) {
+          final isTodayTasks = currentChecklist.id == AppConstants.todayCheckList.id;
+          final groupedTasks = taskProvider.getGroupedCurrentTasks(allChecklists);
 
-              // 构建列表项
-              final List<Widget> items = [];
+          if (taskProvider.viewMode == TaskViewMode.board) {
+            return BoardView(
+              groupedTasks: groupedTasks,
+              allChecklists: allChecklists,
+            );
+          }
 
-              // 先添加任务卡片
-              for (int i = 0; i < currentTasks.length; i++) {
-                final task = currentTasks[i];
-                // 如果任务已完成且不显示已完成任务，则跳过
-                if (task.isDone && !_showCompletedTasks) {
-                  continue;
-                }
+          final List<Widget> groupWidgets = [];
 
-                items.add(
-                  Dismissible(
-                    key: Key(task.id.toString()),
-                    background: Container(
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.only(left: Dimensions.paddingL),
-                      color: AppColors.success,
-                      child: const Icon(
-                        Icons.check,
-                        color: AppColors.textOnPrimary,
-                        size: 28,
+          groupedTasks.forEach((groupTitle, tasks) {
+            if (tasks.isEmpty) return;
+
+            groupWidgets.add(
+              Theme(
+                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                child: ExpansionTile(
+                  initiallyExpanded: true,
+                  title: Row(
+                    children: [
+                      Text(
+                        groupTitle,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    secondaryBackground: Container(
-                      alignment: Alignment.centerRight,
-                      color: AppColors.error,
-                      padding: const EdgeInsets.only(
-                        right: Dimensions.paddingL,
-                      ),
-                      child: const Icon(
-                        Icons.delete,
-                        color: AppColors.textOnPrimary,
-                        size: 28,
-                      ),
-                    ),
-                    confirmDismiss: (direction) async {
-                      if (direction == DismissDirection.startToEnd) {
-                        // Left swipe - complete task
-                        await Provider.of<TaskProvider>(
-                          context,
-                          listen: false,
-                        ).updateTaskIsDone(task, true);
-                        return false; // Don't dismiss, just complete
-                      } else if (direction == DismissDirection.endToStart) {
-                        // Right swipe - delete task
-                        return showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text(UIStrings.deleteTaskTitle),
-                            content: const Text(UIStrings.deleteTaskMessage),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(false),
-                                child: const Text(UIStrings.cancel),
-                              ),
-                              ElevatedButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(true),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.error,
-                                ),
-                                child: const Text(UIStrings.delete),
-                              ),
-                            ],
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${tasks.length}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
                           ),
-                        );
-                      }
-                      return false;
-                    },
-                    onDismissed: (direction) async {
-                      if (direction == DismissDirection.endToStart) {
-                        // Left swipe - delete task
-                        try {
-                          await Provider.of<TaskProvider>(
-                            context,
-                            listen: false,
-                          ).deleteTask(task);
-                          _messageService.showSuccess(UIStrings.taskDeleted);
-                        } catch (e) {
-                          _messageService.showError(
-                            '${UIStrings.errorDeleting}: $e',
+                        ),
+                      ),
+                    ],
+                  ),
+                  children: tasks.map((task) {
+                    return Dismissible(
+                      key: Key('list_${task.id}'),
+                      background: Container(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: Dimensions.paddingL),
+                        color: AppColors.success,
+                        child: const Icon(
+                          Icons.check,
+                          color: AppColors.textOnPrimary,
+                          size: 28,
+                        ),
+                      ),
+                      secondaryBackground: Container(
+                        alignment: Alignment.centerRight,
+                        color: AppColors.error,
+                        padding: const EdgeInsets.only(
+                          right: Dimensions.paddingL,
+                        ),
+                        child: const Icon(
+                          Icons.delete,
+                          color: AppColors.textOnPrimary,
+                          size: 28,
+                        ),
+                      ),
+                      confirmDismiss: (direction) async {
+                        if (direction == DismissDirection.startToEnd) {
+                          await taskProvider.updateTaskIsDone(task, true);
+                          return false;
+                        } else if (direction == DismissDirection.endToStart) {
+                          return showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text(UIStrings.deleteTaskTitle),
+                              content: const Text(UIStrings.deleteTaskMessage),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text(UIStrings.cancel),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.error,
+                                  ),
+                                  child: const Text(UIStrings.delete),
+                                ),
+                              ],
+                            ),
                           );
                         }
-                      }
-                    },
-                    child: TaskCard(
-                      task: task,
-                      checklistName: currentChecklist.name,
-                      onToggleDone: (value) {
-                        Provider.of<TaskProvider>(
-                          context,
-                          listen: false,
-                        ).updateTaskIsDone(task, value!);
+                        return false;
                       },
-                      onTap: () {
-                        TaskDetailPage.show(
-                          context,
-                          task,
-                        );
+                      onDismissed: (direction) async {
+                        if (direction == DismissDirection.endToStart) {
+                          try {
+                            await taskProvider.deleteTask(task);
+                            _messageService.showSuccess(UIStrings.taskDeleted);
+                          } catch (e) {
+                            _messageService.showError(
+                              '${UIStrings.errorDeleting}: $e',
+                            );
+                          }
+                        }
                       },
-                    ),
-                  ),
-                );
-              }
-
-              // 添加分界线与习惯卡片（仅在"今天"盒子下显示）
-              if (isTodayTasks && habits.isNotEmpty) {
-                // 先检查有多少习惯需要显示
-                final List<Widget> habitCards = [];
-                final habitProvider = Provider.of<HabitProvider>(
-                  context,
-                  listen: false,
-                );
-
-                for (final habit in habits) {
-                  // 如果习惯已完成且不显示已完成项目，则跳过
-                  if (habitProvider.isTodayCompleted(habit) &&
-                      !_showCompletedTasks) {
-                    continue;
-                  }
-                  habitCards.add(HabitCard(
-                    habit: habit,
-                    progress: habitProvider.getTodayProgress(habit),
-                    isCompleted: habitProvider.isTodayCompleted(habit),
-                    onTap: () {
-                      HabitCheckInDialog.show(context: context, habit: habit);
-                    },
-                    onSkip: () async {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('跳过今天'),
-                          content: const Text('确定要跳过今天的习惯吗？'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('取消'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text('确定'),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (confirmed == true) {
-                        habitProvider.skipToday(habit);
-                      }
-                    },
-                    onEdit: () {
-                      EditHabitDialog.show(context, habit);
-                    },
-                  ));
-                }
-
-                // 只有当有习惯要显示时才添加分隔线
-                if (habitCards.isNotEmpty) {
-                  if (items.isNotEmpty) {
-                    items.add(
-                      const Padding(
-                        padding: EdgeInsets.symmetric(
-                          vertical: Dimensions.paddingS,
-                          horizontal: Dimensions.paddingM,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(child: Divider()),
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: Dimensions.paddingS,
-                              ),
-                              child: Text(UIStrings.habits),
-                            ),
-                            Expanded(child: Divider()),
-                          ],
-                        ),
+                      child: TaskCard(
+                        task: task,
+                        checklistName: _getChecklistName(task.checklistId, allChecklists),
+                        onToggleDone: (value) {
+                          taskProvider.updateTaskIsDone(task, value!);
+                        },
+                        onTap: () {
+                          TaskDetailPage.show(context, task);
+                        },
                       ),
                     );
-                  }
+                  }).toList(),
+                ),
+              ),
+            );
+          });
 
-                  // 添加所有习惯卡片
-                  items.addAll(habitCards);
-                }
+          // 习惯卡片
+          if (isTodayTasks && habitProvider.habits.isNotEmpty) {
+            final habits = habitProvider.habits;
+            final List<Widget> habitCards = [];
+
+            for (final habit in habits) {
+              final isCompleted = habitProvider.isTodayCompleted(habit);
+              if (taskProvider.visibleRange == TaskVisibleRange.undone &&
+                  isCompleted) {
+                continue;
+              }
+              if (taskProvider.visibleRange == TaskVisibleRange.done &&
+                  !isCompleted) {
+                continue;
               }
 
-              return ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) => items[index],
-              );
-            },
-          ),
+              habitCards.add(HabitCard(
+                habit: habit,
+                progress: habitProvider.getTodayProgress(habit),
+                isCompleted: isCompleted,
+                onTap: () {
+                  HabitCheckInDialog.show(context: context, habit: habit);
+                },
+                onSkip: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('跳过今天'),
+                      content: const Text('确定要跳过今天的习惯吗？'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text('取消'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text('确定'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true) {
+                    habitProvider.skipToday(habit);
+                  }
+                },
+                onEdit: () {
+                  EditHabitDialog.show(context, habit);
+                },
+              ));
+            }
 
-      // 悬浮按钮
+            if (habitCards.isNotEmpty) {
+              groupWidgets.add(
+                Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    initiallyExpanded: true,
+                    title: Row(
+                      children: [
+                        const Text(
+                          UIStrings.habits,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${habitCards.length}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    children: habitCards,
+                  ),
+                ),
+              );
+            }
+          }
+
+          if (groupWidgets.isEmpty) {
+            return const Center(
+              child: Text(
+                '暂无任务',
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: groupWidgets.length,
+            itemBuilder: (context, index) => groupWidgets[index],
+          );
+        },
+      ),
+
       floatingActionButton: const CustomFloatingActionButton(),
     );
   }

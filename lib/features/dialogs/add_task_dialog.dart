@@ -13,9 +13,10 @@ import 'package:provider/provider.dart';
 import '../pickers/task_date_time_picker.dart';
 
 class AddTaskDialog extends StatefulWidget {
-  const AddTaskDialog({super.key, this.parentTask});
+  const AddTaskDialog({super.key, this.parentTask, this.presetTask});
 
   final Task? parentTask;
+  final Task? presetTask;
 
   @override
   State<AddTaskDialog> createState() => _AddTaskDialogState();
@@ -34,11 +35,27 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     super.initState();
     parentTask = widget.parentTask;
     final now = DateTime.now();
+
     // 初始化时间信息
-    _timeInfo = TaskTimeInfo(
-      selectedDate: now.toBeijingTime().dateOnly,
-      isAllDay: true, // 默认全天任务
-    );
+    if (widget.presetTask != null && widget.presetTask!.startTime != null) {
+      _timeInfo = TaskTimeInfo(
+        selectedDate: widget.presetTask!.startTime!.toBeijingTime().dateOnly,
+        isAllDay: widget.presetTask!.isAllDay,
+      );
+    } else {
+      _timeInfo = TaskTimeInfo(
+        selectedDate: now.toBeijingTime().dateOnly,
+        isAllDay: true, // 默认全天任务
+      );
+    }
+
+    if (widget.presetTask != null && widget.presetTask!.checklistId != null) {
+      _selectedChecklist = ChecklistVO(
+        id: widget.presetTask!.checklistId!,
+        name: '',
+        color: Colors.grey,
+      );
+    }
   }
 
   @override
@@ -120,7 +137,12 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     final DateTime? finalStart = _timeInfo.getFinalStartTime();
     final DateTime? finalEnd = _timeInfo.getFinalEndTime();
     final bool isAllDay = _timeInfo.isAllDay;
-    final Task newTask = Task(name: taskName, isAllDay: isAllDay);
+    final Task newTask = Task(
+      name: taskName,
+      isAllDay: isAllDay,
+      priority: widget.presetTask?.priority ?? 0,
+      tags: widget.presetTask?.tags ?? const [],
+    );
 
     if (isAllDay) {
       final DateTime date =

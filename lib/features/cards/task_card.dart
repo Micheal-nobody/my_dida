@@ -16,14 +16,29 @@ class TaskCard extends StatelessWidget {
   final void Function(bool?)? onToggleDone;
   final VoidCallback? onTap;
 
+  // 辅助方法：获取优先级颜色
+  static Color _getPriorityColor(int priority) {
+    switch (priority) {
+      case 3:
+        return Colors.red;
+      case 2:
+        return Colors.orange;
+      case 1:
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    final priorityColor = _getPriorityColor(task.priority);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: ListTile(
-        // 任务完成状态
+        // 任务完成状态，复选框边框颜色与优先级一致
         leading: SizedBox(
           width: 24,
           height: 24,
@@ -31,19 +46,39 @@ class TaskCard extends StatelessWidget {
             value: task.isDone,
             onChanged: onToggleDone,
             activeColor: Colors.blue,
-            side: const BorderSide(color: Colors.grey),
+            side: BorderSide(color: priorityColor, width: 2),
           ),
         ),
 
         // 任务名称
-        title: Text(
-          task.name,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            decoration: task.isDone
-                ? TextDecoration.lineThrough
-                : TextDecoration.none,
-          ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                task.name,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  decoration: task.isDone
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none,
+                ),
+              ),
+            ),
+            if (task.tags.isNotEmpty)
+              ...task.tags.map((tag) => Container(
+                    margin: const EdgeInsets.only(left: 4),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      tag,
+                      style: const TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
+                  )),
+          ],
         ),
 
         // 任务时间、所属收藏夹

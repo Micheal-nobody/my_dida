@@ -54,3 +54,6 @@ app.*.map.json
 .codex
 CLAUDE.md
 AGENTS.md
+
+# 开发相关
+docs

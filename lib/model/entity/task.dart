@@ -31,6 +31,8 @@ class Task extends RevertibleEntity {
     this.rrule,
     this.notificationEnabled = false,
     this.reminderOffsetMinutes,
+    this.priority = 0,
+    this.tags = const [],
   });
 
 
@@ -75,10 +77,17 @@ class Task extends RevertibleEntity {
   /// 距离开始时间提前多少分钟提醒
   int? reminderOffsetMinutes;
 
+  /// 优先级：0-无, 1-低, 2-中, 3-高
+  @Index()
+  int priority;
+
+  /// 标签列表
+  List<String> tags;
+
   // toString 方法
   @override
   String toString() =>
-      'Task{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints,isAllDay: $isAllDay, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, checklistId: $checklistId, rrule: $rrule, notificationEnabled: $notificationEnabled, reminderOffsetMinutes: $reminderOffsetMinutes}';
+      'Task{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints,isAllDay: $isAllDay, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, checklistId: $checklistId, rrule: $rrule, notificationEnabled: $notificationEnabled, reminderOffsetMinutes: $reminderOffsetMinutes, priority: $priority, tags: $tags}';
 
   /// 深度复制 Task 实例
   Task copyWith({
@@ -95,6 +104,8 @@ class Task extends RevertibleEntity {
     String? rrule,
     bool? notificationEnabled,
     int? reminderOffsetMinutes,
+    int? priority,
+    List<String>? tags,
   }) {
     final copy = Task(
       name: name ?? this.name,
@@ -114,6 +125,8 @@ class Task extends RevertibleEntity {
       notificationEnabled: notificationEnabled ?? this.notificationEnabled,
       reminderOffsetMinutes:
           reminderOffsetMinutes ?? this.reminderOffsetMinutes,
+      priority: priority ?? this.priority,
+      tags: tags ?? List<String>.from(this.tags),
     );
     copy.id = id;
     return copy;
@@ -135,6 +148,8 @@ class Task extends RevertibleEntity {
       'rrule': rrule,
       'notificationEnabled': notificationEnabled,
       'reminderOffsetMinutes': reminderOffsetMinutes,
+      'priority': priority,
+      'tags': tags,
       'checkpoints': checkpoints
           .map((cp) => {'name': cp.name, 'isDone': cp.isDone})
           .toList(),
@@ -178,6 +193,10 @@ class Task extends RevertibleEntity {
           : json['rrule']?.toString(),
       notificationEnabled: json['notificationEnabled'] == true,
       reminderOffsetMinutes: json['reminderOffsetMinutes'] as int?,
+      priority: json['priority'] as int? ?? 0,
+      tags: json['tags'] != null
+          ? List<String>.from(json['tags'] as List)
+          : const [],
     );
     if (json['id'] != null) {
       task.id = json['id'] as int;

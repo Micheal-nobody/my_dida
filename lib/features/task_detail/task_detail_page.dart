@@ -293,6 +293,131 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                               },
                             ),
 
+                          // 属性选择行（优先级、标签）
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            child: Row(
+                              children: [
+                                // 优先级选择
+                                PopupMenuButton<int>(
+                                  initialValue: task.priority,
+                                  onSelected: (val) async {
+                                    await _taskProvider.updatePriority(task, val);
+                                  },
+                                  itemBuilder: (context) => const [
+                                    PopupMenuItem(value: 3, child: Text('🔴 高优先级')),
+                                    PopupMenuItem(value: 2, child: Text('🟠 中优先级')),
+                                    PopupMenuItem(value: 1, child: Text('🔵 低优先级')),
+                                    PopupMenuItem(value: 0, child: Text('⚪ 无优先级')),
+                                  ],
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey[300]!),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.flag,
+                                          color: task.priority == 3
+                                              ? Colors.red
+                                              : task.priority == 2
+                                                  ? Colors.orange
+                                                  : task.priority == 1
+                                                      ? Colors.blue
+                                                      : Colors.grey,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          task.priority == 3
+                                              ? '高优先级'
+                                              : task.priority == 2
+                                                  ? '中优先级'
+                                                  : task.priority == 1
+                                                      ? '低优先级'
+                                                      : '无优先级',
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                // 标签编辑
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      final textController = TextEditingController(
+                                        text: task.tags.join(', '),
+                                      );
+                                      final updatedTags = await showDialog<List<String>>(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text('修改标签'),
+                                          content: TextField(
+                                            controller: textController,
+                                            decoration: const InputDecoration(
+                                              hintText: '输入标签，以逗号分隔',
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: const Text('取消'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                final text = textController.text.trim();
+                                                final tags = text.isEmpty
+                                                    ? <String>[]
+                                                    : text
+                                                        .split(RegExp(r'[，,]'))
+                                                        .map((e) => e.trim())
+                                                        .where((e) => e.isNotEmpty)
+                                                        .toList();
+                                                Navigator.pop(context, tags);
+                                              },
+                                              child: const Text('保存'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (updatedTags != null) {
+                                        await _taskProvider.updateTags(task, updatedTags);
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey[300]!),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.label_outline, size: 16, color: Colors.grey),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              task.tags.isEmpty ? '添加标签' : task.tags.join(', '),
+                                              style: const TextStyle(fontSize: 12),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
                           // 标题
                           InlineEditableTextField(
                             key: ValueKey('title_${task.id}'),
