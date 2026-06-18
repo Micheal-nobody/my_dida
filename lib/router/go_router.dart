@@ -6,6 +6,9 @@ import 'package:my_dida/pages/calendar_page.dart';
 import 'package:my_dida/pages/habits_page.dart';
 import 'package:my_dida/pages/operation_page.dart';
 import 'package:my_dida/pages/todo_page.dart';
+import 'package:my_dida/pages/settings_page.dart';
+import 'package:my_dida/pages/smart_lists_settings_page.dart';
+import 'package:my_dida/pages/sidebar_settings_page.dart';
 import 'package:my_dida/router/shell_scaffold_key.dart';
 
 final GoRouter goRouter = GoRouter(
@@ -26,6 +29,18 @@ final GoRouter goRouter = GoRouter(
           child: TaskDetailRoutePage(taskId: taskId),
         );
       },
+    ),
+    GoRoute(
+      path: '/settings',
+      pageBuilder: (context, state) => const MaterialPage(child: SettingsPage()),
+    ),
+    GoRoute(
+      path: '/settings/smart-lists',
+      pageBuilder: (context, state) => const MaterialPage(child: SmartListsSettingsPage()),
+    ),
+    GoRoute(
+      path: '/settings/sidebar',
+      pageBuilder: (context, state) => const MaterialPage(child: SidebarSettingsPage()),
     ),
     StatefulShellRoute.indexedStack(
       /// 整个页面的内容，其中 Branch 中的内容会填充到 body 中

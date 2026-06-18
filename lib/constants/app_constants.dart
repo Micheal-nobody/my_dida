@@ -8,6 +8,11 @@ class AppConstants {
 
   // Special IDs
   static ChecklistVO todayCheckList = ChecklistVO(id: -1, name: '今天');
+  static ChecklistVO tomorrowCheckList = ChecklistVO(id: -2, name: '明天');
+  static ChecklistVO nextSevenDaysCheckList = ChecklistVO(id: -3, name: '最近七天');
+  static ChecklistVO allCheckList = ChecklistVO(id: -4, name: '所有');
+  static ChecklistVO completedCheckList = ChecklistVO(id: -5, name: '已完成');
+  static ChecklistVO trashCheckList = ChecklistVO(id: -6, name: '垃圾桶');
   static ChecklistVO defaultCheckList = ChecklistVO(id: 1, name: '收集箱');
 
   // UI Constants

@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/vo/checklist_vo.dart';
 import 'package:my_dida/provider/task_provider.dart';
+import 'package:my_dida/provider/sidebar_config_provider.dart';
+import 'package:my_dida/config/locator.dart';
 
 import 'test_support/task_test_harness.dart';
 
@@ -102,6 +104,69 @@ void main() {
 
       expect(data.tasksForDates[DateTime(2026, 4, 12)]?.map((task) => task.name), contains('Visible'));
       expect(data.futureTasks.values.expand((tasks) => tasks).map((task) => task.name), contains('Future'));
+    });
+
+    test('SidebarConfigProvider manages settings correctly', () async {
+      // Register SidebarConfigProvider in harness GetIt since it's not automatically there
+      getIt.registerSingleton<SidebarConfigProvider>(SidebarConfigProvider());
+      final configProvider = getIt<SidebarConfigProvider>();
+
+      expect(configProvider.config.theme, 'system');
+      expect(configProvider.config.showProfile, true);
+
+      await configProvider.updateTheme('dark');
+      await configProvider.updateModuleVisibility(showProfile: false, showSearch: false);
+
+      expect(configProvider.config.theme, 'dark');
+      expect(configProvider.config.showProfile, false);
+      expect(configProvider.config.showSearch, false);
+    });
+
+    test('TaskProvider getSmartListCounts and smart list filters', () async {
+      await Future.delayed(Duration.zero);
+
+      final now = DateTime.now();
+      final tomorrow = now.add(const Duration(days: 1));
+
+      // Add a today task
+      await provider.addTask(Task(
+        name: 'Today Task',
+        isAllDay: false,
+        startTime: now,
+        checklistId: 1,
+      ));
+
+      // Add a tomorrow task
+      await provider.addTask(Task(
+        name: 'Tomorrow Task',
+        isAllDay: false,
+        startTime: tomorrow,
+        checklistId: 1,
+      ));
+
+      final counts = await provider.getSmartListCounts();
+
+      expect(counts[-1], 1); // Today
+      expect(counts[-2], 1); // Tomorrow
+      expect(counts[1], 2);  // Inbox (since both are checklistId = 1)
+      expect(counts[-4], 2); // All
+
+      // Toggle done on Today Task
+      final tasks = await harness.taskRepository.getAllData();
+      final todayTask = tasks.firstWhere((t) => t.name == 'Today Task');
+      await provider.updateTaskIsDone(todayTask, true);
+
+      final counts2 = await provider.getSmartListCounts();
+      expect(counts2[-1], 0); // Today now has 0 incomplete
+      expect(counts2[-5], 1); // Completed has 1 task
+
+      // Delete tomorrow task (enters Trash)
+      final tomorrowTask = tasks.firstWhere((t) => t.name == 'Tomorrow Task');
+      await provider.deleteTask(tomorrowTask);
+
+      final counts3 = await provider.getSmartListCounts();
+      expect(counts3[-2], 0); // Tomorrow now has 0
+      expect(counts3[-6], 1); // Trash has 1 task (deleted task operation)
     });
   });
 }

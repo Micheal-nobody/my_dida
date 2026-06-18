@@ -12,6 +12,7 @@ import 'config/locator.dart';
 import 'provider/checklist_provider.dart';
 import 'provider/habit_provider.dart';
 import 'provider/operation_stack_provider.dart';
+import 'provider/sidebar_config_provider.dart';
 import 'provider/task_provider.dart';
 import 'router/go_router.dart';
 
@@ -35,6 +36,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => ChecklistProvider()),
         ChangeNotifierProvider(create: (context) => HabitProvider()),
         ChangeNotifierProvider.value(value: operationStack),
+        ChangeNotifierProvider.value(value: getIt<SidebarConfigProvider>()),
 
         // 使用 ChangeNotifierProxyProvider
         ChangeNotifierProxyProvider<ChecklistProvider, TaskProvider>(

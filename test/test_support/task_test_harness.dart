@@ -6,6 +6,8 @@ import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/entity/checklist.dart';
+import 'package:my_dida/model/entity/sidebar_config.dart';
 import 'package:my_dida/model/vo/checklist_vo.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
@@ -45,7 +47,7 @@ class TaskTestHarness {
 
     final tempDir = await Directory.systemTemp.createTemp('my_dida_task_test_');
     final isar = await Isar.open(
-      [TaskSchema, HabitSchema, OperationSchema],
+      [TaskSchema, HabitSchema, OperationSchema, ChecklistSchema, SidebarConfigSchema],
       directory: tempDir.path,
       name: 'task_test_${DateTime.now().microsecondsSinceEpoch}',
     );

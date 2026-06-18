@@ -7,6 +7,7 @@ import 'package:my_dida/model/entity/checklist.dart';
 import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/entity/sidebar_config.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/repository/checklist_repository.dart';
 import 'package:my_dida/repository/habit_repository.dart';
@@ -18,6 +19,7 @@ import 'package:my_dida/services/task_calendar_projection_service.dart';
 import 'package:my_dida/services/task_reminder_scheduler_port.dart';
 import 'package:my_dida/services/task_notification_navigation_service.dart';
 import 'package:my_dida/services/task_reminder_service.dart';
+import 'package:my_dida/provider/sidebar_config_provider.dart';
 import 'package:path_provider/path_provider.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -32,6 +34,7 @@ Future<void> setupLocator() async {
   // 注册数据库操作服务
   getIt
     ..registerSingleton<AppMessageService>(AppMessageService())
+    ..registerSingleton<SidebarConfigProvider>(SidebarConfigProvider())
     ..registerSingleton<TaskNotificationNavigationService>(
       TaskNotificationNavigationService(),
     )
@@ -106,5 +109,6 @@ Future<Isar> initializeIsar() async {
     ChecklistSchema,
     HabitSchema,
     OperationSchema,
+    SidebarConfigSchema,
   ], directory: dir.path);
 }

@@ -212,14 +212,15 @@ class _TodoPageState extends State<TodoPage> {
                     ],
                   ),
                   children: tasks.map((task) {
+                    final isTrashList = currentChecklist.id == -6;
                     return Dismissible(
                       key: Key('list_${task.id}'),
                       background: Container(
                         alignment: Alignment.centerLeft,
                         padding: const EdgeInsets.only(left: Dimensions.paddingL),
-                        color: AppColors.success,
-                        child: const Icon(
-                          Icons.check,
+                        color: isTrashList ? Colors.blue : AppColors.success,
+                        child: Icon(
+                          isTrashList ? Icons.settings_backup_restore : Icons.check,
                           color: AppColors.textOnPrimary,
                           size: 28,
                         ),
@@ -238,14 +239,19 @@ class _TodoPageState extends State<TodoPage> {
                       ),
                       confirmDismiss: (direction) async {
                         if (direction == DismissDirection.startToEnd) {
+                          if (isTrashList) {
+                            await taskProvider.restoreTask(task);
+                            _messageService.showSuccess('任务已还原');
+                            return false;
+                          }
                           await taskProvider.updateTaskIsDone(task, true);
                           return false;
                         } else if (direction == DismissDirection.endToStart) {
                           return showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: const Text(UIStrings.deleteTaskTitle),
-                              content: const Text(UIStrings.deleteTaskMessage),
+                              title: Text(isTrashList ? '永久删除任务' : UIStrings.deleteTaskTitle),
+                              content: Text(isTrashList ? '确认要永久删除此任务吗？该操作无法恢复。' : UIStrings.deleteTaskMessage),
                               actions: [
                                 TextButton(
                                   onPressed: () =>
@@ -270,7 +276,7 @@ class _TodoPageState extends State<TodoPage> {
                         if (direction == DismissDirection.endToStart) {
                           try {
                             await taskProvider.deleteTask(task);
-                            _messageService.showSuccess(UIStrings.taskDeleted);
+                            _messageService.showSuccess(isTrashList ? '任务已永久删除' : UIStrings.taskDeleted);
                           } catch (e) {
                             _messageService.showError(
                               '${UIStrings.errorDeleting}: $e',
@@ -282,10 +288,19 @@ class _TodoPageState extends State<TodoPage> {
                         task: task,
                         checklistName: _getChecklistName(task.checklistId, allChecklists),
                         onToggleDone: (value) {
-                          taskProvider.updateTaskIsDone(task, value!);
+                          if (isTrashList) {
+                            taskProvider.restoreTask(task);
+                            _messageService.showSuccess('任务已还原');
+                          } else {
+                            taskProvider.updateTaskIsDone(task, value!);
+                          }
                         },
                         onTap: () {
-                          TaskDetailPage.show(context, task);
+                          if (isTrashList) {
+                            _messageService.showInfo('垃圾桶中的任务无法直接查看详情');
+                          } else {
+                            TaskDetailPage.show(context, task);
+                          }
                         },
                       ),
                     );
