@@ -254,7 +254,10 @@ class _TodoDrawerState extends State<TodoDrawer> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingS),
           child: InkWell(
-            onTap: () => _showPlaceholderSnackBar('搜索功能开发中'),
+            onTap: () {
+              Navigator.of(context).pop();
+              context.push('/search');
+            },
             child: const Row(
               children: [
                 Icon(Icons.search, color: AppColors.textSecondary, size: 20),

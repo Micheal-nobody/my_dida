@@ -9,6 +9,7 @@ import 'package:my_dida/pages/todo_page.dart';
 import 'package:my_dida/pages/settings_page.dart';
 import 'package:my_dida/pages/smart_lists_settings_page.dart';
 import 'package:my_dida/pages/sidebar_settings_page.dart';
+import 'package:my_dida/pages/search_page.dart';
 import 'package:my_dida/router/shell_scaffold_key.dart';
 
 final GoRouter goRouter = GoRouter(
@@ -29,6 +30,10 @@ final GoRouter goRouter = GoRouter(
           child: TaskDetailRoutePage(taskId: taskId),
         );
       },
+    ),
+    GoRoute(
+      path: '/search',
+      pageBuilder: (context, state) => const MaterialPage(child: SearchPage()),
     ),
     GoRoute(
       path: '/settings',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:my_dida/constants/app_constants.dart';
 import 'package:my_dida/constants/colors_constants.dart';
 import 'package:my_dida/constants/dimension_constants.dart';
@@ -59,9 +60,7 @@ class _TodoPageState extends State<TodoPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: () {
-              // 可引入全局任务搜索，这里我们可以做简单提示或后续实现
-            },
+            onPressed: () => context.push('/search'),
           ),
           IconButton(
             icon: const Icon(Icons.view_quilt),

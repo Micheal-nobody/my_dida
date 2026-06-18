@@ -757,6 +757,56 @@ class TaskProvider with ChangeNotifier {
         .toList();
   }
 
+  Future<List<Task>> searchTasks({
+    required String query,
+    required TaskVisibleRange statusFilter,
+    required bool searchInText,
+    required bool searchInSubtasks,
+    required bool searchInNotes,
+  }) async {
+    final allTasks = await _taskRepository.selectAll();
+    allTasks.sort((a, b) => b.id.compareTo(a.id));
+
+    if (query.isEmpty) {
+      return [];
+    }
+
+    final normalizedQuery = query.toLowerCase();
+    return allTasks.where((task) {
+      // 1. 过滤完成状态
+      if (statusFilter == TaskVisibleRange.undone && task.isDone) {
+        return false;
+      }
+      if (statusFilter == TaskVisibleRange.done && !task.isDone) {
+        return false;
+      }
+
+      // 2. 匹配关键字
+      bool matches = false;
+      final searchAll = !searchInText && !searchInSubtasks && !searchInNotes;
+
+      if ((searchInText || searchAll) &&
+          task.name.toLowerCase().contains(normalizedQuery)) {
+        matches = true;
+      }
+      if (!matches &&
+          (searchInNotes || searchAll) &&
+          task.description.toLowerCase().contains(normalizedQuery)) {
+        matches = true;
+      }
+      if (!matches && (searchInSubtasks || searchAll)) {
+        for (final cp in task.checkpoints) {
+          if (cp.name.toLowerCase().contains(normalizedQuery)) {
+            matches = true;
+            break;
+          }
+        }
+      }
+
+      return matches;
+    }).toList();
+  }
+
   Future<void> deleteTask(Task task) async {
     try {
       if (currentChecklist?.id == -6) {
