@@ -11,6 +11,13 @@ import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/repository/checklist_repository.dart';
 import 'package:my_dida/repository/habit_repository.dart';
 import 'package:my_dida/repository/task_repository.dart';
+import 'package:my_dida/services/flutter_local_task_reminder_scheduler.dart';
+import 'package:my_dida/services/notification_service.dart';
+import 'package:my_dida/services/operation_reverter.dart';
+import 'package:my_dida/services/task_calendar_projection_service.dart';
+import 'package:my_dida/services/task_reminder_scheduler_port.dart';
+import 'package:my_dida/services/task_notification_navigation_service.dart';
+import 'package:my_dida/services/task_reminder_service.dart';
 import 'package:my_dida/services/task_service.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -26,12 +33,32 @@ Future<void> setupLocator() async {
   // 注册数据库操作服务
   getIt
     ..registerSingleton<AppMessageService>(AppMessageService())
+    ..registerSingleton<TaskNotificationNavigationService>(
+      TaskNotificationNavigationService(),
+    )
+    ..registerSingleton<NotificationService>(NotificationService())
     ..registerSingleton<TaskRepository>(TaskRepository())
     ..registerSingleton<ChecklistRepository>(ChecklistRepository())
     ..registerSingleton<HabitRepository>(HabitRepository())
+    // 注册撤销操作适配器
+    ..registerSingleton<OperationReverter>(
+      TaskOperationReverter(),
+      instanceName: 'task',
+    )
+    ..registerSingleton<OperationReverter>(
+      HabitOperationReverter(),
+      instanceName: 'habit',
+    )
     // 注册操作栈管理器
     ..registerSingleton<OperationStackProvider>(OperationStackProvider())
+    ..registerSingleton<TaskReminderService>(TaskReminderService())
+    ..registerSingleton<TaskReminderSchedulerPort>(
+      FlutterLocalTaskReminderScheduler(),
+    )
     // 注册业务逻辑服务
+    ..registerSingleton<TaskCalendarProjectionService>(
+      TaskCalendarProjectionService(),
+    )
     ..registerSingleton<TaskService>(TaskService());
 
   logger.i('初始化 Isar 完成！');

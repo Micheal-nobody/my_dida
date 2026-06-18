@@ -1,10 +1,11 @@
 import 'package:isar_community/isar.dart';
+import 'package:my_dida/model/entity/base_entity.dart';
 
 part 'habit.g.dart';
 
 // 习惯，习惯是每天都要做的，比如刷牙、洗脸、吃饭等
 @Collection()
-class Habit {
+class Habit extends BaseEntity {
   Habit({
     required this.name,
     required this.icon,
@@ -16,8 +17,6 @@ class Habit {
     required this.longestContinuousCheckInDays,
     this.rrule,
   });
-
-  Id id = Isar.autoIncrement;
 
   String name;
   String icon; // 习惯对应的 Icon
@@ -32,4 +31,45 @@ class Habit {
 
   /// 重复规则 (RRule)
   String? rrule;
+
+  /// 转换为标准 JSON Map
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'icon': icon,
+      'remindTime': remindTime.toIso8601String(),
+      'checkInCount': checkInCount,
+      'currentCheckInCount': currentCheckInCount,
+      'startDate': startDate.toIso8601String(),
+      'totalCheckInCount': totalCheckInCount,
+      'longestContinuousCheckInDays': longestContinuousCheckInDays,
+      'rrule': rrule,
+    };
+  }
+
+  /// 从标准 JSON Map 反序列化生成 Habit
+  factory Habit.fromJson(Map<String, dynamic> json) {
+    final habit = Habit(
+      name: json['name']?.toString() ?? '',
+      icon: json['icon']?.toString() ?? '',
+      remindTime: json['remindTime'] != null
+          ? DateTime.parse(json['remindTime'].toString())
+          : DateTime.now(),
+      checkInCount: json['checkInCount'] as int? ?? 1,
+      currentCheckInCount: json['currentCheckInCount'] as int? ?? 0,
+      startDate: json['startDate'] != null
+          ? DateTime.parse(json['startDate'].toString())
+          : DateTime.now(),
+      totalCheckInCount: json['totalCheckInCount'] as int? ?? 0,
+      longestContinuousCheckInDays: json['longestContinuousCheckInDays'] as int? ?? 0,
+      rrule: json['rrule']?.toString().isEmpty == true
+          ? null
+          : json['rrule']?.toString(),
+    );
+    if (json['id'] != null) {
+      habit.id = json['id'] as int;
+    }
+    return habit;
+  }
 }

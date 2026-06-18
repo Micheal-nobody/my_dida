@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:my_dida/config/locator.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/dialogs/add_task_dialog.dart';
 import 'package:my_dida/features/pickers/task_date_time_picker.dart';
 import 'package:my_dida/features/task_detail/widgets/checkpoint_item_widget.dart';
@@ -14,10 +17,16 @@ import 'package:provider/provider.dart';
 
 // 任务详情 BottomSheet（由 TaskCard 的 onTap 触发）
 class TaskDetailPage extends StatefulWidget {
-  const TaskDetailPage(this.taskId, {super.key, this.scrollController});
+  const TaskDetailPage(
+    this.taskId, {
+    super.key,
+    this.scrollController,
+    this.useSafeArea = true,
+  });
 
   final int taskId;
   final ScrollController? scrollController;
+  final bool useSafeArea;
 
   @override
   State<StatefulWidget> createState() => _TaskDetailPageState();
@@ -73,6 +82,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   StreamSubscription<Task?>? _taskSub;
   Timer? _descriptionDebounce;
   String _lastSavedDescription = '';
+  bool _hasResolvedTask = false;
+  bool _didShowMissingTaskMessage = false;
 
   @override
   void initState() {
@@ -83,7 +94,16 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       setState(() {
         _task = t;
         _lastSavedDescription = t?.description ?? '';
+        _hasResolvedTask = true;
+        if (t != null) {
+          _didShowMissingTaskMessage = false;
+        }
       });
+
+      if (t == null && !_didShowMissingTaskMessage) {
+        _didShowMissingTaskMessage = true;
+        getIt<AppMessageService>().showWarning('任务不存在或已删除');
+      }
     });
   }
 
@@ -113,12 +133,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   }
 
   void _navigateToSubTask(int subTaskId) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => TaskDetailPage(subTaskId),
-        fullscreenDialog: true,
-      ),
-    );
+    context.push('/tasks/$subTaskId');
   }
 
   String _formatTaskTime(DateTime? start, DateTime? end) {
@@ -159,14 +174,16 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       return a.value.isDone ? 1 : -1;
     });
 
-    return Material(
-      child: SafeArea(
-        child: task == null
-            ? const SizedBox(
-                height: 300,
-                child: Center(child: CircularProgressIndicator()),
-              )
-            : Column(
+    final body = task == null
+        ? SizedBox(
+            height: 300,
+            child: Center(
+              child: _hasResolvedTask
+                  ? const Text('任务不存在或已删除')
+                  : const CircularProgressIndicator(),
+            ),
+          )
+        : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Expanded(
@@ -416,8 +433,10 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                     ),
                   ),
                 ],
-              ),
-      ),
+              );
+
+    return Material(
+      child: widget.useSafeArea ? SafeArea(child: body) : body,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/features/todo_page/todo_drawer.dart';
+import 'package:my_dida/pages/task_detail_route_page.dart';
 import 'package:my_dida/pages/calendar_page.dart';
 import 'package:my_dida/pages/habits_page.dart';
 import 'package:my_dida/pages/operation_page.dart';
@@ -11,6 +12,21 @@ final GoRouter goRouter = GoRouter(
   // 初始路由
   initialLocation: '/todoList',
   routes: [
+    GoRoute(
+      path: '/tasks/:taskId',
+      pageBuilder: (context, state) {
+        final taskId = int.tryParse(state.pathParameters['taskId'] ?? '');
+        if (taskId == null) {
+          return const NoTransitionPage(
+            child: Scaffold(body: Center(child: Text('无效的任务 ID'))),
+          );
+        }
+
+        return MaterialPage(
+          child: TaskDetailRoutePage(taskId: taskId),
+        );
+      },
+    ),
     StatefulShellRoute.indexedStack(
       /// 整个页面的内容，其中 Branch 中的内容会填充到 body 中
       builder: (context, state, navigationShell) => Scaffold(
@@ -51,11 +67,6 @@ final GoRouter goRouter = GoRouter(
               path: '/todoList',
               pageBuilder: (context, state) =>
                   const NoTransitionPage(child: TodoPage()),
-            ),
-            GoRoute(
-              path: '/todoDetails',
-              pageBuilder: (context, state) =>
-                  const NoTransitionPage(child: Text('这是还没有做的 todo 详情页面！')),
             ),
           ],
         ),

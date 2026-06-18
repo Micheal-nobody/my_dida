@@ -4,12 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/config/logger.dart';
-import 'package:my_dida/model/entity/check_point.dart';
-import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/operation.dart';
-import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/repository/habit_repository.dart';
-import 'package:my_dida/repository/task_repository.dart';
+import 'package:my_dida/services/operation_reverter.dart';
 
 /// 操作栈管理器
 class OperationStackProvider with ChangeNotifier {
@@ -102,16 +98,8 @@ class OperationStackProvider with ChangeNotifier {
 
     try {
       final operation = _operations.first;
-      bool success = false;
-
-      switch (operation.target) {
-        case OperationTarget.task:
-          success = await _undoTaskOperation(operation);
-          break;
-        case OperationTarget.habit:
-          success = await _undoHabitOperation(operation);
-          break;
-      }
+      final reverter = getIt<OperationReverter>(instanceName: operation.target.name);
+      final success = await reverter.revert(operation);
 
       if (success) {
         // 从栈中移除操作
@@ -136,16 +124,8 @@ class OperationStackProvider with ChangeNotifier {
   /// 撤回指定的操作
   Future<bool> undoOperation(Operation operation) async {
     try {
-      bool success = false;
-
-      switch (operation.target) {
-        case OperationTarget.task:
-          success = await _undoTaskOperation(operation);
-          break;
-        case OperationTarget.habit:
-          success = await _undoHabitOperation(operation);
-          break;
-      }
+      final reverter = getIt<OperationReverter>(instanceName: operation.target.name);
+      final success = await reverter.revert(operation);
 
       if (success) {
         // 从栈中移除操作
@@ -163,92 +143,6 @@ class OperationStackProvider with ChangeNotifier {
       return false;
     } catch (e) {
       logger.e('撤回指定操作失败: $e');
-      return false;
-    }
-  }
-
-  /// 撤回任务操作
-  Future<bool> _undoTaskOperation(Operation operation) async {
-    try {
-      final taskRepository = getIt<TaskRepository>();
-
-      switch (operation.type) {
-        case OperationType.add:
-          // 撤回添加操作：删除任务
-          await taskRepository.deleteById(operation.targetId);
-          break;
-
-        case OperationType.delete:
-          // 撤回删除操作：恢复任务
-          if (operation.previousData != null) {
-            final task = await _recreateTaskFromData(operation.previousData!);
-            if (task != null) {
-              await taskRepository.addData(task);
-            } else {
-              return false;
-            }
-          }
-          break;
-
-        case OperationType.update:
-          // 撤回更新操作：恢复旧值
-          if (operation.previousData != null) {
-            final task = await _recreateTaskFromData(operation.previousData!);
-            if (task != null) {
-              await taskRepository.update(task);
-            } else {
-              return false;
-            }
-          }
-          break;
-      }
-
-      return true;
-    } catch (e) {
-      logger.e('撤回任务操作失败: $e');
-      return false;
-    }
-  }
-
-  /// 撤回习惯操作
-  Future<bool> _undoHabitOperation(Operation operation) async {
-    try {
-      final habitRepository = getIt<HabitRepository>();
-
-      switch (operation.type) {
-        case OperationType.add:
-          // 撤回添加操作：删除习惯
-          await habitRepository.deleteById(operation.targetId);
-          break;
-
-        case OperationType.delete:
-          // 撤回删除操作：恢复习惯
-          if (operation.previousData != null) {
-            final habit = await _recreateHabitFromData(operation.previousData!);
-            if (habit != null) {
-              await habitRepository.addHabit(habit);
-            } else {
-              return false;
-            }
-          }
-          break;
-
-        case OperationType.update:
-          // 撤回更新操作：恢复旧值
-          if (operation.previousData != null) {
-            final habit = await _recreateHabitFromData(operation.previousData!);
-            if (habit != null) {
-              await habitRepository.addHabit(habit); // 使用addHabit来更新
-            } else {
-              return false;
-            }
-          }
-          break;
-      }
-
-      return true;
-    } catch (e) {
-      logger.e('撤回习惯操作失败: $e');
       return false;
     }
   }
@@ -354,146 +248,5 @@ class OperationStackProvider with ChangeNotifier {
       'operations': operationsJson,
     });
   }
-
-  /// 从JSON数据重新创建Task对象
-  Future<Task?> _recreateTaskFromData(String jsonData) async {
-    try {
-      debugPrint('开始解析Task JSON: $jsonData');
-
-      // 清理JSON数据，移除可能的格式问题
-      String cleanedJson = jsonData.trim();
-
-      // 如果JSON格式有问题，尝试修复
-      if (cleanedJson.contains('\n') || cleanedJson.contains('    ')) {
-        debugPrint('检测到多行JSON格式，尝试修复...');
-        // 移除换行符和多余空格
-        cleanedJson = cleanedJson
-            .replaceAll('\n', '')
-            .replaceAll(RegExp(r'\s+'), ' ')
-            .trim();
-      }
-
-      // 检查checkpoints字段是否完整
-      if (cleanedJson.contains('"checkpoints":') &&
-          !cleanedJson.contains('"checkpoints":[')) {
-        debugPrint('检测到checkpoints字段格式问题，尝试修复...');
-        cleanedJson = cleanedJson.replaceAll(
-          '"checkpoints":',
-          '"checkpoints":[]',
-        );
-      }
-
-      debugPrint('清理后的JSON: $cleanedJson');
-
-      final Map<String, dynamic> data = jsonDecode(cleanedJson);
-
-      // 解析检查点
-      List<CheckPoint> checkpoints = [];
-      if (data['checkpoints'] != null && data['checkpoints'] is List) {
-        final List<dynamic> checkpointList = data['checkpoints'];
-        checkpoints = checkpointList.map((cp) {
-          if (cp is Map<String, dynamic>) {
-            return CheckPoint(
-              name: cp['name']?.toString() ?? '',
-              isDone: cp['isDone'] == true,
-            );
-          }
-          return CheckPoint();
-        }).toList();
-      }
-
-      // 解析子任务ID列表
-      List<int> subTaskIds = [];
-      if (data['subTaskIds'] != null && data['subTaskIds'] is List) {
-        subTaskIds = (data['subTaskIds'] as List).cast<int>();
-      }
-
-      // 解析时间
-      DateTime? startTime;
-      if (data['startTime'] != null &&
-          data['startTime'].toString().isNotEmpty) {
-        startTime = DateTime.parse(data['startTime']);
-      }
-
-      DateTime? endTime;
-      if (data['endTime'] != null && data['endTime'].toString().isNotEmpty) {
-        endTime = DateTime.parse(data['endTime']);
-      }
-
-      // 创建Task对象
-      final task = Task(
-        name: data['name']?.toString() ?? '',
-        isAllDay: data['isAllDay'] == true,
-        description: data['description']?.toString() ?? '',
-        isDone: data['isDone'] == true,
-        rrule: data['rrule']?.toString().isEmpty == true
-            ? null
-            : data['rrule']?.toString(),
-        checkpoints: checkpoints,
-        startTime: startTime,
-        endTime: endTime,
-        parentTaskId: data['parentTaskId'] == 0 ? null : data['parentTaskId'],
-        subTaskIds: subTaskIds,
-        checklistId: data['checklistId'] == 0 ? null : data['checklistId'],
-      );
-
-      // 设置ID
-      task.id = data['id'] ?? Isar.autoIncrement;
-
-      debugPrint('成功重新创建Task: ${task.name}');
-      return task;
-    } catch (e) {
-      debugPrint('重新创建Task失败: $e');
-      return null;
-    }
-  }
-
-  /// 从JSON数据重新创建Habit对象
-  Future<Habit?> _recreateHabitFromData(String jsonData) async {
-    try {
-      debugPrint('开始解析Habit JSON: $jsonData');
-      final Map<String, dynamic> data = jsonDecode(jsonData);
-
-      // 解析时间
-      DateTime remindTime;
-      if (data['remindTime'] != null &&
-          data['remindTime'].toString().isNotEmpty) {
-        remindTime = DateTime.parse(data['remindTime']);
-      } else {
-        remindTime = DateTime.now(); // 默认值
-      }
-
-      DateTime startDate;
-      if (data['startDate'] != null &&
-          data['startDate'].toString().isNotEmpty) {
-        startDate = DateTime.parse(data['startDate']);
-      } else {
-        startDate = DateTime.now(); // 默认值
-      }
-
-      // 创建Habit对象
-      final habit = Habit(
-        name: data['name']?.toString() ?? '',
-        icon: data['icon']?.toString() ?? '',
-        remindTime: remindTime,
-        checkInCount: data['checkInCount'] ?? 1,
-        currentCheckInCount: data['currentCheckInCount'] ?? 0,
-        startDate: startDate,
-        totalCheckInCount: data['totalCheckInCount'] ?? 0,
-        longestContinuousCheckInDays: data['longestContinuousCheckInDays'] ?? 0,
-        rrule: data['rrule']?.toString().isEmpty == true
-            ? null
-            : data['rrule']?.toString(),
-      );
-
-      // 设置ID
-      habit.id = data['id'] ?? Isar.autoIncrement;
-
-      debugPrint('成功重新创建Habit: ${habit.name}');
-      return habit;
-    } catch (e) {
-      debugPrint('重新创建Habit失败: $e');
-      return null;
-    }
-  }
 }
+

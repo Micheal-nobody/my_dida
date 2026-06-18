@@ -60,4 +60,45 @@ class TaskValidator {
       }
     }
   }
+
+  /// Validates task reminder configuration
+  static void validateTaskReminderConfiguration({
+    required bool notificationEnabled,
+    required int? reminderOffsetMinutes,
+    required DateTime? startTime,
+    required bool isAllDay,
+  }) {
+    if (!notificationEnabled) {
+      if (reminderOffsetMinutes != null) {
+        throw const ValidationException(
+          'Reminder offset must be null when notification is disabled',
+        );
+      }
+      return;
+    }
+
+    if (startTime == null) {
+      throw const ValidationException(
+        'Tasks without a start time cannot enable reminders',
+      );
+    }
+
+    if (isAllDay) {
+      throw const ValidationException(
+        'All-day tasks cannot enable reminders',
+      );
+    }
+
+    if (reminderOffsetMinutes == null) {
+      throw const ValidationException(
+        'Reminder offset is required when notification is enabled',
+      );
+    }
+
+    if (reminderOffsetMinutes < 0 || reminderOffsetMinutes > 10080) {
+      throw const ValidationException(
+        'Reminder offset must be between 0 and 10080 minutes',
+      );
+    }
+  }
 }

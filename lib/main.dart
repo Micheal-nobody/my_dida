@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:go_router/go_router.dart';
+import 'package:my_dida/services/notification_service.dart';
+import 'package:my_dida/services/task_notification_navigation_service.dart';
 import 'package:provider/provider.dart';
 
 import 'core/ui/app_message_service.dart';
@@ -16,6 +21,9 @@ void main() async {
 
   // 初始化 Isar 数据库
   await setupLocator();
+
+  // 初始化本地通知
+  await getIt<NotificationService>().initialize();
 
   // 初始化操作栈
   final operationStack = getIt<OperationStackProvider>();
@@ -62,8 +70,46 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final TaskNotificationNavigationService _navigationService;
+  late final StreamSubscription<int> _taskSelectionSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _navigationService = getIt<TaskNotificationNavigationService>();
+    _taskSelectionSubscription = _navigationService.taskSelections.listen(
+      _openTaskDetailRoute,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pendingTaskId = _navigationService.consumePendingTaskId();
+      if (pendingTaskId != null) {
+        _openTaskDetailRoute(pendingTaskId);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _taskSelectionSubscription.cancel();
+    super.dispose();
+  }
+
+  void _openTaskDetailRoute(int taskId) {
+    if (!mounted) {
+      return;
+    }
+
+    goRouter.push('/tasks/$taskId');
+  }
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(

@@ -1,13 +1,21 @@
 import 'package:isar_community/isar.dart';
+import 'package:my_dida/model/entity/base_entity.dart';
 
-import '../config/locator.dart';
+import 'package:my_dida/config/locator.dart';
 
-abstract class BaseRepository<T> {
-  // 获取对应的 Isar 集合
+abstract class BaseRepository<T extends BaseEntity> {
+
+  // 获取对应的 Isar 集合,需要继承类自己实现
   IsarCollection<T> get collection;
 
   // 获取 Isar 实例
   Isar get _isar => getIt<Isar>();
+
+  // 根据 ID 获取实体
+  Future<T?> selectById(Id id) async => collection.get(id);
+
+  // 获取所有实体
+  Future<List<T>> selectAll() async => collection.where().findAll();
 
   // 插入单个实体
   Future<Id> insert(T entity) async =>
@@ -16,12 +24,6 @@ abstract class BaseRepository<T> {
   // 插入多个实体
   Future<List<Id>> insertAll(List<T> entities) async =>
       _isar.writeTxn(() async => collection.putAll(entities));
-
-  // 根据 ID 获取实体
-  Future<T?> getById(Id id) async => collection.get(id);
-
-  // 获取所有实体
-  Future<List<T>> getAll() async => collection.where().findAll();
 
   // 更新实体
   Future<void> update(T entity) async {
@@ -35,11 +37,11 @@ abstract class BaseRepository<T> {
       _isar.writeTxn(() async => collection.delete(id));
 
   // 删除多个实体
-  Future<int> deleteAll(List<Id> ids) async =>
+  Future<int> deleteByIds(List<Id> ids) async =>
       _isar.writeTxn(() async => collection.deleteAll(ids));
 
   // 删除所有实体
-  Future<void> deleteAllEntities() async {
+  Future<void> deleteAll() async {
     await _isar.writeTxn(() async {
       await collection.clear();
     });

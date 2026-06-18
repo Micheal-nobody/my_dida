@@ -5,6 +5,7 @@ import '../config/locator.dart';
 import '../model/entity/task.dart';
 import '../model/vo/task_calendar_view_data.dart';
 import '../repository/task_repository.dart';
+import '../services/task_calendar_projection_service.dart';
 import '../services/task_service.dart';
 
 class TaskProvider with ChangeNotifier {
@@ -12,14 +13,18 @@ class TaskProvider with ChangeNotifier {
     ChecklistVO? newChecklist, {
     TaskRepository? taskRepository,
     TaskService? taskService,
+    TaskCalendarProjectionService? taskCalendarProjectionService,
   }) : _taskRepository = taskRepository ?? getIt<TaskRepository>(),
        _taskService = taskService ?? getIt<TaskService>(),
+       _taskCalendarProjectionService =
+           taskCalendarProjectionService ?? getIt<TaskCalendarProjectionService>(),
        currentChecklist = newChecklist {
     updateCurrentTasks(currentChecklist);
   }
 
   final TaskRepository _taskRepository;
   final TaskService _taskService;
+  final TaskCalendarProjectionService _taskCalendarProjectionService;
 
   List<Task> _tasks = [];
   List<Task> _currentTasks = [];
@@ -67,7 +72,7 @@ class TaskProvider with ChangeNotifier {
       return;
     }
 
-    _tasks = await _taskRepository.getAll();
+    _tasks = await _taskRepository.selectAll();
     _taskCache[cacheKey] = _tasks;
     _lastCacheUpdate = DateTime.now();
     notifyListeners();
@@ -121,12 +126,12 @@ class TaskProvider with ChangeNotifier {
 
   Stream<Task?> watchTaskById(int id) => _taskRepository.watchById(id);
 
-  Future<Task?> getTaskById(int id) => _taskRepository.getById(id);
+  Future<Task?> getTaskById(int id) => _taskRepository.selectById(id);
 
   Future<List<Task>> getTasksByIds(List<int> ids) async {
     final tasks = <Task>[];
     for (final id in ids) {
-      final task = await _taskRepository.getById(id);
+      final task = await _taskRepository.selectById(id);
       if (task != null) {
         tasks.add(task);
       }
@@ -153,6 +158,8 @@ class TaskProvider with ChangeNotifier {
       parentTaskId: newTask.parentTaskId,
       checklistId: newTask.checklistId,
       rrule: newTask.rrule,
+      notificationEnabled: newTask.notificationEnabled,
+      reminderOffsetMinutes: newTask.reminderOffsetMinutes,
     );
     await _reloadAfterMutation();
   }
@@ -261,6 +268,19 @@ class TaskProvider with ChangeNotifier {
     await _reloadAfterMutation();
   }
 
+  Future<void> updateTaskReminder(
+    Task task, {
+    required bool enabled,
+    int? offsetMinutes,
+  }) async {
+    await _taskService.updateTaskReminder(
+      task,
+      enabled: enabled,
+      offsetMinutes: offsetMinutes,
+    );
+    await _reloadAfterMutation();
+  }
+
   Future<void> deleteTask(Task task) async {
     await _taskService.deleteTask(task);
     await _reloadAfterMutation();
@@ -301,7 +321,7 @@ class TaskProvider with ChangeNotifier {
       Duration(days: futureHorizonDays),
     );
     final allTasks = await loadTasksForDateRange(startDate, futureEndDate);
-    return _taskService.buildCalendarTaskViewData(
+    return _taskCalendarProjectionService.buildCalendarTaskViewData(
       tasks: allTasks,
       visibleDates: visibleDates,
       rruleBatchLimit: rruleBatchLimit,

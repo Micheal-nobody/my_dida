@@ -8,6 +8,9 @@ import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/repository/task_repository.dart';
+import 'package:my_dida/services/noop_task_reminder_scheduler.dart';
+import 'package:my_dida/services/task_reminder_scheduler_port.dart';
+import 'package:my_dida/services/task_reminder_service.dart';
 import 'package:my_dida/services/task_service.dart';
 
 class TaskTestHarness {
@@ -19,8 +22,12 @@ class TaskTestHarness {
   TaskRepository get taskRepository => getIt<TaskRepository>();
   TaskService get taskService => getIt<TaskService>();
   OperationStackProvider get operationStack => getIt<OperationStackProvider>();
+  TaskReminderSchedulerPort get taskReminderScheduler =>
+      getIt<TaskReminderSchedulerPort>();
 
-  static Future<TaskTestHarness> create() async {
+  static Future<TaskTestHarness> create({
+    TaskReminderSchedulerPort? taskReminderScheduler,
+  }) async {
     TestWidgetsFlutterBinding.ensureInitialized();
     await getIt.reset();
 
@@ -35,6 +42,10 @@ class TaskTestHarness {
       ..registerSingleton<Isar>(isar)
       ..registerSingleton<TaskRepository>(TaskRepository())
       ..registerSingleton<OperationStackProvider>(OperationStackProvider())
+      ..registerSingleton<TaskReminderService>(TaskReminderService())
+      ..registerSingleton<TaskReminderSchedulerPort>(
+        taskReminderScheduler ?? NoopTaskReminderScheduler(),
+      )
       ..registerSingleton<TaskService>(TaskService());
 
     return TaskTestHarness._(isar, tempDir);

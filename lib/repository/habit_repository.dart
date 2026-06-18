@@ -18,6 +18,13 @@ class HabitRepository extends BaseRepository<Habit> {
     });
   }
 
+  // 更新习惯实体
+  Future<void> updateHabit(Habit habit) async {
+    await _isar.writeTxn(() async {
+      await _isar.habits.put(habit);
+    });
+  }
+
   // 更新习惯的打卡次数
   Future<void> updateCheckInCount(Habit habit, int newCount) async {
     await _isar.writeTxn(() async {

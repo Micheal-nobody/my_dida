@@ -10,17 +10,27 @@ import '../model/vo/task_calendar_view_data.dart';
 import '../provider/operation_stack_provider.dart';
 import '../repository/task_repository.dart';
 import '../utils/RRuleUtil.dart';
+import 'task_reminder_scheduler_port.dart';
+import 'task_reminder_service.dart';
 
 /// Service class for task-related business logic.
 class TaskService {
   TaskService({
     TaskRepository? taskRepository,
     OperationStackProvider? operationStack,
+    TaskReminderService? taskReminderService,
+    TaskReminderSchedulerPort? taskReminderScheduler,
   }) : _taskRepository = taskRepository ?? getIt<TaskRepository>(),
-       _operationStack = operationStack ?? getIt<OperationStackProvider>();
+       _operationStack = operationStack ?? getIt<OperationStackProvider>(),
+       _taskReminderService =
+           taskReminderService ?? getIt<TaskReminderService>(),
+       _taskReminderScheduler =
+           taskReminderScheduler ?? getIt<TaskReminderSchedulerPort>();
 
   final TaskRepository _taskRepository;
   final OperationStackProvider _operationStack;
+  final TaskReminderService _taskReminderService;
+  final TaskReminderSchedulerPort _taskReminderScheduler;
 
   Future<Task> createTask({
     required String name,
@@ -31,6 +41,8 @@ class TaskService {
     int? parentTaskId,
     int? checklistId,
     String? rrule,
+    bool notificationEnabled = false,
+    int? reminderOffsetMinutes,
   }) async {
     try {
       TaskValidator.validateTaskName(name);
@@ -38,6 +50,12 @@ class TaskService {
       TaskValidator.validateTaskTimeRange(startTime, endTime);
       TaskValidator.validateChecklistId(checklistId);
       TaskValidator.validateRRule(rrule);
+      _taskReminderService.validateTaskReminderConfiguration(
+        notificationEnabled: notificationEnabled,
+        reminderOffsetMinutes: reminderOffsetMinutes,
+        startTime: startTime,
+        isAllDay: isAllDay,
+      );
 
       final task = Task(
         name: name.trim(),
@@ -48,6 +66,8 @@ class TaskService {
         parentTaskId: parentTaskId,
         checklistId: checklistId ?? AppConstants.defaultCheckList.id,
         rrule: rrule,
+        notificationEnabled: notificationEnabled,
+        reminderOffsetMinutes: reminderOffsetMinutes,
       );
 
       await _taskRepository.addTask(task);
@@ -59,6 +79,7 @@ class TaskService {
       await _operationStack.addOperation(
         Operation.createAddTaskOperation(task),
       );
+      await _syncTaskReminder(task);
       return task;
     } catch (e) {
       throw TaskException('Failed to create task: ${e.toString()}');
@@ -67,10 +88,10 @@ class TaskService {
 
   Future<void> updateTaskCompletion(Task task, bool isDone) async {
     try {
-      final oldTask = _copyTask(task);
+      final oldTask = task.copyWith();
       await _taskRepository.updateTaskIsDone(task, isDone);
 
-      final newTask = _copyTask(task)..isDone = isDone;
+      final newTask = task.copyWith(isDone: isDone);
       final description = isDone
           ? '${UIStrings.completedTask}"${task.name}"'
           : '${UIStrings.cancelledTaskCompletion}"${task.name}"${UIStrings.completionStatus}';
@@ -78,6 +99,8 @@ class TaskService {
       await _operationStack.addOperation(
         Operation.createUpdateTaskOperation(oldTask, newTask, description),
       );
+
+      await _syncTaskReminder(task);
 
       if (isDone && task.rrule != null && task.rrule!.isNotEmpty) {
         await _createRecurringTask(task);
@@ -122,6 +145,18 @@ class TaskService {
   }) async {
     try {
       TaskValidator.validateTaskTimeRange(startTime, endTime);
+      final nextIsAllDay = isAllDay ?? task.isAllDay;
+      final nextNotificationEnabled =
+          task.notificationEnabled && startTime != null && !nextIsAllDay;
+      final nextReminderOffsetMinutes = nextNotificationEnabled
+          ? task.reminderOffsetMinutes
+          : null;
+      _taskReminderService.validateTaskReminderConfiguration(
+        notificationEnabled: nextNotificationEnabled,
+        reminderOffsetMinutes: nextReminderOffsetMinutes,
+        startTime: startTime,
+        isAllDay: nextIsAllDay,
+      );
       await _updateTask(
         task: task,
         mutate: (draft) {
@@ -131,9 +166,13 @@ class TaskService {
           if (isAllDay != null) {
             draft.isAllDay = isAllDay;
           }
+          draft
+            ..notificationEnabled = nextNotificationEnabled
+            ..reminderOffsetMinutes = nextReminderOffsetMinutes;
         },
         description:
             '${UIStrings.modifiedTimeRange}"${task.name}"${UIStrings.timeRangeSuffix}',
+        syncReminder: true,
       );
     } catch (e) {
       throw TaskException('Failed to update task time range: ${e.toString()}');
@@ -147,6 +186,7 @@ class TaskService {
         task: task,
         mutate: (draft) => draft.rrule = rrule,
         description: '修改了任务"${task.name}"的重复规则',
+        syncReminder: true,
       );
     } catch (e) {
       throw TaskException('Failed to update task rrule: ${e.toString()}');
@@ -154,9 +194,50 @@ class TaskService {
   }
 
   Future<void> clearTaskSchedule(Task task) async {
-    await updateTaskTimeRange(task, null, null);
-    if (task.rrule != null) {
-      await updateTaskRRule(task, null);
+    try {
+      await _updateTask(
+        task: task,
+        mutate: (draft) {
+          draft
+            ..startTime = null
+            ..endTime = null
+            ..rrule = null
+            ..notificationEnabled = false
+            ..reminderOffsetMinutes = null;
+        },
+        description: '清除了任务"${task.name}"的日程安排',
+        syncReminder: true,
+      );
+    } catch (e) {
+      throw TaskException('Failed to clear task schedule: ${e.toString()}');
+    }
+  }
+
+  Future<void> updateTaskReminder(
+    Task task, {
+    required bool enabled,
+    int? offsetMinutes,
+  }) async {
+    try {
+      final reminderOffsetMinutes = enabled ? offsetMinutes : null;
+      _taskReminderService.validateTaskReminderConfiguration(
+        notificationEnabled: enabled,
+        reminderOffsetMinutes: reminderOffsetMinutes,
+        startTime: task.startTime,
+        isAllDay: task.isAllDay,
+      );
+      await _updateTask(
+        task: task,
+        mutate: (draft) {
+          draft
+            ..notificationEnabled = enabled
+            ..reminderOffsetMinutes = reminderOffsetMinutes;
+        },
+        description: '修改了任务"${task.name}"的提醒设置',
+        syncReminder: true,
+      );
+    } catch (e) {
+      throw TaskException('Failed to update task reminder: ${e.toString()}');
     }
   }
 
@@ -234,7 +315,7 @@ class TaskService {
 
   Future<void> deleteSubTask(Task parent, int subTaskId) async {
     try {
-      final subTask = await _taskRepository.getById(subTaskId);
+      final subTask = await _taskRepository.selectById(subTaskId);
       if (subTask == null) {
         final newIds = List<int>.from(parent.subTaskIds)..remove(subTaskId);
         await _taskRepository.update(parent..subTaskIds = newIds);
@@ -256,12 +337,12 @@ class TaskService {
         );
       }
 
-      final oldSubTask = _copyTask(subTask);
+      final oldSubTask = subTask.copyWith();
       await _taskRepository.update(subTask..parentTaskId = mainTask.id);
       await _operationStack.addOperation(
         Operation.createUpdateTaskOperation(
           oldSubTask,
-          _copyTask(subTask),
+          subTask.copyWith(),
           '关联了任务"${subTask.name}"的主任务',
         ),
       );
@@ -295,7 +376,7 @@ class TaskService {
       }
 
       for (final subTaskId in task.subTaskIds) {
-        final subTask = await _taskRepository.getById(subTaskId);
+        final subTask = await _taskRepository.selectById(subTaskId);
         if (subTask != null) {
           await deleteTask(subTask);
         } else {
@@ -304,6 +385,7 @@ class TaskService {
       }
 
       await _taskRepository.deleteById(task.id);
+      await _taskReminderScheduler.cancelByTaskId(task.id);
     } catch (e) {
       throw TaskException('Failed to delete task: ${e.toString()}');
     }
@@ -311,7 +393,7 @@ class TaskService {
 
   Future<List<Task>> searchIncompleteTasks(String query) async {
     try {
-      final allTasks = await _taskRepository.getAll();
+      final allTasks = await _taskRepository.selectAll();
       final incompleteTasks = allTasks.where((task) => !task.isDone).toList()
         ..sort((a, b) => b.id.compareTo(a.id));
 
@@ -332,117 +414,26 @@ class TaskService {
     }
   }
 
-  TaskCalendarViewData buildCalendarTaskViewData({
-    required List<Task> tasks,
-    required List<DateTime> visibleDates,
-    required Map<DateTime, int> rruleBatchLimit,
-    int futureHorizonDays = 30,
-  }) {
-    final tasksMap = <DateTime, List<Task>>{};
-    final allDayTasksForDates = <DateTime, List<Task>>{};
-    final crossDayTasks = _buildCrossDayTasks(tasks, visibleDates);
-    final crossDayTaskCountForDates = <DateTime, int>{};
-    final futureTasksMap = <DateTime, List<Task>>{};
-    final rruleHasMore = <DateTime, bool>{};
-
-    for (final date in visibleDates) {
-      final normalizedDate = DateTime(date.year, date.month, date.day);
-      final tasksForDate = _buildTasksForDate(
-        tasks: tasks,
-        normalizedDate: normalizedDate,
-        limit: rruleBatchLimit[normalizedDate] ?? 5,
-      );
-
-      tasksMap[normalizedDate] = tasksForDate.tasks;
-      allDayTasksForDates[normalizedDate] = tasksForDate.tasks
-          .where(
-            (task) =>
-                _shouldRenderInAllDaySection(task) && !_isCrossDayTask(task),
-          )
-          .toList();
-      crossDayTaskCountForDates[normalizedDate] = crossDayTasks
-          .where((task) => _doesCrossDayTaskOverlapDate(task, normalizedDate))
-          .length;
-      rruleHasMore[normalizedDate] = tasksForDate.hasMoreRRule;
-    }
-
-    if (visibleDates.isNotEmpty) {
-      final lastVisibleDate = visibleDates.last;
-      for (int i = 1; i <= futureHorizonDays; i++) {
-        final date = lastVisibleDate.add(Duration(days: i));
-        final normalizedDate = DateTime(date.year, date.month, date.day);
-        final futureTasks =
-            tasks.where((task) {
-              if (task.rrule != null && task.rrule!.isNotEmpty) {
-                return false;
-              }
-              if (task.startTime == null || task.isDone) {
-                return false;
-              }
-
-              final taskDate = DateTime(
-                task.startTime!.year,
-                task.startTime!.month,
-                task.startTime!.day,
-              );
-              return taskDate.isAtSameMomentAs(normalizedDate);
-            }).toList()..sort(
-              (a, b) => (a.startTime ?? DateTime(0)).compareTo(
-                b.startTime ?? DateTime(0),
-              ),
-            );
-
-        if (futureTasks.isNotEmpty) {
-          futureTasksMap[normalizedDate] = futureTasks;
-        }
-      }
-    }
-
-    return TaskCalendarViewData(
-      tasksForDates: tasksMap,
-      allDayTasksForDates: allDayTasksForDates,
-      crossDayTasks: crossDayTasks,
-      crossDayTaskCountForDates: crossDayTaskCountForDates,
-      futureTasks: futureTasksMap,
-      rruleHasMore: rruleHasMore,
-    );
-  }
-
   Future<void> _updateTask({
     required Task task,
     required void Function(Task draft) mutate,
     required String description,
+    bool syncReminder = false,
   }) async {
-    final oldTask = _copyTask(task);
+    final oldTask = task.copyWith();
     mutate(task);
     await _taskRepository.update(task);
     await _operationStack.addOperation(
       Operation.createUpdateTaskOperation(
         oldTask,
-        _copyTask(task),
+        task.copyWith(),
         description,
       ),
     );
+    if (syncReminder) {
+      await _syncTaskReminder(task);
+    }
   }
-
-  Task _copyTask(Task task) => Task(
-    name: task.name,
-    isAllDay: task.isAllDay,
-    description: task.description,
-    isDone: task.isDone,
-    checkpoints: task.checkpoints
-        .map(
-          (checkpoint) =>
-              CheckPoint(name: checkpoint.name, isDone: checkpoint.isDone),
-        )
-        .toList(),
-    startTime: task.startTime,
-    endTime: task.endTime,
-    parentTaskId: task.parentTaskId,
-    subTaskIds: List<int>.from(task.subTaskIds),
-    checklistId: task.checklistId,
-    rrule: task.rrule,
-  )..id = task.id;
 
   Future<void> _createRecurringTask(Task task) async {
     final start = task.startTime;
@@ -501,9 +492,12 @@ class TaskService {
       subTaskIds: List<int>.from(task.subTaskIds),
       checklistId: task.checklistId,
       rrule: task.rrule,
+      notificationEnabled: task.notificationEnabled,
+      reminderOffsetMinutes: task.reminderOffsetMinutes,
     );
 
     await _taskRepository.addTask(newRecurring);
+    await _syncTaskReminder(newRecurring);
   }
 
   Future<void> _updateParentTaskSubIds(
@@ -511,7 +505,7 @@ class TaskService {
     int subTaskId, {
     required bool isAdd,
   }) async {
-    final parentTask = await _taskRepository.getById(parentTaskId);
+    final parentTask = await _taskRepository.selectById(parentTaskId);
     if (parentTask == null) {
       return;
     }
@@ -544,16 +538,19 @@ class TaskService {
       subTaskIds: [],
       checklistId: originalTask.checklistId,
       rrule: originalTask.rrule,
+      notificationEnabled: originalTask.notificationEnabled,
+      reminderOffsetMinutes: originalTask.reminderOffsetMinutes,
     );
 
     await _taskRepository.addTask(copiedTask);
     await _operationStack.addOperation(
       Operation.createAddTaskOperation(copiedTask),
     );
+    await _syncTaskReminder(copiedTask);
 
     final newSubTaskIds = <int>[];
     for (final subTaskId in originalTask.subTaskIds) {
-      final subTask = await _taskRepository.getById(subTaskId);
+      final subTask = await _taskRepository.selectById(subTaskId);
       if (subTask == null) {
         continue;
       }
@@ -565,195 +562,13 @@ class TaskService {
     return copiedTask;
   }
 
-  _TasksForDateResult _buildTasksForDate({
-    required List<Task> tasks,
-    required DateTime normalizedDate,
-    required int limit,
-  }) {
-    final baseTasksForDate = tasks.where((task) {
-      if (task.rrule != null && task.rrule!.isNotEmpty) {
-        return false;
-      }
-      if (task.startTime == null) {
-        return false;
-      }
-      final taskDate = DateTime(
-        task.startTime!.year,
-        task.startTime!.month,
-        task.startTime!.day,
-      );
-      return taskDate.isAtSameMomentAs(normalizedDate);
-    }).toList();
-
-    final rruleTasksForDate = <Task>[];
-    for (final task in tasks) {
-      if (task.rrule == null || task.rrule!.isEmpty || task.startTime == null) {
-        continue;
-      }
-
-      final occurrences = RRuleUtil.getOccurrencesInRange(
-        task.startTime!,
-        task.rrule!,
-        normalizedDate,
-        normalizedDate.add(const Duration(days: 1)),
-      );
-
-      if (!occurrences.any((date) => date.isAtSameMomentAs(normalizedDate))) {
-        continue;
-      }
-
-      final instanceStart = DateTime(
-        normalizedDate.year,
-        normalizedDate.month,
-        normalizedDate.day,
-        task.startTime!.hour,
-        task.startTime!.minute,
-      );
-
-      final instance = _copyTask(task)..startTime = instanceStart;
-      rruleTasksForDate.add(instance);
+  Future<void> _syncTaskReminder(Task task) async {
+    final plan = _taskReminderService.buildPlan(task);
+    if (plan == null) {
+      await _taskReminderScheduler.cancelByTaskId(task.id);
+      return;
     }
 
-    final combined = [
-      ...baseTasksForDate,
-      ...rruleTasksForDate,
-    ].where((task) => !task.isDone).toList();
-
-    final allDayTasks = combined.where((task) => task.isAllDay).toList();
-    final timedNonRRuleTasks =
-        combined
-            .where(
-              (task) =>
-                  (task.rrule == null || task.rrule!.isEmpty) && !task.isAllDay,
-            )
-            .toList()
-          ..sort(
-            (a, b) => (a.startTime ?? DateTime(0)).compareTo(
-              b.startTime ?? DateTime(0),
-            ),
-          );
-
-    final timedRRuleTasks =
-        combined
-            .where(
-              (task) =>
-                  task.rrule != null &&
-                  task.rrule!.isNotEmpty &&
-                  !task.isAllDay,
-            )
-            .toList()
-          ..sort(
-            (a, b) => (a.startTime ?? DateTime(0)).compareTo(
-              b.startTime ?? DateTime(0),
-            ),
-          );
-
-    return _TasksForDateResult(
-      tasks: [
-        ...allDayTasks,
-        ...timedNonRRuleTasks,
-        ...timedRRuleTasks.take(limit),
-      ],
-      hasMoreRRule: timedRRuleTasks.length > limit,
-    );
+    await _taskReminderScheduler.schedule(plan);
   }
-
-  List<Task> _buildCrossDayTasks(
-    List<Task> tasks,
-    List<DateTime> visibleDates,
-  ) {
-    if (visibleDates.isEmpty) {
-      return const [];
-    }
-
-    final normalizedVisibleDates = visibleDates
-        .map((date) => DateTime(date.year, date.month, date.day))
-        .toList();
-    final firstVisibleDate = normalizedVisibleDates.first;
-    final lastVisibleDate = normalizedVisibleDates.last;
-
-    return tasks
-        .where(
-          (task) =>
-              !task.isDone &&
-              _isCrossDayTask(task) &&
-              _doesTaskOverlapVisibleRange(
-                task,
-                firstVisibleDate,
-                lastVisibleDate,
-              ),
-        )
-        .toList()
-      ..sort((a, b) {
-        final startComparison = (a.startTime ?? DateTime(0)).compareTo(
-          b.startTime ?? DateTime(0),
-        );
-        if (startComparison != 0) {
-          return startComparison;
-        }
-        return a.id.compareTo(b.id);
-      });
-  }
-
-  bool _shouldRenderInAllDaySection(Task task) {
-    if (task.startTime == null) {
-      return true;
-    }
-
-    return task.isAllDay ||
-        (task.startTime!.hour == 0 && task.startTime!.minute == 0);
-  }
-
-  bool _isCrossDayTask(Task task) {
-    if (task.startTime == null || task.endTime == null) {
-      return false;
-    }
-
-    final startTime = task.startTime!;
-    final endTime = task.endTime!;
-    final sameDay =
-        startTime.year == endTime.year &&
-        startTime.month == endTime.month &&
-        startTime.day == endTime.day;
-    final isCrossDay = !sameDay && endTime.isAfter(startTime);
-    final isOver24Hours = endTime.difference(startTime).inHours > 24;
-    return isCrossDay || isOver24Hours;
-  }
-
-  bool _doesTaskOverlapVisibleRange(
-    Task task,
-    DateTime firstVisibleDate,
-    DateTime lastVisibleDate,
-  ) {
-    final startTime = task.startTime;
-    final endTime = task.endTime;
-    if (startTime == null || endTime == null) {
-      return false;
-    }
-
-    final startDate = DateTime(startTime.year, startTime.month, startTime.day);
-    final endDate = DateTime(endTime.year, endTime.month, endTime.day);
-    return !startDate.isAfter(lastVisibleDate) &&
-        !endDate.isBefore(firstVisibleDate);
-  }
-
-  bool _doesCrossDayTaskOverlapDate(Task task, DateTime normalizedDate) {
-    final startTime = task.startTime;
-    final endTime = task.endTime;
-    if (startTime == null || endTime == null) {
-      return false;
-    }
-
-    final startDate = DateTime(startTime.year, startTime.month, startTime.day);
-    final endDate = DateTime(endTime.year, endTime.month, endTime.day);
-    return !normalizedDate.isBefore(startDate) &&
-        !normalizedDate.isAfter(endDate);
-  }
-}
-
-class _TasksForDateResult {
-  const _TasksForDateResult({required this.tasks, required this.hasMoreRRule});
-
-  final List<Task> tasks;
-  final bool hasMoreRRule;
 }

@@ -177,41 +177,12 @@ class Operation {
 
   /// 将Task转换为JSON字符串（使用dart:convert确保正确格式）
   static String _taskToJson(Task task) {
-    final Map<String, dynamic> taskMap = {
-      'id': task.id,
-      'name': task.name,
-      'description': task.description,
-      'isDone': task.isDone,
-      'rrule': task.rrule,
-      'startTime': task.startTime?.toIso8601String(),
-      'endTime': task.endTime?.toIso8601String(),
-      'parentTaskId': task.parentTaskId,
-      'subTaskIds': task.subTaskIds,
-      'checklistId': task.checklistId,
-      'checkpoints': task.checkpoints
-          .map((cp) => {'name': cp.name, 'isDone': cp.isDone})
-          .toList(),
-    };
-
-    return jsonEncode(taskMap);
+    return jsonEncode(task.toJson());
   }
 
   /// 将Habit转换为JSON字符串（使用dart:convert确保正确格式）
   static String _habitToJson(Habit habit) {
-    final Map<String, dynamic> habitMap = {
-      'id': habit.id,
-      'name': habit.name,
-      'icon': habit.icon,
-      'remindTime': habit.remindTime.toIso8601String(),
-      'checkInCount': habit.checkInCount,
-      'currentCheckInCount': habit.currentCheckInCount,
-      'startDate': habit.startDate.toIso8601String(),
-      'totalCheckInCount': habit.totalCheckInCount,
-      'longestContinuousCheckInDays': habit.longestContinuousCheckInDays,
-      'rrule': habit.rrule,
-    };
-
-    return jsonEncode(habitMap);
+    return jsonEncode(habit.toJson());
   }
 
   @override

@@ -23,6 +23,9 @@ dependencies:
   logger: ^2.6.1 # 日志
   get_it: ^7.2.0 # 依赖注入，用于实现 服务定位器（Service Locator）模式
   intl: ^0.20.2 # 国际化和日期格式化
+  flutter_local_notifications: 19.5.0
+  flutter_timezone: 4.1.1
+  timezone: ^0.10.1
 
 # dev_dependencies 表示测试依赖
 dev_dependencies:

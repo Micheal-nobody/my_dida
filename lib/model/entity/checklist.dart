@@ -1,10 +1,11 @@
 import 'package:isar_community/isar.dart';
+import 'package:my_dida/model/entity/base_entity.dart';
 
 part 'checklist.g.dart';
 
 /// 任务所属的家庭
 @Collection()
-class Checklist {
+class Checklist extends BaseEntity {
   // 任务列表中的任务
 
   Checklist({
@@ -13,7 +14,6 @@ class Checklist {
     this.taskIds = const [],
   });
 
-  Id id = Isar.autoIncrement;
   @Index()
   String name;
   int colorValue; // 任务列表的颜色
