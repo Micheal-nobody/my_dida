@@ -111,4 +111,18 @@ class TaskRepository extends BaseRepository<Task> {
         .endTimeBetween(dateRange.start, dateRange.end)
         .findAll();
   }
+
+  Stream<List<Task>> watchByChecklistId(int id) =>
+      collection.where().checklistIdEqualTo(id).watch(fireImmediately: true);
+
+  Stream<List<Task>> watchTodayTasks() {
+    final todayRange = DateTimeUtils.getTodayRange();
+    return collection
+        .where()
+        .filter()
+        .startTimeBetween(todayRange.start, todayRange.end)
+        .or()
+        .endTimeBetween(todayRange.start, todayRange.end)
+        .watch(fireImmediately: true);
+  }
 }

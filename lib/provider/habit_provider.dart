@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../config/locator.dart';
@@ -9,18 +10,24 @@ import 'operation_stack_provider.dart';
 class HabitProvider with ChangeNotifier {
   HabitProvider()
     : _habitRepository = getIt<HabitRepository>(),
-      _operationStack = getIt<OperationStackProvider>();
+      _operationStack = getIt<OperationStackProvider>() {
+    _subscription = _habitRepository.watchAll().listen((habits) {
+      _habits = habits;
+      notifyListeners();
+    });
+  }
   List<Habit> _habits = [];
   final HabitRepository _habitRepository;
   final OperationStackProvider _operationStack;
+  StreamSubscription<List<Habit>>? _subscription;
 
   // Getters
   List<Habit> get habits => _habits;
 
-  // 加载所有习惯
-  Future<void> loadAllHabits() async {
-    _habits = await _habitRepository.getAllHabits();
-    notifyListeners();
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   // 添加习惯
@@ -30,8 +37,6 @@ class HabitProvider with ChangeNotifier {
     // 记录添加习惯操作
     final operation = Operation.createAddHabitOperation(habit);
     await _operationStack.addOperation(operation);
-
-    await loadAllHabits();
   }
 
   // 更新习惯
@@ -48,8 +53,6 @@ class HabitProvider with ChangeNotifier {
       '更新了习惯"${habit.name}"',
     );
     await _operationStack.addOperation(operation);
-
-    await loadAllHabits();
   }
 
   // 删除习惯
@@ -62,7 +65,6 @@ class HabitProvider with ChangeNotifier {
     await _operationStack.addOperation(operation);
 
     await _habitRepository.deleteHabit(id);
-    await loadAllHabits();
   }
 
   // 打卡一次
@@ -76,14 +78,12 @@ class HabitProvider with ChangeNotifier {
       habit.currentCheckInCount += 1;
       habit.totalCheckInCount += 1;
       await _habitRepository.updateHabit(habit);
-      await loadAllHabits();
     }
   }
 
   // 跳过今天
   Future<void> skipToday(Habit habit) async {
     await _habitRepository.updateHabit(habit);
-    await loadAllHabits();
   }
 
   // 检查今日是否完成打卡
@@ -102,7 +102,6 @@ class HabitProvider with ChangeNotifier {
       habit.currentCheckInCount = 0;
       await _habitRepository.updateHabit(habit);
     }
-    await loadAllHabits();
   }
 
   // 监听习惯变化
@@ -117,7 +116,6 @@ class HabitProvider with ChangeNotifier {
       habit.currentCheckInCount -= 1;
       habit.totalCheckInCount -= 1;
       await _habitRepository.updateHabit(habit);
-      await loadAllHabits();
     }
   }
 
@@ -128,6 +126,5 @@ class HabitProvider with ChangeNotifier {
       habit.totalCheckInCount -= 1;
     }
     await _habitRepository.updateHabit(habit);
-    await loadAllHabits();
   }
 }

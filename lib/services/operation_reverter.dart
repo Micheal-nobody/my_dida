@@ -1,48 +1,93 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../config/locator.dart';
-import '../model/entity/habit.dart';
 import '../model/entity/operation.dart';
-import '../model/entity/task.dart';
-import '../repository/habit_repository.dart';
-import '../repository/task_repository.dart';
+import '../model/entity/revertible_entity.dart';
+import '../repository/base_repository.dart';
+
+// ==================================================================
+// 多态还原注册器
+// ==================================================================
+
+/// 实体工厂别名：从 JSON Map 反序列化还原为实体实例
+typedef EntityFactory = RevertibleEntity Function(Map<String, dynamic> json);
+
+/// 实体注册器：维护 OperationTarget → (实体工厂, 仓储实例) 的映射
+/// 当引入新的可撤销实体，只需在此注册一对目标和工厂，无需编写新的 Reverter 子类。
+class EntityRegistry {
+  final Map<OperationTarget, _EntityEntry> _entries = {};
+
+  /// 注册目标类型对应的实体工厂与仓储
+  void register<T extends RevertibleEntity>(
+    OperationTarget target,
+    EntityFactory factory,
+    BaseRepository<T> repository,
+  ) {
+    _entries[target] = _EntityEntry(factory, repository);
+  }
+
+  /// 获取工厂
+  EntityFactory? getFactory(OperationTarget target) => _entries[target]?.factory;
+
+  /// 获取仓储
+  BaseRepository? getRepository(OperationTarget target) => _entries[target]?.repository;
+}
+
+class _EntityEntry {
+  final EntityFactory factory;
+  final BaseRepository repository;
+
+  const _EntityEntry(this.factory, this.repository);
+}
+
+// ==================================================================
+// 统一撤销适配器
+// ==================================================================
 
 /// 抽象撤销适配器合同
 abstract class OperationReverter {
   Future<bool> revert(Operation operation);
 }
 
-/// 针对任务操作的撤销重做实现类
-class TaskOperationReverter implements OperationReverter {
-  TaskOperationReverter({TaskRepository? taskRepository})
-      : _taskRepository = taskRepository ?? getIt<TaskRepository>();
+/// 基于 EntityRegistry 的泛化撤销适配器：任何实体只需注册即可获得撤销支持。
+class GenericOperationReverter implements OperationReverter {
+  GenericOperationReverter({EntityRegistry? entityRegistry})
+      : _entityRegistry = entityRegistry ?? getIt<EntityRegistry>();
 
-  final TaskRepository _taskRepository;
+  final EntityRegistry _entityRegistry;
 
   @override
   Future<bool> revert(Operation operation) async {
     try {
+      final repository = _entityRegistry.getRepository(operation.target);
+      final factory = _entityRegistry.getFactory(operation.target);
+
+      if (repository == null || factory == null) {
+        debugPrint('未为 target=${operation.target} 注册实体，无法撤销');
+        return false;
+      }
+
       switch (operation.type) {
         case OperationType.add:
-          // 撤锁添加操作：利用 targetId 直接从数据库中彻底抹除该任务即可
-          await _taskRepository.deleteById(operation.targetId);
+          // 撤销添加：直接删除实体
+          await repository.deleteById(operation.targetId);
           break;
 
         case OperationType.delete:
-          // 撤锁删除操作：利用 previousData 记录的完整任务快照反序列化重建并还原写入
+          // 撤销删除：反序列化 previousData 重建并还原写入
           if (operation.previousData != null) {
-            final task = Task.fromJson(jsonDecode(operation.previousData!));
-            await _taskRepository.addData(task);
+            final entity = factory(jsonDecode(operation.previousData!));
+            await repository.insert(entity);
           } else {
             return false;
           }
           break;
 
         case OperationType.update:
-          // 撤锁更新操作：将任务数据还原为修改前的 snapshot 快照（即 previousData）并更新
+          // 撤销更新：反序列化 previousData 快照并用 update 还原
           if (operation.previousData != null) {
-            final task = Task.fromJson(jsonDecode(operation.previousData!));
-            await _taskRepository.update(task);
+            final entity = factory(jsonDecode(operation.previousData!));
+            await repository.update(entity);
           } else {
             return false;
           }
@@ -50,51 +95,7 @@ class TaskOperationReverter implements OperationReverter {
       }
       return true;
     } catch (e) {
-      debugPrint('TaskOperationReverter 撤销操作执行失败: $e');
-      return false;
-    }
-  }
-}
-
-/// 针对习惯操作的撤销重做实现类
-class HabitOperationReverter implements OperationReverter {
-  HabitOperationReverter({HabitRepository? habitRepository})
-      : _habitRepository = habitRepository ?? getIt<HabitRepository>();
-
-  final HabitRepository _habitRepository;
-
-  @override
-  Future<bool> revert(Operation operation) async {
-    try {
-      switch (operation.type) {
-        case OperationType.add:
-          // 撤锁添加操作：直接删除已经添加的习惯
-          await _habitRepository.deleteHabit(operation.targetId);
-          break;
-
-        case OperationType.delete:
-          // 撤锁删除操作：利用 previousData 数据反序列化重建并写回
-          if (operation.previousData != null) {
-            final habit = Habit.fromJson(jsonDecode(operation.previousData!));
-            await _habitRepository.addHabit(habit);
-          } else {
-            return false;
-          }
-          break;
-
-        case OperationType.update:
-          // 撤锁更新操作：将习惯数据还原至 previousData 保存的历史状态并更新（调用新引入的 updateHabit）
-          if (operation.previousData != null) {
-            final habit = Habit.fromJson(jsonDecode(operation.previousData!));
-            await _habitRepository.updateHabit(habit);
-          } else {
-            return false;
-          }
-          break;
-      }
-      return true;
-    } catch (e) {
-      debugPrint('HabitOperationReverter 撤销操作执行失败: $e');
+      debugPrint('GenericOperationReverter 撤销操作执行失败: $e');
       return false;
     }
   }

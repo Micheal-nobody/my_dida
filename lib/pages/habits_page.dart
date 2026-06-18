@@ -15,15 +15,6 @@ class HabitsPage extends StatefulWidget {
 
 class _HabitsPageState extends State<HabitsPage> {
   @override
-  void initState() {
-    super.initState();
-    // 加载习惯数据
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<HabitProvider>(context, listen: false).loadAllHabits();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       title: const Text('习惯管理'),

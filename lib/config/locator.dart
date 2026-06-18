@@ -18,7 +18,6 @@ import 'package:my_dida/services/task_calendar_projection_service.dart';
 import 'package:my_dida/services/task_reminder_scheduler_port.dart';
 import 'package:my_dida/services/task_notification_navigation_service.dart';
 import 'package:my_dida/services/task_reminder_service.dart';
-// TaskService 已内联到 TaskProvider，不再需要注册
 import 'package:path_provider/path_provider.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -40,22 +39,27 @@ Future<void> setupLocator() async {
     ..registerSingleton<TaskRepository>(TaskRepository())
     ..registerSingleton<ChecklistRepository>(ChecklistRepository())
     ..registerSingleton<HabitRepository>(HabitRepository())
-    // 注册撤销操作适配器
-    ..registerSingleton<OperationReverter>(
-      TaskOperationReverter(),
-      instanceName: 'task',
+    // 注册多态实体还原注册器并注册实体工厂
+    ..registerSingleton<EntityRegistry>(EntityRegistry()
+      ..register<Task>(
+        OperationTarget.task,
+        (json) => Task.fromJson(json),
+        getIt<TaskRepository>(),
+      )
+      ..register<Habit>(
+        OperationTarget.habit,
+        (json) => Habit.fromJson(json),
+        getIt<HabitRepository>(),
+      ),
     )
-    ..registerSingleton<OperationReverter>(
-      HabitOperationReverter(),
-      instanceName: 'habit',
-    )
+    // 注册泛化撤销实例适配器（取代原本两个 instanceName 子类）
+    ..registerSingleton<OperationReverter>(GenericOperationReverter())
     // 注册操作栈管理器
     ..registerSingleton<OperationStackProvider>(OperationStackProvider())
     ..registerSingleton<TaskReminderService>(TaskReminderService())
     ..registerSingleton<TaskReminderSchedulerPort>(
       FlutterLocalTaskReminderScheduler(),
     )
-    // 注册业务逻辑服务（TaskService 已内联到 TaskProvider）
     ..registerSingleton<TaskCalendarProjectionService>(
       TaskCalendarProjectionService(),
     );

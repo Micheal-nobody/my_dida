@@ -30,15 +30,6 @@ class _TodoPageState extends State<TodoPage> {
   bool _showCompletedTasks = false;
 
   @override
-  void initState() {
-    super.initState();
-    // 加载习惯数据
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<HabitProvider>(context, listen: false).loadAllHabits();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     /// 使用 Provider 来获取 TodosProvider 实例
     //Optimize: 可以选择优化，使用Selector

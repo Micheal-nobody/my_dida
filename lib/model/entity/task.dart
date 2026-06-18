@@ -1,11 +1,11 @@
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/model/entity/base_entity.dart';
+import 'package:my_dida/model/entity/revertible_entity.dart';
 import 'package:my_dida/model/entity/check_point.dart';
 
 part 'task.g.dart';
 
 @Collection()
-class Task extends BaseEntity {
+class Task extends RevertibleEntity {
   /// Constructor for TodoItem
   Task({
     required this.name,

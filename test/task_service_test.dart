@@ -37,6 +37,7 @@ void main() {
 
     test('createTask validates input and links parent/subtask', () async {
       final provider = harness.createProvider();
+      await Future.delayed(Duration.zero);
 
       expect(
         () => provider.addTask(Task(name: '   ', isAllDay: false)),
@@ -48,6 +49,7 @@ void main() {
         isAllDay: false,
         checklistId: 1,
       ));
+      await Future.delayed(const Duration(milliseconds: 50));
 
       expect(provider.currentTasks, isNotEmpty);
 

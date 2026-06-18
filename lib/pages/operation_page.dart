@@ -555,12 +555,9 @@ class _OperationPageState extends State<OperationPage> {
               Navigator.of(context).pop();
               final success = await operationStack.undo();
               if (success) {
-                // 刷新相关Provider
                 if (mounted) {
-                  context.read<TaskProvider>().loadCurrentBoxTasks();
-                  context.read<HabitProvider>().loadAllHabits();
+                  _messageService.showSuccess('操作已撤回');
                 }
-                _messageService.showSuccess('操作已撤回');
               } else {
                 _messageService.showError('撤回失败');
               }
@@ -849,10 +846,7 @@ class _OperationPageState extends State<OperationPage> {
     final success = await operationStack.undoOperation(operation);
 
     if (success) {
-      // 刷新相关Provider
       if (mounted) {
-        await context.read<TaskProvider>().loadCurrentBoxTasks();
-        await context.read<HabitProvider>().loadAllHabits();
         _messageService.showSuccess('操作已撤回');
       }
     } else if (mounted) {

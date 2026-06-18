@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:my_dida/model/vo/checklist_vo.dart';
 
@@ -27,9 +28,11 @@ class TaskProvider with ChangeNotifier {
     TaskReminderSchedulerPort? taskReminderScheduler,
   }) : _taskRepository = taskRepository ?? getIt<TaskRepository>(),
        _taskCalendarProjectionService =
-           taskCalendarProjectionService ?? getIt<TaskCalendarProjectionService>(),
+           taskCalendarProjectionService ??
+           getIt<TaskCalendarProjectionService>(),
        _operationStack = operationStack ?? getIt<OperationStackProvider>(),
-       _taskReminderService = taskReminderService ?? getIt<TaskReminderService>(),
+       _taskReminderService =
+           taskReminderService ?? getIt<TaskReminderService>(),
        _taskReminderScheduler =
            taskReminderScheduler ?? getIt<TaskReminderSchedulerPort>(),
        currentChecklist = newChecklist {
@@ -44,10 +47,7 @@ class TaskProvider with ChangeNotifier {
 
   List<Task> _tasks = [];
   List<Task> _currentTasks = [];
-  final Map<String, List<Task>> _taskCache = {};
-  DateTime? _lastCacheUpdate;
-
-  static const Duration _cacheValidDuration = Duration(minutes: 5);
+  StreamSubscription<List<Task>>? _currentTasksSubscription;
 
   List<Task> get tasks => _tasks;
 
@@ -61,40 +61,24 @@ class TaskProvider with ChangeNotifier {
 
   Future<void> updateCurrentTasks(ChecklistVO? newChecklist) async {
     currentChecklist = newChecklist;
+    await _currentTasksSubscription?.cancel();
 
+    final Stream<List<Task>> stream;
     if (newChecklist == null || newChecklist.id == -1) {
-      await loadTodayTasks();
-      return;
+      stream = _taskRepository.watchTodayTasks();
+    } else {
+      stream = _taskRepository.watchByChecklistId(newChecklist.id);
     }
 
-    await loadTasksByChecklistId(newChecklist.id);
-  }
-
-  bool _isCacheValid() {
-    return _lastCacheUpdate != null &&
-        DateTime.now().difference(_lastCacheUpdate!) < _cacheValidDuration;
-  }
-
-  String _getCacheKey(String operation, [String? param]) {
-    return param != null ? '${operation}_$param' : operation;
-  }
-
-  void _invalidateCache() {
-    _taskCache.clear();
-    _lastCacheUpdate = null;
+    _currentTasksSubscription = stream.listen((tasks) {
+      print('DEBUG: Stream emitted tasks: $tasks, type: ${tasks.runtimeType}');
+      _currentTasks = tasks;
+      notifyListeners();
+    });
   }
 
   Future<void> loadAllTasks() async {
-    const cacheKey = 'all_tasks';
-    if (_isCacheValid() && _taskCache.containsKey(cacheKey)) {
-      _tasks = _taskCache[cacheKey]!;
-      notifyListeners();
-      return;
-    }
-
     _tasks = await _taskRepository.selectAll();
-    _taskCache[cacheKey] = _tasks;
-    _lastCacheUpdate = DateTime.now();
     notifyListeners();
   }
 
@@ -102,49 +86,21 @@ class TaskProvider with ChangeNotifier {
     DateTime startDate,
     DateTime endDate,
   ) async {
-    final cacheKey = _getCacheKey(
-      'date_range',
-      '${startDate.millisecondsSinceEpoch}_${endDate.millisecondsSinceEpoch}',
-    );
-
-    if (_isCacheValid() && _taskCache.containsKey(cacheKey)) {
-      _tasks = _taskCache[cacheKey]!;
-      return _taskCache[cacheKey]!;
-    }
-
     final tasks = await _taskRepository.getTasksForDateRange(
       startDate,
       endDate,
     );
     _tasks = tasks;
-    _taskCache[cacheKey] = tasks;
-    _lastCacheUpdate = DateTime.now();
     return tasks;
   }
 
-  Future<void> loadCurrentBoxTasks() async {
-    if (currentChecklist == null || currentChecklist!.id == -1) {
-      await loadTodayTasks();
-      return;
-    }
-
-    _currentTasks = await _taskRepository.getTasksByChecklistId(
-      currentChecklist!.id,
-    );
-    notifyListeners();
-  }
-
-  Future<void> loadTodayTasks() async {
-    _currentTasks = await _taskRepository.getTodayTasks();
-    notifyListeners();
-  }
-
-  Future<void> loadTasksByChecklistId(int checklistId) async {
-    _currentTasks = await _taskRepository.getTasksByChecklistId(checklistId);
-    notifyListeners();
-  }
-
   Stream<Task?> watchTaskById(int id) => _taskRepository.watchById(id);
+
+  @override
+  void dispose() {
+    _currentTasksSubscription?.cancel();
+    super.dispose();
+  }
 
   Future<Task?> getTaskById(int id) => _taskRepository.selectById(id);
 
@@ -169,7 +125,7 @@ class TaskProvider with ChangeNotifier {
   }
 
   // ==================================================================
-  // 写入方法 (直接包含原 TaskService 业务逻辑)
+  // 写入方法 (完全委派给 TaskService 处理，随后刷新本地状态与缓存)
   // ==================================================================
 
   Future<Task> addTask(Task newTask) async {
@@ -185,7 +141,6 @@ class TaskProvider with ChangeNotifier {
       notificationEnabled: newTask.notificationEnabled,
       reminderOffsetMinutes: newTask.reminderOffsetMinutes,
     );
-    await _reloadAfterMutation();
     return task;
   }
 
@@ -211,7 +166,6 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to update task completion: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> updateTitle(Task task, String newTitle) async {
@@ -225,7 +179,6 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to update task title: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> updateDescription(Task task, String newDesc) async {
@@ -240,7 +193,6 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to update task description: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> toggleCheckpoint(Task task, int index, bool value) async {
@@ -251,14 +203,9 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to toggle checkpoint: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
-  Future<void> renameCheckpoint(
-    Task task,
-    int index,
-    String newName,
-  ) async {
+  Future<void> renameCheckpoint(Task task, int index, String newName) async {
     try {
       TaskValidator.validateCheckpointName(newName);
       final updated = List<CheckPoint>.from(task.checkpoints);
@@ -270,7 +217,6 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to rename checkpoint: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> addCheckpoint(Task task) async {
@@ -281,7 +227,6 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to add checkpoint: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> removeCheckpoint(Task task, int index) async {
@@ -291,7 +236,6 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to remove checkpoint: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<int> createSubTask(
@@ -304,7 +248,6 @@ class TaskProvider with ChangeNotifier {
       parentTaskId: parent.id,
       checklistId: parent.checklistId,
     );
-    await _reloadAfterMutation();
     return task.id;
   }
 
@@ -320,7 +263,6 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to delete sub task: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> updateChecklist(Task task, int? newChecklistId) async {
@@ -336,7 +278,6 @@ class TaskProvider with ChangeNotifier {
         'Failed to update task belonging box: ${e.toString()}',
       );
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> updateStartTime(
@@ -395,7 +336,6 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to update task time range: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> clearTaskSchedule(Task task) async {
@@ -416,7 +356,6 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to clear task schedule: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> updateRRule(Task task, String? rrule) async {
@@ -431,7 +370,6 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to update task rrule: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> updateTaskReminder(
@@ -460,7 +398,6 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to update task reminder: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<List<Task>> searchIncompleteTasks(String query) async {
@@ -488,13 +425,11 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to delete task: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> associateMainTask(Task subTask, Task mainTask) async {
     try {
-      if (subTask.parentTaskId != null &&
-          subTask.parentTaskId != mainTask.id) {
+      if (subTask.parentTaskId != null && subTask.parentTaskId != mainTask.id) {
         await _updateParentTaskSubIds(
           subTask.parentTaskId!,
           subTask.id,
@@ -516,16 +451,17 @@ class TaskProvider with ChangeNotifier {
     } catch (e) {
       throw TaskException('Failed to associate main task: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<void> copyTask(Task originalTask) async {
     try {
-      await _copyTaskRecursively(originalTask, null);
+      final latest = await _taskRepository.selectById(originalTask.id);
+      if (latest != null) {
+        await _copyTaskRecursively(latest, null);
+      }
     } catch (e) {
       throw TaskException('Failed to copy task: ${e.toString()}');
     }
-    await _reloadAfterMutation();
   }
 
   Future<TaskCalendarViewData> loadCalendarTaskViewData({
@@ -558,7 +494,11 @@ class TaskProvider with ChangeNotifier {
   }
 
   // ==================================================================
-  // 内部方法（原 TaskService 私有方法）
+  // 刷新与重载辅助方法
+  // ==================================================================
+
+  // ==================================================================
+  // 业务私有辅助方法
   // ==================================================================
 
   Future<Task> _createTask({
@@ -621,11 +561,7 @@ class TaskProvider with ChangeNotifier {
     );
 
     if (task.parentTaskId != null) {
-      await _updateParentTaskSubIds(
-        task.parentTaskId!,
-        task.id,
-        isAdd: false,
-      );
+      await _updateParentTaskSubIds(task.parentTaskId!, task.id, isAdd: false);
     }
 
     for (final subTaskId in task.subTaskIds) {
@@ -781,8 +717,7 @@ class TaskProvider with ChangeNotifier {
       if (subTask == null) {
         continue;
       }
-      final copiedSubTask =
-          await _copyTaskRecursively(subTask, copiedTask.id);
+      final copiedSubTask = await _copyTaskRecursively(subTask, copiedTask.id);
       newSubTaskIds.add(copiedSubTask.id);
     }
 
@@ -798,10 +733,5 @@ class TaskProvider with ChangeNotifier {
     }
 
     await _taskReminderScheduler.schedule(plan);
-  }
-
-  Future<void> _reloadAfterMutation() async {
-    _invalidateCache();
-    await loadCurrentBoxTasks();
   }
 }

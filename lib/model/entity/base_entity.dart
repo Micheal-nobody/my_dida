@@ -1,4 +1,3 @@
-
 import 'package:isar_community/isar.dart';
 
 abstract class BaseEntity {

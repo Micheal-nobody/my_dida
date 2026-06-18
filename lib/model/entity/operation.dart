@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/entity/revertible_entity.dart';
 
 part 'operation.g.dart';
 
@@ -57,74 +58,78 @@ class Operation {
   /// 操作后的数据（用于撤回，JSON字符串）
   String? newData;
 
+  // ==================================================================
+  // 多态创建工厂方法，基于 RevertibleEntity 抽象接口
+  // ==================================================================
+
   /// 创建添加任务操作
-  static Operation createAddTaskOperation(Task task) => Operation(
+  static Operation createAddTaskOperation(RevertibleEntity entity) => Operation(
     type: OperationType.add,
     target: OperationTarget.task,
     timestamp: DateTime.now(),
-    description: '添加了任务"${task.name}"',
-    targetId: task.id,
-    newData: _taskToJson(task),
+    description: _buildDescription('添加', entity),
+    targetId: entity.id,
+    newData: _entityToJson(entity),
   );
 
   /// 创建删除任务操作
-  static Operation createDeleteTaskOperation(Task task) => Operation(
+  static Operation createDeleteTaskOperation(RevertibleEntity entity) => Operation(
     type: OperationType.delete,
     target: OperationTarget.task,
     timestamp: DateTime.now(),
-    description: '删除了任务"${task.name}"',
-    targetId: task.id,
-    previousData: _taskToJson(task),
+    description: _buildDescription('删除', entity),
+    targetId: entity.id,
+    previousData: _entityToJson(entity),
   );
 
   /// 创建更新任务操作
   static Operation createUpdateTaskOperation(
-    Task oldTask,
-    Task newTask,
+    RevertibleEntity oldEntity,
+    RevertibleEntity newEntity,
     String changeDescription,
   ) => Operation(
     type: OperationType.update,
     target: OperationTarget.task,
     timestamp: DateTime.now(),
     description: changeDescription,
-    targetId: newTask.id,
-    previousData: _taskToJson(oldTask),
-    newData: _taskToJson(newTask),
+    targetId: newEntity.id,
+    previousData: _entityToJson(oldEntity),
+    newData: _entityToJson(newEntity),
   );
 
   /// 创建添加习惯操作
-  static Operation createAddHabitOperation(Habit habit) => Operation(
+  static Operation createAddHabitOperation(RevertibleEntity entity) => Operation(
     type: OperationType.add,
     target: OperationTarget.habit,
     timestamp: DateTime.now(),
-    description: '添加了习惯"${habit.name}"',
-    targetId: habit.id,
-    newData: _habitToJson(habit),
+    description: _buildDescription('添加', entity),
+    targetId: entity.id,
+    newData: _entityToJson(entity),
   );
 
   /// 创建删除习惯操作
-  static Operation createDeleteHabitOperation(Habit habit) => Operation(
+  static Operation createDeleteHabitOperation(RevertibleEntity entity) => Operation(
     type: OperationType.delete,
     target: OperationTarget.habit,
     timestamp: DateTime.now(),
-    description: '删除了习惯"${habit.name}"',
-    targetId: habit.id,
-    previousData: _habitToJson(habit),
+    description: _buildDescription('删除', entity),
+    targetId: entity.id,
+    previousData: _entityToJson(entity),
   );
 
   /// 创建更新习惯操作
   static Operation createUpdateHabitOperation(
-    Habit oldHabit,
-    Habit newHabit,
+    RevertibleEntity oldEntity,
+    RevertibleEntity newEntity,
     String changeDescription,
   ) => Operation(
     type: OperationType.update,
     target: OperationTarget.habit,
     timestamp: DateTime.now(),
     description: changeDescription,
-    targetId: newHabit.id,
-    previousData: _habitToJson(oldHabit),
-    newData: _habitToJson(newHabit),
+    targetId: newEntity.id,
+    previousData: _entityToJson(oldEntity),
+    newData: _entityToJson(newEntity),
   );
 
   /// 创建打卡操作
@@ -134,8 +139,8 @@ class Operation {
     timestamp: DateTime.now(),
     description: '完成了习惯"${habit.name}"的打卡',
     targetId: habit.id,
-    previousData: _habitToJson(habit),
-    newData: _habitToJson(
+    previousData: _entityToJson(habit),
+    newData: _entityToJson(
       Habit(
         name: habit.name,
         icon: habit.icon,
@@ -157,8 +162,8 @@ class Operation {
     timestamp: DateTime.now(),
     description: '撤回了习惯"${habit.name}"的打卡',
     targetId: habit.id,
-    previousData: _habitToJson(habit),
-    newData: _habitToJson(
+    previousData: _entityToJson(habit),
+    newData: _entityToJson(
       Habit(
         name: habit.name,
         icon: habit.icon,
@@ -175,14 +180,21 @@ class Operation {
     ),
   );
 
-  /// 将Task转换为JSON字符串（使用dart:convert确保正确格式）
-  static String _taskToJson(Task task) {
-    return jsonEncode(task.toJson());
+  /// 统一的基于 RevertibleEntity 的 JSON 序列化
+  static String _entityToJson(RevertibleEntity entity) =>
+      jsonEncode(entity.toJson());
+
+  /// 构建通用描述（因为 RevertibleEntity 未声明 getter name，需要更通用的方式）
+  static String _buildDescription(String action, RevertibleEntity entity) {
+    // 对已知实体提取 name 字段；无法取得时回退
+    final name = _tryGetEntityName(entity) ?? '未知';
+    return '${action}了"$name"';
   }
 
-  /// 将Habit转换为JSON字符串（使用dart:convert确保正确格式）
-  static String _habitToJson(Habit habit) {
-    return jsonEncode(habit.toJson());
+  static String? _tryGetEntityName(RevertibleEntity entity) {
+    if (entity is Task) return entity.name;
+    if (entity is Habit) return entity.name;
+    return null;
   }
 
   @override

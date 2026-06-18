@@ -33,16 +33,17 @@ class RRuleUtil {
     String rrule,
     int count,
   ) {
-    if (!rrule.startsWith('RRULE:')) return const [];
+    final normalizedRrule = rrule.toUpperCase().startsWith('FREQ=') ? 'RRULE:$rrule' : rrule;
+    if (!normalizedRrule.startsWith('RRULE:')) return const [];
 
     // Check cache first
-    final cacheKey = _generateCacheKey(startTime, rrule, count);
+    final cacheKey = _generateCacheKey(startTime, normalizedRrule, count);
     if (_rruleCache.containsKey(cacheKey)) {
       return _rruleCache[cacheKey]!;
     }
 
     _clearCacheIfNeeded();
-    final rule = rrule.replaceFirst('RRULE:', '');
+    final rule = normalizedRrule.replaceFirst('RRULE:', '');
     final parts = <String, String>{};
     for (final kv in rule.split(';')) {
       if (kv.contains('=')) {
@@ -156,16 +157,17 @@ class RRuleUtil {
     DateTime rangeStart,
     DateTime rangeEnd,
   ) {
-    if (!rrule.startsWith('RRULE:')) return const [];
+    final normalizedRrule = rrule.toUpperCase().startsWith('FREQ=') ? 'RRULE:$rrule' : rrule;
+    if (!normalizedRrule.startsWith('RRULE:')) return const [];
 
     // Generate more occurrences than needed, then filter
     // This is more efficient than generating all possible occurrences
     final maxOccurrences = _calculateMaxOccurrencesNeeded(
       rangeStart,
       rangeEnd,
-      rrule,
+      normalizedRrule,
     );
-    final allOccurrences = nextOccurrences(startTime, rrule, maxOccurrences);
+    final allOccurrences = nextOccurrences(startTime, normalizedRrule, maxOccurrences);
 
     return allOccurrences
         .where((date) => !date.isBefore(rangeStart) && !date.isAfter(rangeEnd))
@@ -212,8 +214,9 @@ class RRuleUtil {
   }
 
   static String humanize(String rrule) {
-    if (!rrule.startsWith('RRULE:')) return rrule;
-    final rule = rrule.replaceFirst('RRULE:', '');
+    final normalizedRrule = rrule.toUpperCase().startsWith('FREQ=') ? 'RRULE:$rrule' : rrule;
+    if (!normalizedRrule.startsWith('RRULE:')) return rrule;
+    final rule = normalizedRrule.replaceFirst('RRULE:', '');
 
     final parts = <String, String>{};
     for (final kv in rule.split(';')) {

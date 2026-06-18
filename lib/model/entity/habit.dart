@@ -1,11 +1,11 @@
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/model/entity/base_entity.dart';
+import 'package:my_dida/model/entity/revertible_entity.dart';
 
 part 'habit.g.dart';
 
 // 习惯，习惯是每天都要做的，比如刷牙、洗脸、吃饭等
 @Collection()
-class Habit extends BaseEntity {
+class Habit extends RevertibleEntity {
   Habit({
     required this.name,
     required this.icon,

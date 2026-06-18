@@ -310,11 +310,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                             decoration: const InputDecoration(
                               border: InputBorder.none,
                             ),
-                            onFieldSubmitted: (value) {
-                              context
-                                  .read<TaskProvider>()
-                                  .loadCurrentBoxTasks();
-                            },
                           ),
                           const SizedBox(height: 8),
 
@@ -338,11 +333,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                               hintText: '添加备注...',
                               border: InputBorder.none,
                             ),
-                            onFieldSubmitted: (value) {
-                              context
-                                  .read<TaskProvider>()
-                                  .loadCurrentBoxTasks();
-                            },
                           ),
 
                           // CheckpointItems

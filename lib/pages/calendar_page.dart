@@ -108,10 +108,6 @@ class _CalendarPageState extends State<CalendarPage> {
           ),
         );
 
-        await PerformanceMonitor.timeAsyncOperation(
-          'load_all_habits',
-          habitProvider.loadAllHabits,
-        );
         final allHabits = habitProvider.habits;
 
         for (final date in visibleDates) {

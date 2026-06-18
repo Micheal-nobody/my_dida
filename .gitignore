@@ -48,3 +48,9 @@ app.*.map.json
 
 # 通配符，匹配所有的 .g.dart 文件
 **/*.g.dart
+
+# ai 相关
+.claude
+.codex
+CLAUDE.md
+AGENTS.md

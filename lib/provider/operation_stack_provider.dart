@@ -98,7 +98,7 @@ class OperationStackProvider with ChangeNotifier {
 
     try {
       final operation = _operations.first;
-      final reverter = getIt<OperationReverter>(instanceName: operation.target.name);
+      final reverter = getIt<OperationReverter>();
       final success = await reverter.revert(operation);
 
       if (success) {
@@ -124,7 +124,7 @@ class OperationStackProvider with ChangeNotifier {
   /// 撤回指定的操作
   Future<bool> undoOperation(Operation operation) async {
     try {
-      final reverter = getIt<OperationReverter>(instanceName: operation.target.name);
+      final reverter = getIt<OperationReverter>();
       final success = await reverter.revert(operation);
 
       if (success) {
