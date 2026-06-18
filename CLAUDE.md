@@ -4,6 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 约束与规范
 * **使用中文输出**：与用户的所有沟通、讨论、解答都必须使用中文。
+* **优先使用 Dart MCP 工具**：Dart MCP 服务器已连接（`claude mcp list` 确认），涉及 Dart/Flutter 操作（代码分析、运行测试、代码格式化、应用启动、热重载、Flutter Driver 等）时，应优先使用 Dart MCP 提供的工具，而非直接通过 Bash 执行 shell 命令。
 
 ## 常用开发命令
 * 运行/构建应用：`flutter run`

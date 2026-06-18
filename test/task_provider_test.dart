@@ -12,11 +12,7 @@ void main() {
 
     setUp(() async {
       harness = await TaskTestHarness.create();
-      provider = TaskProvider(
-        ChecklistVO(id: 1, name: '收集箱'),
-        taskRepository: harness.taskRepository,
-        taskService: harness.taskService,
-      );
+      provider = harness.createProvider();
     });
 
     tearDown(() async {
@@ -30,6 +26,8 @@ void main() {
         startTime: DateTime(2026, 4, 12, 9),
         checklistId: 1,
       );
+
+      await provider.addTask(task);
 
       await provider.addTask(task);
       final created = provider.currentTasks.single;

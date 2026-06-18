@@ -3,31 +3,35 @@ import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/provider/habit_provider.dart';
 import 'package:provider/provider.dart';
 
-/// 专门用于处理 Habit 打卡的对话框
+/// 习惯打卡对话框
 ///
-/// 这个组件封装了习惯打卡的完整逻辑，
-/// 直接处理习惯的持久化更新
+/// 封装了习惯打卡的完整逻辑，包含滑动动画、进度显示和撤销操作。
+/// 通过 [accentColor] 参数控制主题色。
 class HabitCheckInDialog extends StatefulWidget {
-  const HabitCheckInDialog({required this.habit, super.key});
+  const HabitCheckInDialog({
+    required this.habit,
+    this.accentColor = Colors.orange,
+    super.key,
+  });
 
   final Habit habit;
+  final Color accentColor;
 
   /// 显示习惯打卡对话框
-  ///
-  /// [context] - 上下文
-  /// [habit] - 要打卡的习惯对象
-  /// [onUpdated] - 更新完成回调（可选，用于UI刷新）
   static Future<void> show({
     required BuildContext context,
     required Habit habit,
+    Color accentColor = Colors.orange,
     VoidCallback? onUpdated,
   }) async {
     await showDialog(
       context: context,
-      builder: (context) => HabitCheckInDialog(habit: habit),
+      builder: (context) => HabitCheckInDialog(
+        habit: habit,
+        accentColor: accentColor,
+      ),
     );
 
-    // 调用更新完成回调
     onUpdated?.call();
   }
 
@@ -71,7 +75,7 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
           children: [
             Icon(
               _getIconData(habit.icon),
-              color: isCompleted ? Colors.green : Colors.orange,
+              color: isCompleted ? Colors.green : widget.accentColor,
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -100,7 +104,7 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
                     value: progress,
                     backgroundColor: Colors.grey[300],
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      isCompleted ? Colors.green : Colors.orange,
+                      isCompleted ? Colors.green : widget.accentColor,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -156,7 +160,6 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
         ),
 
         actions: [
-          // 撤销一次打卡按钮
           if (isCompleted && habit.currentCheckInCount > 0)
             TextButton(
               onPressed: () async {
@@ -167,7 +170,6 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
               },
               child: const Text('撤销一次'),
             ),
-          // 撤销所有打卡按钮
           if (isCompleted && habit.currentCheckInCount > 0)
             TextButton(
               onPressed: () async {
@@ -196,7 +198,7 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
     ),
     child: Stack(
       children: [
-        // 背景轨道（灰色）
+        // 背景轨道
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
@@ -206,7 +208,7 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
           ),
         ),
 
-        // 已滑过的进度（橙色）
+        // 已滑过的进度
         AnimatedBuilder(
           animation: _slideAnimation,
           builder: (context, child) {
@@ -219,7 +221,7 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
               child: Container(
                 width: progressWidth,
                 decoration: BoxDecoration(
-                  color: Colors.orange[300],
+                  color: widget.accentColor.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
@@ -240,7 +242,6 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
               },
               onPanEnd: (details) {
                 if (_slideController.value > 0.8) {
-                  // 完成打卡
                   _slideController.forward().then((_) async {
                     await habitProvider.checkIn(widget.habit);
                     setState(() {
@@ -253,15 +254,14 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
                     });
                   });
                 } else {
-                  // 回弹
                   _slideController.reverse();
                 }
               },
               child: Container(
                 width: 50,
                 height: 50,
-                decoration: const BoxDecoration(
-                  color: Colors.orange,
+                decoration: BoxDecoration(
+                  color: widget.accentColor,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.arrow_forward, color: Colors.white),

@@ -72,18 +72,17 @@ class HabitProvider with ChangeNotifier {
       final operation = Operation.createCheckInOperation(habit);
       await _operationStack.addOperation(operation);
 
-      await _habitRepository.updateCheckInCount(
-        habit,
-        habit.currentCheckInCount + 1,
-      );
-      await _habitRepository.updateHabitStats(habit);
+      // 领域逻辑：修改实体字段后持久化
+      habit.currentCheckInCount += 1;
+      habit.totalCheckInCount += 1;
+      await _habitRepository.updateHabit(habit);
       await loadAllHabits();
     }
   }
 
   // 跳过今天
   Future<void> skipToday(Habit habit) async {
-    await _habitRepository.skipToday(habit);
+    await _habitRepository.updateHabit(habit);
     await loadAllHabits();
   }
 
@@ -100,7 +99,8 @@ class HabitProvider with ChangeNotifier {
   // 重置今日打卡次数（每天开始时调用）
   Future<void> resetTodayCheckInCounts() async {
     for (final Habit habit in _habits) {
-      await _habitRepository.resetTodayCheckInCount(habit);
+      habit.currentCheckInCount = 0;
+      await _habitRepository.updateHabit(habit);
     }
     await loadAllHabits();
   }
@@ -114,19 +114,20 @@ class HabitProvider with ChangeNotifier {
   // 撤销一次打卡
   Future<void> undoLastCheckIn(Habit habit) async {
     if (habit.currentCheckInCount > 0) {
-      await _habitRepository.updateCheckInCount(
-        habit,
-        habit.currentCheckInCount - 1,
-      );
-      await _habitRepository.updateHabitStats(habit);
+      habit.currentCheckInCount -= 1;
+      habit.totalCheckInCount -= 1;
+      await _habitRepository.updateHabit(habit);
       await loadAllHabits();
     }
   }
 
   // 撤销所有打卡
   Future<void> undoAllCheckIns(Habit habit) async {
-    await _habitRepository.updateCheckInCount(habit, 0);
-    await _habitRepository.updateHabitStats(habit);
+    habit.currentCheckInCount = 0;
+    if (habit.totalCheckInCount > 0) {
+      habit.totalCheckInCount -= 1;
+    }
+    await _habitRepository.updateHabit(habit);
     await loadAllHabits();
   }
 }

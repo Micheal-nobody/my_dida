@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/features/cards/habit_card.dart';
 import 'package:my_dida/features/dialogs/add_habit_dialog.dart';
+import 'package:my_dida/features/dialogs/edit_habit_dialog.dart';
+import 'package:my_dida/features/dialogs/habit_check_in_dialog.dart';
 import 'package:my_dida/provider/habit_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -56,7 +58,39 @@ class _HabitsPageState extends State<HabitsPage> {
 
         return ListView.builder(
           itemCount: habits.length,
-          itemBuilder: (context, index) => HabitCard(habits[index]),
+          itemBuilder: (context, index) => HabitCard(
+            habit: habits[index],
+            progress: habitProvider.getTodayProgress(habits[index]),
+            isCompleted: habitProvider.isTodayCompleted(habits[index]),
+            onTap: () {
+              HabitCheckInDialog.show(context: context, habit: habits[index]);
+            },
+            onSkip: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('跳过今天'),
+                  content: const Text('确定要跳过今天的习惯吗？'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('取消'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('确定'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) {
+                habitProvider.skipToday(habits[index]);
+              }
+            },
+            onEdit: () {
+              EditHabitDialog.show(context, habits[index]);
+            },
+          ),
         );
       },
     ),

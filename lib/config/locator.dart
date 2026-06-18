@@ -18,7 +18,7 @@ import 'package:my_dida/services/task_calendar_projection_service.dart';
 import 'package:my_dida/services/task_reminder_scheduler_port.dart';
 import 'package:my_dida/services/task_notification_navigation_service.dart';
 import 'package:my_dida/services/task_reminder_service.dart';
-import 'package:my_dida/services/task_service.dart';
+// TaskService 已内联到 TaskProvider，不再需要注册
 import 'package:path_provider/path_provider.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -55,11 +55,10 @@ Future<void> setupLocator() async {
     ..registerSingleton<TaskReminderSchedulerPort>(
       FlutterLocalTaskReminderScheduler(),
     )
-    // 注册业务逻辑服务
+    // 注册业务逻辑服务（TaskService 已内联到 TaskProvider）
     ..registerSingleton<TaskCalendarProjectionService>(
       TaskCalendarProjectionService(),
-    )
-    ..registerSingleton<TaskService>(TaskService());
+    );
 
   logger.i('初始化 Isar 完成！');
 }

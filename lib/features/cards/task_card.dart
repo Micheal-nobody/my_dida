@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/config/logger.dart';
-import 'package:my_dida/features//task_detail/task_detail_page.dart';
 import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/model/vo/checklist_vo.dart';
-import 'package:my_dida/provider/checklist_provider.dart';
-import 'package:my_dida/provider/task_provider.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
-import 'package:provider/provider.dart';
 
 class TaskCard extends StatelessWidget {
-  const TaskCard(this.task, {super.key});
+  const TaskCard({
+    required this.task,
+    required this.checklistName,
+    this.onToggleDone,
+    this.onTap,
+    super.key,
+  });
 
   final Task task;
+  final String checklistName;
+  final void Function(bool?)? onToggleDone;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    // 只需要调用方法，所以不需要监听
-    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-    final now = DateTime.now(); // 组件顶层调用一次并复用
+    final now = DateTime.now();
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -28,9 +29,7 @@ class TaskCard extends StatelessWidget {
           height: 24,
           child: Checkbox(
             value: task.isDone,
-            onChanged: (value) {
-              taskProvider.updateTaskIsDone(task, value!);
-            },
+            onChanged: onToggleDone,
             activeColor: Colors.blue,
             side: const BorderSide(color: Colors.grey),
           ),
@@ -60,30 +59,17 @@ class TaskCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Selector<ChecklistProvider, List<ChecklistVO>>(
-                selector: (context, provider) => provider.allCheckLists,
-                builder: (context, allBoxes, child) {
-                  // 安全地查找Checklist，如果找不到则显示默认名称
-                  final checklist = allBoxes
-                      .where((element) => element.id == task.checklistId)
-                      .firstOrNull;
-
-                  return Text(
-                    checklist?.name ?? '未知收藏夹',
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.end,
-                  );
-                },
+              child: Text(
+                checklistName,
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.end,
               ),
             ),
           ],
         ),
 
-        onTap: () {
-          logger.i('点击了任务：$task');
-          TaskDetailPage.show(context, task);
-        },
+        onTap: onTap,
       ),
     );
   }

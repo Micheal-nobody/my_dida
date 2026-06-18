@@ -25,46 +25,11 @@ class HabitRepository extends BaseRepository<Habit> {
     });
   }
 
-  // 更新习惯的打卡次数
-  Future<void> updateCheckInCount(Habit habit, int newCount) async {
-    await _isar.writeTxn(() async {
-      habit.currentCheckInCount = newCount;
-      await _isar.habits.put(habit);
-    });
-  }
-
-  // 重置今日打卡次数（每天开始时调用）
-  Future<void> resetTodayCheckInCount(Habit habit) async {
-    await _isar.writeTxn(() async {
-      habit.currentCheckInCount = 0;
-      await _isar.habits.put(habit);
-    });
-  }
-
-  // 更新习惯统计信息
-  Future<void> updateHabitStats(Habit habit) async {
-    await _isar.writeTxn(() async {
-      habit.totalCheckInCount += 1;
-      // 这里可以添加连续打卡天数的逻辑
-      await _isar.habits.put(habit);
-    });
-  }
-
-  // 跳过今天的习惯（设置为半透明状态）
-  Future<void> skipToday(Habit habit) async {
-    await _isar.writeTxn(() async {
-      // 可以添加一个字段来标记是否跳过今天
-      await _isar.habits.put(habit);
-    });
-  }
-
   // 获取所有习惯
   Future<List<Habit>> getAllHabits() async => _isar.habits.where().findAll();
 
-  // Get active habits (not completed today) for better performance
+  // Get active habits (not completed today)
   Future<List<Habit>> getActiveHabits() async {
-    // This would need additional logic based on your habit completion tracking
-    // For now, return all habits but this can be optimized based on completion status
     return _isar.habits.where().findAll();
   }
 

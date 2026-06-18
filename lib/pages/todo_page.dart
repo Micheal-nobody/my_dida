@@ -6,6 +6,9 @@ import 'package:my_dida/constants/ui_constants.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/cards/habit_card.dart';
 import 'package:my_dida/features/cards/task_card.dart';
+import 'package:my_dida/features/dialogs/edit_habit_dialog.dart';
+import 'package:my_dida/features/dialogs/habit_check_in_dialog.dart';
+import 'package:my_dida/features/task_detail/task_detail_page.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:my_dida/provider/habit_provider.dart';
@@ -188,7 +191,22 @@ class _TodoPageState extends State<TodoPage> {
                         }
                       }
                     },
-                    child: TaskCard(task),
+                    child: TaskCard(
+                      task: task,
+                      checklistName: currentChecklist.name,
+                      onToggleDone: (value) {
+                        Provider.of<TaskProvider>(
+                          context,
+                          listen: false,
+                        ).updateTaskIsDone(task, value!);
+                      },
+                      onTap: () {
+                        TaskDetailPage.show(
+                          context,
+                          task,
+                        );
+                      },
+                    ),
                   ),
                 );
               }
@@ -208,7 +226,39 @@ class _TodoPageState extends State<TodoPage> {
                       !_showCompletedTasks) {
                     continue;
                   }
-                  habitCards.add(HabitCard(habit));
+                  habitCards.add(HabitCard(
+                    habit: habit,
+                    progress: habitProvider.getTodayProgress(habit),
+                    isCompleted: habitProvider.isTodayCompleted(habit),
+                    onTap: () {
+                      HabitCheckInDialog.show(context: context, habit: habit);
+                    },
+                    onSkip: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('跳过今天'),
+                          content: const Text('确定要跳过今天的习惯吗？'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('取消'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text('确定'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true) {
+                        habitProvider.skipToday(habit);
+                      }
+                    },
+                    onEdit: () {
+                      EditHabitDialog.show(context, habit);
+                    },
+                  ));
                 }
 
                 // 只有当有习惯要显示时才添加分隔线
