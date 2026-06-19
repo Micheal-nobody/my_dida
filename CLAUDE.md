@@ -13,6 +13,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 * 运行单个测试：`flutter test <file_path>` (例如 `flutter test test/task_service_test.dart`)
 * 代码与数据模型类生成：`dart run build_runner build` (可追加 `--delete-conflicting-outputs` 参数来强制覆盖冲突文件)
 
+## 核心目录职责划分
+* `lib/pages/`：路由导航直接绑定的完整功能页面（如搜索、设置、日历、待办主页）。
+* `lib/features/`：细粒度的 UI 功能子模块、卡片组件（`cards/`）与交互弹窗（`dialogs/`）。
+* `lib/provider/`：全局/局部状态管理（基于 `provider` 库，作为 UI 层与业务逻辑层的纽带）。
+* `lib/model/`：数据模型定义，包括 Isar 数据库的实体类（`entity/`）与界面展示 VO 数据对象（`vo/`）。
+* `lib/repository/`：底层 Isar 数据库仓储数据访问层（管理各表单的数据增删改查）。
+* `lib/services/`：具体业务实现服务（如日历日程投影服务、提醒发送与通知调度服务）。
+* `lib/config/`：应用全局启动级配置，包括依赖注入容器（`locator.dart`）和全局日志（`logger.dart`）。
+* `lib/router/`：基于 `go_router` 包装的应用程序路由表及上下文 Key。
+* `lib/utils/`：通用辅助逻辑与计算工具（如日期工具、重复规则解析 RRule、搜索历史管理器）。
+
 ## 代码架构介绍
 * **状态管理 (State Management)**：采用 `provider` 库包装核心状态。`ChecklistProvider`、`HabitProvider`、`OperationStackProvider` 以及 `TaskProvider` 在 `lib/main.dart` 中完成注册。其中 `TaskProvider` 基于 `ChangeNotifierProxyProvider` 监听 `ChecklistProvider` 的当前清单变化并进行对应的联动更新。
 * **依赖注入 (Dependency Injection)**：在 `lib/config/locator.dart` 中使用 `locator (GetIt)` 进行注册和管理。初始化并注入 `Isar` 数据库实例，同时注册了各个仓储类 (Repositories)、通知服务、本地提醒以及业务服务单例。

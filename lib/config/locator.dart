@@ -19,6 +19,7 @@ import 'package:my_dida/services/task_calendar_projection_service.dart';
 import 'package:my_dida/services/task_reminder_scheduler_port.dart';
 import 'package:my_dida/services/task_notification_navigation_service.dart';
 import 'package:my_dida/services/task_reminder_service.dart';
+import 'package:my_dida/services/task_lifecycle_manager.dart';
 import 'package:my_dida/provider/sidebar_config_provider.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -65,7 +66,13 @@ Future<void> setupLocator() async {
     )
     ..registerSingleton<TaskCalendarProjectionService>(
       TaskCalendarProjectionService(),
-    );
+    )
+    ..registerSingleton<TaskLifecycleManager>(TaskLifecycleManagerImpl(
+      taskRepository: getIt<TaskRepository>(),
+      taskReminderService: getIt<TaskReminderService>(),
+      taskReminderScheduler: getIt<TaskReminderSchedulerPort>(),
+      operationStack: getIt<OperationStackProvider>(),
+    ));
 
   logger.i('初始化 Isar 完成！');
 }
