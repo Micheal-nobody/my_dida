@@ -20,7 +20,7 @@ import 'package:my_dida/utils/TimeUtils.dart';
 abstract class TaskLifecycleManager {
   Future<Task> addTask(Task newTask);
   Future<void> updateTaskIsDone(Task task, bool value);
-  Future<void> updatePriority(Task task, int newPriority);
+  Future<void> updatePriority(Task task, TaskPriority newPriority);
   Future<void> updateTags(Task task, List<String> newTags);
   Future<void> updateTitle(Task task, String newTitle);
   Future<void> updateDescription(Task task, String newDesc);
@@ -61,7 +61,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   final OperationStackProvider _operationStack;
 
   @override
-  Future<void> updatePriority(Task task, int newPriority) async {
+  Future<void> updatePriority(Task task, TaskPriority newPriority) async {
     try {
       await _updateTaskHelper(
         task: task,

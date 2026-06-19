@@ -66,6 +66,15 @@ class SmartListsSettingsPage extends StatelessWidget {
             currentValue: config.trashShowOption,
             onChanged: (val) => provider.updateSmartListShowOption(trashShowOption: val),
           ),
+          ListTile(
+            title: const Text('四象限', style: TextStyle(fontWeight: FontWeight.w500)),
+            trailing: Switch(
+              value: config.showFourQuadrants,
+              activeColor: Colors.orange,
+              onChanged: (val) => provider.updateFourQuadrantsVisibility(val),
+            ),
+          ),
+          const Divider(height: 1, indent: 16, color: AppColors.border),
         ],
       ),
     );

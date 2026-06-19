@@ -4,6 +4,13 @@ import 'package:my_dida/model/entity/check_point.dart';
 
 part 'task.g.dart';
 
+enum TaskPriority {
+  none,   // 无优先级 -> 对应第四象限
+  low,    // 低优先级 -> 对应第三象限
+  medium, // 中优先级 -> 对应第二象限
+  high,   // 高优先级 -> 对应第一象限
+}
+
 @Collection()
 class Task extends RevertibleEntity {
   /// Constructor for TodoItem
@@ -31,7 +38,7 @@ class Task extends RevertibleEntity {
     this.rrule,
     this.notificationEnabled = false,
     this.reminderOffsetMinutes,
-    this.priority = 0,
+    this.priority = TaskPriority.none,
     this.tags = const [],
   });
 
@@ -77,9 +84,10 @@ class Task extends RevertibleEntity {
   /// 距离开始时间提前多少分钟提醒
   int? reminderOffsetMinutes;
 
-  /// 优先级：0-无, 1-低, 2-中, 3-高
+  /// 优先级：none-无, low-低, medium-中, high-高
   @Index()
-  int priority;
+  @enumerated
+  TaskPriority priority;
 
   /// 标签列表
   List<String> tags;
@@ -104,7 +112,7 @@ class Task extends RevertibleEntity {
     String? rrule,
     bool? notificationEnabled,
     int? reminderOffsetMinutes,
-    int? priority,
+    TaskPriority? priority,
     List<String>? tags,
   }) {
     final copy = Task(
@@ -148,7 +156,7 @@ class Task extends RevertibleEntity {
       'rrule': rrule,
       'notificationEnabled': notificationEnabled,
       'reminderOffsetMinutes': reminderOffsetMinutes,
-      'priority': priority,
+      'priority': priority.index,
       'tags': tags,
       'checkpoints': checkpoints
           .map((cp) => {'name': cp.name, 'isDone': cp.isDone})
@@ -193,7 +201,9 @@ class Task extends RevertibleEntity {
           : json['rrule']?.toString(),
       notificationEnabled: json['notificationEnabled'] == true,
       reminderOffsetMinutes: json['reminderOffsetMinutes'] as int?,
-      priority: json['priority'] as int? ?? 0,
+      priority: json['priority'] != null
+          ? TaskPriority.values[json['priority'] as int? ?? 0]
+          : TaskPriority.none,
       tags: json['tags'] != null
           ? List<String>.from(json['tags'] as List)
           : const [],

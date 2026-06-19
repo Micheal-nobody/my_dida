@@ -189,10 +189,10 @@ class BoardView extends StatelessWidget {
     Task? presetTask;
 
     if (groupBy == TaskGroupBy.priority) {
-      int priority = 0;
-      if (columnTitle == '高优先级') priority = 3;
-      else if (columnTitle == '中优先级') priority = 2;
-      else if (columnTitle == '低优先级') priority = 1;
+      TaskPriority priority = TaskPriority.none;
+      if (columnTitle == '高优先级') priority = TaskPriority.high;
+      else if (columnTitle == '中优先级') priority = TaskPriority.medium;
+      else if (columnTitle == '低优先级') priority = TaskPriority.low;
       presetTask = Task(name: '', isAllDay: true, priority: priority);
     } else if (groupBy == TaskGroupBy.checklist) {
       final cl = allChecklists.firstWhere(
@@ -246,10 +246,10 @@ class BoardView extends StatelessWidget {
     TaskProvider taskProvider,
   ) async {
     if (groupBy == TaskGroupBy.priority) {
-      int newPriority = 0;
-      if (columnTitle == '高优先级') newPriority = 3;
-      else if (columnTitle == '中优先级') newPriority = 2;
-      else if (columnTitle == '低优先级') newPriority = 1;
+      TaskPriority newPriority = TaskPriority.none;
+      if (columnTitle == '高优先级') newPriority = TaskPriority.high;
+      else if (columnTitle == '中优先级') newPriority = TaskPriority.medium;
+      else if (columnTitle == '低优先级') newPriority = TaskPriority.low;
 
       if (task.priority != newPriority) {
         await taskProvider.updatePriority(task, newPriority);

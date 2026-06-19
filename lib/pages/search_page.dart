@@ -128,15 +128,15 @@ class _SearchPageState extends State<SearchPage> {
     _performSearch(_searchController.text);
   }
 
-  Color _getPriorityColor(int priority) {
+  Color _getPriorityColor(TaskPriority priority) {
     switch (priority) {
-      case 3:
+      case TaskPriority.high:
         return Colors.red;
-      case 2:
+      case TaskPriority.medium:
         return Colors.orange;
-      case 1:
+      case TaskPriority.low:
         return Colors.blue;
-      default:
+      case TaskPriority.none:
         return Colors.grey;
     }
   }

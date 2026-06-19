@@ -299,16 +299,16 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                             child: Row(
                               children: [
                                 // 优先级选择
-                                PopupMenuButton<int>(
+                                PopupMenuButton<TaskPriority>(
                                   initialValue: task.priority,
                                   onSelected: (val) async {
                                     await _taskProvider.updatePriority(task, val);
                                   },
                                   itemBuilder: (context) => const [
-                                    PopupMenuItem(value: 3, child: Text('🔴 高优先级')),
-                                    PopupMenuItem(value: 2, child: Text('🟠 中优先级')),
-                                    PopupMenuItem(value: 1, child: Text('🔵 低优先级')),
-                                    PopupMenuItem(value: 0, child: Text('⚪ 无优先级')),
+                                    PopupMenuItem(value: TaskPriority.high, child: Text('🔴 高优先级')),
+                                    PopupMenuItem(value: TaskPriority.medium, child: Text('🟠 中优先级')),
+                                    PopupMenuItem(value: TaskPriority.low, child: Text('🔵 低优先级')),
+                                    PopupMenuItem(value: TaskPriority.none, child: Text('⚪ 无优先级')),
                                   ],
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -321,22 +321,22 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                       children: [
                                         Icon(
                                           Icons.flag,
-                                          color: task.priority == 3
+                                          color: task.priority == TaskPriority.high
                                               ? Colors.red
-                                              : task.priority == 2
+                                              : task.priority == TaskPriority.medium
                                                   ? Colors.orange
-                                                  : task.priority == 1
+                                                  : task.priority == TaskPriority.low
                                                       ? Colors.blue
                                                       : Colors.grey,
                                           size: 16,
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
-                                          task.priority == 3
+                                          task.priority == TaskPriority.high
                                               ? '高优先级'
-                                              : task.priority == 2
+                                              : task.priority == TaskPriority.medium
                                                   ? '中优先级'
-                                                  : task.priority == 1
+                                                  : task.priority == TaskPriority.low
                                                       ? '低优先级'
                                                       : '无优先级',
                                           style: const TextStyle(fontSize: 12),

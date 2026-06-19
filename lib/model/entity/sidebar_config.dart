@@ -27,6 +27,17 @@ class SidebarConfig extends BaseEntity {
 
     // 默认清单ID
     this.defaultChecklistId = 1,
+
+    this.showFourQuadrants = true,
+    this.quadrantName1 = '重要且紧急',
+    this.quadrantName2 = '重要不紧急',
+    this.quadrantName3 = '紧急不重要',
+    this.quadrantName4 = '不重要不紧急',
+    this.quadrantColor1 = 0xFFE57373,
+    this.quadrantColor2 = 0xFFFFB74D,
+    this.quadrantColor3 = 0xFF64B5F6,
+    this.quadrantColor4 = 0xFF81C784,
+    this.quadrantHideCompleted = true,
   });
 
   String theme;
@@ -48,4 +59,15 @@ class SidebarConfig extends BaseEntity {
   int trashShowOption;
 
   int defaultChecklistId;
+
+  bool showFourQuadrants;
+  String quadrantName1;
+  String quadrantName2;
+  String quadrantName3;
+  String quadrantName4;
+  int quadrantColor1;
+  int quadrantColor2;
+  int quadrantColor3;
+  int quadrantColor4;
+  bool quadrantHideCompleted;
 }

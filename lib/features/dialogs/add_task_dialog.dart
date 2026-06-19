@@ -140,7 +140,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     final Task newTask = Task(
       name: taskName,
       isAllDay: isAllDay,
-      priority: widget.presetTask?.priority ?? 0,
+      priority: widget.presetTask?.priority ?? TaskPriority.none,
       tags: widget.presetTask?.tags ?? const [],
     );
 

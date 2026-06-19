@@ -379,6 +379,22 @@ class _TodoDrawerState extends State<TodoDrawer> {
       ));
     }
 
+    // 四象限
+    if (config.showFourQuadrants == true) {
+      final fourQuadrantsCount = counts[-4] ?? 0;
+      listTiles.add(_buildStaticChecklistTile(
+        icon: Icons.grid_view_rounded,
+        iconColor: Colors.deepPurple,
+        title: '四象限',
+        count: fourQuadrantsCount,
+        selected: false,
+        onTap: () {
+          Navigator.of(context).pop();
+          context.push('/four_quadrants');
+        },
+      ));
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: listTiles,

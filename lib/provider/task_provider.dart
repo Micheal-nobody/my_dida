@@ -106,7 +106,7 @@ class TaskProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updatePriority(Task task, int newPriority) async {
+  Future<void> updatePriority(Task task, TaskPriority newPriority) async {
     await _taskLifecycleManager.updatePriority(task, newPriority);
   }
 
@@ -133,7 +133,7 @@ class TaskProvider with ChangeNotifier {
         if (b.startTime == null) return -1;
         return a.startTime!.compareTo(b.startTime!);
       } else if (_sortBy == TaskSortBy.priority) {
-        return b.priority.compareTo(a.priority);
+        return b.priority.index.compareTo(a.priority.index);
       } else if (_sortBy == TaskSortBy.title) {
         return a.name.compareTo(b.name);
       } else if (_sortBy == TaskSortBy.createTime) {
@@ -156,11 +156,11 @@ class TaskProvider with ChangeNotifier {
         grouped[k] = [];
       }
       for (final t in filtered) {
-        if (t.priority == 3) {
+        if (t.priority == TaskPriority.high) {
           grouped['高优先级']!.add(t);
-        } else if (t.priority == 2) {
+        } else if (t.priority == TaskPriority.medium) {
           grouped['中优先级']!.add(t);
-        } else if (t.priority == 1) {
+        } else if (t.priority == TaskPriority.low) {
           grouped['低优先级']!.add(t);
         } else {
           grouped['无优先级']!.add(t);
@@ -340,6 +340,8 @@ class TaskProvider with ChangeNotifier {
   }
 
   Stream<Task?> watchTaskById(int id) => _taskRepository.watchById(id);
+
+  Stream<List<Task>> watchAllTasks() => _taskRepository.collection.where().watch(fireImmediately: true);
 
   @override
   void dispose() {
