@@ -57,17 +57,18 @@ class TaskTestHarness {
       ..registerSingleton<Isar>(isar)
       ..registerSingleton<TaskRepository>(TaskRepository())
       ..registerSingleton<OperationStackProvider>(OperationStackProvider())
-      ..registerSingleton<TaskReminderService>(TaskReminderService())
       ..registerSingleton<TaskReminderSchedulerPort>(
         taskReminderScheduler ?? NoopTaskReminderScheduler(),
       )
+      ..registerSingleton<TaskReminderService>(TaskReminderService(
+        scheduler: getIt<TaskReminderSchedulerPort>(),
+      ))
       ..registerSingleton<TaskCalendarProjectionService>(
         TaskCalendarProjectionService(),
       )
       ..registerSingleton<TaskLifecycleManager>(TaskLifecycleManagerImpl(
         taskRepository: getIt<TaskRepository>(),
         taskReminderService: getIt<TaskReminderService>(),
-        taskReminderScheduler: getIt<TaskReminderSchedulerPort>(),
         operationStack: getIt<OperationStackProvider>(),
       ));
 

@@ -17,8 +17,6 @@ import '../model/vo/task_calendar_view_data.dart';
 import '../provider/operation_stack_provider.dart';
 import '../repository/task_repository.dart';
 import '../services/task_calendar_projection_service.dart';
-import '../services/task_reminder_scheduler_port.dart';
-import '../services/task_reminder_service.dart';
 import '../services/task_lifecycle_manager.dart';
 import '../utils/RRuleUtil.dart';
 
@@ -33,18 +31,12 @@ class TaskProvider with ChangeNotifier {
     TaskRepository? taskRepository,
     TaskCalendarProjectionService? taskCalendarProjectionService,
     OperationStackProvider? operationStack,
-    TaskReminderService? taskReminderService,
-    TaskReminderSchedulerPort? taskReminderScheduler,
     TaskLifecycleManager? taskLifecycleManager,
   }) : _taskRepository = taskRepository ?? getIt<TaskRepository>(),
        _taskCalendarProjectionService =
            taskCalendarProjectionService ??
            getIt<TaskCalendarProjectionService>(),
        _operationStack = operationStack ?? getIt<OperationStackProvider>(),
-       _taskReminderService =
-           taskReminderService ?? getIt<TaskReminderService>(),
-       _taskReminderScheduler =
-           taskReminderScheduler ?? getIt<TaskReminderSchedulerPort>(),
        _taskLifecycleManager = taskLifecycleManager ?? getIt<TaskLifecycleManager>(),
        currentChecklist = newChecklist {
     updateCurrentTasks(currentChecklist);
@@ -53,8 +45,6 @@ class TaskProvider with ChangeNotifier {
   final TaskRepository _taskRepository;
   final TaskCalendarProjectionService _taskCalendarProjectionService;
   final OperationStackProvider _operationStack;
-  final TaskReminderService _taskReminderService;
-  final TaskReminderSchedulerPort _taskReminderScheduler;
   final TaskLifecycleManager _taskLifecycleManager;
 
   List<Task> _tasks = [];

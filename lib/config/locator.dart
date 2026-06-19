@@ -63,17 +63,18 @@ Future<void> setupLocator() async {
     ..registerSingleton<OperationReverter>(GenericOperationReverter())
     // 注册操作栈管理器
     ..registerSingleton<OperationStackProvider>(OperationStackProvider())
-    ..registerSingleton<TaskReminderService>(TaskReminderService())
     ..registerSingleton<TaskReminderSchedulerPort>(
       FlutterLocalTaskReminderScheduler(),
     )
+    ..registerSingleton<TaskReminderService>(TaskReminderService(
+      scheduler: getIt<TaskReminderSchedulerPort>(),
+    ))
     ..registerSingleton<TaskCalendarProjectionService>(
       TaskCalendarProjectionService(),
     )
     ..registerSingleton<TaskLifecycleManager>(TaskLifecycleManagerImpl(
       taskRepository: getIt<TaskRepository>(),
       taskReminderService: getIt<TaskReminderService>(),
-      taskReminderScheduler: getIt<TaskReminderSchedulerPort>(),
       operationStack: getIt<OperationStackProvider>(),
     ));
 

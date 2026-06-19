@@ -10,7 +10,6 @@ import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/repository/task_repository.dart';
-import 'package:my_dida/services/task_reminder_scheduler_port.dart';
 import 'package:my_dida/services/task_reminder_service.dart';
 import 'package:my_dida/utils/RRuleUtil.dart';
 
@@ -45,16 +44,13 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   TaskLifecycleManagerImpl({
     TaskRepository? taskRepository,
     TaskReminderService? taskReminderService,
-    TaskReminderSchedulerPort? taskReminderScheduler,
     OperationStackProvider? operationStack,
   }) : _taskRepository = taskRepository ?? getIt<TaskRepository>(),
        _taskReminderService = taskReminderService ?? getIt<TaskReminderService>(),
-       _taskReminderScheduler = taskReminderScheduler ?? getIt<TaskReminderSchedulerPort>(),
        _operationStack = operationStack ?? getIt<OperationStackProvider>();
 
   final TaskRepository _taskRepository;
   final TaskReminderService _taskReminderService;
-  final TaskReminderSchedulerPort _taskReminderScheduler;
   final OperationStackProvider _operationStack;
 
   @override
@@ -520,7 +516,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
     }
 
     await _taskRepository.deleteById(task.id);
-    await _taskReminderScheduler.cancelByTaskId(task.id);
+    await _taskReminderService.cancelReminder(task.id);
   }
 
   Future<void> _updateTaskHelper({
@@ -672,12 +668,6 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   }
 
   Future<void> _syncTaskReminder(Task task) async {
-    final plan = _taskReminderService.buildPlan(task);
-    if (plan == null) {
-      await _taskReminderScheduler.cancelByTaskId(task.id);
-      return;
-    }
-
-    await _taskReminderScheduler.schedule(plan);
+    await _taskReminderService.syncReminder(task);
   }
 }
