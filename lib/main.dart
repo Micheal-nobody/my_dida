@@ -14,6 +14,7 @@ import 'provider/habit_provider.dart';
 import 'provider/operation_stack_provider.dart';
 import 'provider/sidebar_config_provider.dart';
 import 'provider/task_provider.dart';
+import 'provider/tomato_provider.dart';
 import 'router/go_router.dart';
 
 void main() async {
@@ -35,6 +36,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => ChecklistProvider()),
         ChangeNotifierProvider(create: (context) => HabitProvider()),
+        ChangeNotifierProvider(create: (context) => TomatoProvider()),
         ChangeNotifierProvider.value(value: operationStack),
         ChangeNotifierProvider.value(value: getIt<SidebarConfigProvider>()),
 

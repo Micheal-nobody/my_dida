@@ -6,6 +6,7 @@ import 'package:my_dida/pages/calendar_page.dart';
 import 'package:my_dida/pages/habits_page.dart';
 import 'package:my_dida/pages/operation_page.dart';
 import 'package:my_dida/pages/todo_page.dart';
+import 'package:my_dida/pages/tomato_page.dart';
 import 'package:my_dida/pages/settings_page.dart';
 import 'package:my_dida/pages/smart_lists_settings_page.dart';
 import 'package:my_dida/pages/sidebar_settings_page.dart';
@@ -72,6 +73,7 @@ final GoRouter goRouter = GoRouter(
               label: '日历视图',
             ),
             BottomNavigationBarItem(icon: Icon(Icons.lock_clock), label: '习惯'),
+            BottomNavigationBarItem(icon: Icon(Icons.timer_outlined), label: '番茄钟'),
             BottomNavigationBarItem(icon: Icon(Icons.history), label: '操作记录'),
           ],
         ),
@@ -102,9 +104,18 @@ final GoRouter goRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/pomodoro',
+              path: '/habits',
               pageBuilder: (context, state) =>
                   const NoTransitionPage(child: HabitsPage()),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/pomodoro',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: TomatoPage()),
             ),
           ],
         ),
