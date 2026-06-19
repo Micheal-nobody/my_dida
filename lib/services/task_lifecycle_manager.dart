@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/constants/app_constants.dart';
@@ -15,7 +13,6 @@ import 'package:my_dida/repository/task_repository.dart';
 import 'package:my_dida/services/task_reminder_scheduler_port.dart';
 import 'package:my_dida/services/task_reminder_service.dart';
 import 'package:my_dida/utils/RRuleUtil.dart';
-import 'package:my_dida/utils/TimeUtils.dart';
 
 abstract class TaskLifecycleManager {
   Future<Task> addTask(Task newTask);
@@ -99,6 +96,9 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
       rrule: newTask.rrule,
       notificationEnabled: newTask.notificationEnabled,
       reminderOffsetMinutes: newTask.reminderOffsetMinutes,
+      priority: newTask.priority,
+      tags: newTask.tags,
+      checkpoints: newTask.checkpoints,
     );
     return task;
   }
@@ -452,6 +452,9 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
     String? rrule,
     bool notificationEnabled = false,
     int? reminderOffsetMinutes,
+    TaskPriority priority = TaskPriority.none,
+    List<String> tags = const [],
+    List<CheckPoint> checkpoints = const [],
   }) async {
     try {
       TaskValidator.validateTaskName(name);
@@ -477,6 +480,9 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
         rrule: rrule,
         notificationEnabled: notificationEnabled,
         reminderOffsetMinutes: reminderOffsetMinutes,
+        priority: priority,
+        tags: tags,
+        checkpoints: checkpoints,
       );
 
       await _taskRepository.addTask(task);
