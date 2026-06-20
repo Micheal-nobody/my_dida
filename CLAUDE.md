@@ -31,3 +31,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 * **路由管理 (Routing)**：使用 `go_router` 库，具体配置主要定义在 `lib/router/go_router.dart` 中。
 * **通知与提醒 (Notifications & Reminders)**：基于 `flutter_local_notifications` 封装了 `NotificationService`，并通过 `TaskReminderService` 结合具体的 `TaskReminderSchedulerPort` 实现对于任务通知和本地提醒的调度管理。
 * **操作历史与撤销重做 (Undo/Redo System)**：通过 `OperationStackProvider` 控制并管理用户的操作历史（如任务、习惯的增加、删除和修改），实现业务逻辑上的撤销和重做。
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs for this repo live as GitHub issues. External PRs are not treated as a triage surface. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use default triage label vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Use single-context documentation layout (global `CONTEXT.md` at root + `docs/adr/`). See `docs/agents/domain.md`.
