@@ -77,11 +77,7 @@ class _VirtualizedCalendarTimeAreaState
     );
   }
 
-  double _getDateColumnWidth(BuildContext context) {
-    final renderBox =
-        _containerKey.currentContext?.findRenderObject() as RenderBox?;
-    final availableWidth =
-        renderBox?.size.width ?? MediaQuery.of(context).size.width;
+  double _getDateColumnWidth(double availableWidth) {
     return availableWidth / widget.visibleDates.length;
   }
 
@@ -200,48 +196,53 @@ class _VirtualizedCalendarTimeAreaState
           }
         }
 
-        return Container(
-          key: _containerKey,
-          height: widget.timeAreaHeight,
-          decoration: BoxDecoration(
-            color: candidateData.isNotEmpty
-                ? Colors.orange.withValues(alpha: 0.1)
-                : null,
-          ),
-          child: Stack(
-            children: [
-              ListView.builder(
-                controller: _scrollController,
-                itemCount: activeHours.length,
-                itemExtent: _hourHeight,
-                itemBuilder: (context, index) {
-                  final visibleIndices = _getVisibleHours(activeHours);
-                  if (!visibleIndices.contains(index)) {
-                    return SizedBox(height: _hourHeight);
-                  }
-
-                  final actualHour = activeHours[index];
-                  return _buildHourRow(actualHour);
-                },
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final availableWidth = constraints.maxWidth;
+            return Container(
+              key: _containerKey,
+              height: widget.timeAreaHeight,
+              decoration: BoxDecoration(
+                color: candidateData.isNotEmpty
+                    ? Colors.orange.withValues(alpha: 0.1)
+                    : null,
               ),
-              if (candidateData.isNotEmpty && previewLineTop != null)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: previewLineTop,
-                  child: IgnorePointer(
-                    child: Container(height: 2, color: Colors.orange),
+              child: Stack(
+                children: [
+                  ListView.builder(
+                    controller: _scrollController,
+                    itemCount: activeHours.length,
+                    itemExtent: _hourHeight,
+                    itemBuilder: (context, index) {
+                      final visibleIndices = _getVisibleHours(activeHours);
+                      if (!visibleIndices.contains(index)) {
+                        return SizedBox(height: _hourHeight);
+                      }
+
+                      final actualHour = activeHours[index];
+                      return _buildHourRow(actualHour, availableWidth);
+                    },
                   ),
-                ),
-            ],
-          ),
+                  if (candidateData.isNotEmpty && previewLineTop != null)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: previewLineTop,
+                      child: IgnorePointer(
+                        child: Container(height: 2, color: Colors.orange),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
         );
       },
     ),
   );
 
-  Widget _buildHourRow(int hourIndex) {
-    final dateColumnWidth = _getDateColumnWidth(context);
+  Widget _buildHourRow(int hourIndex, double availableWidth) {
+    final dateColumnWidth = _getDateColumnWidth(availableWidth);
 
     return SizedBox(
       height: _hourHeight,

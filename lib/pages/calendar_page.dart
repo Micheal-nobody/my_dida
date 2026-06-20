@@ -627,16 +627,16 @@ class _CalendarPageState extends State<CalendarPage> {
     child: IgnorePointer(
       child: Transform.translate(
         offset: Offset(0, -_timeContentScrollOffset),
-        child: Column(
-          children: [
-            TimeAxisColumn(
-              width: _timeAxisWidth,
-              previewTime: _dragPreviewTime,
-              hours: activeHours,
-              hourHeight: 60.0,
-            ),
-            const SizedBox(height: _timeAxisSpacerHeight),
-          ],
+        child: OverflowBox(
+          minHeight: 0.0,
+          maxHeight: activeHours.length * 60.0,
+          alignment: Alignment.topCenter,
+          child: TimeAxisColumn(
+            width: _timeAxisWidth,
+            previewTime: _dragPreviewTime,
+            hours: activeHours,
+            hourHeight: 60.0,
+          ),
         ),
       ),
     ),
