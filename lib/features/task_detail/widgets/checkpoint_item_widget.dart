@@ -3,20 +3,24 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/check_point.dart';
 import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/provider/task_provider.dart';
-import 'package:provider/provider.dart';
 
 class CheckpointItemWidget extends StatefulWidget {
   const CheckpointItemWidget({
     required this.task,
     required this.index,
     required this.checkpoint,
+    this.onToggle,
+    this.onRename,
+    this.onDelete,
     super.key,
   });
 
   final Task task;
   final int index;
   final CheckPoint checkpoint;
+  final ValueChanged<bool>? onToggle;
+  final ValueChanged<String>? onRename;
+  final VoidCallback? onDelete;
 
   @override
   State<CheckpointItemWidget> createState() => _CheckpointItemWidgetState();
@@ -72,11 +76,9 @@ class _CheckpointItemWidgetState extends State<CheckpointItemWidget> {
       return;
     }
 
-    await context.read<TaskProvider>().renameCheckpoint(
-      widget.task,
-      widget.index,
-      trimmedValue,
-    );
+    if (widget.onRename != null) {
+      widget.onRename!(trimmedValue);
+    }
     if (mounted) {
       setState(() {
         _isEditing = false;
@@ -86,7 +88,6 @@ class _CheckpointItemWidgetState extends State<CheckpointItemWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final taskProvider = context.read<TaskProvider>();
     final checkpoint = widget.checkpoint;
 
     return Padding(
@@ -95,9 +96,9 @@ class _CheckpointItemWidgetState extends State<CheckpointItemWidget> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 8),
         leading: Checkbox(
           value: checkpoint.isDone,
-          onChanged: (v) async {
+          onChanged: (v) {
             if (v == null) return;
-            await taskProvider.toggleCheckpoint(widget.task, widget.index, v);
+            widget.onToggle?.call(v);
           },
         ),
         title: _isEditing
@@ -138,8 +139,8 @@ class _CheckpointItemWidgetState extends State<CheckpointItemWidget> {
               ),
         trailing: IconButton(
           icon: const Icon(Icons.delete_outline, color: Colors.red),
-          onPressed: () async {
-            await taskProvider.removeCheckpoint(widget.task, widget.index);
+          onPressed: () {
+            widget.onDelete?.call();
           },
         ),
       ),

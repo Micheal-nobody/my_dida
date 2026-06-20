@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/provider/task_provider.dart';
-import 'package:provider/provider.dart';
 
 class SubTaskSection extends StatelessWidget {
   const SubTaskSection({
     required this.task,
     required this.onOpenSubTask,
+    this.getSubTasks,
+    this.onToggleSubTask,
+    this.onDeleteSubTask,
     super.key,
   });
 
   final Task task;
   final void Function(int subTaskId) onOpenSubTask;
+  final Future<List<Task>> Function(List<int> ids)? getSubTasks;
+  final void Function(Task subTask, bool isDone)? onToggleSubTask;
+  final void Function(Task subTask)? onDeleteSubTask;
 
   @override
   Widget build(BuildContext context) {
-    final taskProvider = context.read<TaskProvider>();
-
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Container(
@@ -31,7 +33,7 @@ class SubTaskSection extends StatelessWidget {
             children: [
               const SizedBox(height: 6),
               FutureBuilder<List<Task>>(
-                future: taskProvider.getTasksByIds(task.subTaskIds),
+                future: getSubTasks?.call(task.subTaskIds) ?? Future.value([]),
                 builder: (context, snapshot) {
                   final List<Task> subs = snapshot.data ?? [];
                   if (subs.isEmpty) {
@@ -43,9 +45,9 @@ class SubTaskSection extends StatelessWidget {
                         ListTile(
                           leading: Checkbox(
                             value: st.isDone,
-                            onChanged: (v) async {
+                            onChanged: (v) {
                               if (v == null) return;
-                              await taskProvider.updateTaskIsDone(st, v);
+                              onToggleSubTask?.call(st, v);
                             },
                           ),
                           title: GestureDetector(
@@ -59,8 +61,8 @@ class SubTaskSection extends StatelessWidget {
                               Icons.delete_outline,
                               color: Colors.red,
                             ),
-                            onPressed: () async {
-                              await taskProvider.deleteSubTask(task, st.id);
+                            onPressed: () {
+                              onDeleteSubTask?.call(st);
                             },
                           ),
                         ),

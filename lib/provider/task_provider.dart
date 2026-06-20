@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:isar_community/isar.dart';
 import 'package:my_dida/model/vo/checklist_vo.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
 
@@ -11,7 +9,6 @@ import '../constants/ui_constants.dart';
 import '../core/errors/exceptions.dart';
 import '../core/validators/task_validator.dart';
 import '../model/entity/check_point.dart';
-import '../model/entity/operation.dart';
 import '../model/entity/task.dart';
 import '../model/vo/task_calendar_view_data.dart';
 import '../provider/operation_stack_provider.dart';
@@ -249,73 +246,15 @@ class TaskProvider with ChangeNotifier {
     if (newChecklist == null || newChecklist.id == -1) {
       stream = _taskRepository.watchTodayTasks();
     } else if (newChecklist.id == -2) {
-      // Tomorrow
-      final tomorrow = DateTime.now().add(const Duration(days: 1));
-      final tomorrowRange = DateTimeUtils.getDateRange(tomorrow, tomorrow);
-      stream = _taskRepository.collection
-          .where()
-          .filter()
-          .isDoneEqualTo(false)
-          .and()
-          .group(
-            (q) => q
-                .startTimeBetween(tomorrowRange.start, tomorrowRange.end)
-                .or()
-                .endTimeBetween(tomorrowRange.start, tomorrowRange.end),
-          )
-          .watch(fireImmediately: true);
+      stream = _taskRepository.watchTomorrowTasks();
     } else if (newChecklist.id == -3) {
-      // Next 7 Days
-      final now = DateTime.now();
-      final end = now.add(const Duration(days: 6));
-      final range = DateTimeUtils.getDateRange(now, end);
-      stream = _taskRepository.collection
-          .where()
-          .filter()
-          .isDoneEqualTo(false)
-          .and()
-          .group(
-            (q) => q
-                .startTimeBetween(range.start, range.end)
-                .or()
-                .endTimeBetween(range.start, range.end),
-          )
-          .watch(fireImmediately: true);
+      stream = _taskRepository.watchNext7DaysTasks();
     } else if (newChecklist.id == -4) {
-      // All
-      stream = _taskRepository.collection
-          .where()
-          .filter()
-          .isDoneEqualTo(false)
-          .watch(fireImmediately: true);
+      stream = _taskRepository.watchAllIncompleteTasks();
     } else if (newChecklist.id == -5) {
-      // Completed
-      stream = _taskRepository.collection
-          .where()
-          .filter()
-          .isDoneEqualTo(true)
-          .watch(fireImmediately: true);
+      stream = _taskRepository.watchAllCompletedTasks();
     } else if (newChecklist.id == -6) {
-      // Trash
-      final isar = getIt<Isar>();
-      stream = isar.operations
-          .where()
-          .filter()
-          .typeEqualTo(OperationType.delete)
-          .and()
-          .targetEqualTo(OperationTarget.task)
-          .watch(fireImmediately: true)
-          .map((ops) {
-            return ops.map((op) {
-              if (op.previousData == null) {
-                return Task(name: '未知任务', isAllDay: false);
-              }
-              final task = Task.fromJson(jsonDecode(op.previousData!));
-              task.id = op
-                  .id; // Map op.id to task.id for restore/delete identification
-              return task;
-            }).toList();
-          });
+      stream = _taskRepository.watchTrashTasks();
     } else {
       stream = _taskRepository.watchByChecklistId(newChecklist.id);
     }
@@ -346,8 +285,7 @@ class TaskProvider with ChangeNotifier {
 
   Stream<Task?> watchTaskById(int id) => _taskRepository.watchById(id);
 
-  Stream<List<Task>> watchAllTasks() =>
-      _taskRepository.collection.where().watch(fireImmediately: true);
+  Stream<List<Task>> watchAllTasks() => _taskRepository.watchAllTasks();
 
   @override
   void dispose() {
@@ -379,87 +317,14 @@ class TaskProvider with ChangeNotifier {
 
   Future<Map<int, int>> getSmartListCounts() async {
     final counts = <int, int>{};
-    final now = DateTime.now();
-    final todayRange = DateTimeUtils.getTodayRange();
 
-    // Today (id = -1)
-    counts[-1] = await _taskRepository.collection
-        .where()
-        .filter()
-        .isDoneEqualTo(false)
-        .and()
-        .group(
-          (q) => q
-              .startTimeBetween(todayRange.start, todayRange.end)
-              .or()
-              .endTimeBetween(todayRange.start, todayRange.end),
-        )
-        .count();
-
-    // Tomorrow (id = -2)
-    final tomorrow = now.add(const Duration(days: 1));
-    final tomorrowRange = DateTimeUtils.getDateRange(tomorrow, tomorrow);
-    counts[-2] = await _taskRepository.collection
-        .where()
-        .filter()
-        .isDoneEqualTo(false)
-        .and()
-        .group(
-          (q) => q
-              .startTimeBetween(tomorrowRange.start, tomorrowRange.end)
-              .or()
-              .endTimeBetween(tomorrowRange.start, tomorrowRange.end),
-        )
-        .count();
-
-    // Next 7 Days (id = -3)
-    final end = now.add(const Duration(days: 6));
-    final range = DateTimeUtils.getDateRange(now, end);
-    counts[-3] = await _taskRepository.collection
-        .where()
-        .filter()
-        .isDoneEqualTo(false)
-        .and()
-        .group(
-          (q) => q
-              .startTimeBetween(range.start, range.end)
-              .or()
-              .endTimeBetween(range.start, range.end),
-        )
-        .count();
-
-    // Inbox (id = 1)
-    counts[1] = await _taskRepository.collection
-        .where()
-        .filter()
-        .checklistIdEqualTo(1)
-        .and()
-        .isDoneEqualTo(false)
-        .count();
-
-    // All (id = -4)
-    counts[-4] = await _taskRepository.collection
-        .where()
-        .filter()
-        .isDoneEqualTo(false)
-        .count();
-
-    // Completed (id = -5)
-    counts[-5] = await _taskRepository.collection
-        .where()
-        .filter()
-        .isDoneEqualTo(true)
-        .count();
-
-    // Trash (id = -6)
-    final isar = getIt<Isar>();
-    counts[-6] = await isar.operations
-        .where()
-        .filter()
-        .typeEqualTo(OperationType.delete)
-        .and()
-        .targetEqualTo(OperationTarget.task)
-        .count();
+    counts[-1] = await _taskRepository.getTodayTasksCount();
+    counts[-2] = await _taskRepository.getTomorrowTasksCount();
+    counts[-3] = await _taskRepository.getNext7DaysTasksCount();
+    counts[1] = await _taskRepository.getInboxTasksCount();
+    counts[-4] = await _taskRepository.getAllIncompleteTasksCount();
+    counts[-5] = await _taskRepository.getAllCompletedTasksCount();
+    counts[-6] = await _taskRepository.getTrashTasksCount();
 
     return counts;
   }

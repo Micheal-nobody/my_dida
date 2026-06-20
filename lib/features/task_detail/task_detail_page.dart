@@ -507,6 +507,26 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                               task: task,
                               index: entry.key,
                               checkpoint: entry.value,
+                              onToggle: (isDone) async {
+                                await _taskProvider.toggleCheckpoint(
+                                  task,
+                                  entry.key,
+                                  isDone,
+                                );
+                              },
+                              onRename: (newName) async {
+                                await _taskProvider.renameCheckpoint(
+                                  task,
+                                  entry.key,
+                                  newName,
+                                );
+                              },
+                              onDelete: () async {
+                                await _taskProvider.removeCheckpoint(
+                                  task,
+                                  entry.key,
+                                );
+                              },
                             ),
                         ],
                       ),
@@ -516,6 +536,13 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                       SubTaskSection(
                         task: task,
                         onOpenSubTask: _navigateToSubTask,
+                        getSubTasks: (ids) => _taskProvider.getTasksByIds(ids),
+                        onToggleSubTask: (subTask, isDone) async {
+                          await _taskProvider.updateTaskIsDone(subTask, isDone);
+                        },
+                        onDeleteSubTask: (subTask) async {
+                          await _taskProvider.deleteSubTask(task, subTask.id);
+                        },
                       ),
                       const SizedBox(height: 80),
                     ],

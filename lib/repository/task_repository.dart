@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/config/locator.dart';
+import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/repository/base_repository.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
@@ -124,5 +126,167 @@ class TaskRepository extends BaseRepository<Task> {
         .or()
         .endTimeBetween(todayRange.start, todayRange.end)
         .watch(fireImmediately: true);
+  }
+
+  Stream<List<Task>> watchTomorrowTasks() {
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final tomorrowRange = DateTimeUtils.getDateRange(tomorrow, tomorrow);
+    return collection
+        .where()
+        .filter()
+        .isDoneEqualTo(false)
+        .and()
+        .group(
+          (q) => q
+              .startTimeBetween(tomorrowRange.start, tomorrowRange.end)
+              .or()
+              .endTimeBetween(tomorrowRange.start, tomorrowRange.end),
+        )
+        .watch(fireImmediately: true);
+  }
+
+  Stream<List<Task>> watchNext7DaysTasks() {
+    final now = DateTime.now();
+    final end = now.add(const Duration(days: 6));
+    final range = DateTimeUtils.getDateRange(now, end);
+    return collection
+        .where()
+        .filter()
+        .isDoneEqualTo(false)
+        .and()
+        .group(
+          (q) => q
+              .startTimeBetween(range.start, range.end)
+              .or()
+              .endTimeBetween(range.start, range.end),
+        )
+        .watch(fireImmediately: true);
+  }
+
+  Stream<List<Task>> watchAllIncompleteTasks() {
+    return collection
+        .where()
+        .filter()
+        .isDoneEqualTo(false)
+        .watch(fireImmediately: true);
+  }
+
+  Stream<List<Task>> watchAllCompletedTasks() {
+    return collection
+        .where()
+        .filter()
+        .isDoneEqualTo(true)
+        .watch(fireImmediately: true);
+  }
+
+  Stream<List<Task>> watchTrashTasks() {
+    return _isar.operations
+        .where()
+        .filter()
+        .typeEqualTo(OperationType.delete)
+        .and()
+        .targetEqualTo(OperationTarget.task)
+        .watch(fireImmediately: true)
+        .map((ops) {
+          return ops.map((op) {
+            if (op.previousData == null) {
+              return Task(name: '未知任务', isAllDay: false);
+            }
+            final task = Task.fromJson(jsonDecode(op.previousData!));
+            task.id = op.id;
+            return task;
+          }).toList();
+        });
+  }
+
+  Stream<List<Task>> watchAllTasks() {
+    return collection.where().watch(fireImmediately: true);
+  }
+
+  Future<int> getTodayTasksCount() async {
+    final todayRange = DateTimeUtils.getTodayRange();
+    return collection
+        .where()
+        .filter()
+        .isDoneEqualTo(false)
+        .and()
+        .group(
+          (q) => q
+              .startTimeBetween(todayRange.start, todayRange.end)
+              .or()
+              .endTimeBetween(todayRange.start, todayRange.end),
+        )
+        .count();
+  }
+
+  Future<int> getTomorrowTasksCount() async {
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final tomorrowRange = DateTimeUtils.getDateRange(tomorrow, tomorrow);
+    return collection
+        .where()
+        .filter()
+        .isDoneEqualTo(false)
+        .and()
+        .group(
+          (q) => q
+              .startTimeBetween(tomorrowRange.start, tomorrowRange.end)
+              .or()
+              .endTimeBetween(tomorrowRange.start, tomorrowRange.end),
+        )
+        .count();
+  }
+
+  Future<int> getNext7DaysTasksCount() async {
+    final now = DateTime.now();
+    final end = now.add(const Duration(days: 6));
+    final range = DateTimeUtils.getDateRange(now, end);
+    return collection
+        .where()
+        .filter()
+        .isDoneEqualTo(false)
+        .and()
+        .group(
+          (q) => q
+              .startTimeBetween(range.start, range.end)
+              .or()
+              .endTimeBetween(range.start, range.end),
+        )
+        .count();
+  }
+
+  Future<int> getInboxTasksCount() async {
+    return collection
+        .where()
+        .filter()
+        .checklistIdEqualTo(1)
+        .and()
+        .isDoneEqualTo(false)
+        .count();
+  }
+
+  Future<int> getAllIncompleteTasksCount() async {
+    return collection
+        .where()
+        .filter()
+        .isDoneEqualTo(false)
+        .count();
+  }
+
+  Future<int> getAllCompletedTasksCount() async {
+    return collection
+        .where()
+        .filter()
+        .isDoneEqualTo(true)
+        .count();
+  }
+
+  Future<int> getTrashTasksCount() async {
+    return _isar.operations
+        .where()
+        .filter()
+        .typeEqualTo(OperationType.delete)
+        .and()
+        .targetEqualTo(OperationTarget.task)
+        .count();
   }
 }
