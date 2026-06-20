@@ -5,10 +5,10 @@ import 'package:my_dida/model/entity/check_point.dart';
 part 'task.g.dart';
 
 enum TaskPriority {
-  none,   // 无优先级 -> 对应第四象限
-  low,    // 低优先级 -> 对应第三象限
+  none, // 无优先级 -> 对应第四象限
+  low, // 低优先级 -> 对应第三象限
   medium, // 中优先级 -> 对应第二象限
-  high,   // 高优先级 -> 对应第一象限
+  high, // 高优先级 -> 对应第一象限
 }
 
 @Collection()
@@ -42,17 +42,10 @@ class Task extends RevertibleEntity {
     this.tags = const [],
   });
 
-
   String name;
   String description;
-  @Index(
-    name: 'is_done_start_time',
-    composite: [CompositeIndex('startTime')],
-  )
-  @Index(
-    name: 'is_done_end_time',
-    composite: [CompositeIndex('endTime')],
-  )
+  @Index(name: 'is_done_start_time', composite: [CompositeIndex('startTime')])
+  @Index(name: 'is_done_end_time', composite: [CompositeIndex('endTime')])
   bool isDone;
 
   /// 检查点
@@ -120,7 +113,8 @@ class Task extends RevertibleEntity {
       isAllDay: isAllDay ?? this.isAllDay,
       description: description ?? this.description,
       isDone: isDone ?? this.isDone,
-      checkpoints: checkpoints ??
+      checkpoints:
+          checkpoints ??
           this.checkpoints
               .map((cp) => CheckPoint(name: cp.name, isDone: cp.isDone))
               .toList(),
@@ -171,10 +165,12 @@ class Task extends RevertibleEntity {
     if (json['checkpoints'] != null && json['checkpoints'] is List) {
       for (final cp in json['checkpoints']) {
         if (cp is Map) {
-          cpList.add(CheckPoint(
-            name: cp['name']?.toString() ?? '',
-            isDone: cp['isDone'] == true,
-          ));
+          cpList.add(
+            CheckPoint(
+              name: cp['name']?.toString() ?? '',
+              isDone: cp['isDone'] == true,
+            ),
+          );
         }
       }
     }
@@ -185,7 +181,8 @@ class Task extends RevertibleEntity {
       description: json['description']?.toString() ?? '',
       isDone: json['isDone'] == true,
       checkpoints: cpList,
-      startTime: json['startTime'] != null && json['startTime'].toString().isNotEmpty
+      startTime:
+          json['startTime'] != null && json['startTime'].toString().isNotEmpty
           ? DateTime.parse(json['startTime'].toString())
           : null,
       endTime: json['endTime'] != null && json['endTime'].toString().isNotEmpty

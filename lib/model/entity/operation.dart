@@ -73,14 +73,15 @@ class Operation {
   );
 
   /// 创建删除任务操作
-  static Operation createDeleteTaskOperation(RevertibleEntity entity) => Operation(
-    type: OperationType.delete,
-    target: OperationTarget.task,
-    timestamp: DateTime.now(),
-    description: _buildDescription('删除', entity),
-    targetId: entity.id,
-    previousData: _entityToJson(entity),
-  );
+  static Operation createDeleteTaskOperation(RevertibleEntity entity) =>
+      Operation(
+        type: OperationType.delete,
+        target: OperationTarget.task,
+        timestamp: DateTime.now(),
+        description: _buildDescription('删除', entity),
+        targetId: entity.id,
+        previousData: _entityToJson(entity),
+      );
 
   /// 创建更新任务操作
   static Operation createUpdateTaskOperation(
@@ -98,24 +99,26 @@ class Operation {
   );
 
   /// 创建添加习惯操作
-  static Operation createAddHabitOperation(RevertibleEntity entity) => Operation(
-    type: OperationType.add,
-    target: OperationTarget.habit,
-    timestamp: DateTime.now(),
-    description: _buildDescription('添加', entity),
-    targetId: entity.id,
-    newData: _entityToJson(entity),
-  );
+  static Operation createAddHabitOperation(RevertibleEntity entity) =>
+      Operation(
+        type: OperationType.add,
+        target: OperationTarget.habit,
+        timestamp: DateTime.now(),
+        description: _buildDescription('添加', entity),
+        targetId: entity.id,
+        newData: _entityToJson(entity),
+      );
 
   /// 创建删除习惯操作
-  static Operation createDeleteHabitOperation(RevertibleEntity entity) => Operation(
-    type: OperationType.delete,
-    target: OperationTarget.habit,
-    timestamp: DateTime.now(),
-    description: _buildDescription('删除', entity),
-    targetId: entity.id,
-    previousData: _entityToJson(entity),
-  );
+  static Operation createDeleteHabitOperation(RevertibleEntity entity) =>
+      Operation(
+        type: OperationType.delete,
+        target: OperationTarget.habit,
+        timestamp: DateTime.now(),
+        description: _buildDescription('删除', entity),
+        targetId: entity.id,
+        previousData: _entityToJson(entity),
+      );
 
   /// 创建更新习惯操作
   static Operation createUpdateHabitOperation(

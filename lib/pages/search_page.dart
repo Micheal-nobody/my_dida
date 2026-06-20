@@ -166,8 +166,14 @@ class _SearchPageState extends State<SearchPage> {
     return cl.name;
   }
 
-  Widget _buildHighlightedText(String text, String highlight, {TextStyle? style, TextStyle? highlightStyle}) {
-    if (highlight.isEmpty || !text.toLowerCase().contains(highlight.toLowerCase())) {
+  Widget _buildHighlightedText(
+    String text,
+    String highlight, {
+    TextStyle? style,
+    TextStyle? highlightStyle,
+  }) {
+    if (highlight.isEmpty ||
+        !text.toLowerCase().contains(highlight.toLowerCase())) {
       return Text(text, style: style);
     }
 
@@ -178,14 +184,28 @@ class _SearchPageState extends State<SearchPage> {
     int start = 0;
     int indexOfHighlight;
 
-    while ((indexOfHighlight = lowercaseText.indexOf(lowercaseHighlight, start)) != -1) {
+    while ((indexOfHighlight = lowercaseText.indexOf(
+          lowercaseHighlight,
+          start,
+        )) !=
+        -1) {
       if (indexOfHighlight > start) {
         spans.add(TextSpan(text: text.substring(start, indexOfHighlight)));
       }
-      spans.add(TextSpan(
-        text: text.substring(indexOfHighlight, indexOfHighlight + highlight.length),
-        style: highlightStyle ?? const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
-      ));
+      spans.add(
+        TextSpan(
+          text: text.substring(
+            indexOfHighlight,
+            indexOfHighlight + highlight.length,
+          ),
+          style:
+              highlightStyle ??
+              const TextStyle(
+                color: Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+      );
       start = indexOfHighlight + highlight.length;
     }
 
@@ -195,7 +215,9 @@ class _SearchPageState extends State<SearchPage> {
 
     return RichText(
       text: TextSpan(
-        style: style ?? const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+        style:
+            style ??
+            const TextStyle(color: AppColors.textPrimary, fontSize: 16),
         children: spans,
       ),
     );
@@ -221,10 +243,15 @@ class _SearchPageState extends State<SearchPage> {
     return snippet.replaceAll('\n', ' ');
   }
 
-  List<CheckPoint> _getMatchedCheckpoints(List<CheckPoint> checkpoints, String query) {
+  List<CheckPoint> _getMatchedCheckpoints(
+    List<CheckPoint> checkpoints,
+    String query,
+  ) {
     if (query.isEmpty) return [];
     final lowerQuery = query.toLowerCase();
-    return checkpoints.where((cp) => cp.name.toLowerCase().contains(lowerQuery)).toList();
+    return checkpoints
+        .where((cp) => cp.name.toLowerCase().contains(lowerQuery))
+        .toList();
   }
 
   @override
@@ -248,7 +275,11 @@ class _SearchPageState extends State<SearchPage> {
           padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingS),
           child: Row(
             children: [
-              const Icon(Icons.search, color: AppColors.textSecondary, size: 20),
+              const Icon(
+                Icons.search,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
               const SizedBox(width: Dimensions.paddingS),
               Expanded(
                 child: TextField(
@@ -258,7 +289,10 @@ class _SearchPageState extends State<SearchPage> {
                   onSubmitted: (value) => _addSearchHistory(value),
                   decoration: const InputDecoration(
                     hintText: '搜索任务、步骤、备注',
-                    hintStyle: TextStyle(color: AppColors.textDisabled, fontSize: 15),
+                    hintStyle: TextStyle(
+                      color: AppColors.textDisabled,
+                      fontSize: 15,
+                    ),
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -273,7 +307,11 @@ class _SearchPageState extends State<SearchPage> {
                     _onSearchChanged('');
                     setState(() {});
                   },
-                  child: const Icon(Icons.close, color: AppColors.textSecondary, size: 20),
+                  child: const Icon(
+                    Icons.close,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
                 ),
             ],
           ),
@@ -287,7 +325,9 @@ class _SearchPageState extends State<SearchPage> {
 
           // 主体展示区
           Expanded(
-            child: showHistory ? _buildHistorySection() : _buildSearchResultsSection(),
+            child: showHistory
+                ? _buildHistorySection()
+                : _buildSearchResultsSection(),
           ),
         ],
       ),
@@ -402,10 +442,17 @@ class _SearchPageState extends State<SearchPage> {
             leading: const Icon(Icons.history, color: AppColors.textDisabled),
             title: Text(
               item,
-              style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 15,
+              ),
             ),
             trailing: IconButton(
-              icon: const Icon(Icons.close, color: AppColors.textDisabled, size: 18),
+              icon: const Icon(
+                Icons.close,
+                color: AppColors.textDisabled,
+                size: 18,
+              ),
               onPressed: () => _removeSearchHistory(item),
             ),
             onTap: () {
@@ -460,12 +507,18 @@ class _SearchPageState extends State<SearchPage> {
       itemBuilder: (context, index) {
         final task = _searchResults[index];
         final priorityColor = _getPriorityColor(task.priority);
-        final checklistName = _getChecklistName(task.checklistId, allChecklists);
+        final checklistName = _getChecklistName(
+          task.checklistId,
+          allChecklists,
+        );
         final dateStr = _getDateString(task.startTime);
 
         // 匹配特化：备注和子任务
         final notesSnippet = _getNotesSnippet(task.description, query);
-        final matchedCheckpoints = _getMatchedCheckpoints(task.checkpoints, query);
+        final matchedCheckpoints = _getMatchedCheckpoints(
+          task.checkpoints,
+          query,
+        );
 
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -492,7 +545,10 @@ class _SearchPageState extends State<SearchPage> {
                           value: task.isDone,
                           onChanged: (value) async {
                             if (value != null) {
-                              final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+                              final taskProvider = Provider.of<TaskProvider>(
+                                context,
+                                listen: false,
+                              );
                               await taskProvider.updateTaskIsDone(task, value);
                               _performSearch(query);
                             }
@@ -510,8 +566,12 @@ class _SearchPageState extends State<SearchPage> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            decoration: task.isDone ? TextDecoration.lineThrough : TextDecoration.none,
-                            color: task.isDone ? AppColors.textSecondary : AppColors.textPrimary,
+                            decoration: task.isDone
+                                ? TextDecoration.lineThrough
+                                : TextDecoration.none,
+                            color: task.isDone
+                                ? AppColors.textSecondary
+                                : AppColors.textPrimary,
                           ),
                         ),
                       ),
@@ -526,13 +586,20 @@ class _SearchPageState extends State<SearchPage> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.notes, size: 14, color: AppColors.textDisabled),
+                          const Icon(
+                            Icons.notes,
+                            size: 14,
+                            color: AppColors.textDisabled,
+                          ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: _buildHighlightedText(
                               notesSnippet,
                               query,
-                              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ),
                         ],
@@ -549,7 +616,9 @@ class _SearchPageState extends State<SearchPage> {
                         child: Row(
                           children: [
                             Icon(
-                              cp.isDone ? Icons.check_box : Icons.check_box_outline_blank,
+                              cp.isDone
+                                  ? Icons.check_box
+                                  : Icons.check_box_outline_blank,
                               size: 14,
                               color: AppColors.textDisabled,
                             ),
@@ -561,7 +630,9 @@ class _SearchPageState extends State<SearchPage> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary,
-                                  decoration: cp.isDone ? TextDecoration.lineThrough : TextDecoration.none,
+                                  decoration: cp.isDone
+                                      ? TextDecoration.lineThrough
+                                      : TextDecoration.none,
                                 ),
                               ),
                             ),
@@ -581,13 +652,19 @@ class _SearchPageState extends State<SearchPage> {
                         if (dateStr.isNotEmpty)
                           Text(
                             dateStr,
-                            style: const TextStyle(color: Colors.orange, fontSize: 12),
+                            style: const TextStyle(
+                              color: Colors.orange,
+                              fontSize: 12,
+                            ),
                           )
                         else
                           const SizedBox(),
                         Text(
                           checklistName,
-                          style: const TextStyle(color: Colors.grey, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),

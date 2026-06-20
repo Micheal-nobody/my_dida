@@ -6,9 +6,8 @@ import 'package:my_dida/model/vo/task_reminder_plan.dart';
 import 'package:my_dida/services/task_reminder_scheduler_port.dart';
 
 class TaskReminderService {
-  TaskReminderService({
-    TaskReminderSchedulerPort? scheduler,
-  }) : _scheduler = scheduler ?? getIt<TaskReminderSchedulerPort>();
+  TaskReminderService({TaskReminderSchedulerPort? scheduler})
+    : _scheduler = scheduler ?? getIt<TaskReminderSchedulerPort>();
 
   final TaskReminderSchedulerPort _scheduler;
 

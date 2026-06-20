@@ -184,176 +184,189 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             ),
           )
         : Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      controller: widget.scrollController,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 8),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: widget.scrollController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
 
-                          // 任务详情头部
-                          TaskDetailHeader(task: task),
-                          const SizedBox(height: 6),
+                      // 任务详情头部
+                      TaskDetailHeader(task: task),
+                      const SizedBox(height: 6),
 
-                          // 时间显示和确认按钮区域
-                          Padding(
-                            padding: const EdgeInsets.only(left: 16),
-                            child: Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: () async {
-                                    await _taskProvider.updateTaskIsDone(
-                                      task,
-                                      !task.isDone,
-                                    );
-                                  },
-                                  child: Container(
-                                    width: 16,
-                                    height: 16,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.orange),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: task.isDone
-                                        ? const Icon(
-                                            Icons.check,
-                                            color: Colors.orange,
-                                            size: 16,
-                                          )
-                                        : null,
-                                  ),
+                      // 时间显示和确认按钮区域
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                await _taskProvider.updateTaskIsDone(
+                                  task,
+                                  !task.isDone,
+                                );
+                              },
+                              child: Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.orange),
+                                  borderRadius: BorderRadius.circular(4),
                                 ),
-
-                                // 增加一个空格
-                                const SizedBox(width: 12),
-
-                                Consumer<TaskProvider>(
-                                  builder: (context, provider, child) {
-                                    final updatedTask = provider.tasks
-                                        .firstWhere(
-                                          (t) => t.id == task.id,
-                                          orElse: () => task,
-                                        );
-                                    final DateTime? start =
-                                        updatedTask.startTime;
-                                    final DateTime? end = updatedTask.endTime;
-
-                                    final String dateText = _formatTaskTime(
-                                      start,
-                                      end,
-                                    );
-
-                                    return GestureDetector(
-                                      onTap: () async {
-                                        // 使用新的 showForTask 方法，它会自动处理持久化
-                                        await TaskDateTimePicker.showForTask(
-                                          context: context,
-                                          task: updatedTask,
-                                        );
-                                      },
-                                      child: Text(
-                                        dateText,
-                                        style: const TextStyle(
-                                          color: Colors.orange,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // 如果当前任务已关联主任务，则显示主任务标题（以及跳转按钮）
-                          if (task.parentTaskId != null)
-                            FutureBuilder<Task?>(
-                              future: _taskProvider.getTaskById(
-                                task.parentTaskId!,
+                                child: task.isDone
+                                    ? const Icon(
+                                        Icons.check,
+                                        color: Colors.orange,
+                                        size: 16,
+                                      )
+                                    : null,
                               ),
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData && snapshot.data != null) {
-                                  return Row(
-                                    children: [
-                                      TextButton.icon(
-                                        label: Text('${snapshot.data!.name} >'),
-                                        onPressed: () {
-                                          _navigateToSubTask(
-                                            task.parentTaskId!,
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                }
-                                return const SizedBox.shrink();
+                            ),
+
+                            // 增加一个空格
+                            const SizedBox(width: 12),
+
+                            Consumer<TaskProvider>(
+                              builder: (context, provider, child) {
+                                final updatedTask = provider.tasks.firstWhere(
+                                  (t) => t.id == task.id,
+                                  orElse: () => task,
+                                );
+                                final DateTime? start = updatedTask.startTime;
+                                final DateTime? end = updatedTask.endTime;
+
+                                final String dateText = _formatTaskTime(
+                                  start,
+                                  end,
+                                );
+
+                                return GestureDetector(
+                                  onTap: () async {
+                                    // 使用新的 showForTask 方法，它会自动处理持久化
+                                    await TaskDateTimePicker.showForTask(
+                                      context: context,
+                                      task: updatedTask,
+                                    );
+                                  },
+                                  child: Text(
+                                    dateText,
+                                    style: const TextStyle(
+                                      color: Colors.orange,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                );
                               },
                             ),
+                          ],
+                        ),
+                      ),
 
-                          // 属性选择行（优先级、标签）
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                            child: Row(
-                              children: [
-                                // 优先级选择
-                                PopupMenuButton<TaskPriority>(
-                                  initialValue: task.priority,
-                                  onSelected: (val) async {
-                                    await _taskProvider.updatePriority(task, val);
-                                  },
-                                  itemBuilder: (context) => const [
-                                    PopupMenuItem(value: TaskPriority.high, child: Text('🔴 高优先级')),
-                                    PopupMenuItem(value: TaskPriority.medium, child: Text('🟠 中优先级')),
-                                    PopupMenuItem(value: TaskPriority.low, child: Text('🔵 低优先级')),
-                                    PopupMenuItem(value: TaskPriority.none, child: Text('⚪ 无优先级')),
-                                  ],
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey[300]!),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.flag,
-                                          color: task.priority == TaskPriority.high
-                                              ? Colors.red
-                                              : task.priority == TaskPriority.medium
-                                                  ? Colors.orange
-                                                  : task.priority == TaskPriority.low
-                                                      ? Colors.blue
-                                                      : Colors.grey,
-                                          size: 16,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          task.priority == TaskPriority.high
-                                              ? '高优先级'
-                                              : task.priority == TaskPriority.medium
-                                                  ? '中优先级'
-                                                  : task.priority == TaskPriority.low
-                                                      ? '低优先级'
-                                                      : '无优先级',
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      ],
-                                    ),
+                      // 如果当前任务已关联主任务，则显示主任务标题（以及跳转按钮）
+                      if (task.parentTaskId != null)
+                        FutureBuilder<Task?>(
+                          future: _taskProvider.getTaskById(task.parentTaskId!),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData && snapshot.data != null) {
+                              return Row(
+                                children: [
+                                  TextButton.icon(
+                                    label: Text('${snapshot.data!.name} >'),
+                                    onPressed: () {
+                                      _navigateToSubTask(task.parentTaskId!);
+                                    },
                                   ),
+                                ],
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+
+                      // 属性选择行（优先级、标签）
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        child: Row(
+                          children: [
+                            // 优先级选择
+                            PopupMenuButton<TaskPriority>(
+                              initialValue: task.priority,
+                              onSelected: (val) async {
+                                await _taskProvider.updatePriority(task, val);
+                              },
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                  value: TaskPriority.high,
+                                  child: Text('🔴 高优先级'),
                                 ),
-                                const SizedBox(width: 12),
-                                // 标签编辑
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      final textController = TextEditingController(
-                                        text: task.tags.join(', '),
-                                      );
-                                      final updatedTags = await showDialog<List<String>>(
+                                PopupMenuItem(
+                                  value: TaskPriority.medium,
+                                  child: Text('🟠 中优先级'),
+                                ),
+                                PopupMenuItem(
+                                  value: TaskPriority.low,
+                                  child: Text('🔵 低优先级'),
+                                ),
+                                PopupMenuItem(
+                                  value: TaskPriority.none,
+                                  child: Text('⚪ 无优先级'),
+                                ),
+                              ],
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey[300]!),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.flag,
+                                      color: task.priority == TaskPriority.high
+                                          ? Colors.red
+                                          : task.priority == TaskPriority.medium
+                                          ? Colors.orange
+                                          : task.priority == TaskPriority.low
+                                          ? Colors.blue
+                                          : Colors.grey,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      task.priority == TaskPriority.high
+                                          ? '高优先级'
+                                          : task.priority == TaskPriority.medium
+                                          ? '中优先级'
+                                          : task.priority == TaskPriority.low
+                                          ? '低优先级'
+                                          : '无优先级',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // 标签编辑
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final textController = TextEditingController(
+                                    text: task.tags.join(', '),
+                                  );
+                                  final updatedTags =
+                                      await showDialog<List<String>>(
                                         context: context,
                                         builder: (context) => AlertDialog(
                                           title: const Text('修改标签'),
@@ -365,19 +378,25 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                           ),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.pop(context),
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
                                               child: const Text('取消'),
                                             ),
                                             TextButton(
                                               onPressed: () {
-                                                final text = textController.text.trim();
+                                                final text = textController.text
+                                                    .trim();
                                                 final tags = text.isEmpty
                                                     ? <String>[]
                                                     : text
-                                                        .split(RegExp(r'[，,]'))
-                                                        .map((e) => e.trim())
-                                                        .where((e) => e.isNotEmpty)
-                                                        .toList();
+                                                          .split(
+                                                            RegExp(r'[，,]'),
+                                                          )
+                                                          .map((e) => e.trim())
+                                                          .where(
+                                                            (e) => e.isNotEmpty,
+                                                          )
+                                                          .toList();
                                                 Navigator.pop(context, tags);
                                               },
                                               child: const Text('保存'),
@@ -385,173 +404,177 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                           ],
                                         ),
                                       );
-                                      if (updatedTags != null) {
-                                        await _taskProvider.updateTags(task, updatedTags);
-                                      }
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(color: Colors.grey[300]!),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.label_outline, size: 16, color: Colors.grey),
-                                          const SizedBox(width: 4),
-                                          Expanded(
-                                            child: Text(
-                                              task.tags.isEmpty ? '添加标签' : task.tags.join(', '),
-                                              style: const TextStyle(fontSize: 12),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                  if (updatedTags != null) {
+                                    await _taskProvider.updateTags(
+                                      task,
+                                      updatedTags,
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey[300]!,
                                     ),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.label_outline,
+                                        size: 16,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          task.tags.isEmpty
+                                              ? '添加标签'
+                                              : task.tags.join(', '),
+                                          style: const TextStyle(fontSize: 12),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
 
-                          // 标题
-                          InlineEditableTextField(
-                            key: ValueKey('title_${task.id}'),
-                            value: task.name,
-                            onSubmit: (updated) async {
-                              await _taskProvider.updateTitle(task, updated);
-                            },
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange,
-                              decoration: TextDecoration.underline,
+                      // 标题
+                      InlineEditableTextField(
+                        key: ValueKey('title_${task.id}'),
+                        value: task.name,
+                        onSubmit: (updated) async {
+                          await _taskProvider.updateTitle(task, updated);
+                        },
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
+                          decoration: TextDecoration.underline,
+                        ),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // 描述
+                      InlineEditableMultilineTextField(
+                        key: ValueKey('desc_${task.id}'),
+                        value: task.description,
+                        onSubmit: (newDesc) async {
+                          _descriptionDebounce?.cancel();
+                          await _persistDescription(task, newDesc);
+                        },
+                        onChanged: (value) {
+                          _scheduleDescriptionUpdate(task, value);
+                        },
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        hintText: '添加备注...',
+                        decoration: const InputDecoration(
+                          hintText: '添加备注...',
+                          border: InputBorder.none,
+                        ),
+                      ),
+
+                      // CheckpointItems
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (task.checkpoints.isEmpty) const SizedBox.shrink(),
+
+                          for (final entry in sortedCheckpointEntries)
+                            CheckpointItemWidget(
+                              key: ValueKey(
+                                'cp_${widget.taskId}_${entry.key}_${entry.value.isDone}',
+                              ),
+                              task: task,
+                              index: entry.key,
+                              checkpoint: entry.value,
                             ),
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-
-                          // 描述
-                          InlineEditableMultilineTextField(
-                            key: ValueKey('desc_${task.id}'),
-                            value: task.description,
-                            onSubmit: (newDesc) async {
-                              _descriptionDebounce?.cancel();
-                              await _persistDescription(task, newDesc);
-                            },
-                            onChanged: (value) {
-                              _scheduleDescriptionUpdate(task, value);
-                            },
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            hintText: '添加备注...',
-                            decoration: const InputDecoration(
-                              hintText: '添加备注...',
-                              border: InputBorder.none,
-                            ),
-                          ),
-
-                          // CheckpointItems
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (task.checkpoints.isEmpty)
-                                const SizedBox.shrink(),
-
-                              for (final entry in sortedCheckpointEntries)
-                                CheckpointItemWidget(
-                                  key: ValueKey(
-                                    'cp_${widget.taskId}_${entry.key}_${entry.value.isDone}',
-                                  ),
-                                  task: task,
-                                  index: entry.key,
-                                  checkpoint: entry.value,
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-
-                          // 子任务
-                          SubTaskSection(
-                            task: task,
-                            onOpenSubTask: _navigateToSubTask,
-                          ),
-                          const SizedBox(height: 80),
                         ],
                       ),
-                    ),
-                  ),
+                      const SizedBox(height: 10),
 
-                  // 底部按钮栏
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(color: Colors.black12, blurRadius: 6),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        TextButton.icon(
-                          onPressed: () async {
-                            await _taskProvider.addCheckpoint(task);
-                          },
-                          icon: const Icon(
-                            Icons.checklist,
-                            color: Colors.orange,
-                          ),
-                          label: const Text(
-                            '新检查点',
-                            style: TextStyle(color: Colors.orange),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        TextButton.icon(
-                          onPressed: () {
-                            showModalBottomSheet(
-                              context: context,
-                              useRootNavigator: true,
-                              isScrollControlled: true,
-                              builder: (context) => Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: MediaQuery.of(
-                                    context,
-                                  ).viewInsets.bottom,
-                                ),
-                                child: AddTaskDialog(parentTask: task),
-                              ),
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.subdirectory_arrow_right,
-                            color: Colors.orange,
-                          ),
-                          label: const Text(
-                            '新子任务',
-                            style: TextStyle(color: Colors.orange),
-                          ),
-                        ),
-                      ],
-                    ),
+                      // 子任务
+                      SubTaskSection(
+                        task: task,
+                        onOpenSubTask: _navigateToSubTask,
+                      ),
+                      const SizedBox(height: 80),
+                    ],
                   ),
-                ],
-              );
+                ),
+              ),
 
-    return Material(
-      child: widget.useSafeArea ? SafeArea(child: body) : body,
-    );
+              // 底部按钮栏
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+                ),
+                child: Row(
+                  children: [
+                    TextButton.icon(
+                      onPressed: () async {
+                        await _taskProvider.addCheckpoint(task);
+                      },
+                      icon: const Icon(Icons.checklist, color: Colors.orange),
+                      label: const Text(
+                        '新检查点',
+                        style: TextStyle(color: Colors.orange),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          useRootNavigator: true,
+                          isScrollControlled: true,
+                          builder: (context) => Padding(
+                            padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).viewInsets.bottom,
+                            ),
+                            child: AddTaskDialog(parentTask: task),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.subdirectory_arrow_right,
+                        color: Colors.orange,
+                      ),
+                      label: const Text(
+                        '新子任务',
+                        style: TextStyle(color: Colors.orange),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+
+    return Material(child: widget.useSafeArea ? SafeArea(child: body) : body);
   }
 }

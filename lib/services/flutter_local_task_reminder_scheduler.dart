@@ -6,9 +6,9 @@ import 'package:my_dida/services/notification_service.dart';
 import 'task_reminder_scheduler_port.dart';
 
 class FlutterLocalTaskReminderScheduler implements TaskReminderSchedulerPort {
-  FlutterLocalTaskReminderScheduler({
-    NotificationService? notificationService,
-  }) : _notificationService = notificationService ?? getIt<NotificationService>();
+  FlutterLocalTaskReminderScheduler({NotificationService? notificationService})
+    : _notificationService =
+          notificationService ?? getIt<NotificationService>();
 
   final NotificationService _notificationService;
 

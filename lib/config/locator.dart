@@ -8,6 +8,7 @@ import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/entity/sidebar_config.dart';
+import 'package:my_dida/model/entity/calendar_page_config.dart';
 import 'package:my_dida/model/entity/tomato_record.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/repository/checklist_repository.dart';
@@ -22,6 +23,8 @@ import 'package:my_dida/services/task_reminder_scheduler_port.dart';
 import 'package:my_dida/services/task_notification_navigation_service.dart';
 import 'package:my_dida/services/task_reminder_service.dart';
 import 'package:my_dida/services/task_lifecycle_manager.dart';
+import 'package:my_dida/services/habit_lifecycle_manager.dart';
+import 'package:my_dida/services/checklist_lifecycle_manager.dart';
 import 'package:my_dida/provider/sidebar_config_provider.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -47,17 +50,18 @@ Future<void> setupLocator() async {
     ..registerSingleton<HabitRepository>(HabitRepository())
     ..registerSingleton<TomatoRecordRepository>(TomatoRecordRepository())
     // 注册多态实体还原注册器并注册实体工厂
-    ..registerSingleton<EntityRegistry>(EntityRegistry()
-      ..register<Task>(
-        OperationTarget.task,
-        (json) => Task.fromJson(json),
-        getIt<TaskRepository>(),
-      )
-      ..register<Habit>(
-        OperationTarget.habit,
-        (json) => Habit.fromJson(json),
-        getIt<HabitRepository>(),
-      ),
+    ..registerSingleton<EntityRegistry>(
+      EntityRegistry()
+        ..register<Task>(
+          OperationTarget.task,
+          (json) => Task.fromJson(json),
+          getIt<TaskRepository>(),
+        )
+        ..register<Habit>(
+          OperationTarget.habit,
+          (json) => Habit.fromJson(json),
+          getIt<HabitRepository>(),
+        ),
     )
     // 注册泛化撤销实例适配器（取代原本两个 instanceName 子类）
     ..registerSingleton<OperationReverter>(GenericOperationReverter())
@@ -66,17 +70,31 @@ Future<void> setupLocator() async {
     ..registerSingleton<TaskReminderSchedulerPort>(
       FlutterLocalTaskReminderScheduler(),
     )
-    ..registerSingleton<TaskReminderService>(TaskReminderService(
-      scheduler: getIt<TaskReminderSchedulerPort>(),
-    ))
+    ..registerSingleton<TaskReminderService>(
+      TaskReminderService(scheduler: getIt<TaskReminderSchedulerPort>()),
+    )
     ..registerSingleton<TaskCalendarProjectionService>(
       TaskCalendarProjectionService(),
     )
-    ..registerSingleton<TaskLifecycleManager>(TaskLifecycleManagerImpl(
-      taskRepository: getIt<TaskRepository>(),
-      taskReminderService: getIt<TaskReminderService>(),
-      operationStack: getIt<OperationStackProvider>(),
-    ));
+    ..registerSingleton<TaskLifecycleManager>(
+      TaskLifecycleManagerImpl(
+        taskRepository: getIt<TaskRepository>(),
+        taskReminderService: getIt<TaskReminderService>(),
+        operationStack: getIt<OperationStackProvider>(),
+      ),
+    )
+    ..registerSingleton<HabitLifecycleManager>(
+      HabitLifecycleManagerImpl(
+        habitRepository: getIt<HabitRepository>(),
+        operationStack: getIt<OperationStackProvider>(),
+      ),
+    )
+    ..registerSingleton<ChecklistLifecycleManager>(
+      ChecklistLifecycleManagerImpl(
+        checklistRepository: getIt<ChecklistRepository>(),
+        messageService: getIt<AppMessageService>(),
+      ),
+    );
 
   logger.i('初始化 Isar 完成！');
 }
@@ -122,5 +140,6 @@ Future<Isar> initializeIsar() async {
     OperationSchema,
     SidebarConfigSchema,
     TomatoRecordSchema,
+    CalendarPageConfigSchema,
   ], directory: dir.path);
 }

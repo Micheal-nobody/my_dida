@@ -11,7 +11,15 @@ import 'package:my_dida/repository/tomato_record_repository.dart';
 import 'package:my_dida/services/notification_service.dart';
 import 'package:my_dida/repository/task_repository.dart';
 
-export 'package:my_dida/model/domain/tomato_ticker.dart' show TomatoStatus, TomatoEvent, TomatoTickEvent, TomatoFocusCompleteEvent, TomatoBreakCompleteEvent, TomatoAbandonEvent, TomatoStatusChangedEvent;
+export 'package:my_dida/model/domain/tomato_ticker.dart'
+    show
+        TomatoStatus,
+        TomatoEvent,
+        TomatoTickEvent,
+        TomatoFocusCompleteEvent,
+        TomatoBreakCompleteEvent,
+        TomatoAbandonEvent,
+        TomatoStatusChangedEvent;
 
 class TomatoProvider with ChangeNotifier {
   TomatoProvider({
@@ -19,9 +27,11 @@ class TomatoProvider with ChangeNotifier {
     TaskRepository? taskRepository,
     NotificationService? notificationService,
     TomatoTicker? ticker,
-  })  : _tomatoRecordRepository = tomatoRecordRepository ?? getIt<TomatoRecordRepository>(),
-        _taskRepository = taskRepository ?? getIt<TaskRepository>(),
-        _notificationService = notificationService ?? getIt<NotificationService>() {
+  }) : _tomatoRecordRepository =
+           tomatoRecordRepository ?? getIt<TomatoRecordRepository>(),
+       _taskRepository = taskRepository ?? getIt<TaskRepository>(),
+       _notificationService =
+           notificationService ?? getIt<NotificationService>() {
     _ticker = ticker ?? TomatoTicker();
     _tickerSubscription = _ticker.eventStream.listen(_handleTomatoEvent);
   }
@@ -171,7 +181,8 @@ class TomatoProvider with ChangeNotifier {
   }
 
   Future<void> abandon() async {
-    _ticker.abandon(); // 内部抛出 TomatoAbandonEvent，在 _handleTomatoEvent 中执行 Isar 副作用
+    _ticker
+        .abandon(); // 内部抛出 TomatoAbandonEvent，在 _handleTomatoEvent 中执行 Isar 副作用
   }
 
   void skipBreak() {
@@ -226,7 +237,10 @@ class TomatoProvider with ChangeNotifier {
   Future<Map<String, dynamic>> getSummaryData(DateTime date) async {
     final start = DateTime(date.year, date.month, date.day);
     final end = DateTime(date.year, date.month, date.day, 23, 59, 59);
-    final records = await _tomatoRecordRepository.getRecordsInPeriod(start, end);
+    final records = await _tomatoRecordRepository.getRecordsInPeriod(
+      start,
+      end,
+    );
 
     int completedCount = 0;
     int totalMinutes = 0;
@@ -246,13 +260,17 @@ class TomatoProvider with ChangeNotifier {
   Future<List<TomatoRecord>> getWeeklyRecords(DateTime date) async {
     final start = date.subtract(Duration(days: date.weekday - 1));
     final weekStart = DateTime(start.year, start.month, start.day);
-    final end = weekStart.add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59));
+    final end = weekStart.add(
+      const Duration(days: 6, hours: 23, minutes: 59, seconds: 59),
+    );
     return _tomatoRecordRepository.getRecordsInPeriod(weekStart, end);
   }
 
   Future<List<TomatoRecord>> getMonthlyRecords(DateTime date) async {
     final start = DateTime(date.year, date.month, 1);
-    final nextMonth = date.month == 12 ? DateTime(date.year + 1, 1, 1) : DateTime(date.year, date.month + 1, 1);
+    final nextMonth = date.month == 12
+        ? DateTime(date.year + 1, 1, 1)
+        : DateTime(date.year, date.month + 1, 1);
     final end = nextMonth.subtract(const Duration(seconds: 1));
     return _tomatoRecordRepository.getRecordsInPeriod(start, end);
   }
@@ -289,12 +307,7 @@ class TomatoProvider with ChangeNotifier {
           icon: '@mipmap/ic_launcher',
         ),
       );
-      await _notificationService.plugin.show(
-        888,
-        title,
-        body,
-        details,
-      );
+      await _notificationService.plugin.show(888, title, body, details);
     } catch (e) {
       // 忽略通知发送失败
     }

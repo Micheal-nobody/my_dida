@@ -59,12 +59,11 @@ class TaskCalendarProjectionService {
                 task.startTime!.day,
               );
               return taskDate.isAtSameMomentAs(normalizedDate);
-            }).toList()
-              ..sort(
-                (a, b) => (a.startTime ?? DateTime(0)).compareTo(
-                  b.startTime ?? DateTime(0),
-                ),
-              );
+            }).toList()..sort(
+              (a, b) => (a.startTime ?? DateTime(0)).compareTo(
+                b.startTime ?? DateTime(0),
+              ),
+            );
 
         if (futureTasks.isNotEmpty) {
           futureTasksMap[normalizedDate] = futureTasks;

@@ -19,6 +19,7 @@ class CalendarScrollableContent extends StatefulWidget {
     required this.timedHabitEntryBuilder,
     this.onDragPreviewChanged,
     this.onScrollOffsetChanged,
+    this.hours,
     super.key,
   });
 
@@ -34,6 +35,7 @@ class CalendarScrollableContent extends StatefulWidget {
   final CalendarTimedHabitEntryBuilder timedHabitEntryBuilder;
   final ValueChanged<DateTime?>? onDragPreviewChanged;
   final ValueChanged<double>? onScrollOffsetChanged;
+  final List<int>? hours;
 
   @override
   State<CalendarScrollableContent> createState() =>
@@ -105,6 +107,7 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
                         timeAreaHeight: widget.timeAreaHeight,
                         timedTaskEntryBuilder: widget.timedTaskEntryBuilder,
                         timedHabitEntryBuilder: widget.timedHabitEntryBuilder,
+                        hours: widget.hours,
                       ),
                     ),
                     FutureTasksArea(futureTasks: widget.futureTasks),

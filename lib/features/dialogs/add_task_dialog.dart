@@ -172,9 +172,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   ListTile(
                     title: const Text('提醒时间'),
                     subtitle: Text(
-                      tempNotify
-                          ? _getReminderDisplayText(tempOffset)
-                          : '无提醒',
+                      tempNotify ? _getReminderDisplayText(tempOffset) : '无提醒',
                     ),
                     trailing: PopupMenuButton<int?>(
                       initialValue: tempNotify ? tempOffset : null,
@@ -207,7 +205,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('取消', style: TextStyle(color: Colors.orange)),
+                  child: const Text(
+                    '取消',
+                    style: TextStyle(color: Colors.orange),
+                  ),
                 ),
                 TextButton(
                   onPressed: () {
@@ -218,7 +219,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                     });
                     Navigator.pop(context);
                   },
-                  child: const Text('确定', style: TextStyle(color: Colors.orange)),
+                  child: const Text(
+                    '确定',
+                    style: TextStyle(color: Colors.orange),
+                  ),
                 ),
               ],
             );
@@ -248,9 +252,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         title: const Text('修改标签'),
         content: TextField(
           controller: textController,
-          decoration: const InputDecoration(
-            hintText: '输入标签，以逗号分隔',
-          ),
+          decoration: const InputDecoration(hintText: '输入标签，以逗号分隔'),
         ),
         actions: [
           TextButton(
@@ -263,10 +265,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               final tags = text.isEmpty
                   ? <String>[]
                   : text
-                      .split(RegExp(r'[，,]'))
-                      .map((e) => e.trim())
-                      .where((e) => e.isNotEmpty)
-                      .toList();
+                        .split(RegExp(r'[，,]'))
+                        .map((e) => e.trim())
+                        .where((e) => e.isNotEmpty)
+                        .toList();
               Navigator.pop(context, tags);
             },
             child: const Text('保存'),
@@ -378,7 +380,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               activeColor: Colors.orange,
               onChanged: (val) {
                 setState(() {
-                  _checkpoints[index] = CheckPoint(name: cp.name, isDone: val ?? false);
+                  _checkpoints[index] = CheckPoint(
+                    name: cp.name,
+                    isDone: val ?? false,
+                  );
                 });
               },
             ),
@@ -390,7 +395,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   border: InputBorder.none,
                 ),
                 onChanged: (val) {
-                  _checkpoints[index] = CheckPoint(name: val, isDone: cp.isDone);
+                  _checkpoints[index] = CheckPoint(
+                    name: val,
+                    isDone: cp.isDone,
+                  );
                 },
               ),
             ),
@@ -420,7 +428,11 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         children: [
           if (_startTime != null)
             InputChip(
-              avatar: const Icon(Icons.calendar_today, size: 14, color: Colors.orange),
+              avatar: const Icon(
+                Icons.calendar_today,
+                size: 14,
+                color: Colors.orange,
+              ),
               label: Text(
                 _getDateDisplayText(),
                 style: const TextStyle(color: Colors.orange, fontSize: 11),
@@ -446,14 +458,16 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               },
               onPressed: () => _showReminderRepeatDialog(context),
             ),
-          ..._tags.map((tag) => InputChip(
-                label: Text(tag, style: const TextStyle(fontSize: 11)),
-                onDeleted: () {
-                  setState(() {
-                    _tags.remove(tag);
-                  });
-                },
-              )),
+          ..._tags.map(
+            (tag) => InputChip(
+              label: Text(tag, style: const TextStyle(fontSize: 11)),
+              onDeleted: () {
+                setState(() {
+                  _tags.remove(tag);
+                });
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -484,7 +498,11 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.open_in_full, size: 20, color: Colors.grey),
+                  icon: const Icon(
+                    Icons.open_in_full,
+                    size: 20,
+                    color: Colors.grey,
+                  ),
                   tooltip: '全屏编辑',
                   onPressed: () {
                     Navigator.pop(context);
@@ -495,7 +513,8 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                           initialIsFullScreen: true,
                           presetTask: _buildTaskFromForm(
                             taskName: _textController.text.trim(),
-                            checklistProvider: context.read<ChecklistProvider>(),
+                            checklistProvider: context
+                                .read<ChecklistProvider>(),
                           ),
                           parentTask: parentTask,
                         ),
@@ -543,7 +562,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               _buildCheckpointsList(),
               TextButton.icon(
                 icon: const Icon(Icons.add, color: Colors.orange, size: 18),
-                label: const Text('添加检查点', style: TextStyle(color: Colors.orange, fontSize: 13)),
+                label: const Text(
+                  '添加检查点',
+                  style: TextStyle(color: Colors.orange, fontSize: 13),
+                ),
                 onPressed: () {
                   setState(() {
                     _checkpoints.add(CheckPoint(name: ''));
@@ -557,14 +579,18 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 IconButton(
                   icon: Icon(
                     Icons.calendar_month,
-                    color: _startTime != null ? Colors.orange : Colors.grey[600],
+                    color: _startTime != null
+                        ? Colors.orange
+                        : Colors.grey[600],
                   ),
                   onPressed: () => _showDatePicker(context),
                 ),
                 IconButton(
                   icon: Icon(
                     Icons.notifications_none,
-                    color: _rrule != null || _notificationEnabled ? Colors.orange : Colors.grey[600],
+                    color: _rrule != null || _notificationEnabled
+                        ? Colors.orange
+                        : Colors.grey[600],
                   ),
                   onPressed: () => _showReminderRepeatDialog(context),
                 ),
@@ -576,10 +602,22 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                     });
                   },
                   itemBuilder: (context) => const [
-                    PopupMenuItem(value: TaskPriority.high, child: Text('🔴 高优先级')),
-                    PopupMenuItem(value: TaskPriority.medium, child: Text('🟠 中优先级')),
-                    PopupMenuItem(value: TaskPriority.low, child: Text('🔵 低优先级')),
-                    PopupMenuItem(value: TaskPriority.none, child: Text('⚪ 无优先级')),
+                    PopupMenuItem(
+                      value: TaskPriority.high,
+                      child: Text('🔴 高优先级'),
+                    ),
+                    PopupMenuItem(
+                      value: TaskPriority.medium,
+                      child: Text('🟠 中优先级'),
+                    ),
+                    PopupMenuItem(
+                      value: TaskPriority.low,
+                      child: Text('🔵 低优先级'),
+                    ),
+                    PopupMenuItem(
+                      value: TaskPriority.none,
+                      child: Text('⚪ 无优先级'),
+                    ),
                   ],
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -588,10 +626,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                       color: _priority == TaskPriority.high
                           ? Colors.red
                           : _priority == TaskPriority.medium
-                              ? Colors.orange
-                              : _priority == TaskPriority.low
-                                  ? Colors.blue
-                                  : Colors.grey[600],
+                          ? Colors.orange
+                          : _priority == TaskPriority.low
+                          ? Colors.blue
+                          : Colors.grey[600],
                     ),
                   ),
                 ),
@@ -616,9 +654,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 IconButton(
                   icon: Icon(Icons.mic, color: Colors.grey[600]),
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('语音录入功能暂未集成')),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('语音录入功能暂未集成')));
                   },
                 ),
                 const Spacer(),
@@ -669,7 +707,13 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         actions: [
           TextButton(
             onPressed: () => _addTask(context),
-            child: const Text('保存', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+            child: const Text(
+              '保存',
+              style: TextStyle(
+                color: Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -707,7 +751,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             ListTile(
               leading: const Icon(Icons.calendar_today, color: Colors.orange),
               title: const Text('日期'),
-              subtitle: Text(_startTime != null ? _getDateDisplayText() : '设置日期'),
+              subtitle: Text(
+                _startTime != null ? _getDateDisplayText() : '设置日期',
+              ),
               trailing: _startTime != null
                   ? IconButton(
                       icon: const Icon(Icons.clear),
@@ -722,7 +768,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.notifications_none, color: Colors.orange),
+              leading: const Icon(
+                Icons.notifications_none,
+                color: Colors.orange,
+              ),
               title: const Text('提醒与重复'),
               subtitle: Text(
                 _rrule != null || _notificationEnabled
@@ -739,20 +788,20 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 color: _priority == TaskPriority.high
                     ? Colors.red
                     : _priority == TaskPriority.medium
-                        ? Colors.orange
-                        : _priority == TaskPriority.low
-                            ? Colors.blue
-                            : Colors.grey,
+                    ? Colors.orange
+                    : _priority == TaskPriority.low
+                    ? Colors.blue
+                    : Colors.grey,
               ),
               title: const Text('优先级'),
               subtitle: Text(
                 _priority == TaskPriority.high
                     ? '高优先级'
                     : _priority == TaskPriority.medium
-                        ? '中优先级'
-                        : _priority == TaskPriority.low
-                            ? '低优先级'
-                            : '无优先级',
+                    ? '中优先级'
+                    : _priority == TaskPriority.low
+                    ? '低优先级'
+                    : '无优先级',
               ),
               trailing: PopupMenuButton<TaskPriority>(
                 initialValue: _priority,
@@ -762,10 +811,22 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   });
                 },
                 itemBuilder: (context) => const [
-                  PopupMenuItem(value: TaskPriority.high, child: Text('🔴 高优先级')),
-                  PopupMenuItem(value: TaskPriority.medium, child: Text('🟠 中优先级')),
-                  PopupMenuItem(value: TaskPriority.low, child: Text('🔵 低优先级')),
-                  PopupMenuItem(value: TaskPriority.none, child: Text('⚪ 无优先级')),
+                  PopupMenuItem(
+                    value: TaskPriority.high,
+                    child: Text('🔴 高优先级'),
+                  ),
+                  PopupMenuItem(
+                    value: TaskPriority.medium,
+                    child: Text('🟠 中优先级'),
+                  ),
+                  PopupMenuItem(
+                    value: TaskPriority.low,
+                    child: Text('🔵 低优先级'),
+                  ),
+                  PopupMenuItem(
+                    value: TaskPriority.none,
+                    child: Text('⚪ 无优先级'),
+                  ),
                 ],
                 child: const Icon(Icons.arrow_drop_down),
               ),
@@ -799,14 +860,21 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   : Wrap(
                       spacing: 6,
                       runSpacing: 4,
-                      children: _tags.map((tag) => Chip(
-                        label: Text(tag, style: const TextStyle(fontSize: 12)),
-                        onDeleted: () {
-                          setState(() {
-                            _tags.remove(tag);
-                          });
-                        },
-                      )).toList(),
+                      children: _tags
+                          .map(
+                            (tag) => Chip(
+                              label: Text(
+                                tag,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              onDeleted: () {
+                                setState(() {
+                                  _tags.remove(tag);
+                                });
+                              },
+                            ),
+                          )
+                          .toList(),
                     ),
               trailing: IconButton(
                 icon: const Icon(Icons.add),
@@ -824,7 +892,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             _buildCheckpointsList(),
             TextButton.icon(
               icon: const Icon(Icons.add, color: Colors.orange),
-              label: const Text('添加检查点', style: TextStyle(color: Colors.orange)),
+              label: const Text(
+                '添加检查点',
+                style: TextStyle(color: Colors.orange),
+              ),
               onPressed: () {
                 setState(() {
                   _checkpoints.add(CheckPoint(name: ''));

@@ -42,7 +42,9 @@ void main() {
     getIt
       ..registerSingleton<Isar>(isar)
       ..registerSingleton<AppMessageService>(AppMessageService())
-      ..registerSingleton<TaskNotificationNavigationService>(TaskNotificationNavigationService())
+      ..registerSingleton<TaskNotificationNavigationService>(
+        TaskNotificationNavigationService(),
+      )
       ..registerSingleton<TaskRepository>(TaskRepository())
       ..registerSingleton<TomatoRecordRepository>(TomatoRecordRepository())
       // 注册一个最小化的 NotificationService 依赖

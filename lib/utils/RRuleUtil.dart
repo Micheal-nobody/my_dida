@@ -33,7 +33,9 @@ class RRuleUtil {
     String rrule,
     int count,
   ) {
-    final normalizedRrule = rrule.toUpperCase().startsWith('FREQ=') ? 'RRULE:$rrule' : rrule;
+    final normalizedRrule = rrule.toUpperCase().startsWith('FREQ=')
+        ? 'RRULE:$rrule'
+        : rrule;
     if (!normalizedRrule.startsWith('RRULE:')) return const [];
 
     // Check cache first
@@ -157,7 +159,9 @@ class RRuleUtil {
     DateTime rangeStart,
     DateTime rangeEnd,
   ) {
-    final normalizedRrule = rrule.toUpperCase().startsWith('FREQ=') ? 'RRULE:$rrule' : rrule;
+    final normalizedRrule = rrule.toUpperCase().startsWith('FREQ=')
+        ? 'RRULE:$rrule'
+        : rrule;
     if (!normalizedRrule.startsWith('RRULE:')) return const [];
 
     // Generate more occurrences than needed, then filter
@@ -167,7 +171,11 @@ class RRuleUtil {
       rangeEnd,
       normalizedRrule,
     );
-    final allOccurrences = nextOccurrences(startTime, normalizedRrule, maxOccurrences);
+    final allOccurrences = nextOccurrences(
+      startTime,
+      normalizedRrule,
+      maxOccurrences,
+    );
 
     return allOccurrences
         .where((date) => !date.isBefore(rangeStart) && !date.isAfter(rangeEnd))
@@ -214,7 +222,9 @@ class RRuleUtil {
   }
 
   static String humanize(String rrule) {
-    final normalizedRrule = rrule.toUpperCase().startsWith('FREQ=') ? 'RRULE:$rrule' : rrule;
+    final normalizedRrule = rrule.toUpperCase().startsWith('FREQ=')
+        ? 'RRULE:$rrule'
+        : rrule;
     if (!normalizedRrule.startsWith('RRULE:')) return rrule;
     final rule = normalizedRrule.replaceFirst('RRULE:', '');
 

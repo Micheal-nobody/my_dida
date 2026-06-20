@@ -11,11 +11,10 @@ class TomatoRecordRepository extends BaseRepository<TomatoRecord> {
   IsarCollection<TomatoRecord> get collection => _isar.tomatoRecords;
 
   // 获取特定时间范围内的番茄专注记录
-  Future<List<TomatoRecord>> getRecordsInPeriod(DateTime start, DateTime end) async {
-    return collection
-        .where()
-        .filter()
-        .startTimeBetween(start, end)
-        .findAll();
+  Future<List<TomatoRecord>> getRecordsInPeriod(
+    DateTime start,
+    DateTime end,
+  ) async {
+    return collection.where().filter().startTimeBetween(start, end).findAll();
   }
 }

@@ -27,10 +27,12 @@ class EntityRegistry {
   }
 
   /// 获取工厂
-  EntityFactory? getFactory(OperationTarget target) => _entries[target]?.factory;
+  EntityFactory? getFactory(OperationTarget target) =>
+      _entries[target]?.factory;
 
   /// 获取仓储
-  BaseRepository? getRepository(OperationTarget target) => _entries[target]?.repository;
+  BaseRepository? getRepository(OperationTarget target) =>
+      _entries[target]?.repository;
 }
 
 class _EntityEntry {
@@ -52,7 +54,7 @@ abstract class OperationReverter {
 /// 基于 EntityRegistry 的泛化撤销适配器：任何实体只需注册即可获得撤销支持。
 class GenericOperationReverter implements OperationReverter {
   GenericOperationReverter({EntityRegistry? entityRegistry})
-      : _entityRegistry = entityRegistry ?? getIt<EntityRegistry>();
+    : _entityRegistry = entityRegistry ?? getIt<EntityRegistry>();
 
   final EntityRegistry _entityRegistry;
 

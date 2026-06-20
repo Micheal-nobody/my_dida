@@ -65,19 +65,23 @@ class TaskCard extends StatelessWidget {
               ),
             ),
             if (task.tags.isNotEmpty)
-              ...task.tags.map((tag) => Container(
-                    margin: const EdgeInsets.only(left: 4),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      tag,
-                      style: const TextStyle(fontSize: 10, color: Colors.grey),
-                    ),
-                  )),
+              ...task.tags.map(
+                (tag) => Container(
+                  margin: const EdgeInsets.only(left: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    tag,
+                    style: const TextStyle(fontSize: 10, color: Colors.grey),
+                  ),
+                ),
+              ),
           ],
         ),
 

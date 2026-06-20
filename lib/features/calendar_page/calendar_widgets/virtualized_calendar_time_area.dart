@@ -18,6 +18,7 @@ class VirtualizedCalendarTimeArea extends StatefulWidget {
     required this.timeAreaHeight,
     required this.timedTaskEntryBuilder,
     required this.timedHabitEntryBuilder,
+    this.hours,
     super.key,
   });
 
@@ -31,6 +32,7 @@ class VirtualizedCalendarTimeArea extends StatefulWidget {
   final double timeAreaHeight;
   final CalendarTimedTaskEntryBuilder timedTaskEntryBuilder;
   final CalendarTimedHabitEntryBuilder timedHabitEntryBuilder;
+  final List<int>? hours;
 
   @override
   State<VirtualizedCalendarTimeArea> createState() =>
@@ -48,7 +50,10 @@ class _VirtualizedCalendarTimeAreaState
   static const int _snapGranularityMinutes = 15;
   DateTime? _dragPreviewTime;
 
-  double get _hourHeight => widget.timeAreaHeight / 24;
+  double get _hourHeight {
+    final activeHoursCount = widget.hours?.length ?? 24;
+    return widget.timeAreaHeight / activeHoursCount;
+  }
 
   @override
   void dispose() {
@@ -57,18 +62,18 @@ class _VirtualizedCalendarTimeAreaState
     super.dispose();
   }
 
-  List<int> _getVisibleHours() {
+  List<int> _getVisibleHours(List<int> activeHours) {
     if (!_scrollController.hasClients) {
-      return List.generate(12, (index) => 6 + index);
+      return List.generate(activeHours.length.clamp(0, 12), (index) => index);
     }
 
     final scrollOffset = _scrollController.offset;
-    final startHour = (scrollOffset / _hourHeight).floor() - _bufferHours;
-    final endHour = startHour + _hoursPerScreen + (_bufferHours * 2);
+    final startIndex = (scrollOffset / _hourHeight).floor() - _bufferHours;
+    final endIndex = startIndex + _hoursPerScreen + (_bufferHours * 2);
 
     return List.generate(
-      (endHour - startHour).clamp(0, 24),
-      (index) => (startHour + index).clamp(0, 23),
+      (endIndex - startIndex).clamp(0, activeHours.length),
+      (index) => (startIndex + index).clamp(0, activeHours.length - 1),
     );
   }
 
@@ -80,31 +85,32 @@ class _VirtualizedCalendarTimeAreaState
     return availableWidth / widget.visibleDates.length;
   }
 
-  int _calculateSnappedMinutesFromPosition(Offset globalPosition) {
-    final renderBox =
-        _containerKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox == null) {
-      return 0;
-    }
-
-    final localPosition = renderBox.globalToLocal(globalPosition);
-    final relativeY = localPosition.dy.clamp(0.0, widget.timeAreaHeight);
-    final totalMinutes = ((relativeY / widget.timeAreaHeight) * _minutesPerDay)
-        .round();
-    final snappedMinutes =
-        ((totalMinutes / _snapGranularityMinutes).round() *
-                _snapGranularityMinutes)
-            .clamp(0, _minutesPerDay - _snapGranularityMinutes);
-    return snappedMinutes;
-  }
-
   DateTime _calculateTimeFromPosition(
     Offset globalPosition,
     DateTime targetDate,
   ) {
-    final snappedMinutes = _calculateSnappedMinutesFromPosition(globalPosition);
-    final hour = snappedMinutes ~/ 60;
+    final renderBox =
+        _containerKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) {
+      return targetDate;
+    }
+
+    final localPosition = renderBox.globalToLocal(globalPosition);
+    final relativeY = localPosition.dy.clamp(0.0, widget.timeAreaHeight);
+    final activeHours = widget.hours ?? List<int>.generate(24, (i) => i);
+
+    final totalActiveMinutes = activeHours.length * 60;
+    final mappedMinutes =
+        ((relativeY / widget.timeAreaHeight) * totalActiveMinutes).round();
+
+    final snappedMinutes =
+        ((mappedMinutes / _snapGranularityMinutes).round() *
+                _snapGranularityMinutes)
+            .clamp(0, totalActiveMinutes - 1);
+
+    final hourIndex = (snappedMinutes ~/ 60).clamp(0, activeHours.length - 1);
     final minute = snappedMinutes % 60;
+    final hour = activeHours[hourIndex];
 
     return DateTime(
       targetDate.year,
@@ -179,14 +185,20 @@ class _VirtualizedCalendarTimeAreaState
       },
       onWillAcceptWithDetails: (details) => true,
       builder: (context, candidateData, rejectedData) {
-        final previewMinuteOfDay = _dragPreviewTime == null
-            ? null
-            : _dragPreviewTime!.hour * 60 + _dragPreviewTime!.minute;
-        final previewLineTop = previewMinuteOfDay == null
-            ? null
-            : (((previewMinuteOfDay / _minutesPerDay) * widget.timeAreaHeight) -
-                      1)
-                  .clamp(0.0, widget.timeAreaHeight - 2);
+        final activeHours = widget.hours ?? List<int>.generate(24, (i) => i);
+        double? previewLineTop;
+        if (_dragPreviewTime != null) {
+          final hourIndex = activeHours.indexOf(_dragPreviewTime!.hour);
+          if (hourIndex != -1) {
+            final previewTop =
+                (hourIndex * _hourHeight) +
+                (_dragPreviewTime!.minute / 60) * _hourHeight;
+            previewLineTop = (previewTop - 1).clamp(
+              0.0,
+              widget.timeAreaHeight - 2,
+            );
+          }
+        }
 
         return Container(
           key: _containerKey,
@@ -200,15 +212,16 @@ class _VirtualizedCalendarTimeAreaState
             children: [
               ListView.builder(
                 controller: _scrollController,
-                itemCount: 24,
+                itemCount: activeHours.length,
                 itemExtent: _hourHeight,
-                itemBuilder: (context, hourIndex) {
-                  final visibleHours = _getVisibleHours();
-                  if (!visibleHours.contains(hourIndex)) {
+                itemBuilder: (context, index) {
+                  final visibleIndices = _getVisibleHours(activeHours);
+                  if (!visibleIndices.contains(index)) {
                     return SizedBox(height: _hourHeight);
                   }
 
-                  return _buildHourRow(hourIndex);
+                  final actualHour = activeHours[index];
+                  return _buildHourRow(actualHour);
                 },
               ),
               if (candidateData.isNotEmpty && previewLineTop != null)

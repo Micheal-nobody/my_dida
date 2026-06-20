@@ -26,10 +26,7 @@ class BoardView extends StatelessWidget {
 
     if (columns.isEmpty) {
       return const Center(
-        child: Text(
-          '无任务数据',
-          style: TextStyle(color: Colors.grey),
-        ),
+        child: Text('无任务数据', style: TextStyle(color: Colors.grey)),
       );
     }
 
@@ -136,7 +133,9 @@ class BoardView extends StatelessWidget {
                                 width: 284,
                                 child: TaskCard(
                                   task: task,
-                                  checklistName: _getChecklistName(task.checklistId),
+                                  checklistName: _getChecklistName(
+                                    task.checklistId,
+                                  ),
                                 ),
                               ),
                             ),
@@ -144,12 +143,16 @@ class BoardView extends StatelessWidget {
                               opacity: 0.3,
                               child: TaskCard(
                                 task: task,
-                                checklistName: _getChecklistName(task.checklistId),
+                                checklistName: _getChecklistName(
+                                  task.checklistId,
+                                ),
                               ),
                             ),
                             child: TaskCard(
                               task: task,
-                              checklistName: _getChecklistName(task.checklistId),
+                              checklistName: _getChecklistName(
+                                task.checklistId,
+                              ),
                               onToggleDone: (value) {
                                 taskProvider.updateTaskIsDone(task, value!);
                               },
@@ -190,9 +193,12 @@ class BoardView extends StatelessWidget {
 
     if (groupBy == TaskGroupBy.priority) {
       TaskPriority priority = TaskPriority.none;
-      if (columnTitle == '高优先级') priority = TaskPriority.high;
-      else if (columnTitle == '中优先级') priority = TaskPriority.medium;
-      else if (columnTitle == '低优先级') priority = TaskPriority.low;
+      if (columnTitle == '高优先级')
+        priority = TaskPriority.high;
+      else if (columnTitle == '中优先级')
+        priority = TaskPriority.medium;
+      else if (columnTitle == '低优先级')
+        priority = TaskPriority.low;
       presetTask = Task(name: '', isAllDay: true, priority: priority);
     } else if (groupBy == TaskGroupBy.checklist) {
       final cl = allChecklists.firstWhere(
@@ -247,9 +253,12 @@ class BoardView extends StatelessWidget {
   ) async {
     if (groupBy == TaskGroupBy.priority) {
       TaskPriority newPriority = TaskPriority.none;
-      if (columnTitle == '高优先级') newPriority = TaskPriority.high;
-      else if (columnTitle == '中优先级') newPriority = TaskPriority.medium;
-      else if (columnTitle == '低优先级') newPriority = TaskPriority.low;
+      if (columnTitle == '高优先级')
+        newPriority = TaskPriority.high;
+      else if (columnTitle == '中优先级')
+        newPriority = TaskPriority.medium;
+      else if (columnTitle == '低优先级')
+        newPriority = TaskPriority.low;
 
       if (task.priority != newPriority) {
         await taskProvider.updatePriority(task, newPriority);

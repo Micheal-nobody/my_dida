@@ -4,7 +4,6 @@ import 'package:my_dida/model/entity/base_entity.dart';
 import 'package:my_dida/config/locator.dart';
 
 abstract class BaseRepository<T extends BaseEntity> {
-
   // 获取对应的 Isar 集合,需要继承类自己实现
   IsarCollection<T> get collection;
 

@@ -28,9 +28,7 @@ final GoRouter goRouter = GoRouter(
           );
         }
 
-        return MaterialPage(
-          child: TaskDetailRoutePage(taskId: taskId),
-        );
+        return MaterialPage(child: TaskDetailRoutePage(taskId: taskId));
       },
     ),
     GoRoute(
@@ -39,19 +37,23 @@ final GoRouter goRouter = GoRouter(
     ),
     GoRoute(
       path: '/four_quadrants',
-      pageBuilder: (context, state) => const MaterialPage(child: FourQuadrantsPage()),
+      pageBuilder: (context, state) =>
+          const MaterialPage(child: FourQuadrantsPage()),
     ),
     GoRoute(
       path: '/settings',
-      pageBuilder: (context, state) => const MaterialPage(child: SettingsPage()),
+      pageBuilder: (context, state) =>
+          const MaterialPage(child: SettingsPage()),
     ),
     GoRoute(
       path: '/settings/smart-lists',
-      pageBuilder: (context, state) => const MaterialPage(child: SmartListsSettingsPage()),
+      pageBuilder: (context, state) =>
+          const MaterialPage(child: SmartListsSettingsPage()),
     ),
     GoRoute(
       path: '/settings/sidebar',
-      pageBuilder: (context, state) => const MaterialPage(child: SidebarSettingsPage()),
+      pageBuilder: (context, state) =>
+          const MaterialPage(child: SidebarSettingsPage()),
     ),
     StatefulShellRoute.indexedStack(
       /// 整个页面的内容，其中 Branch 中的内容会填充到 body 中
@@ -78,7 +80,10 @@ final GoRouter goRouter = GoRouter(
               label: '日历视图',
             ),
             BottomNavigationBarItem(icon: Icon(Icons.lock_clock), label: '习惯'),
-            BottomNavigationBarItem(icon: Icon(Icons.timer_outlined), label: '番茄钟'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.timer_outlined),
+              label: '番茄钟',
+            ),
             BottomNavigationBarItem(icon: Icon(Icons.history), label: '操作记录'),
           ],
         ),

@@ -48,7 +48,13 @@ class TaskTestHarness {
 
     final tempDir = await Directory.systemTemp.createTemp('my_dida_task_test_');
     final isar = await Isar.open(
-      [TaskSchema, HabitSchema, OperationSchema, ChecklistSchema, SidebarConfigSchema],
+      [
+        TaskSchema,
+        HabitSchema,
+        OperationSchema,
+        ChecklistSchema,
+        SidebarConfigSchema,
+      ],
       directory: tempDir.path,
       name: 'task_test_${DateTime.now().microsecondsSinceEpoch}',
     );
@@ -60,17 +66,19 @@ class TaskTestHarness {
       ..registerSingleton<TaskReminderSchedulerPort>(
         taskReminderScheduler ?? NoopTaskReminderScheduler(),
       )
-      ..registerSingleton<TaskReminderService>(TaskReminderService(
-        scheduler: getIt<TaskReminderSchedulerPort>(),
-      ))
+      ..registerSingleton<TaskReminderService>(
+        TaskReminderService(scheduler: getIt<TaskReminderSchedulerPort>()),
+      )
       ..registerSingleton<TaskCalendarProjectionService>(
         TaskCalendarProjectionService(),
       )
-      ..registerSingleton<TaskLifecycleManager>(TaskLifecycleManagerImpl(
-        taskRepository: getIt<TaskRepository>(),
-        taskReminderService: getIt<TaskReminderService>(),
-        operationStack: getIt<OperationStackProvider>(),
-      ));
+      ..registerSingleton<TaskLifecycleManager>(
+        TaskLifecycleManagerImpl(
+          taskRepository: getIt<TaskRepository>(),
+          taskReminderService: getIt<TaskReminderService>(),
+          operationStack: getIt<OperationStackProvider>(),
+        ),
+      );
 
     return TaskTestHarness._(isar, tempDir);
   }

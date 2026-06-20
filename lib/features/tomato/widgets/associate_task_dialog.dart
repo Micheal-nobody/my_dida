@@ -67,7 +67,9 @@ class _AssociateTaskDialogState extends State<AssociateTaskDialog> {
                   final isSelected = _selectedTask?.id == task.id;
                   return ListTile(
                     leading: Icon(
-                      isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                      isSelected
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_off,
                       color: isSelected ? Colors.blue : Colors.grey,
                     ),
                     title: Text(
@@ -75,11 +77,17 @@ class _AssociateTaskDialogState extends State<AssociateTaskDialog> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        decoration: task.isDone ? TextDecoration.lineThrough : null,
+                        decoration: task.isDone
+                            ? TextDecoration.lineThrough
+                            : null,
                       ),
                     ),
                     subtitle: task.description.isNotEmpty
-                        ? Text(task.description, maxLines: 1, overflow: TextOverflow.ellipsis)
+                        ? Text(
+                            task.description,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )
                         : null,
                     onTap: () {
                       setState(() {

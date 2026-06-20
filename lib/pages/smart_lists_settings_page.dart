@@ -28,46 +28,57 @@ class SmartListsSettingsPage extends StatelessWidget {
             context: context,
             title: '今天',
             currentValue: config.todayShowOption,
-            onChanged: (val) => provider.updateSmartListShowOption(todayShowOption: val),
+            onChanged: (val) =>
+                provider.updateSmartListShowOption(todayShowOption: val),
           ),
           _buildListTile(
             context: context,
             title: '明天',
             currentValue: config.tomorrowShowOption,
-            onChanged: (val) => provider.updateSmartListShowOption(tomorrowShowOption: val),
+            onChanged: (val) =>
+                provider.updateSmartListShowOption(tomorrowShowOption: val),
           ),
           _buildListTile(
             context: context,
             title: '最近七天',
             currentValue: config.nextSevenDaysShowOption,
-            onChanged: (val) => provider.updateSmartListShowOption(nextSevenDaysShowOption: val),
+            onChanged: (val) => provider.updateSmartListShowOption(
+              nextSevenDaysShowOption: val,
+            ),
           ),
           _buildListTile(
             context: context,
             title: '收集箱',
             currentValue: config.inboxShowOption,
-            onChanged: (val) => provider.updateSmartListShowOption(inboxShowOption: val),
+            onChanged: (val) =>
+                provider.updateSmartListShowOption(inboxShowOption: val),
           ),
           _buildListTile(
             context: context,
             title: '所有',
             currentValue: config.allShowOption,
-            onChanged: (val) => provider.updateSmartListShowOption(allShowOption: val),
+            onChanged: (val) =>
+                provider.updateSmartListShowOption(allShowOption: val),
           ),
           _buildListTile(
             context: context,
             title: '已完成',
             currentValue: config.completedShowOption,
-            onChanged: (val) => provider.updateSmartListShowOption(completedShowOption: val),
+            onChanged: (val) =>
+                provider.updateSmartListShowOption(completedShowOption: val),
           ),
           _buildListTile(
             context: context,
             title: '垃圾桶',
             currentValue: config.trashShowOption,
-            onChanged: (val) => provider.updateSmartListShowOption(trashShowOption: val),
+            onChanged: (val) =>
+                provider.updateSmartListShowOption(trashShowOption: val),
           ),
           ListTile(
-            title: const Text('四象限', style: TextStyle(fontWeight: FontWeight.w500)),
+            title: const Text(
+              '四象限',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
             trailing: Switch(
               value: config.showFourQuadrants,
               activeColor: Colors.orange,
@@ -93,18 +104,25 @@ class SmartListsSettingsPage extends StatelessWidget {
     return Column(
       children: [
         ListTile(
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+          title: Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.w500),
+          ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 stateText,
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 16,
+                ),
               ),
               const Icon(Icons.chevron_right, color: AppColors.textDisabled),
             ],
           ),
-          onTap: () => _showOptionPicker(context, title, currentValue, onChanged),
+          onTap: () =>
+              _showOptionPicker(context, title, currentValue, onChanged),
         ),
         const Divider(height: 1, indent: 16, color: AppColors.border),
       ],

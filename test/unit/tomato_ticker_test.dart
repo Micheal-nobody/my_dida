@@ -50,44 +50,48 @@ void main() {
       expect(ticker.duration, 25 * 60 - 10);
     });
 
-    test('使用自定义 TimeProvider 和 tick() 快速跑完 25分钟 专注，触发 FocusCompleteEvent 转换到短休状态', () async {
-      DateTime mockTime = DateTime(2026, 6, 19, 10, 0, 0);
+    test(
+      '使用自定义 TimeProvider 和 tick() 快速跑完 25分钟 专注，触发 FocusCompleteEvent 转换到短休状态',
+      () async {
+        DateTime mockTime = DateTime(2026, 6, 19, 10, 0, 0);
 
-      // 创建 Ticker 并将 autoStartBreak 设为 false 以便断言当前状态
-      final ticker = TomatoTicker(
-        focusMinutes: 25,
-        shortBreakMinutes: 5,
-        autoStartBreak: false,
-        currentTimeProvider: () => mockTime,
-      );
+        // 创建 Ticker 并将 autoStartBreak 设为 false 以便断言当前状态
+        final ticker = TomatoTicker(
+          focusMinutes: 25,
+          shortBreakMinutes: 5,
+          autoStartBreak: false,
+          currentTimeProvider: () => mockTime,
+        );
 
-      ticker.start();
+        ticker.start();
 
-      final List<TomatoEvent> receivedEvents = [];
-      final subscription = ticker.eventStream.listen(receivedEvents.add);
+        final List<TomatoEvent> receivedEvents = [];
+        final subscription = ticker.eventStream.listen(receivedEvents.add);
 
-      // 模拟时钟快进 25 分钟
-      mockTime = mockTime.add(const Duration(minutes: 25));
+        // 模拟时钟快进 25 分钟
+        mockTime = mockTime.add(const Duration(minutes: 25));
 
-      // 手动触发一次 tick，走完剩余 25 分钟的秒数
-      ticker.tick(25 * 60);
+        // 手动触发一次 tick，走完剩余 25 分钟的秒数
+        ticker.tick(25 * 60);
 
-      // 验证状态机已经自动流转为短休，并且已不再运行
-      expect(ticker.status, TomatoStatus.shortBreak);
-      expect(ticker.isRunning, false);
-      expect(ticker.duration, 5 * 60);
+        // 验证状态机已经自动流转为短休，并且已不再运行
+        expect(ticker.status, TomatoStatus.shortBreak);
+        expect(ticker.isRunning, false);
+        expect(ticker.duration, 5 * 60);
 
-      // 校验派发了专注完成事件
-      final completeEvents = receivedEvents.whereType<TomatoFocusCompleteEvent>();
-      expect(completeEvents.length, 1);
+        // 校验派发了专注完成事件
+        final completeEvents = receivedEvents
+            .whereType<TomatoFocusCompleteEvent>();
+        expect(completeEvents.length, 1);
 
-      final event = completeEvents.first;
-      expect(event.durationMinutes, 25);
-      expect(event.startTime, DateTime(2026, 6, 19, 10, 0, 0));
-      expect(event.endTime, DateTime(2026, 6, 19, 10, 25, 0));
+        final event = completeEvents.first;
+        expect(event.durationMinutes, 25);
+        expect(event.startTime, DateTime(2026, 6, 19, 10, 0, 0));
+        expect(event.endTime, DateTime(2026, 6, 19, 10, 25, 0));
 
-      await subscription.cancel();
-    });
+        await subscription.cancel();
+      },
+    );
 
     test('多次专注循环后自动流转为长休，并在长休结束后重置循环', () {
       final ticker = TomatoTicker(

@@ -45,42 +45,48 @@ class SidebarSettingsPage extends StatelessWidget {
                   secondary: const Icon(Icons.account_box),
                   title: const Text('头像与用户信息'),
                   value: config.showProfile,
-                  onChanged: (val) => provider.updateModuleVisibility(showProfile: val),
+                  onChanged: (val) =>
+                      provider.updateModuleVisibility(showProfile: val),
                 ),
                 const Divider(height: 1, indent: 50, color: AppColors.border),
                 SwitchListTile(
                   secondary: const Icon(Icons.search),
                   title: const Text('搜索'),
                   value: config.showSearch,
-                  onChanged: (val) => provider.updateModuleVisibility(showSearch: val),
+                  onChanged: (val) =>
+                      provider.updateModuleVisibility(showSearch: val),
                 ),
                 const Divider(height: 1, indent: 50, color: AppColors.border),
                 SwitchListTile(
                   secondary: const Icon(Icons.view_agenda),
                   title: const Text('智能清单'),
                   value: config.showSmartLists,
-                  onChanged: (val) => provider.updateModuleVisibility(showSmartLists: val),
+                  onChanged: (val) =>
+                      provider.updateModuleVisibility(showSmartLists: val),
                 ),
                 const Divider(height: 1, indent: 50, color: AppColors.border),
                 SwitchListTile(
                   secondary: const Icon(Icons.folder),
                   title: const Text('清单'),
                   value: config.showCustomLists,
-                  onChanged: (val) => provider.updateModuleVisibility(showCustomLists: val),
+                  onChanged: (val) =>
+                      provider.updateModuleVisibility(showCustomLists: val),
                 ),
                 const Divider(height: 1, indent: 50, color: AppColors.border),
                 SwitchListTile(
                   secondary: const Icon(Icons.label),
                   title: const Text('标签'),
                   value: config.showTags,
-                  onChanged: (val) => provider.updateModuleVisibility(showTags: val),
+                  onChanged: (val) =>
+                      provider.updateModuleVisibility(showTags: val),
                 ),
                 const Divider(height: 1, indent: 50, color: AppColors.border),
                 SwitchListTile(
                   secondary: const Icon(Icons.filter_alt),
                   title: const Text('过滤器'),
                   value: config.showFilters,
-                  onChanged: (val) => provider.updateModuleVisibility(showFilters: val),
+                  onChanged: (val) =>
+                      provider.updateModuleVisibility(showFilters: val),
                 ),
               ],
             ),

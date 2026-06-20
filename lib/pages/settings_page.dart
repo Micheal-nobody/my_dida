@@ -42,10 +42,7 @@ class SettingsPage extends StatelessWidget {
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor: Colors.grey.shade200,
-                child: const Icon(
-                  Icons.person,
-                  color: AppColors.textSecondary,
-                ),
+                child: const Icon(Icons.person, color: AppColors.textSecondary),
               ),
               title: const Text(
                 'Michel-nobody',
@@ -84,8 +81,8 @@ class SettingsPage extends StatelessWidget {
                         config.theme == 'light'
                             ? '浅色'
                             : config.theme == 'dark'
-                                ? '深色'
-                                : '自动',
+                            ? '深色'
+                            : '自动',
                         style: const TextStyle(color: AppColors.textSecondary),
                       ),
                       const Icon(Icons.chevron_right),
@@ -106,9 +103,9 @@ class SettingsPage extends StatelessWidget {
                   title: const Text('声音与振动'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('声音与振动设置开发中')),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('声音与振动设置开发中')));
                   },
                 ),
                 const Divider(height: 1, indent: 50, color: AppColors.border),
@@ -163,7 +160,8 @@ class SettingsPage extends StatelessWidget {
                         checklistProvider.allCheckLists
                             .firstWhere(
                               (c) => c.id == config.defaultChecklistId,
-                              orElse: () => checklistProvider.allCheckLists.first,
+                              orElse: () =>
+                                  checklistProvider.allCheckLists.first,
                             )
                             .name,
                         style: const TextStyle(color: AppColors.textSecondary),
@@ -183,9 +181,9 @@ class SettingsPage extends StatelessWidget {
                   title: const Text('日期与时间'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('日期与时间设置开发中')),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('日期与时间设置开发中')));
                   },
                 ),
               ],
@@ -218,9 +216,9 @@ class SettingsPage extends StatelessWidget {
                   leading: const Icon(Icons.refresh),
                   title: const Text('立即同步'),
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('正在同步数据...')),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('正在同步数据...')));
                   },
                 ),
               ],
@@ -315,7 +313,10 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  void _showLanguageDialog(BuildContext context, SidebarConfigProvider provider) {
+  void _showLanguageDialog(
+    BuildContext context,
+    SidebarConfigProvider provider,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

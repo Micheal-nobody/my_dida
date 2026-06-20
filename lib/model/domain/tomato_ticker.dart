@@ -26,10 +26,7 @@ class TomatoFocusCompleteEvent extends TomatoEvent {
 class TomatoBreakCompleteEvent extends TomatoEvent {
   final DateTime startTime;
   final DateTime endTime;
-  TomatoBreakCompleteEvent({
-    required this.startTime,
-    required this.endTime,
-  });
+  TomatoBreakCompleteEvent({required this.startTime, required this.endTime});
 }
 
 /// 放弃专注事件
@@ -62,20 +59,21 @@ class TomatoTicker {
     bool autoStartFocus = false,
     bool autoCompletedTask = false,
     DateTime Function()? currentTimeProvider,
-  })  : _focusMinutes = focusMinutes,
-        _shortBreakMinutes = shortBreakMinutes,
-        _longBreakMinutes = longBreakMinutes,
-        _longBreakInterval = longBreakInterval,
-        _autoStartBreak = autoStartBreak,
-        _autoStartFocus = autoStartFocus,
-        _autoCompletedTask = autoCompletedTask,
-        _currentTimeProvider = currentTimeProvider ?? (() => DateTime.now()) {
+  }) : _focusMinutes = focusMinutes,
+       _shortBreakMinutes = shortBreakMinutes,
+       _longBreakMinutes = longBreakMinutes,
+       _longBreakInterval = longBreakInterval,
+       _autoStartBreak = autoStartBreak,
+       _autoStartFocus = autoStartFocus,
+       _autoCompletedTask = autoCompletedTask,
+       _currentTimeProvider = currentTimeProvider ?? (() => DateTime.now()) {
     _duration = _focusMinutes * 60;
     _totalDuration = _focusMinutes * 60;
   }
 
   final DateTime Function() _currentTimeProvider;
-  final StreamController<TomatoEvent> _eventController = StreamController<TomatoEvent>.broadcast(sync: true);
+  final StreamController<TomatoEvent> _eventController =
+      StreamController<TomatoEvent>.broadcast(sync: true);
 
   Stream<TomatoEvent> get eventStream => _eventController.stream;
 
@@ -164,18 +162,23 @@ class TomatoTicker {
 
     if (_status == TomatoStatus.focus && startT != null) {
       final elapsedSeconds = endTime.difference(startT).inSeconds;
-      final durationMins = (elapsedSeconds / 60).clamp(0.0, _focusMinutes.toDouble()).round();
-      _eventController.add(TomatoAbandonEvent(
-        startTime: startT,
-        endTime: endTime,
-        durationMinutes: durationMins,
-      ));
+      final durationMins = (elapsedSeconds / 60)
+          .clamp(0.0, _focusMinutes.toDouble())
+          .round();
+      _eventController.add(
+        TomatoAbandonEvent(
+          startTime: startT,
+          endTime: endTime,
+          durationMinutes: durationMins,
+        ),
+      );
     }
     _reset();
   }
 
   void skipBreak() {
-    if (_status == TomatoStatus.shortBreak || _status == TomatoStatus.longBreak) {
+    if (_status == TomatoStatus.shortBreak ||
+        _status == TomatoStatus.longBreak) {
       _reset();
     }
   }
@@ -200,12 +203,15 @@ class TomatoTicker {
     final endTime = _currentTimeProvider();
 
     if (_status == TomatoStatus.focus) {
-      final startT = _startTime ?? endTime.subtract(Duration(minutes: _focusMinutes));
-      _eventController.add(TomatoFocusCompleteEvent(
-        startTime: startT,
-        endTime: endTime,
-        durationMinutes: _focusMinutes,
-      ));
+      final startT =
+          _startTime ?? endTime.subtract(Duration(minutes: _focusMinutes));
+      _eventController.add(
+        TomatoFocusCompleteEvent(
+          startTime: startT,
+          endTime: endTime,
+          durationMinutes: _focusMinutes,
+        ),
+      );
 
       _completedTomatoCount++;
 
@@ -224,10 +230,14 @@ class TomatoTicker {
         start();
       }
     } else {
-      _eventController.add(TomatoBreakCompleteEvent(
-        startTime: _startTime ?? endTime.subtract(Duration(minutes: _totalDuration ~/ 60)),
-        endTime: endTime,
-      ));
+      _eventController.add(
+        TomatoBreakCompleteEvent(
+          startTime:
+              _startTime ??
+              endTime.subtract(Duration(minutes: _totalDuration ~/ 60)),
+          endTime: endTime,
+        ),
+      );
 
       _updateStatus(TomatoStatus.idle);
       _duration = _focusMinutes * 60;

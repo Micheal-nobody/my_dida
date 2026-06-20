@@ -19,6 +19,7 @@ class CalendarTimeTaskSection extends StatelessWidget {
     required this.timedHabitEntryBuilder,
     this.onDragPreviewChanged,
     this.onScrollOffsetChanged,
+    this.hours,
     super.key,
   });
 
@@ -35,6 +36,7 @@ class CalendarTimeTaskSection extends StatelessWidget {
   final CalendarTimedHabitEntryBuilder timedHabitEntryBuilder;
   final ValueChanged<DateTime?>? onDragPreviewChanged;
   final ValueChanged<double>? onScrollOffsetChanged;
+  final List<int>? hours;
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -64,6 +66,7 @@ class CalendarTimeTaskSection extends StatelessWidget {
       timedHabitEntryBuilder: timedHabitEntryBuilder,
       onDragPreviewChanged: onDragPreviewChanged,
       onScrollOffsetChanged: onScrollOffsetChanged,
+      hours: hours,
     ),
   );
 }

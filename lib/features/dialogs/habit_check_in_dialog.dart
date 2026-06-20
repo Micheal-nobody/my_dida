@@ -26,10 +26,8 @@ class HabitCheckInDialog extends StatefulWidget {
   }) async {
     await showDialog(
       context: context,
-      builder: (context) => HabitCheckInDialog(
-        habit: habit,
-        accentColor: accentColor,
-      ),
+      builder: (context) =>
+          HabitCheckInDialog(habit: habit, accentColor: accentColor),
     );
 
     onUpdated?.call();

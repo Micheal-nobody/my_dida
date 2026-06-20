@@ -5,10 +5,14 @@ class CalendarGrid extends StatefulWidget {
     required this.onDateSelected,
     super.key,
     this.selectedDate,
+    this.showHeader = true,
+    this.dayBuilder,
   });
 
   final DateTime? selectedDate;
   final Function(DateTime) onDateSelected;
+  final bool showHeader;
+  final Widget Function(BuildContext, DateTime, bool)? dayBuilder;
 
   @override
   State<CalendarGrid> createState() => _CalendarGridState();
@@ -49,38 +53,43 @@ class _CalendarGridState extends State<CalendarGrid> {
 
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.chevron_left),
-              onPressed: () {
-                setState(() {
-                  _currentMonth = DateTime(
-                    _currentMonth.year,
-                    _currentMonth.month - 1,
-                  );
-                });
-              },
-            ),
-            Text(
-              '${_currentMonth.month}月',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            IconButton(
-              icon: const Icon(Icons.chevron_right),
-              onPressed: () {
-                setState(() {
-                  _currentMonth = DateTime(
-                    _currentMonth.year,
-                    _currentMonth.month + 1,
-                  );
-                });
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
+        if (widget.showHeader) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                onPressed: () {
+                  setState(() {
+                    _currentMonth = DateTime(
+                      _currentMonth.year,
+                      _currentMonth.month - 1,
+                    );
+                  });
+                },
+              ),
+              Text(
+                '${_currentMonth.month}月',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right),
+                onPressed: () {
+                  setState(() {
+                    _currentMonth = DateTime(
+                      _currentMonth.year,
+                      _currentMonth.month + 1,
+                    );
+                  });
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
         Row(
           children: ['一', '二', '三', '四', '五', '六', '日']
               .map(
@@ -122,25 +131,34 @@ class _CalendarGridState extends State<CalendarGrid> {
                   onTap: () {
                     widget.onDateSelected(dayDate);
                   },
-                  child: Container(
-                    height: 40,
-                    margin: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isSelected ? Colors.red : Colors.transparent,
-                    ),
-                    child: Center(
-                      child: Text(
-                        dayNumber.toString(),
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                  child: widget.dayBuilder != null
+                      ? SizedBox(
+                          height: 48,
+                          child: widget.dayBuilder!(
+                            context,
+                            dayDate,
+                            isSelected,
+                          ),
+                        )
+                      : Container(
+                          height: 40,
+                          margin: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isSelected ? Colors.red : Colors.transparent,
+                          ),
+                          child: Center(
+                            child: Text(
+                              dayNumber.toString(),
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.black,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
                 ),
               );
             }),

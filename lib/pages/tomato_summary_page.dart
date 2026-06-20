@@ -12,7 +12,8 @@ class TomatoSummaryPage extends StatefulWidget {
   State<TomatoSummaryPage> createState() => _TomatoSummaryPageState();
 }
 
-class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTickerProviderStateMixin {
+class _TomatoSummaryPageState extends State<TomatoSummaryPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final DateTime _today = DateTime.now();
 
@@ -35,7 +36,10 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTicker
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('专注数据统计', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          '专注数据统计',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
@@ -77,7 +81,9 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTicker
           return const Center(child: CircularProgressIndicator());
         }
         final data = snapshot.data!;
-        final List<TomatoRecord> records = List<TomatoRecord>.from(data['records'] ?? []);
+        final List<TomatoRecord> records = List<TomatoRecord>.from(
+          data['records'] ?? [],
+        );
         final completedCount = data['completedCount'] as int;
         final totalMinutes = data['totalMinutes'] as int;
 
@@ -106,7 +112,10 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTicker
         final records = snapshot.data!;
         final completed = records.where((r) => r.isCompleted).toList();
         final completedCount = completed.length;
-        final totalMinutes = completed.fold(0, (sum, r) => sum + r.durationMinutes);
+        final totalMinutes = completed.fold(
+          0,
+          (sum, r) => sum + r.durationMinutes,
+        );
 
         return _buildScrollContent(
           records: records,
@@ -133,7 +142,10 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTicker
         final records = snapshot.data!;
         final completed = records.where((r) => r.isCompleted).toList();
         final completedCount = completed.length;
-        final totalMinutes = completed.fold(0, (sum, r) => sum + r.durationMinutes);
+        final totalMinutes = completed.fold(
+          0,
+          (sum, r) => sum + r.durationMinutes,
+        );
 
         return _buildScrollContent(
           records: records,
@@ -160,15 +172,16 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTicker
         final records = snapshot.data!;
         final completed = records.where((r) => r.isCompleted).toList();
         final completedCount = completed.length;
-        final totalMinutes = completed.fold(0, (sum, r) => sum + r.durationMinutes);
+        final totalMinutes = completed.fold(
+          0,
+          (sum, r) => sum + r.durationMinutes,
+        );
 
         return _buildScrollContent(
           records: records,
           completedCount: completedCount,
           totalMinutes: totalMinutes,
-          children: [
-            TomatoCategoryRatioChart(records: records),
-          ],
+          children: [TomatoCategoryRatioChart(records: records)],
         );
       },
     );
@@ -182,7 +195,9 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTicker
     required List<Widget> children,
   }) {
     final totalCount = records.length;
-    final double completionRate = totalCount == 0 ? 0.0 : (completedCount / totalCount);
+    final double completionRate = totalCount == 0
+        ? 0.0
+        : (completedCount / totalCount);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -244,7 +259,11 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTicker
                 padding: EdgeInsets.all(16.0),
                 child: Text(
                   '专注历史明细',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               const Divider(height: 1),
@@ -252,7 +271,10 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTicker
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 40),
                   child: Center(
-                    child: Text('暂无历史专注记录', style: TextStyle(color: Colors.grey)),
+                    child: Text(
+                      '暂无历史专注记录',
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   ),
                 )
               else
@@ -260,7 +282,8 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTicker
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: records.length,
-                  separatorBuilder: (context, index) => const Divider(height: 1),
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 1),
                   itemBuilder: (context, index) {
                     // 按倒序排列，展示最新记录
                     final record = records[records.length - 1 - index];
@@ -300,7 +323,11 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTicker
             children: [
               Text(
                 val,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
               const SizedBox(width: 2),
               Text(
@@ -364,7 +391,11 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage> with SingleTicker
           ),
           const SizedBox(width: 4),
           IconButton(
-            icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+            icon: const Icon(
+              Icons.delete_outline,
+              size: 18,
+              color: Colors.grey,
+            ),
             onPressed: () => _confirmDelete(context, record),
           ),
         ],

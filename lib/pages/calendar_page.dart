@@ -13,6 +13,12 @@ import 'package:my_dida/model/vo/task_calendar_view_data.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:my_dida/provider/habit_provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
+import 'package:my_dida/provider/calendar_page_provider.dart';
+import 'package:my_dida/model/entity/calendar_page_config.dart';
+import 'package:my_dida/features/dialogs/calendar_visible_range_dialog.dart';
+import 'package:my_dida/features/dialogs/add_task_dialog.dart';
+import 'package:my_dida/features/calendar_page/calendar_widgets/calendar_task_list_bottom.dart';
+import 'package:my_dida/shared/widgets/datetime/calendar_grid.dart';
 import 'package:my_dida/shared/common/custom_floating_action_button.dart';
 import 'package:my_dida/shared/widgets/datetime/custom_date_picker_dialog.dart';
 import 'package:my_dida/shared/widgets/datetime/time_axis_column.dart';
@@ -48,6 +54,7 @@ class _CalendarPageState extends State<CalendarPage> {
   double _timeContentScrollOffset = 0;
   late TaskProvider _taskProvider;
   late HabitProvider _habitProvider;
+  late CalendarPageProvider _calendarPageProvider;
 
   final Map<DateTime, int> _rruleBatchLimit = {};
   final Map<DateTime, bool> _rruleHasMore = {};
@@ -60,15 +67,21 @@ class _CalendarPageState extends State<CalendarPage> {
     _selectedDate = now;
     _taskProvider = Provider.of<TaskProvider>(context, listen: false);
     _habitProvider = Provider.of<HabitProvider>(context, listen: false);
+    _calendarPageProvider = Provider.of<CalendarPageProvider>(
+      context,
+      listen: false,
+    );
     _loadTasksForVisibleDates();
     _taskProvider.addListener(_onTaskProviderChanged);
     _habitProvider.addListener(_onTaskProviderChanged);
+    _calendarPageProvider.addListener(_onTaskProviderChanged);
   }
 
   @override
   void dispose() {
     _taskProvider.removeListener(_onTaskProviderChanged);
     _habitProvider.removeListener(_onTaskProviderChanged);
+    _calendarPageProvider.removeListener(_onTaskProviderChanged);
     super.dispose();
   }
 
@@ -77,13 +90,41 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   List<DateTime> get _visibleDates {
+    final config = _calendarPageProvider.config;
     final dates = <DateTime>[];
     final startDate = _selectedDate;
+    final range = config.viewMode == 'week' ? 7 : 3;
 
-    for (var index = 0; index < _dateRange; index++) {
+    for (var index = 0; index < range; index++) {
       dates.add(startDate.add(Duration(days: index)));
     }
     return dates;
+  }
+
+  List<DateTime> get _loadRangeDates {
+    final config = _calendarPageProvider.config;
+    if (config.viewMode == 'month') {
+      final firstDay = DateTime(_selectedDate.year, _selectedDate.month, 1);
+      final lastDay = DateTime(_selectedDate.year, _selectedDate.month + 1, 0);
+      final days = lastDay.difference(firstDay).inDays + 1;
+      return List.generate(days, (i) => firstDay.add(Duration(days: i)));
+    } else {
+      return _visibleDates;
+    }
+  }
+
+  List<Task> _filterTasks(List<Task> tasks, CalendarPageConfig config) {
+    return tasks.where((task) {
+      if (!config.showCompletedTasks && task.isDone) {
+        return false;
+      }
+      if (config.visibleMode == 'custom') {
+        if (!config.visibleChecklistIds.contains(task.checklistId)) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
   }
 
   Future<void> _loadTasksForVisibleDates() async {
@@ -95,7 +136,7 @@ class _CalendarPageState extends State<CalendarPage> {
           listen: false,
         );
         final habitsMap = <DateTime, List<Habit>>{};
-        final visibleDates = _visibleDates;
+        final visibleDates = _loadRangeDates;
         if (visibleDates.isEmpty) {
           return;
         }
@@ -169,16 +210,54 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _applyTaskViewData(TaskCalendarViewData taskViewData) {
-    _tasksForDates = taskViewData.tasksForDates;
-    _allDayTasksForDates = taskViewData.allDayTasksForDates;
-    _crossDayTasks = taskViewData.crossDayTasks;
-    _crossDayTaskCountForDates = taskViewData.crossDayTaskCountForDates;
-    _futureTasks = taskViewData.futureTasks;
+    final config = _calendarPageProvider.config;
+
+    _tasksForDates = taskViewData.tasksForDates.map((date, list) {
+      return MapEntry(date, _filterTasks(list, config));
+    });
+
+    _allDayTasksForDates = taskViewData.allDayTasksForDates.map((date, list) {
+      return MapEntry(date, _filterTasks(list, config));
+    });
+
+    _crossDayTasks = _filterTasks(taskViewData.crossDayTasks, config);
+
+    _crossDayTaskCountForDates = {};
+    for (final date in _visibleDates) {
+      final normalizedDate = DateTime(date.year, date.month, date.day);
+      int count = 0;
+      for (final task in _crossDayTasks) {
+        if (task.startTime != null && task.endTime != null) {
+          final start = DateTime(
+            task.startTime!.year,
+            task.startTime!.month,
+            task.startTime!.day,
+          );
+          final end = DateTime(
+            task.endTime!.year,
+            task.endTime!.month,
+            task.endTime!.day,
+          );
+          if ((normalizedDate.isAtSameMomentAs(start) ||
+                  normalizedDate.isAfter(start)) &&
+              (normalizedDate.isAtSameMomentAs(end) ||
+                  normalizedDate.isBefore(end))) {
+            count++;
+          }
+        }
+      }
+      _crossDayTaskCountForDates[normalizedDate] = count;
+    }
+
+    _futureTasks = taskViewData.futureTasks.map((date, list) {
+      return MapEntry(date, _filterTasks(list, config));
+    });
+
     _rruleHasMore
       ..clear()
       ..addAll(taskViewData.rruleHasMore);
 
-    for (final date in _visibleDates) {
+    for (final date in _loadRangeDates) {
       final normalizedDate = DateTime(date.year, date.month, date.day);
       _rruleBatchLimit.putIfAbsent(normalizedDate, () => 5);
     }
@@ -199,6 +278,90 @@ class _CalendarPageState extends State<CalendarPage> {
       _selectedDate = date;
     });
     _loadTasksForVisibleDates();
+  }
+
+  List<Task> _getSelectedDateTasks() {
+    final normalizedDate = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+    final tasks = _tasksForDates[normalizedDate] ?? [];
+    final allDayTasks = _allDayTasksForDates[normalizedDate] ?? [];
+    return [...allDayTasks, ...tasks];
+  }
+
+  Widget _buildCalendarDay(
+    BuildContext context,
+    DateTime date,
+    bool isSelected,
+  ) {
+    final normalizedDate = DateTime(date.year, date.month, date.day);
+    final tasks = _tasksForDates[normalizedDate] ?? [];
+    final allDayTasks = _allDayTasksForDates[normalizedDate] ?? [];
+    final totalTasks = [...tasks, ...allDayTasks];
+
+    final colors = <Color>{};
+    for (final task in totalTasks) {
+      colors.add(_getTaskColor(context, task));
+      if (colors.length >= 3) break;
+    }
+
+    final isToday =
+        date.year == DateTime.now().year &&
+        date.month == DateTime.now().month &&
+        date.day == DateTime.now().day;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isSelected
+                  ? Colors.blue
+                  : (isToday
+                        ? Colors.blue.withValues(alpha: 0.1)
+                        : Colors.transparent),
+            ),
+            child: Center(
+              child: Text(
+                date.day.toString(),
+                style: TextStyle(
+                  color: isSelected
+                      ? Colors.white
+                      : (isToday ? Colors.blue : Colors.black),
+                  fontWeight: isSelected || isToday
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: colors
+                .map(
+                  (color) => Container(
+                    width: 4,
+                    height: 4,
+                    margin: const EdgeInsets.symmetric(horizontal: 1),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color,
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ),
+    );
   }
 
   void _handleDragPreviewChanged(DateTime? previewTime) {
@@ -431,7 +594,36 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
-  Widget _buildTimeAxisViewport() => ClipRect(
+  List<int> _getActiveHours() {
+    final config = _calendarPageProvider.config;
+    if (!config.isTimeFolded) {
+      return List.generate(24, (i) => i);
+    }
+
+    final activeHours = <int>{};
+    for (final date in _visibleDates) {
+      final normalizedDate = DateTime(date.year, date.month, date.day);
+      final tasks = _tasksForDates[normalizedDate] ?? [];
+      for (final task in tasks) {
+        if (task.startTime != null && !task.isAllDay) {
+          activeHours.add(task.startTime!.hour);
+        }
+      }
+      final habits = _habitsForDates[normalizedDate] ?? [];
+      for (final habit in habits) {
+        activeHours.add(habit.remindTime.hour);
+      }
+    }
+
+    if (activeHours.isEmpty) {
+      return List.generate(10, (i) => 9 + i);
+    }
+
+    final sorted = activeHours.toList()..sort();
+    return sorted;
+  }
+
+  Widget _buildTimeAxisViewport(List<int> activeHours) => ClipRect(
     child: IgnorePointer(
       child: Transform.translate(
         offset: Offset(0, -_timeContentScrollOffset),
@@ -440,6 +632,8 @@ class _CalendarPageState extends State<CalendarPage> {
             TimeAxisColumn(
               width: _timeAxisWidth,
               previewTime: _dragPreviewTime,
+              hours: activeHours,
+              hourHeight: 60.0,
             ),
             const SizedBox(height: _timeAxisSpacerHeight),
           ],
@@ -449,106 +643,288 @@ class _CalendarPageState extends State<CalendarPage> {
   );
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedDate = _currentDate;
-          });
-        },
-        child: Text(
-          DateFormat('M月').format(_currentDate),
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
-          ),
-        ),
-      ),
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      actions: [
-        IconButton(
-          tooltip: '刷新',
-          icon: Icon(Icons.refresh, color: Colors.grey[600]),
-          onPressed: _loadTasksForVisibleDates,
-        ),
-        IconButton(
-          icon: Icon(
-            _dateRange == 7 ? Icons.view_list : Icons.view_week,
-            color: Colors.grey[600],
-          ),
-          onPressed: () {
-            setState(() {
-              _dateRange = _dateRange == 7 ? 3 : 7;
-            });
-            _loadTasksForVisibleDates();
-          },
-        ),
-        const SizedBox(width: 8),
-        IconButton(
-          tooltip: '选择日期',
-          icon: Icon(Icons.calendar_today, color: Colors.grey[600]),
-          onPressed: _showDatePicker,
-        ),
-        const SizedBox(width: 16),
-      ],
-    ),
-    body: Column(
-      children: [
-        CalendarDateHeader(
-          selectedDate: _selectedDate,
-          dateRange: _dateRange,
-          tasksForDates: _tasksForDates,
-          onDateSelected: _setSelectedDate,
-        ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(width: _timeAxisWidth),
-            const SizedBox(width: _timeAxisGap),
-            Expanded(
-              child: CalendarAllDayTaskSection(
-                visibleDates: _visibleDates,
-                habitsForDates: _habitsForDates,
-                allDayTasksForDates: _allDayTasksForDates,
-                crossDayTasks: _crossDayTasks,
-                crossDayTaskCountForDates: _crossDayTaskCountForDates,
-                allDayTaskEntryBuilder: _buildAllDayTaskEntry,
-                allDayHabitEntryBuilder: _buildAllDayHabitEntry,
-              ),
-            ),
-          ],
-        ),
-        Expanded(
+  Widget build(BuildContext context) {
+    final calendarPageProvider = Provider.of<CalendarPageProvider>(context);
+    final config = calendarPageProvider.config;
+    final activeHours = _getActiveHours();
+    final dynamicTimeAreaHeight = activeHours.length * 60.0;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: GestureDetector(
+          onTap: _showDatePicker,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(width: _timeAxisWidth, child: _buildTimeAxisViewport()),
-              const SizedBox(width: _timeAxisGap),
-              Expanded(
-                child: CalendarTimeTaskSection(
-                  selectedDate: _selectedDate,
-                  visibleDates: _visibleDates,
-                  tasksForDates: _tasksForDates,
-                  habitsForDates: _habitsForDates,
-                  futureTasks: _futureTasks,
-                  rruleHasMore: _rruleHasMore,
-                  onLoadMoreRRule: _loadMoreRRuleForDate,
-                  onDateChanged: _setSelectedDate,
-                  timeAreaHeight: _timeAreaHeight,
-                  timedTaskEntryBuilder: _buildTimedTaskEntry,
-                  timedHabitEntryBuilder: _buildTimedHabitEntry,
-                  onDragPreviewChanged: _handleDragPreviewChanged,
-                  onScrollOffsetChanged: _handleTimeContentScrollOffsetChanged,
+              Text(
+                DateFormat('yyyy年M月').format(_selectedDate),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
                 ),
               ),
+              const Icon(Icons.arrow_drop_down, color: Colors.grey),
             ],
           ),
         ),
-      ],
-    ),
-    floatingActionButton: const CustomFloatingActionButton(),
-  );
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: '刷新',
+            icon: Icon(Icons.refresh, color: Colors.grey[600]),
+            onPressed: _loadTasksForVisibleDates,
+          ),
+          IconButton(
+            tooltip: '视图模式',
+            icon: Icon(
+              config.viewMode == 'month'
+                  ? Icons.view_module
+                  : (config.viewMode == 'week'
+                        ? Icons.view_week
+                        : Icons.view_day),
+              color: Colors.grey[600],
+            ),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                builder: (context) {
+                  return SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Text(
+                            '切换日历视图',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        ListTile(
+                          leading: const Icon(
+                            Icons.view_module,
+                            color: Colors.orange,
+                          ),
+                          title: const Text('月视图'),
+                          trailing: config.viewMode == 'month'
+                              ? const Icon(Icons.check, color: Colors.orange)
+                              : null,
+                          onTap: () {
+                            calendarPageProvider.updateConfig(
+                              viewMode: 'month',
+                            );
+                            Navigator.pop(context);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(
+                            Icons.view_week,
+                            color: Colors.orange,
+                          ),
+                          title: const Text('周视图 (7天)'),
+                          trailing: config.viewMode == 'week'
+                              ? const Icon(Icons.check, color: Colors.orange)
+                              : null,
+                          onTap: () {
+                            calendarPageProvider.updateConfig(viewMode: 'week');
+                            Navigator.pop(context);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(
+                            Icons.view_day,
+                            color: Colors.orange,
+                          ),
+                          title: const Text('3天视图'),
+                          trailing: config.viewMode == '3day'
+                              ? const Icon(Icons.check, color: Colors.orange)
+                              : null,
+                          onTap: () {
+                            calendarPageProvider.updateConfig(viewMode: '3day');
+                            Navigator.pop(context);
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+            onSelected: (value) {
+              if (value == 'visible_range') {
+                CalendarVisibleRangeDialog.show(context);
+              } else if (value == 'show_completed') {
+                calendarPageProvider.updateConfig(
+                  showCompletedTasks: !config.showCompletedTasks,
+                );
+              }
+            },
+            itemBuilder: (context) {
+              return [
+                const PopupMenuItem<String>(
+                  value: 'visible_range',
+                  child: Row(
+                    children: [
+                      Icon(Icons.filter_list, color: Colors.black54),
+                      SizedBox(width: 8),
+                      Text('显示范围'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'show_completed',
+                  child: Row(
+                    children: [
+                      Icon(
+                        config.showCompletedTasks
+                            ? Icons.check_box
+                            : Icons.check_box_outline_blank,
+                        color: Colors.black54,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text('显示完成任务'),
+                    ],
+                  ),
+                ),
+              ];
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: config.viewMode == 'month'
+          ? Column(
+              children: [
+                CalendarGrid(
+                  selectedDate: _selectedDate,
+                  showHeader: false,
+                  onDateSelected: _setSelectedDate,
+                  dayBuilder: _buildCalendarDay,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    calendarPageProvider.updateConfig(
+                      isTimeFolded: !config.isTimeFolded,
+                    );
+                  },
+                  child: Container(
+                    height: 12,
+                    width: double.infinity,
+                    color: Colors.grey[100],
+                    child: Center(
+                      child: Container(
+                        width: 32,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: CalendarTaskListBottom(
+                    selectedDate: _selectedDate,
+                    tasks: _getSelectedDateTasks(),
+                  ),
+                ),
+              ],
+            )
+          : Column(
+              children: [
+                CalendarDateHeader(
+                  selectedDate: _selectedDate,
+                  dateRange: config.viewMode == 'week' ? 7 : 3,
+                  tasksForDates: _tasksForDates,
+                  onDateSelected: _setSelectedDate,
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(width: _timeAxisWidth),
+                    const SizedBox(width: _timeAxisGap),
+                    Expanded(
+                      child: CalendarAllDayTaskSection(
+                        visibleDates: _visibleDates,
+                        habitsForDates: _habitsForDates,
+                        allDayTasksForDates: _allDayTasksForDates,
+                        crossDayTasks: _crossDayTasks,
+                        crossDayTaskCountForDates: _crossDayTaskCountForDates,
+                        allDayTaskEntryBuilder: _buildAllDayTaskEntry,
+                        allDayHabitEntryBuilder: _buildAllDayHabitEntry,
+                      ),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: _timeAxisWidth,
+                        child: _buildTimeAxisViewport(activeHours),
+                      ),
+                      const SizedBox(width: _timeAxisGap),
+                      Expanded(
+                        child: CalendarTimeTaskSection(
+                          selectedDate: _selectedDate,
+                          visibleDates: _visibleDates,
+                          tasksForDates: _tasksForDates,
+                          habitsForDates: _habitsForDates,
+                          futureTasks: _futureTasks,
+                          rruleHasMore: _rruleHasMore,
+                          onLoadMoreRRule: _loadMoreRRuleForDate,
+                          onDateChanged: _setSelectedDate,
+                          timeAreaHeight: dynamicTimeAreaHeight,
+                          timedTaskEntryBuilder: _buildTimedTaskEntry,
+                          timedHabitEntryBuilder: _buildTimedHabitEntry,
+                          onDragPreviewChanged: _handleDragPreviewChanged,
+                          onScrollOffsetChanged:
+                              _handleTimeContentScrollOffsetChanged,
+                          hours: activeHours,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.orange,
+        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            useRootNavigator: true,
+            isScrollControlled: true,
+            builder: (context) => Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: AddTaskDialog(
+                presetTask: Task(
+                  name: '',
+                  isAllDay: true,
+                  startTime: _selectedDate,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 }

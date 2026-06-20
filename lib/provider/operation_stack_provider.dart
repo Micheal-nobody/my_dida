@@ -249,4 +249,3 @@ class OperationStackProvider with ChangeNotifier {
     });
   }
 }
-

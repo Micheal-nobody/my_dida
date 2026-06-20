@@ -62,7 +62,8 @@ class Habit extends RevertibleEntity {
           ? DateTime.parse(json['startDate'].toString())
           : DateTime.now(),
       totalCheckInCount: json['totalCheckInCount'] as int? ?? 0,
-      longestContinuousCheckInDays: json['longestContinuousCheckInDays'] as int? ?? 0,
+      longestContinuousCheckInDays:
+          json['longestContinuousCheckInDays'] as int? ?? 0,
       rrule: json['rrule']?.toString().isEmpty == true
           ? null
           : json['rrule']?.toString(),

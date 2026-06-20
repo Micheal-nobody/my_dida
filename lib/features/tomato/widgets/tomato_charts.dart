@@ -45,7 +45,11 @@ class TomatoHourlyDistributionChart extends StatelessWidget {
         children: [
           const Text(
             '专注时段分布 (分钟)',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 20),
           SizedBox(
@@ -63,15 +67,23 @@ class TomatoHourlyDistributionChart extends StatelessWidget {
                       if (minutes > 0)
                         Text(
                           '$minutes',
-                          style: const TextStyle(fontSize: 10, color: Colors.redAccent, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       const SizedBox(height: 4),
                       Container(
                         height: (percent * 80).clamp(4.0, 80.0),
                         width: 16,
                         decoration: BoxDecoration(
-                          color: minutes > 0 ? Colors.redAccent.shade200 : Colors.grey.shade200,
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                          color: minutes > 0
+                              ? Colors.redAccent.shade200
+                              : Colors.grey.shade200,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(4),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -168,7 +180,11 @@ class TomatoCategoryRatioChart extends StatelessWidget {
         children: [
           const Text(
             '分类专注分布',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -180,18 +196,30 @@ class TomatoCategoryRatioChart extends StatelessWidget {
                 child: CustomPaint(
                   painter: _DonutChartPainter(
                     data: list.map((e) => e.value.toDouble()).toList(),
-                    colors: List.generate(list.length, (i) => colors[i % colors.length]),
+                    colors: List.generate(
+                      list.length,
+                      (i) => colors[i % colors.length],
+                    ),
                   ),
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('总专注', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                        const Text(
+                          '总专注',
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
+                        ),
                         Text(
                           '$totalMinutes',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        const Text('分钟', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        const Text(
+                          '分钟',
+                          style: TextStyle(fontSize: 9, color: Colors.grey),
+                        ),
                       ],
                     ),
                   ),
@@ -204,7 +232,8 @@ class TomatoCategoryRatioChart extends StatelessWidget {
                   children: List.generate(list.length, (i) {
                     final item = list[i];
                     final color = colors[i % colors.length];
-                    final pct = (item.value / totalMinutes * 100).toStringAsFixed(1);
+                    final pct = (item.value / totalMinutes * 100)
+                        .toStringAsFixed(1);
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
@@ -212,20 +241,29 @@ class TomatoCategoryRatioChart extends StatelessWidget {
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               item.key,
-                              style: const TextStyle(fontSize: 12, color: Colors.black87),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black87,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           Text(
                             '${item.value}分 ($pct%)',
-                            style: const TextStyle(fontSize: 11, color: Colors.grey),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
                           ),
                         ],
                       ),
@@ -256,7 +294,10 @@ class _DonutChartPainter extends CustomPainter {
     final radius = min(size.width, size.height) / 2;
     const double strokeWidth = 14;
 
-    final rect = Rect.fromCircle(center: center, radius: radius - strokeWidth / 2);
+    final rect = Rect.fromCircle(
+      center: center,
+      radius: radius - strokeWidth / 2,
+    );
     double startAngle = -pi / 2; // 从 12 点钟方向开始
 
     final paint = Paint()
@@ -282,7 +323,11 @@ class _DonutChartPainter extends CustomPainter {
 // 3. 专注趋势折线图
 // ==========================================
 class TomatoTrendChart extends StatelessWidget {
-  const TomatoTrendChart({super.key, required this.records, required this.daysCount});
+  const TomatoTrendChart({
+    super.key,
+    required this.records,
+    required this.daysCount,
+  });
 
   final List<TomatoRecord> records;
   final int daysCount; // 显示最近多少天的数据
@@ -342,7 +387,11 @@ class TomatoTrendChart extends StatelessWidget {
         children: [
           Text(
             '最近 $daysCount 天专注趋势 (分钟)',
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
           const SizedBox(height: 20),
           SizedBox(
@@ -394,8 +443,7 @@ class _LineChartPainter extends CustomPainter {
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
 
-    final fillPaint = Paint()
-      ..style = PaintingStyle.fill;
+    final fillPaint = Paint()..style = PaintingStyle.fill;
 
     final pointPaint = Paint()
       ..color = Colors.redAccent
@@ -413,9 +461,14 @@ class _LineChartPainter extends CustomPainter {
     final gradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [Colors.redAccent.withValues(alpha: 0.3), Colors.redAccent.withValues(alpha: 0.0)],
+      colors: [
+        Colors.redAccent.withValues(alpha: 0.3),
+        Colors.redAccent.withValues(alpha: 0.0),
+      ],
     );
-    fillPaint.shader = gradient.createShader(Rect.fromLTWH(0, 0, width, height));
+    fillPaint.shader = gradient.createShader(
+      Rect.fromLTWH(0, 0, width, height),
+    );
 
     final points = <Offset>[];
 
@@ -434,10 +487,23 @@ class _LineChartPainter extends CustomPainter {
       } else {
         // 使用二阶贝塞尔曲线，使折线圆滑一些
         final prevPt = points[i - 1];
-        final controlPt = Offset((prevPt.dx + pt.dx) / 2, (prevPt.dy + pt.dy) / 2);
-        path.quadraticBezierTo(prevPt.dx, prevPt.dy, controlPt.dx, controlPt.dy);
+        final controlPt = Offset(
+          (prevPt.dx + pt.dx) / 2,
+          (prevPt.dy + pt.dy) / 2,
+        );
+        path.quadraticBezierTo(
+          prevPt.dx,
+          prevPt.dy,
+          controlPt.dx,
+          controlPt.dy,
+        );
 
-        fillPath.quadraticBezierTo(prevPt.dx, prevPt.dy, controlPt.dx, controlPt.dy);
+        fillPath.quadraticBezierTo(
+          prevPt.dx,
+          prevPt.dy,
+          controlPt.dx,
+          controlPt.dy,
+        );
       }
 
       if (i == data.length - 1) {

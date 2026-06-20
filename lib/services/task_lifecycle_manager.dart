@@ -27,12 +27,25 @@ abstract class TaskLifecycleManager {
   Future<int> createSubTask(Task parent, {String name});
   Future<void> deleteSubTask(Task parent, int subTaskId);
   Future<void> updateChecklist(Task task, int? newChecklistId);
-  Future<void> updateStartTime(Task task, DateTime? newStartTime, {bool? isAllDay});
+  Future<void> updateStartTime(
+    Task task,
+    DateTime? newStartTime, {
+    bool? isAllDay,
+  });
   Future<void> updateEndTime(Task task, DateTime? newEndTime, {bool? isAllDay});
-  Future<void> updateTimeRange(Task task, DateTime? newStartTime, DateTime? newEndTime, {bool? isAllDay});
+  Future<void> updateTimeRange(
+    Task task,
+    DateTime? newStartTime,
+    DateTime? newEndTime, {
+    bool? isAllDay,
+  });
   Future<void> clearTaskSchedule(Task task);
   Future<void> updateRRule(Task task, String? rrule);
-  Future<void> updateTaskReminder(Task task, {required bool enabled, int? offsetMinutes});
+  Future<void> updateTaskReminder(
+    Task task, {
+    required bool enabled,
+    int? offsetMinutes,
+  });
   Future<void> deleteTask(Task task);
   Future<void> deletePermanently(Task task);
   Future<void> restoreTask(Task task);
@@ -46,7 +59,8 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
     TaskReminderService? taskReminderService,
     OperationStackProvider? operationStack,
   }) : _taskRepository = taskRepository ?? getIt<TaskRepository>(),
-       _taskReminderService = taskReminderService ?? getIt<TaskReminderService>(),
+       _taskReminderService =
+           taskReminderService ?? getIt<TaskReminderService>(),
        _operationStack = operationStack ?? getIt<OperationStackProvider>();
 
   final TaskRepository _taskRepository;
@@ -201,7 +215,10 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   }
 
   @override
-  Future<int> createSubTask(Task parent, {String name = UIStrings.subTask}) async {
+  Future<int> createSubTask(
+    Task parent, {
+    String name = UIStrings.subTask,
+  }) async {
     final task = await _createTask(
       name: name,
       isAllDay: false,
@@ -243,12 +260,20 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   }
 
   @override
-  Future<void> updateStartTime(Task task, DateTime? newStartTime, {bool? isAllDay}) async {
+  Future<void> updateStartTime(
+    Task task,
+    DateTime? newStartTime, {
+    bool? isAllDay,
+  }) async {
     await updateTimeRange(task, newStartTime, task.endTime, isAllDay: isAllDay);
   }
 
   @override
-  Future<void> updateEndTime(Task task, DateTime? newEndTime, {bool? isAllDay}) async {
+  Future<void> updateEndTime(
+    Task task,
+    DateTime? newEndTime, {
+    bool? isAllDay,
+  }) async {
     await updateTimeRange(task, task.startTime, newEndTime, isAllDay: isAllDay);
   }
 

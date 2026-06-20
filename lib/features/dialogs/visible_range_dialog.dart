@@ -44,7 +44,10 @@ class VisibleRangeDialog extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.check_box_outline_blank, color: Colors.orange),
+            leading: const Icon(
+              Icons.check_box_outline_blank,
+              color: Colors.orange,
+            ),
             title: const Text('未完成'),
             trailing: currentRange == TaskVisibleRange.undone
                 ? const Icon(Icons.check, color: Colors.orange)

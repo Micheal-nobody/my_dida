@@ -71,11 +71,14 @@ class SidebarConfigProvider with ChangeNotifier {
     int? trashShowOption,
   }) async {
     if (todayShowOption != null) _config.todayShowOption = todayShowOption;
-    if (tomorrowShowOption != null) _config.tomorrowShowOption = tomorrowShowOption;
-    if (nextSevenDaysShowOption != null) _config.nextSevenDaysShowOption = nextSevenDaysShowOption;
+    if (tomorrowShowOption != null)
+      _config.tomorrowShowOption = tomorrowShowOption;
+    if (nextSevenDaysShowOption != null)
+      _config.nextSevenDaysShowOption = nextSevenDaysShowOption;
     if (inboxShowOption != null) _config.inboxShowOption = inboxShowOption;
     if (allShowOption != null) _config.allShowOption = allShowOption;
-    if (completedShowOption != null) _config.completedShowOption = completedShowOption;
+    if (completedShowOption != null)
+      _config.completedShowOption = completedShowOption;
     if (trashShowOption != null) _config.trashShowOption = trashShowOption;
     await updateConfig(_config);
   }

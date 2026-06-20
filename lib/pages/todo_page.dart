@@ -77,7 +77,8 @@ class _TodoPageState extends State<TodoPage> {
                     currentChecklist.id != AppConstants.defaultCheckList.id) {
                   showDialog(
                     context: context,
-                    builder: (context) => AddChecklistDialog(checklist: currentChecklist),
+                    builder: (context) =>
+                        AddChecklistDialog(checklist: currentChecklist),
                   );
                 }
               } else if (value == 'delete_list') {
@@ -95,7 +96,10 @@ class _TodoPageState extends State<TodoPage> {
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(context, true),
-                          child: const Text('删除', style: TextStyle(color: Colors.red)),
+                          child: const Text(
+                            '删除',
+                            style: TextStyle(color: Colors.red),
+                          ),
                         ),
                       ],
                     ),
@@ -107,7 +111,8 @@ class _TodoPageState extends State<TodoPage> {
               }
             },
             itemBuilder: (context) {
-              final isSystemList = currentChecklist.id == AppConstants.todayCheckList.id ||
+              final isSystemList =
+                  currentChecklist.id == AppConstants.todayCheckList.id ||
                   currentChecklist.id == AppConstants.defaultCheckList.id;
 
               return [
@@ -161,8 +166,11 @@ class _TodoPageState extends State<TodoPage> {
 
       body: Consumer3<TaskProvider, HabitProvider, ChecklistProvider>(
         builder: (context, taskProvider, habitProvider, _, __) {
-          final isTodayTasks = currentChecklist.id == AppConstants.todayCheckList.id;
-          final groupedTasks = taskProvider.getGroupedCurrentTasks(allChecklists);
+          final isTodayTasks =
+              currentChecklist.id == AppConstants.todayCheckList.id;
+          final groupedTasks = taskProvider.getGroupedCurrentTasks(
+            allChecklists,
+          );
 
           if (taskProvider.viewMode == TaskViewMode.board) {
             return BoardView(
@@ -178,7 +186,9 @@ class _TodoPageState extends State<TodoPage> {
 
             groupWidgets.add(
               Theme(
-                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                data: Theme.of(
+                  context,
+                ).copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
                   initiallyExpanded: true,
                   title: Row(
@@ -216,10 +226,14 @@ class _TodoPageState extends State<TodoPage> {
                       key: Key('list_${task.id}'),
                       background: Container(
                         alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: Dimensions.paddingL),
+                        padding: const EdgeInsets.only(
+                          left: Dimensions.paddingL,
+                        ),
                         color: isTrashList ? Colors.blue : AppColors.success,
                         child: Icon(
-                          isTrashList ? Icons.settings_backup_restore : Icons.check,
+                          isTrashList
+                              ? Icons.settings_backup_restore
+                              : Icons.check,
                           color: AppColors.textOnPrimary,
                           size: 28,
                         ),
@@ -249,8 +263,16 @@ class _TodoPageState extends State<TodoPage> {
                           return showDialog<bool>(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: Text(isTrashList ? '永久删除任务' : UIStrings.deleteTaskTitle),
-                              content: Text(isTrashList ? '确认要永久删除此任务吗？该操作无法恢复。' : UIStrings.deleteTaskMessage),
+                              title: Text(
+                                isTrashList
+                                    ? '永久删除任务'
+                                    : UIStrings.deleteTaskTitle,
+                              ),
+                              content: Text(
+                                isTrashList
+                                    ? '确认要永久删除此任务吗？该操作无法恢复。'
+                                    : UIStrings.deleteTaskMessage,
+                              ),
                               actions: [
                                 TextButton(
                                   onPressed: () =>
@@ -275,7 +297,9 @@ class _TodoPageState extends State<TodoPage> {
                         if (direction == DismissDirection.endToStart) {
                           try {
                             await taskProvider.deleteTask(task);
-                            _messageService.showSuccess(isTrashList ? '任务已永久删除' : UIStrings.taskDeleted);
+                            _messageService.showSuccess(
+                              isTrashList ? '任务已永久删除' : UIStrings.taskDeleted,
+                            );
                           } catch (e) {
                             _messageService.showError(
                               '${UIStrings.errorDeleting}: $e',
@@ -285,7 +309,10 @@ class _TodoPageState extends State<TodoPage> {
                       },
                       child: TaskCard(
                         task: task,
-                        checklistName: _getChecklistName(task.checklistId, allChecklists),
+                        checklistName: _getChecklistName(
+                          task.checklistId,
+                          allChecklists,
+                        ),
                         onToggleDone: (value) {
                           if (isTrashList) {
                             taskProvider.restoreTask(task);
@@ -325,45 +352,49 @@ class _TodoPageState extends State<TodoPage> {
                 continue;
               }
 
-              habitCards.add(HabitCard(
-                habit: habit,
-                progress: habitProvider.getTodayProgress(habit),
-                isCompleted: isCompleted,
-                onTap: () {
-                  HabitCheckInDialog.show(context: context, habit: habit);
-                },
-                onSkip: () async {
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('跳过今天'),
-                      content: const Text('确定要跳过今天的习惯吗？'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: const Text('取消'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(true),
-                          child: const Text('确定'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirmed == true) {
-                    habitProvider.skipToday(habit);
-                  }
-                },
-                onEdit: () {
-                  EditHabitDialog.show(context, habit);
-                },
-              ));
+              habitCards.add(
+                HabitCard(
+                  habit: habit,
+                  progress: habitProvider.getTodayProgress(habit),
+                  isCompleted: isCompleted,
+                  onTap: () {
+                    HabitCheckInDialog.show(context: context, habit: habit);
+                  },
+                  onSkip: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('跳过今天'),
+                        content: const Text('确定要跳过今天的习惯吗？'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('取消'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('确定'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed == true) {
+                      habitProvider.skipToday(habit);
+                    }
+                  },
+                  onEdit: () {
+                    EditHabitDialog.show(context, habit);
+                  },
+                ),
+              );
             }
 
             if (habitCards.isNotEmpty) {
               groupWidgets.add(
                 Theme(
-                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  data: Theme.of(
+                    context,
+                  ).copyWith(dividerColor: Colors.transparent),
                   child: ExpansionTile(
                     initiallyExpanded: true,
                     title: Row(

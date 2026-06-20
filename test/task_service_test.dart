@@ -44,21 +44,21 @@ void main() {
         throwsA(isA<Exception>()),
       );
 
-      final parent = await provider.addTask(Task(
-        name: 'Parent',
-        isAllDay: false,
-        checklistId: 1,
-      ));
+      final parent = await provider.addTask(
+        Task(name: 'Parent', isAllDay: false, checklistId: 1),
+      );
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(provider.currentTasks, isNotEmpty);
 
-      final child = await provider.addTask(Task(
-        name: 'Child',
-        isAllDay: false,
-        parentTaskId: parent.id,
-        checklistId: 1,
-      ));
+      final child = await provider.addTask(
+        Task(
+          name: 'Child',
+          isAllDay: false,
+          parentTaskId: parent.id,
+          checklistId: 1,
+        ),
+      );
 
       final reloadedParent = await harness.taskRepository.selectById(parent.id);
       expect(child.parentTaskId, parent.id);
@@ -69,14 +69,16 @@ void main() {
       final provider = harness.createProvider();
       final startTime = DateTime.now().add(const Duration(days: 2));
 
-      final task = await provider.addTask(Task(
-        name: 'Reminder',
-        isAllDay: false,
-        checklistId: 1,
-        startTime: startTime,
-        notificationEnabled: true,
-        reminderOffsetMinutes: 30,
-      ));
+      final task = await provider.addTask(
+        Task(
+          name: 'Reminder',
+          isAllDay: false,
+          checklistId: 1,
+          startTime: startTime,
+          notificationEnabled: true,
+          reminderOffsetMinutes: 30,
+        ),
+      );
 
       expect(task.notificationEnabled, isTrue);
       expect(task.reminderOffsetMinutes, 30);
@@ -91,17 +93,17 @@ void main() {
     test('deleteTask removes subtree and cleans parent reference', () async {
       final provider = harness.createProvider();
 
-      final parent = await provider.addTask(Task(
-        name: 'Parent',
-        isAllDay: false,
-        checklistId: 1,
-      ));
-      final child = await provider.addTask(Task(
-        name: 'Child',
-        isAllDay: false,
-        parentTaskId: parent.id,
-        checklistId: 1,
-      ));
+      final parent = await provider.addTask(
+        Task(name: 'Parent', isAllDay: false, checklistId: 1),
+      );
+      final child = await provider.addTask(
+        Task(
+          name: 'Child',
+          isAllDay: false,
+          parentTaskId: parent.id,
+          checklistId: 1,
+        ),
+      );
 
       await provider.deleteTask(child);
 
@@ -115,107 +117,123 @@ void main() {
     test('copyTask copies nested subtasks', () async {
       final provider = harness.createProvider();
 
-      final parent = await provider.addTask(Task(
-        name: 'Parent',
-        isAllDay: false,
-        checklistId: 1,
-      ));
-      await provider.addTask(Task(
-        name: 'Child',
-        isAllDay: false,
-        parentTaskId: parent.id,
-        checklistId: 1,
-      ));
+      final parent = await provider.addTask(
+        Task(name: 'Parent', isAllDay: false, checklistId: 1),
+      );
+      await provider.addTask(
+        Task(
+          name: 'Child',
+          isAllDay: false,
+          parentTaskId: parent.id,
+          checklistId: 1,
+        ),
+      );
 
       await provider.copyTask(parent);
 
       final allTasks = await harness.taskRepository.selectAll();
-      final copiedParent =
-          allTasks.firstWhere((task) => task.name == 'Parent (副本)');
-      final copiedChild =
-          allTasks.firstWhere((task) => task.name == 'Child (副本)');
+      final copiedParent = allTasks.firstWhere(
+        (task) => task.name == 'Parent (副本)',
+      );
+      final copiedChild = allTasks.firstWhere(
+        (task) => task.name == 'Child (副本)',
+      );
 
       expect(copiedParent.subTaskIds, contains(copiedChild.id));
       expect(copiedChild.parentTaskId, copiedParent.id);
     });
 
-    test('updateTaskReminder can disable and cancel an existing reminder',
-        () async {
-      final provider = harness.createProvider();
-      final startTime = DateTime.now().add(const Duration(days: 2));
+    test(
+      'updateTaskReminder can disable and cancel an existing reminder',
+      () async {
+        final provider = harness.createProvider();
+        final startTime = DateTime.now().add(const Duration(days: 2));
 
-      final task = await provider.addTask(Task(
-        name: 'Reminder',
-        isAllDay: false,
-        checklistId: 1,
-        startTime: startTime,
-        notificationEnabled: true,
-        reminderOffsetMinutes: 15,
-      ));
+        final task = await provider.addTask(
+          Task(
+            name: 'Reminder',
+            isAllDay: false,
+            checklistId: 1,
+            startTime: startTime,
+            notificationEnabled: true,
+            reminderOffsetMinutes: 15,
+          ),
+        );
 
-      await provider.updateTaskReminder(task, enabled: false);
+        await provider.updateTaskReminder(task, enabled: false);
 
-      expect(task.notificationEnabled, isFalse);
-      expect(task.reminderOffsetMinutes, isNull);
-      expect(scheduler.canceledTaskIds, contains(task.id));
-    });
-
-    test('clearTaskSchedule clears reminder config and cancels reminder',
-        () async {
-      final provider = harness.createProvider();
-      final startTime = DateTime.now().add(const Duration(days: 2));
-
-      final task = await provider.addTask(Task(
-        name: 'Scheduled',
-        isAllDay: false,
-        checklistId: 1,
-        startTime: startTime,
-        notificationEnabled: true,
-        reminderOffsetMinutes: 20,
-      ));
-
-      await provider.clearTaskSchedule(task);
-
-      final reloaded = await harness.taskRepository.selectById(task.id);
-      expect(reloaded?.startTime, isNull);
-      expect(reloaded?.rrule, isNull);
-      expect(reloaded?.notificationEnabled, isFalse);
-      expect(reloaded?.reminderOffsetMinutes, isNull);
-      expect(scheduler.canceledTaskIds, contains(task.id));
-    });
+        expect(task.notificationEnabled, isFalse);
+        expect(task.reminderOffsetMinutes, isNull);
+        expect(scheduler.canceledTaskIds, contains(task.id));
+      },
+    );
 
     test(
-        'completing recurring task cancels current reminder and schedules next task',
-        () async {
-      final provider = harness.createProvider();
-      final startTime = DateTime.now().add(const Duration(days: 2));
+      'clearTaskSchedule clears reminder config and cancels reminder',
+      () async {
+        final provider = harness.createProvider();
+        final startTime = DateTime.now().add(const Duration(days: 2));
 
-      final currentTask = await provider.addTask(Task(
-        name: 'Recurring',
-        isAllDay: false,
-        checklistId: 1,
-        startTime: startTime,
-        notificationEnabled: true,
-        reminderOffsetMinutes: 10,
-        rrule: 'FREQ=DAILY',
-      ));
+        final task = await provider.addTask(
+          Task(
+            name: 'Scheduled',
+            isAllDay: false,
+            checklistId: 1,
+            startTime: startTime,
+            notificationEnabled: true,
+            reminderOffsetMinutes: 20,
+          ),
+        );
 
-      final initialScheduleCount = scheduler.scheduledPlans.length;
-      await provider.updateTaskIsDone(currentTask, true);
+        await provider.clearTaskSchedule(task);
 
-      final allTasks = await harness.taskRepository.selectAll();
-      final nextTask =
-          allTasks.where((task) => task.id != currentTask.id).single;
+        final reloaded = await harness.taskRepository.selectById(task.id);
+        expect(reloaded?.startTime, isNull);
+        expect(reloaded?.rrule, isNull);
+        expect(reloaded?.notificationEnabled, isFalse);
+        expect(reloaded?.reminderOffsetMinutes, isNull);
+        expect(scheduler.canceledTaskIds, contains(task.id));
+      },
+    );
 
-      expect(scheduler.canceledTaskIds, contains(currentTask.id));
-      expect(scheduler.scheduledPlans.length,
-          greaterThan(initialScheduleCount));
-      expect(
-        scheduler.scheduledPlans.any((plan) => plan.taskId == nextTask.id),
-        isTrue,
-      );
-      expect(nextTask.notificationEnabled, isTrue);
-      expect(nextTask.reminderOffsetMinutes, 10);
-    });
+    test(
+      'completing recurring task cancels current reminder and schedules next task',
+      () async {
+        final provider = harness.createProvider();
+        final startTime = DateTime.now().add(const Duration(days: 2));
+
+        final currentTask = await provider.addTask(
+          Task(
+            name: 'Recurring',
+            isAllDay: false,
+            checklistId: 1,
+            startTime: startTime,
+            notificationEnabled: true,
+            reminderOffsetMinutes: 10,
+            rrule: 'FREQ=DAILY',
+          ),
+        );
+
+        final initialScheduleCount = scheduler.scheduledPlans.length;
+        await provider.updateTaskIsDone(currentTask, true);
+
+        final allTasks = await harness.taskRepository.selectAll();
+        final nextTask = allTasks
+            .where((task) => task.id != currentTask.id)
+            .single;
+
+        expect(scheduler.canceledTaskIds, contains(currentTask.id));
+        expect(
+          scheduler.scheduledPlans.length,
+          greaterThan(initialScheduleCount),
+        );
+        expect(
+          scheduler.scheduledPlans.any((plan) => plan.taskId == nextTask.id),
+          isTrue,
+        );
+        expect(nextTask.notificationEnabled, isTrue);
+        expect(nextTask.reminderOffsetMinutes, 10);
+      },
+    );
   });
 }

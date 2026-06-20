@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
-import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/model/entity/checklist.dart';
 import 'package:my_dida/repository/checklist_repository.dart';
+import 'package:my_dida/services/checklist_lifecycle_manager.dart';
 
 import '../config/locator.dart';
 import '../config/logger.dart';
@@ -11,10 +11,14 @@ import '../model/vo/checklist_vo.dart';
 
 ///1、记录todoList页面当前所属收藏夹
 class ChecklistProvider extends ChangeNotifier {
-  ChecklistProvider()
-    : _checkListRepository = getIt<ChecklistRepository>(),
-      _messageService = getIt<AppMessageService>(),
-      _currentCheckList = AppConstants.todayCheckList {
+  ChecklistProvider({
+    ChecklistRepository? checklistRepository,
+    ChecklistLifecycleManager? checklistLifecycleManager,
+  }) : _checkListRepository =
+           checklistRepository ?? getIt<ChecklistRepository>(),
+       _checklistLifecycleManager =
+           checklistLifecycleManager ?? getIt<ChecklistLifecycleManager>(),
+       _currentCheckList = AppConstants.todayCheckList {
     loadAllChecklistes();
   }
 
@@ -25,7 +29,7 @@ class ChecklistProvider extends ChangeNotifier {
   /// 注入 Repository，设置默认收藏夹为 “今天”
   ChecklistVO _currentCheckList;
   final ChecklistRepository _checkListRepository;
-  final AppMessageService _messageService;
+  final ChecklistLifecycleManager _checklistLifecycleManager;
 
   /// 获取所有的收藏夹
   Future<void> loadAllChecklistes() async {
@@ -61,18 +65,15 @@ class ChecklistProvider extends ChangeNotifier {
 
   // Create a new belonging box
   Future<void> createChecklist(String name, Color color) async {
-    final checklist = Checklist(name: name, colorValue: color.toARGB32());
-    await _checkListRepository.addData(checklist);
+    await _checklistLifecycleManager.createChecklist(name, color.toARGB32());
     await loadAllChecklistes();
-    _messageService.showSuccess('清单创建成功！');
   }
 
   // Update an existing belonging box
   Future<void> updateChecklist(ChecklistVO checklist) async {
     final entity = convertToEntity(checklist);
-    await _checkListRepository.addData(entity); // put() updates if exists
+    await _checklistLifecycleManager.updateChecklist(entity);
     await loadAllChecklistes();
-    _messageService.showSuccess('清单更新成功！');
   }
 
   // Delete a belonging box
@@ -83,16 +84,18 @@ class ChecklistProvider extends ChangeNotifier {
     }
 
     try {
-      await _checkListRepository.deleteById(checkListVO.id);
+      await _checklistLifecycleManager.deleteChecklist(
+        checkListVO.id,
+        name: checkListVO.name,
+      );
       await loadAllChecklistes();
 
       // If we deleted the current box, switch to "today"
       if (_currentCheckList.id == checkListVO.id) {
         updateCurChecklist(AppConstants.todayCheckList);
       }
-      _messageService.showSuccess('Deleted "${checkListVO.name}"');
     } catch (e) {
-      _messageService.showError('${UIStrings.errorDeleting}: $e');
+      // Managed inside lifecycle manager
     }
   }
 }

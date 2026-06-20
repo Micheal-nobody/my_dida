@@ -26,7 +26,10 @@ class FourQuadrantsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('时间管理四象限', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          '时间管理四象限',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -56,10 +59,18 @@ class FourQuadrantsPage extends StatelessWidget {
               : allTasks;
 
           // 按照优先级进行分类
-          final highTasks = filteredTasks.where((t) => t.priority == TaskPriority.high).toList();
-          final mediumTasks = filteredTasks.where((t) => t.priority == TaskPriority.medium).toList();
-          final lowTasks = filteredTasks.where((t) => t.priority == TaskPriority.low).toList();
-          final noneTasks = filteredTasks.where((t) => t.priority == TaskPriority.none).toList();
+          final highTasks = filteredTasks
+              .where((t) => t.priority == TaskPriority.high)
+              .toList();
+          final mediumTasks = filteredTasks
+              .where((t) => t.priority == TaskPriority.medium)
+              .toList();
+          final lowTasks = filteredTasks
+              .where((t) => t.priority == TaskPriority.low)
+              .toList();
+          final noneTasks = filteredTasks
+              .where((t) => t.priority == TaskPriority.none)
+              .toList();
 
           return LayoutBuilder(
             builder: (context, constraints) {
@@ -145,7 +156,9 @@ class FourQuadrantsPage extends StatelessWidget {
       onWillAcceptWithDetails: (details) => details.data.priority != priority,
       onAcceptWithDetails: (details) async {
         final task = details.data;
-        logger.i('Dragged task "${task.name}" to quadrant with priority $priority');
+        logger.i(
+          'Dragged task "${task.name}" to quadrant with priority $priority',
+        );
         await taskProvider.updatePriority(task, priority);
       },
       builder: (context, candidateData, rejectedData) {
@@ -153,7 +166,9 @@ class FourQuadrantsPage extends StatelessWidget {
         return Container(
           margin: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: isOver ? color.withValues(alpha: 0.15) : color.withValues(alpha: 0.05),
+            color: isOver
+                ? color.withValues(alpha: 0.15)
+                : color.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(Dimensions.radiusL),
             border: Border.all(
               color: isOver ? color : color.withValues(alpha: 0.3),
@@ -165,7 +180,10 @@ class FourQuadrantsPage extends StatelessWidget {
             children: [
               // 头部标题栏
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -175,7 +193,10 @@ class FourQuadrantsPage extends StatelessWidget {
                           Container(
                             width: 12,
                             height: 12,
-                            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -192,7 +213,10 @@ class FourQuadrantsPage extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1,
+                            ),
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(10),
@@ -226,7 +250,10 @@ class FourQuadrantsPage extends StatelessWidget {
                     ? Center(
                         child: Text(
                           '暂无任务',
-                          style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 12,
+                          ),
                         ),
                       )
                     : ListView.builder(
@@ -236,7 +263,10 @@ class FourQuadrantsPage extends StatelessWidget {
                           final task = tasks[index];
                           final cardWidget = TaskCard(
                             task: task,
-                            checklistName: _getChecklistName(task.checklistId, allChecklists),
+                            checklistName: _getChecklistName(
+                              task.checklistId,
+                              allChecklists,
+                            ),
                             onToggleDone: (val) async {
                               await taskProvider.updateTaskIsDone(task, val!);
                             },
@@ -247,7 +277,9 @@ class FourQuadrantsPage extends StatelessWidget {
                             data: task,
                             feedback: Material(
                               elevation: 4,
-                              borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                              borderRadius: BorderRadius.circular(
+                                Dimensions.radiusM,
+                              ),
                               child: SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.43,
                                 child: cardWidget,
@@ -293,7 +325,10 @@ class FourQuadrantsPage extends StatelessWidget {
     );
   }
 
-  void _showSettingsBottomSheet(BuildContext context, SidebarConfigProvider provider) {
+  void _showSettingsBottomSheet(
+    BuildContext context,
+    SidebarConfigProvider provider,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -313,10 +348,12 @@ class _FourQuadrantsSettingsSheet extends StatefulWidget {
   final SidebarConfigProvider provider;
 
   @override
-  State<_FourQuadrantsSettingsSheet> createState() => _FourQuadrantsSettingsSheetState();
+  State<_FourQuadrantsSettingsSheet> createState() =>
+      _FourQuadrantsSettingsSheetState();
 }
 
-class _FourQuadrantsSettingsSheetState extends State<_FourQuadrantsSettingsSheet> {
+class _FourQuadrantsSettingsSheetState
+    extends State<_FourQuadrantsSettingsSheet> {
   late bool _hideCompleted;
   late TextEditingController _name1Controller;
   late TextEditingController _name2Controller;
@@ -365,7 +402,12 @@ class _FourQuadrantsSettingsSheetState extends State<_FourQuadrantsSettingsSheet
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -375,7 +417,10 @@ class _FourQuadrantsSettingsSheetState extends State<_FourQuadrantsSettingsSheet
               child: Container(
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -398,35 +443,62 @@ class _FourQuadrantsSettingsSheetState extends State<_FourQuadrantsSettingsSheet
             ),
             const Divider(),
             const SizedBox(height: 8),
-            const Text('自定义象限名称与颜色', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            const Text(
+              '自定义象限名称与颜色',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
             const SizedBox(height: 12),
-            _buildQuadrantEditor(1, _name1Controller, _color1, (color) {
-              setState(() => _color1 = color);
-              widget.provider.updateQuadrantColors(color1: color);
-            }, (text) {
-              widget.provider.updateQuadrantNames(name1: text);
-            }),
+            _buildQuadrantEditor(
+              1,
+              _name1Controller,
+              _color1,
+              (color) {
+                setState(() => _color1 = color);
+                widget.provider.updateQuadrantColors(color1: color);
+              },
+              (text) {
+                widget.provider.updateQuadrantNames(name1: text);
+              },
+            ),
             const SizedBox(height: 12),
-            _buildQuadrantEditor(2, _name2Controller, _color2, (color) {
-              setState(() => _color2 = color);
-              widget.provider.updateQuadrantColors(color2: color);
-            }, (text) {
-              widget.provider.updateQuadrantNames(name2: text);
-            }),
+            _buildQuadrantEditor(
+              2,
+              _name2Controller,
+              _color2,
+              (color) {
+                setState(() => _color2 = color);
+                widget.provider.updateQuadrantColors(color2: color);
+              },
+              (text) {
+                widget.provider.updateQuadrantNames(name2: text);
+              },
+            ),
             const SizedBox(height: 12),
-            _buildQuadrantEditor(3, _name3Controller, _color3, (color) {
-              setState(() => _color3 = color);
-              widget.provider.updateQuadrantColors(color3: color);
-            }, (text) {
-              widget.provider.updateQuadrantNames(name3: text);
-            }),
+            _buildQuadrantEditor(
+              3,
+              _name3Controller,
+              _color3,
+              (color) {
+                setState(() => _color3 = color);
+                widget.provider.updateQuadrantColors(color3: color);
+              },
+              (text) {
+                widget.provider.updateQuadrantNames(name3: text);
+              },
+            ),
             const SizedBox(height: 12),
-            _buildQuadrantEditor(4, _name4Controller, _color4, (color) {
-              setState(() => _color4 = color);
-              widget.provider.updateQuadrantColors(color4: color);
-            }, (text) {
-              widget.provider.updateQuadrantNames(name4: text);
-            }),
+            _buildQuadrantEditor(
+              4,
+              _name4Controller,
+              _color4,
+              (color) {
+                setState(() => _color4 = color);
+                widget.provider.updateQuadrantColors(color4: color);
+              },
+              (text) {
+                widget.provider.updateQuadrantNames(name4: text);
+              },
+            ),
             const SizedBox(height: 16),
           ],
         ),
@@ -457,7 +529,14 @@ class _FourQuadrantsSettingsSheetState extends State<_FourQuadrantsSettingsSheet
               children: [
                 CircleAvatar(radius: 6, backgroundColor: Color(selectedColor)),
                 const SizedBox(width: 8),
-                Text('第 $index 象限', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54)),
+                Text(
+                  '第 $index 象限',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.black54,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -468,7 +547,10 @@ class _FourQuadrantsSettingsSheetState extends State<_FourQuadrantsSettingsSheet
                     controller: controller,
                     decoration: const InputDecoration(
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       border: OutlineInputBorder(),
                       hintText: '请输入象限名称',
                     ),
@@ -493,7 +575,9 @@ class _FourQuadrantsSettingsSheetState extends State<_FourQuadrantsSettingsSheet
                       decoration: BoxDecoration(
                         color: Color(hexColor),
                         shape: BoxShape.circle,
-                        border: isSelected ? Border.all(color: Colors.black87, width: 2) : null,
+                        border: isSelected
+                            ? Border.all(color: Colors.black87, width: 2)
+                            : null,
                       ),
                     ),
                   );

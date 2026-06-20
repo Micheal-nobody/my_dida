@@ -21,8 +21,11 @@ import '../services/task_lifecycle_manager.dart';
 import '../utils/RRuleUtil.dart';
 
 enum TaskViewMode { list, board }
+
 enum TaskGroupBy { date, checklist, priority, tag, none }
+
 enum TaskSortBy { dueDate, priority, title, createTime, custom }
+
 enum TaskVisibleRange { all, undone, done }
 
 class TaskProvider with ChangeNotifier {
@@ -37,7 +40,8 @@ class TaskProvider with ChangeNotifier {
            taskCalendarProjectionService ??
            getIt<TaskCalendarProjectionService>(),
        _operationStack = operationStack ?? getIt<OperationStackProvider>(),
-       _taskLifecycleManager = taskLifecycleManager ?? getIt<TaskLifecycleManager>(),
+       _taskLifecycleManager =
+           taskLifecycleManager ?? getIt<TaskLifecycleManager>(),
        currentChecklist = newChecklist {
     updateCurrentTasks(currentChecklist);
   }
@@ -104,7 +108,9 @@ class TaskProvider with ChangeNotifier {
     await _taskLifecycleManager.updateTags(task, newTags);
   }
 
-  Map<String, List<Task>> getGroupedCurrentTasks(List<ChecklistVO> allChecklists) {
+  Map<String, List<Task>> getGroupedCurrentTasks(
+    List<ChecklistVO> allChecklists,
+  ) {
     // 1. 过滤可见范围
     List<Task> filtered = List.from(_currentTasks);
     if (currentChecklist?.id != -5 && currentChecklist?.id != -6) {
@@ -162,7 +168,7 @@ class TaskProvider with ChangeNotifier {
 
     if (_groupBy == TaskGroupBy.checklist) {
       final Map<int, String> checklistMap = {
-        for (final cl in allChecklists) cl.id: cl.name
+        for (final cl in allChecklists) cl.id: cl.name,
       };
       for (final t in filtered) {
         final clName = checklistMap[t.checklistId] ?? '其他清单';
@@ -201,7 +207,11 @@ class TaskProvider with ChangeNotifier {
         if (t.startTime == null) {
           grouped['无日期']!.add(t);
         } else {
-          final date = DateTime(t.startTime!.year, t.startTime!.month, t.startTime!.day);
+          final date = DateTime(
+            t.startTime!.year,
+            t.startTime!.month,
+            t.startTime!.day,
+          );
           if (date.isBefore(today)) {
             if (!t.isDone) {
               grouped['已过期']!.add(t);
@@ -247,10 +257,12 @@ class TaskProvider with ChangeNotifier {
           .filter()
           .isDoneEqualTo(false)
           .and()
-          .group((q) => q
-              .startTimeBetween(tomorrowRange.start, tomorrowRange.end)
-              .or()
-              .endTimeBetween(tomorrowRange.start, tomorrowRange.end))
+          .group(
+            (q) => q
+                .startTimeBetween(tomorrowRange.start, tomorrowRange.end)
+                .or()
+                .endTimeBetween(tomorrowRange.start, tomorrowRange.end),
+          )
           .watch(fireImmediately: true);
     } else if (newChecklist.id == -3) {
       // Next 7 Days
@@ -262,10 +274,12 @@ class TaskProvider with ChangeNotifier {
           .filter()
           .isDoneEqualTo(false)
           .and()
-          .group((q) => q
-              .startTimeBetween(range.start, range.end)
-              .or()
-              .endTimeBetween(range.start, range.end))
+          .group(
+            (q) => q
+                .startTimeBetween(range.start, range.end)
+                .or()
+                .endTimeBetween(range.start, range.end),
+          )
           .watch(fireImmediately: true);
     } else if (newChecklist.id == -4) {
       // All
@@ -297,7 +311,8 @@ class TaskProvider with ChangeNotifier {
                 return Task(name: '未知任务', isAllDay: false);
               }
               final task = Task.fromJson(jsonDecode(op.previousData!));
-              task.id = op.id; // Map op.id to task.id for restore/delete identification
+              task.id = op
+                  .id; // Map op.id to task.id for restore/delete identification
               return task;
             }).toList();
           });
@@ -331,7 +346,8 @@ class TaskProvider with ChangeNotifier {
 
   Stream<Task?> watchTaskById(int id) => _taskRepository.watchById(id);
 
-  Stream<List<Task>> watchAllTasks() => _taskRepository.collection.where().watch(fireImmediately: true);
+  Stream<List<Task>> watchAllTasks() =>
+      _taskRepository.collection.where().watch(fireImmediately: true);
 
   @override
   void dispose() {
@@ -372,10 +388,12 @@ class TaskProvider with ChangeNotifier {
         .filter()
         .isDoneEqualTo(false)
         .and()
-        .group((q) => q
-            .startTimeBetween(todayRange.start, todayRange.end)
-            .or()
-            .endTimeBetween(todayRange.start, todayRange.end))
+        .group(
+          (q) => q
+              .startTimeBetween(todayRange.start, todayRange.end)
+              .or()
+              .endTimeBetween(todayRange.start, todayRange.end),
+        )
         .count();
 
     // Tomorrow (id = -2)
@@ -386,10 +404,12 @@ class TaskProvider with ChangeNotifier {
         .filter()
         .isDoneEqualTo(false)
         .and()
-        .group((q) => q
-            .startTimeBetween(tomorrowRange.start, tomorrowRange.end)
-            .or()
-            .endTimeBetween(tomorrowRange.start, tomorrowRange.end))
+        .group(
+          (q) => q
+              .startTimeBetween(tomorrowRange.start, tomorrowRange.end)
+              .or()
+              .endTimeBetween(tomorrowRange.start, tomorrowRange.end),
+        )
         .count();
 
     // Next 7 Days (id = -3)
@@ -400,10 +420,12 @@ class TaskProvider with ChangeNotifier {
         .filter()
         .isDoneEqualTo(false)
         .and()
-        .group((q) => q
-            .startTimeBetween(range.start, range.end)
-            .or()
-            .endTimeBetween(range.start, range.end))
+        .group(
+          (q) => q
+              .startTimeBetween(range.start, range.end)
+              .or()
+              .endTimeBetween(range.start, range.end),
+        )
         .count();
 
     // Inbox (id = 1)
@@ -498,7 +520,11 @@ class TaskProvider with ChangeNotifier {
     DateTime? newStartTime, {
     bool? isAllDay,
   }) async {
-    await _taskLifecycleManager.updateStartTime(task, newStartTime, isAllDay: isAllDay);
+    await _taskLifecycleManager.updateStartTime(
+      task,
+      newStartTime,
+      isAllDay: isAllDay,
+    );
   }
 
   Future<void> updateEndTime(
@@ -506,7 +532,11 @@ class TaskProvider with ChangeNotifier {
     DateTime? newEndTime, {
     bool? isAllDay,
   }) async {
-    await _taskLifecycleManager.updateEndTime(task, newEndTime, isAllDay: isAllDay);
+    await _taskLifecycleManager.updateEndTime(
+      task,
+      newEndTime,
+      isAllDay: isAllDay,
+    );
   }
 
   Future<void> updateTimeRange(
@@ -515,7 +545,12 @@ class TaskProvider with ChangeNotifier {
     DateTime? newEndTime, {
     bool? isAllDay,
   }) async {
-    await _taskLifecycleManager.updateTimeRange(task, newStartTime, newEndTime, isAllDay: isAllDay);
+    await _taskLifecycleManager.updateTimeRange(
+      task,
+      newStartTime,
+      newEndTime,
+      isAllDay: isAllDay,
+    );
   }
 
   Future<void> clearTaskSchedule(Task task) async {
@@ -531,7 +566,11 @@ class TaskProvider with ChangeNotifier {
     required bool enabled,
     int? offsetMinutes,
   }) async {
-    await _taskLifecycleManager.updateTaskReminder(task, enabled: enabled, offsetMinutes: offsetMinutes);
+    await _taskLifecycleManager.updateTaskReminder(
+      task,
+      enabled: enabled,
+      offsetMinutes: offsetMinutes,
+    );
   }
 
   Future<List<Task>> searchIncompleteTasks(String query) async {

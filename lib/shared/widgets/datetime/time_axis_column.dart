@@ -11,6 +11,7 @@ class TimeAxisColumn extends StatelessWidget {
     this.labelColor,
     this.labelStyle,
     this.previewTime,
+    this.hours,
   });
 
   final double width;
@@ -21,6 +22,7 @@ class TimeAxisColumn extends StatelessWidget {
   final Color? labelColor;
   final TextStyle? labelStyle;
   final DateTime? previewTime;
+  final List<int>? hours;
 
   String _formatPreviewTime(DateTime time) {
     final hour = time.hour.toString().padLeft(2, '0');
@@ -30,17 +32,22 @@ class TimeAxisColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labels = List<String>.generate(
-      hourCount,
-      (index) => index.toString().padLeft(2, '0'),
-    );
-    final totalHeight = hourHeight * hourCount;
-    final previewMinuteOfDay = previewTime == null
-        ? null
-        : previewTime!.hour * 60 + previewTime!.minute;
-    final previewTop = previewMinuteOfDay == null
-        ? null
-        : (previewMinuteOfDay / 60) * hourHeight;
+    final activeHours =
+        hours ?? List<int>.generate(hourCount, (index) => index);
+    final labels = activeHours
+        .map((h) => h.toString().padLeft(2, '0'))
+        .toList();
+    final totalHeight = hourHeight * activeHours.length;
+
+    double? previewTop;
+    if (previewTime != null) {
+      final hourIndex = activeHours.indexOf(previewTime!.hour);
+      if (hourIndex != -1) {
+        previewTop =
+            (hourIndex * hourHeight) + (previewTime!.minute / 60) * hourHeight;
+      }
+    }
+
     final previewLineTop = previewTop == null
         ? null
         : (previewTop - 1).clamp(0.0, totalHeight - 2).toDouble();
@@ -58,8 +65,9 @@ class TimeAxisColumn extends StatelessWidget {
         children: [
           Column(
             children: labels.asMap().entries.map((entry) {
-              final hour = entry.key;
+              final idx = entry.key;
               final time = entry.value;
+              final hour = activeHours[idx];
               final isHighlighted = highlightedHours.contains(hour);
 
               return Container(

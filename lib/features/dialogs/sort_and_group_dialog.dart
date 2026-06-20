@@ -35,15 +35,29 @@ class SortAndGroupDialog extends StatelessWidget {
             const SizedBox(height: 16),
             const Text(
               '分组方式',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
             ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: [
                 _buildGroupChip(context, taskProvider, TaskGroupBy.date, '按日期'),
-                _buildGroupChip(context, taskProvider, TaskGroupBy.checklist, '按清单'),
-                _buildGroupChip(context, taskProvider, TaskGroupBy.priority, '按优先级'),
+                _buildGroupChip(
+                  context,
+                  taskProvider,
+                  TaskGroupBy.checklist,
+                  '按清单',
+                ),
+                _buildGroupChip(
+                  context,
+                  taskProvider,
+                  TaskGroupBy.priority,
+                  '按优先级',
+                ),
                 _buildGroupChip(context, taskProvider, TaskGroupBy.tag, '按标签'),
                 _buildGroupChip(context, taskProvider, TaskGroupBy.none, '无分组'),
               ],
@@ -51,16 +65,35 @@ class SortAndGroupDialog extends StatelessWidget {
             const SizedBox(height: 16),
             const Text(
               '排序方式',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
             ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: [
-                _buildSortChip(context, taskProvider, TaskSortBy.dueDate, '按日期'),
-                _buildSortChip(context, taskProvider, TaskSortBy.priority, '按优先级'),
+                _buildSortChip(
+                  context,
+                  taskProvider,
+                  TaskSortBy.dueDate,
+                  '按日期',
+                ),
+                _buildSortChip(
+                  context,
+                  taskProvider,
+                  TaskSortBy.priority,
+                  '按优先级',
+                ),
                 _buildSortChip(context, taskProvider, TaskSortBy.title, '按标题'),
-                _buildSortChip(context, taskProvider, TaskSortBy.createTime, '按创建时间'),
+                _buildSortChip(
+                  context,
+                  taskProvider,
+                  TaskSortBy.createTime,
+                  '按创建时间',
+                ),
               ],
             ),
             const SizedBox(height: 16),

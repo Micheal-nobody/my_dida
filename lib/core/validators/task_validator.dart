@@ -84,9 +84,7 @@ class TaskValidator {
     }
 
     if (isAllDay) {
-      throw const ValidationException(
-        'All-day tasks cannot enable reminders',
-      );
+      throw const ValidationException('All-day tasks cannot enable reminders');
     }
 
     if (reminderOffsetMinutes == null) {

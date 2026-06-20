@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'core/ui/app_message_service.dart';
 import 'config/locator.dart';
 import 'provider/checklist_provider.dart';
+import 'provider/calendar_page_provider.dart';
 import 'provider/habit_provider.dart';
 import 'provider/operation_stack_provider.dart';
 import 'provider/sidebar_config_provider.dart';
@@ -35,6 +36,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ChecklistProvider()),
+        ChangeNotifierProvider(create: (context) => CalendarPageProvider()),
         ChangeNotifierProvider(create: (context) => HabitProvider()),
         ChangeNotifierProvider(create: (context) => TomatoProvider()),
         ChangeNotifierProvider.value(value: operationStack),

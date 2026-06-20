@@ -42,21 +42,34 @@ class TomatoPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('番茄专注', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text(
+          '番茄专注',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.bar_chart_rounded, color: Colors.white, size: 28),
+            icon: const Icon(
+              Icons.bar_chart_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
             tooltip: '专注统计',
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const TomatoSummaryPage()),
+                MaterialPageRoute(
+                  builder: (context) => const TomatoSummaryPage(),
+                ),
               );
             },
           ),
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 24),
+            icon: const Icon(
+              Icons.settings_outlined,
+              color: Colors.white,
+              size: 24,
+            ),
             tooltip: '番茄设置',
             onPressed: () => _showSettingsDialog(context, provider),
           ),
@@ -71,9 +84,14 @@ class TomatoPage extends StatelessWidget {
             children: [
               // 1. 顶部关联任务区域
               GestureDetector(
-                onTap: provider.isRunning ? null : () => _selectTask(context, provider),
+                onTap: provider.isRunning
+                    ? null
+                    : () => _selectTask(context, provider),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 12.0,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(30),
@@ -81,25 +99,38 @@ class TomatoPage extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.playlist_add_check_rounded, color: Colors.white, size: 22),
+                      const Icon(
+                        Icons.playlist_add_check_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
                           provider.associatedTask != null
                               ? '当前任务: ${provider.associatedTask!.name}'
                               : '关联待办任务开始高效专注...',
-                          style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (provider.associatedTask != null && !provider.isRunning) ...[
+                      if (provider.associatedTask != null &&
+                          !provider.isRunning) ...[
                         const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () => provider.setAssociatedTask(null),
-                          child: const Icon(Icons.close_rounded, color: Colors.white70, size: 18),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white70,
+                            size: 18,
+                          ),
                         ),
-                      ]
+                      ],
                     ],
                   ),
                 ),
@@ -114,10 +145,14 @@ class TomatoPage extends StatelessWidget {
                     width: 250,
                     height: 250,
                     child: CircularProgressIndicator(
-                      value: provider.totalDuration > 0 ? provider.duration / provider.totalDuration : 1.0,
+                      value: provider.totalDuration > 0
+                          ? provider.duration / provider.totalDuration
+                          : 1.0,
                       strokeWidth: 10,
                       backgroundColor: Colors.white.withValues(alpha: 0.1),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Colors.white,
+                      ),
                     ),
                   ),
                   // 时间文字与状态
@@ -154,18 +189,35 @@ class TomatoPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildQuickSetButton(context, '专注', buttonColor, () => provider.selectFocus()),
+                        _buildQuickSetButton(
+                          context,
+                          '专注',
+                          buttonColor,
+                          () => provider.selectFocus(),
+                        ),
                         const SizedBox(width: 12),
-                        _buildQuickSetButton(context, '短休', buttonColor, () => provider.selectShortBreak()),
+                        _buildQuickSetButton(
+                          context,
+                          '短休',
+                          buttonColor,
+                          () => provider.selectShortBreak(),
+                        ),
                         const SizedBox(width: 12),
-                        _buildQuickSetButton(context, '长休', buttonColor, () => provider.selectLongBreak()),
+                        _buildQuickSetButton(
+                          context,
+                          '长休',
+                          buttonColor,
+                          () => provider.selectLongBreak(),
+                        ),
                       ],
                     ),
                   const SizedBox(height: 20),
                   // 番茄数点点 (例如 4 个周期小点)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(provider.longBreakInterval, (index) {
+                    children: List.generate(provider.longBreakInterval, (
+                      index,
+                    ) {
                       final isCompleted = index < provider.completedTomatoCount;
                       return Container(
                         margin: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -193,13 +245,24 @@ class TomatoPage extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: backgroundColor,
-                        padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 36,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
                         elevation: 4,
                       ),
                       onPressed: () => provider.start(),
                       icon: const Icon(Icons.play_arrow_rounded, size: 24),
-                      label: const Text('开始专注', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      label: const Text(
+                        '开始专注',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ] else ...[
                     if (provider.isPaused) ...[
@@ -207,8 +270,13 @@ class TomatoPage extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: backgroundColor,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                         ),
                         onPressed: () => provider.resume(),
                         icon: const Icon(Icons.play_arrow_rounded),
@@ -219,8 +287,13 @@ class TomatoPage extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white.withValues(alpha: 0.2),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                         ),
                         onPressed: () => provider.pause(),
                         icon: const Icon(Icons.pause_rounded),
@@ -232,12 +305,19 @@ class TomatoPage extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red.shade900,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
                       ),
                       onPressed: () => _confirmAbandon(context, provider),
                       icon: const Icon(Icons.stop_rounded),
-                      label: Text(provider.status == TomatoStatus.focus ? '放弃' : '跳过'),
+                      label: Text(
+                        provider.status == TomatoStatus.focus ? '放弃' : '跳过',
+                      ),
                     ),
                   ],
                 ],
@@ -266,19 +346,29 @@ class TomatoPage extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
   }
 
-  Future<void> _selectTask(BuildContext context, TomatoProvider provider) async {
+  Future<void> _selectTask(
+    BuildContext context,
+    TomatoProvider provider,
+  ) async {
     final selectedTask = await AssociateTaskDialog.show(context);
     // 如果返回 null，表示点击了取消关联
     provider.setAssociatedTask(selectedTask);
   }
 
-  Future<void> _confirmAbandon(BuildContext context, TomatoProvider provider) async {
+  Future<void> _confirmAbandon(
+    BuildContext context,
+    TomatoProvider provider,
+  ) async {
     if (provider.status != TomatoStatus.focus) {
       provider.skipBreak();
       return;
@@ -420,8 +510,21 @@ class TomatoPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-              Text('$currentValue $unit', style: const TextStyle(fontSize: 14, color: Colors.blue, fontWeight: FontWeight.bold)),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                '$currentValue $unit',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.blue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ),
