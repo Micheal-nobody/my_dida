@@ -4,10 +4,12 @@ import 'package:isar_community/isar.dart';
 import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/model/entity/checklist.dart';
 import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/habit_check_in_record.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/repository/habit_repository.dart';
+import 'package:my_dida/repository/habit_check_in_record_repository.dart';
 import 'package:my_dida/services/habit_lifecycle_manager.dart';
 
 void main() {
@@ -23,7 +25,13 @@ void main() {
 
     tempDir = await Directory.systemTemp.createTemp('my_dida_habit_test_');
     isar = await Isar.open(
-      [ChecklistSchema, HabitSchema, OperationSchema, TaskSchema],
+      [
+        ChecklistSchema,
+        HabitSchema,
+        OperationSchema,
+        TaskSchema,
+        HabitCheckInRecordSchema
+      ],
       directory: tempDir.path,
       name: 'habit_test_${DateTime.now().microsecondsSinceEpoch}',
     );
@@ -32,6 +40,9 @@ void main() {
 
     habitRepository = HabitRepository();
     getIt.registerSingleton<HabitRepository>(habitRepository);
+
+    final recordRepository = HabitCheckInRecordRepository();
+    getIt.registerSingleton<HabitCheckInRecordRepository>(recordRepository);
 
     operationStack = OperationStackProvider();
     getIt.registerSingleton<OperationStackProvider>(operationStack);
@@ -249,7 +260,85 @@ void main() {
 
       final reloaded = await habitRepository.getHabitById(habit.id);
       expect(reloaded?.currentCheckInCount, 0);
-      expect(reloaded?.totalCheckInCount, 19);
+      expect(reloaded?.totalCheckInCount, 17);
+    });
+
+    test('skipToday sets isTodaySkipped and creates skip record', () async {
+      final habit = Habit(
+        name: 'Drink Water',
+        icon: 'water',
+        remindTime: DateTime.now(),
+        checkInCount: 5,
+        currentCheckInCount: 0,
+        startDate: DateTime.now(),
+        totalCheckInCount: 0,
+        longestContinuousCheckInDays: 0,
+      );
+      await habitRepository.addHabit(habit);
+
+      await lifecycleManager.skipToday(habit);
+
+      final reloaded = await habitRepository.getHabitById(habit.id);
+      expect(reloaded?.isTodaySkipped, isTrue);
+
+      final recordRepository = getIt<HabitCheckInRecordRepository>();
+      final records = await recordRepository.getRecordsByHabitId(habit.id);
+      expect(records.length, 1);
+      expect(records.first.isSkip, isTrue);
+    });
+
+    test('archive and unarchive habits', () async {
+      final habit = Habit(
+        name: 'Habit',
+        icon: 'mind',
+        remindTime: DateTime.now(),
+        checkInCount: 5,
+        currentCheckInCount: 0,
+        startDate: DateTime.now(),
+        totalCheckInCount: 0,
+        longestContinuousCheckInDays: 0,
+      );
+      await habitRepository.addHabit(habit);
+
+      await lifecycleManager.archiveHabit(habit.id);
+      var reloaded = await habitRepository.getHabitById(habit.id);
+      expect(reloaded?.isArchived, isTrue);
+
+      await lifecycleManager.unarchiveHabit(habit.id);
+      reloaded = await habitRepository.getHabitById(habit.id);
+      expect(reloaded?.isArchived, isFalse);
+    });
+
+    test('reorder habits assigns sortOrder', () async {
+      final habit1 = Habit(
+        name: 'H1',
+        icon: 'mind',
+        remindTime: DateTime.now(),
+        checkInCount: 1,
+        currentCheckInCount: 0,
+        startDate: DateTime.now(),
+        totalCheckInCount: 0,
+        longestContinuousCheckInDays: 0,
+      );
+      final habit2 = Habit(
+        name: 'H2',
+        icon: 'mind',
+        remindTime: DateTime.now(),
+        checkInCount: 1,
+        currentCheckInCount: 0,
+        startDate: DateTime.now(),
+        totalCheckInCount: 0,
+        longestContinuousCheckInDays: 0,
+      );
+      await habitRepository.addHabit(habit1);
+      await habitRepository.addHabit(habit2);
+
+      await lifecycleManager.reorderHabits([habit2, habit1]);
+
+      final reloaded1 = await habitRepository.getHabitById(habit1.id);
+      final reloaded2 = await habitRepository.getHabitById(habit2.id);
+      expect(reloaded2?.sortOrder, 0);
+      expect(reloaded1?.sortOrder, 1);
     });
   });
 }

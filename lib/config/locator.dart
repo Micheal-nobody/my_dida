@@ -5,6 +5,7 @@ import 'package:my_dida/constants/app_constants.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/model/entity/checklist.dart';
 import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/habit_check_in_record.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/entity/sidebar_config.dart';
@@ -13,6 +14,7 @@ import 'package:my_dida/model/entity/tomato_record.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/repository/checklist_repository.dart';
 import 'package:my_dida/repository/habit_repository.dart';
+import 'package:my_dida/repository/habit_check_in_record_repository.dart';
 import 'package:my_dida/repository/task_repository.dart';
 import 'package:my_dida/repository/tomato_record_repository.dart';
 import 'package:my_dida/services/flutter_local_task_reminder_scheduler.dart';
@@ -49,6 +51,9 @@ Future<void> setupLocator() async {
     ..registerSingleton<ChecklistRepository>(ChecklistRepository())
     ..registerSingleton<HabitRepository>(HabitRepository())
     ..registerSingleton<TomatoRecordRepository>(TomatoRecordRepository())
+    ..registerSingleton<HabitCheckInRecordRepository>(
+      HabitCheckInRecordRepository(),
+    )
     // 注册多态实体还原注册器并注册实体工厂
     ..registerSingleton<EntityRegistry>(
       EntityRegistry()
@@ -141,5 +146,6 @@ Future<Isar> initializeIsar() async {
     SidebarConfigSchema,
     TomatoRecordSchema,
     CalendarPageConfigSchema,
+    HabitCheckInRecordSchema,
   ], directory: dir.path);
 }

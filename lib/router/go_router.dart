@@ -4,6 +4,9 @@ import 'package:my_dida/features/todo_page/todo_drawer.dart';
 import 'package:my_dida/pages/task_detail_route_page.dart';
 import 'package:my_dida/pages/calendar_page.dart';
 import 'package:my_dida/pages/habits_page.dart';
+import 'package:my_dida/pages/habit_data_summary_page.dart';
+import 'package:my_dida/pages/habit_manage_page.dart';
+import 'package:my_dida/pages/habit_archived_page.dart';
 import 'package:my_dida/pages/operation_page.dart';
 import 'package:my_dida/pages/todo_page.dart';
 import 'package:my_dida/pages/tomato_page.dart';
@@ -54,6 +57,21 @@ final GoRouter goRouter = GoRouter(
       path: '/settings/sidebar',
       pageBuilder: (context, state) =>
           const MaterialPage(child: SidebarSettingsPage()),
+    ),
+    GoRoute(
+      path: '/habits/summary',
+      pageBuilder: (context, state) =>
+          const MaterialPage(child: HabitDataSummaryPage()),
+    ),
+    GoRoute(
+      path: '/habits/manage',
+      pageBuilder: (context, state) =>
+          const MaterialPage(child: HabitManagePage()),
+    ),
+    GoRoute(
+      path: '/habits/manage/archived',
+      pageBuilder: (context, state) =>
+          const MaterialPage(child: HabitArchivedPage()),
     ),
     StatefulShellRoute.indexedStack(
       /// 整个页面的内容，其中 Branch 中的内容会填充到 body 中

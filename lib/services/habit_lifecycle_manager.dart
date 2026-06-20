@@ -1,9 +1,11 @@
 import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/core/errors/exceptions.dart';
 import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/model/entity/habit_check_in_record.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/repository/habit_repository.dart';
+import 'package:my_dida/repository/habit_check_in_record_repository.dart';
 
 abstract class HabitLifecycleManager {
   Future<void> addHabit(Habit habit);
@@ -14,16 +16,23 @@ abstract class HabitLifecycleManager {
   Future<void> resetTodayCheckInCounts();
   Future<void> undoLastCheckIn(Habit habit);
   Future<void> undoAllCheckIns(Habit habit);
+  Future<void> archiveHabit(int id);
+  Future<void> unarchiveHabit(int id);
+  Future<void> reorderHabits(List<Habit> reorderedHabits);
 }
 
 class HabitLifecycleManagerImpl implements HabitLifecycleManager {
   HabitLifecycleManagerImpl({
     HabitRepository? habitRepository,
+    HabitCheckInRecordRepository? recordRepository,
     OperationStackProvider? operationStack,
   }) : _habitRepository = habitRepository ?? getIt<HabitRepository>(),
+       _recordRepository =
+           recordRepository ?? getIt<HabitCheckInRecordRepository>(),
        _operationStack = operationStack ?? getIt<OperationStackProvider>();
 
   final HabitRepository _habitRepository;
+  final HabitCheckInRecordRepository _recordRepository;
   final OperationStackProvider _operationStack;
 
   @override
@@ -75,6 +84,7 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
       final operation = Operation.createDeleteHabitOperation(habit);
       await _operationStack.addOperation(operation);
 
+      await _recordRepository.deleteRecordsByHabitId(id);
       await _habitRepository.deleteHabit(id);
     } catch (e) {
       throw HabitException('Failed to delete habit: $e');
@@ -93,6 +103,12 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
         habit.currentCheckInCount += 1;
         habit.totalCheckInCount += 1;
         await _habitRepository.updateHabit(habit);
+
+        final record = HabitCheckInRecord(
+          habitId: habit.id,
+          checkInTime: DateTime.now(),
+        );
+        await _recordRepository.addRecord(record);
       }
     } catch (e) {
       throw HabitException('Failed to check in habit: $e');
@@ -102,7 +118,15 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
   @override
   Future<void> skipToday(Habit habit) async {
     try {
+      habit.isTodaySkipped = true;
       await _habitRepository.updateHabit(habit);
+
+      final record = HabitCheckInRecord(
+        habitId: habit.id,
+        checkInTime: DateTime.now(),
+        isSkip: true,
+      );
+      await _recordRepository.addRecord(record);
     } catch (e) {
       throw HabitException('Failed to skip habit: $e');
     }
@@ -114,6 +138,7 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
       final habits = await _habitRepository.getAllHabits();
       for (final Habit habit in habits) {
         habit.currentCheckInCount = 0;
+        habit.isTodaySkipped = false;
         await _habitRepository.updateHabit(habit);
       }
     } catch (e) {
@@ -126,8 +151,24 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
     try {
       if (habit.currentCheckInCount > 0) {
         habit.currentCheckInCount -= 1;
-        habit.totalCheckInCount -= 1;
+        if (habit.totalCheckInCount > 0) {
+          habit.totalCheckInCount -= 1;
+        }
         await _habitRepository.updateHabit(habit);
+
+        // 删除最后一条打卡记录
+        final records = await _recordRepository.getRecordsByHabitId(habit.id);
+        final today = DateTime.now();
+        final todayRecords = records.where((r) {
+          return !r.isSkip &&
+              r.checkInTime.year == today.year &&
+              r.checkInTime.month == today.month &&
+              r.checkInTime.day == today.day;
+        }).toList();
+        if (todayRecords.isNotEmpty) {
+          todayRecords.sort((a, b) => b.checkInTime.compareTo(a.checkInTime));
+          await _recordRepository.deleteRecord(todayRecords.first.id);
+        }
       }
     } catch (e) {
       throw HabitException('Failed to undo last check in: $e');
@@ -137,13 +178,65 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
   @override
   Future<void> undoAllCheckIns(Habit habit) async {
     try {
+      final int removedCount = habit.currentCheckInCount;
       habit.currentCheckInCount = 0;
-      if (habit.totalCheckInCount > 0) {
-        habit.totalCheckInCount -= 1;
-      }
+      habit.totalCheckInCount =
+          (habit.totalCheckInCount - removedCount).clamp(0, 999999);
       await _habitRepository.updateHabit(habit);
+
+      // 删除今天所有的非Skip打卡记录
+      final records = await _recordRepository.getRecordsByHabitId(habit.id);
+      final today = DateTime.now();
+      final todayRecords = records.where((r) {
+        return !r.isSkip &&
+            r.checkInTime.year == today.year &&
+            r.checkInTime.month == today.month &&
+            r.checkInTime.day == today.day;
+      }).toList();
+      for (final r in todayRecords) {
+        await _recordRepository.deleteRecord(r.id);
+      }
     } catch (e) {
       throw HabitException('Failed to undo all check ins: $e');
+    }
+  }
+
+  @override
+  Future<void> archiveHabit(int id) async {
+    try {
+      final habit = await _habitRepository.getHabitById(id);
+      if (habit != null) {
+        habit.isArchived = true;
+        await _habitRepository.updateHabit(habit);
+      }
+    } catch (e) {
+      throw HabitException('Failed to archive habit: $e');
+    }
+  }
+
+  @override
+  Future<void> unarchiveHabit(int id) async {
+    try {
+      final habit = await _habitRepository.getHabitById(id);
+      if (habit != null) {
+        habit.isArchived = false;
+        await _habitRepository.updateHabit(habit);
+      }
+    } catch (e) {
+      throw HabitException('Failed to unarchive habit: $e');
+    }
+  }
+
+  @override
+  Future<void> reorderHabits(List<Habit> reorderedHabits) async {
+    try {
+      for (int i = 0; i < reorderedHabits.length; i++) {
+        final habit = reorderedHabits[i];
+        habit.sortOrder = i;
+        await _habitRepository.updateHabit(habit);
+      }
+    } catch (e) {
+      throw HabitException('Failed to reorder habits: $e');
     }
   }
 }

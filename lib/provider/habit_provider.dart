@@ -1,16 +1,25 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:my_dida/services/habit_lifecycle_manager.dart';
+import 'package:my_dida/model/entity/habit_check_in_record.dart';
+import 'package:my_dida/repository/habit_check_in_record_repository.dart';
 
 import '../config/locator.dart';
 import '../model/entity/habit.dart';
 import '../repository/habit_repository.dart';
 
+enum HabitStatusFilter { all, incomplete, completed }
+enum HabitTimeSlotFilter { all, morning, afternoon, evening }
+enum HabitFrequencyFilter { all, daily, weekly }
+
 class HabitProvider with ChangeNotifier {
   HabitProvider({
     HabitRepository? habitRepository,
+    HabitCheckInRecordRepository? recordRepository,
     HabitLifecycleManager? habitLifecycleManager,
   }) : _habitRepository = habitRepository ?? getIt<HabitRepository>(),
+       _recordRepository =
+           recordRepository ?? getIt<HabitCheckInRecordRepository>(),
        _habitLifecycleManager =
            habitLifecycleManager ?? getIt<HabitLifecycleManager>() {
     _subscription = _habitRepository.watchAll().listen((habits) {
@@ -20,11 +29,93 @@ class HabitProvider with ChangeNotifier {
   }
   List<Habit> _habits = [];
   final HabitRepository _habitRepository;
+  final HabitCheckInRecordRepository _recordRepository;
   final HabitLifecycleManager _habitLifecycleManager;
   StreamSubscription<List<Habit>>? _subscription;
 
+  // 过滤状态
+  HabitStatusFilter _statusFilter = HabitStatusFilter.all;
+  HabitTimeSlotFilter _timeFilter = HabitTimeSlotFilter.all;
+  HabitFrequencyFilter _frequencyFilter = HabitFrequencyFilter.all;
+
   // Getters
-  List<Habit> get habits => _habits;
+  HabitStatusFilter get statusFilter => _statusFilter;
+  HabitTimeSlotFilter get timeFilter => _timeFilter;
+  HabitFrequencyFilter get frequencyFilter => _frequencyFilter;
+
+  // 获取所有进行中的习惯（未归档），并按 sortOrder 排序
+  List<Habit> get activeHabits {
+    final list = _habits.where((h) => !h.isArchived).toList();
+    list.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    return list;
+  }
+
+  // 获取所有已归档的习惯，按 sortOrder 排序
+  List<Habit> get archivedHabits {
+    final list = _habits.where((h) => h.isArchived).toList();
+    list.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    return list;
+  }
+
+  // 获取过滤后的未归档习惯列表
+  List<Habit> get habits {
+    return activeHabits.where((habit) {
+      // 1. 打卡状态过滤
+      if (_statusFilter == HabitStatusFilter.incomplete) {
+        if (isTodayCompleted(habit) || habit.isTodaySkipped) return false;
+      } else if (_statusFilter == HabitStatusFilter.completed) {
+        if (!isTodayCompleted(habit)) return false;
+      }
+
+      // 2. 时段过滤
+      final hour = habit.remindTime.hour;
+      if (_timeFilter == HabitTimeSlotFilter.morning) {
+        if (hour < 5 || hour >= 12) return false;
+      } else if (_timeFilter == HabitTimeSlotFilter.afternoon) {
+        if (hour < 12 || hour >= 18) return false;
+      } else if (_timeFilter == HabitTimeSlotFilter.evening) {
+        if (hour >= 5 && hour < 18) return false;
+      }
+
+      // 3. 频次过滤 (简易判定：包含 WEEKLY 判定为每周，其它为每日)
+      final isWeekly =
+          habit.rrule != null && habit.rrule!.toUpperCase().contains('WEEKLY');
+      if (_frequencyFilter == HabitFrequencyFilter.daily && isWeekly) {
+        return false;
+      } else if (_frequencyFilter == HabitFrequencyFilter.weekly && !isWeekly) {
+        return false;
+      }
+
+      return true;
+    }).toList();
+  }
+
+  // 设置过滤条件
+  void setFilters({
+    HabitStatusFilter? status,
+    HabitTimeSlotFilter? time,
+    HabitFrequencyFilter? frequency,
+  }) {
+    if (status != null) _statusFilter = status;
+    if (time != null) _timeFilter = time;
+    if (frequency != null) _frequencyFilter = frequency;
+    notifyListeners();
+  }
+
+  // 重置过滤条件
+  void resetFilters() {
+    _statusFilter = HabitStatusFilter.all;
+    _timeFilter = HabitTimeSlotFilter.all;
+    _frequencyFilter = HabitFrequencyFilter.all;
+    notifyListeners();
+  }
+
+  // 获取打卡记录
+  Future<List<HabitCheckInRecord>> getRecordsForHabit(int habitId) =>
+      _recordRepository.getRecordsByHabitId(habitId);
+
+  Future<List<HabitCheckInRecord>> getAllRecords() =>
+      _recordRepository.getAllRecords();
 
   @override
   void dispose() {
@@ -86,5 +177,20 @@ class HabitProvider with ChangeNotifier {
   // 撤销所有打卡
   Future<void> undoAllCheckIns(Habit habit) async {
     await _habitLifecycleManager.undoAllCheckIns(habit);
+  }
+
+  // 归档习惯
+  Future<void> archiveHabit(int id) async {
+    await _habitLifecycleManager.archiveHabit(id);
+  }
+
+  // 取消归档习惯
+  Future<void> unarchiveHabit(int id) async {
+    await _habitLifecycleManager.unarchiveHabit(id);
+  }
+
+  // 拖拽排序习惯
+  Future<void> reorderHabits(List<Habit> reorderedHabits) async {
+    await _habitLifecycleManager.reorderHabits(reorderedHabits);
   }
 }

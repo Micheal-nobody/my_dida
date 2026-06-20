@@ -16,6 +16,9 @@ class Habit extends RevertibleEntity {
     required this.totalCheckInCount,
     required this.longestContinuousCheckInDays,
     this.rrule,
+    this.isArchived = false,
+    this.sortOrder = 0,
+    this.isTodaySkipped = false,
   });
 
   String name;
@@ -32,6 +35,15 @@ class Habit extends RevertibleEntity {
   /// 重复规则 (RRule)
   String? rrule;
 
+  /// 是否归档
+  bool isArchived;
+
+  /// 排序权重
+  int sortOrder;
+
+  /// 今日是否跳过
+  bool isTodaySkipped;
+
   /// 转换为标准 JSON Map
   Map<String, dynamic> toJson() {
     return {
@@ -45,6 +57,9 @@ class Habit extends RevertibleEntity {
       'totalCheckInCount': totalCheckInCount,
       'longestContinuousCheckInDays': longestContinuousCheckInDays,
       'rrule': rrule,
+      'isArchived': isArchived,
+      'sortOrder': sortOrder,
+      'isTodaySkipped': isTodaySkipped,
     };
   }
 
@@ -67,6 +82,9 @@ class Habit extends RevertibleEntity {
       rrule: json['rrule']?.toString().isEmpty == true
           ? null
           : json['rrule']?.toString(),
+      isArchived: json['isArchived'] as bool? ?? false,
+      sortOrder: json['sortOrder'] as int? ?? 0,
+      isTodaySkipped: json['isTodaySkipped'] as bool? ?? false,
     );
     if (json['id'] != null) {
       habit.id = json['id'] as int;
