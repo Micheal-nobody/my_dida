@@ -54,10 +54,6 @@ app.*.map.json
 .codex
 .AGENTS
 skills-lock.json
-CLAUDE.md
-AGENTS.md
 
 # 开发相关
-docs
-!docs/agents/
 libisar.dll
