@@ -23,9 +23,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 * `lib/config/`：应用全局启动级配置，包括依赖注入容器（`locator.dart`）和全局日志（`logger.dart`）。
 * `lib/router/`：基于 `go_router` 包装的应用程序路由表及上下文 Key。
 * `lib/utils/`：通用辅助逻辑与计算工具（如日期工具、重复规则解析 RRule、搜索历史管理器）。
+* `lib/constants/`：全局常量（包含尺寸、图标、颜色等常量定义）。
+* `lib/core/`：核心基础设施与校验逻辑（例如表单校验器、业务异常与错误基类）。
+* `lib/shared/`：跨业务复用的 UI 公共组件（如自定义日期时间选择器、网格视图、通用表单弹窗）。
 
 ## 代码架构介绍
-* **状态管理 (State Management)**：采用 `provider` 库包装核心状态。`ChecklistProvider`、`HabitProvider`、`OperationStackProvider` 以及 `TaskProvider` 在 `lib/main.dart` 中完成注册。其中 `TaskProvider` 基于 `ChangeNotifierProxyProvider` 监听 `ChecklistProvider` 的当前清单变化并进行对应的联动更新。
+* **状态管理 (State Management)**：采用 `provider` 库包装核心状态。`ChecklistProvider`、`CalendarPageProvider`、`HabitProvider`、`TomatoProvider`、`SidebarConfigProvider`、`OperationStackProvider` 以及 `TaskProvider` 在 `lib/main.dart` 中完成注册。其中 `TaskProvider` 基于 `ChangeNotifierProxyProvider` 监听 `ChecklistProvider` 的当前清单变化并进行对应的联动更新。
 * **依赖注入 (Dependency Injection)**：在 `lib/config/locator.dart` 中使用 `locator (GetIt)` 进行注册和管理。初始化并注入 `Isar` 数据库实例，同时注册了各个仓储类 (Repositories)、通知服务、本地提醒以及业务服务单例。
 * **数据库与实体模型 (Database & Entities)**：使用 Isar 数据库 (`isar_community`)。实体定义位于 `lib/model/entity/` 目录中，依赖 build_runner 自动生成对应的 Isar 数据表结构文件 (`*.g.dart`)。
 * **路由管理 (Routing)**：使用 `go_router` 库，具体配置主要定义在 `lib/router/go_router.dart` 中。
