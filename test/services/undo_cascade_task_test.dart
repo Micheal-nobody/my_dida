@@ -1,23 +1,24 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/config/locator.dart';
-import 'package:my_dida/model/domain/task_operation.dart';
-import 'package:my_dida/model/entity/checklist.dart';
-import 'package:my_dida/model/entity/check_point.dart';
-import 'package:my_dida/model/entity/operation.dart';
-import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/model/entity/sidebar_config.dart';
-import 'package:my_dida/model/entity/habit.dart';
-import 'package:my_dida/provider/operation_stack_provider.dart';
-import 'package:my_dida/provider/task_provider.dart';
-import 'package:my_dida/repository/task_repository.dart';
-import 'package:my_dida/services/noop_task_reminder_scheduler.dart';
-import 'package:my_dida/services/task_reminder_scheduler_port.dart';
-import 'package:my_dida/services/task_reminder_service.dart';
-import 'package:my_dida/services/task_calendar_projection_service.dart';
-import 'package:my_dida/services/task_lifecycle_manager.dart';
-import 'package:my_dida/services/operation_reverter.dart';
+import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/features/tasks/models/task_operation.dart';
+import 'package:my_dida/features/checklist/models/checklist.dart';
+import 'package:my_dida/features/tasks/models/check_point.dart';
+import 'package:my_dida/features/operation_undo/models/operation.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/settings/models/sidebar_config.dart';
+import 'package:my_dida/features/habits/models/habit.dart';
+import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
+import 'package:my_dida/features/tasks/providers/task_provider.dart';
+import 'package:my_dida/features/tasks/repositories/task_repository.dart';
+import 'package:my_dida/features/tasks/services/noop_task_reminder_scheduler.dart';
+import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dart';
+import 'package:my_dida/features/tasks/services/task_reminder_service.dart';
+import 'package:my_dida/features/calendar/services/task_calendar_projection_service.dart';
+import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
+import 'package:my_dida/features/operation_undo/services/operation_reverter.dart';
+import 'package:my_dida/features/tasks/services/task_operation_reverter.dart';
 
 void main() {
   late Isar isar;
@@ -50,11 +51,7 @@ void main() {
 
     // 注册多态还原注册器
     final registry = EntityRegistry()
-      ..register<Task>(
-        OperationTarget.task,
-        (json) => Task.fromJson(json),
-        taskRepository,
-      );
+      ..register(OperationTarget.task, TaskOperationReverter());
     getIt.registerSingleton<EntityRegistry>(registry);
 
     // 注册 OperationReverter
@@ -64,7 +61,9 @@ void main() {
     getIt.registerSingleton<OperationStackProvider>(operationStack);
     await operationStack.initialize();
 
-    getIt.registerSingleton<TaskReminderSchedulerPort>(NoopTaskReminderScheduler());
+    getIt.registerSingleton<TaskReminderSchedulerPort>(
+      NoopTaskReminderScheduler(),
+    );
     getIt.registerSingleton<TaskReminderService>(
       TaskReminderService(scheduler: getIt<TaskReminderSchedulerPort>()),
     );
@@ -116,7 +115,9 @@ void main() {
       expect(undoneToggleTask!.checkpoints.first.isDone, false);
 
       // 4. 重命名 Checkpoint 并撤销
-      await lifecycleManager.execute(RenameCheckpoint(undoneToggleTask, 0, 'NewCP'));
+      await lifecycleManager.execute(
+        RenameCheckpoint(undoneToggleTask, 0, 'NewCP'),
+      );
       final renamedTask = await taskRepository.selectById(savedTask.id);
       expect(renamedTask!.checkpoints.first.name, 'NewCP');
 
@@ -144,51 +145,58 @@ void main() {
       expect(undoneRemoveTask.checkpoints.first.name, 'CP1');
     });
 
-    test('Delete subtask operation and its relation can be fully undone', () async {
-      // 1. 创建父任务
-      final parent = Task(name: 'Parent Task', isAllDay: false);
-      await lifecycleManager.execute(AddTask(parent));
-      final savedParent = (await taskRepository.selectAll()).first;
+    test(
+      'Delete subtask operation and its relation can be fully undone',
+      () async {
+        // 1. 创建父任务
+        final parent = Task(name: 'Parent Task', isAllDay: false);
+        await lifecycleManager.execute(AddTask(parent));
+        final savedParent = (await taskRepository.selectAll()).first;
 
-      // 2. 创建子任务
-      final childId = await lifecycleManager.execute(
-        CreateSubTask(savedParent, name: 'Sub Task'),
-      ) as int;
+        // 2. 创建子任务
+        final childId =
+            await lifecycleManager.execute(
+                  CreateSubTask(savedParent, name: 'Sub Task'),
+                )
+                as int;
 
-      final reloadedParent = await taskRepository.selectById(savedParent.id);
-      expect(reloadedParent!.subTaskIds, contains(childId));
+        final reloadedParent = await taskRepository.selectById(savedParent.id);
+        expect(reloadedParent!.subTaskIds, contains(childId));
 
-      final savedChild = await taskRepository.selectById(childId);
-      expect(savedChild!.parentTaskId, savedParent.id);
+        final savedChild = await taskRepository.selectById(childId);
+        expect(savedChild!.parentTaskId, savedParent.id);
 
-      // 3. 删除子任务
-      // 操作栈在删除子任务前包含：[CreateSubTask, AddParent]
-      final operationsBefore = List.from(operationStack.operations);
+        // 3. 删除子任务
+        // 操作栈在删除子任务前包含：[CreateSubTask, AddParent]
+        final operationsBefore = List.from(operationStack.operations);
 
-      await lifecycleManager.execute(DeleteSubTask(reloadedParent, childId));
+        await lifecycleManager.execute(DeleteSubTask(reloadedParent, childId));
 
-      // 删除后，父任务 subTaskIds 不包含子任务 ID，且子任务从数据库被物理删除
-      final parentAfterDelete = await taskRepository.selectById(savedParent.id);
-      expect(parentAfterDelete!.subTaskIds, isNot(contains(childId)));
+        // 删除后，父任务 subTaskIds 不包含子任务 ID，且子任务从数据库被物理删除
+        final parentAfterDelete = await taskRepository.selectById(
+          savedParent.id,
+        );
+        expect(parentAfterDelete!.subTaskIds, isNot(contains(childId)));
 
-      final childAfterDelete = await taskRepository.selectById(childId);
-      expect(childAfterDelete, isNull);
+        final childAfterDelete = await taskRepository.selectById(childId);
+        expect(childAfterDelete, isNull);
 
-      // 检查 Operation 栈。DeleteSubTask 应该录制了 OperationType.delete
-      expect(operationStack.operations.length, operationsBefore.length + 1);
-      expect(operationStack.operations.first.type, OperationType.delete);
-      expect(operationStack.operations.first.targetId, childId);
+        // 检查 Operation 栈。DeleteSubTask 应该录制了 OperationType.delete
+        expect(operationStack.operations.length, operationsBefore.length + 1);
+        expect(operationStack.operations.first.type, OperationType.delete);
+        expect(operationStack.operations.first.targetId, childId);
 
-      // 4. 撤销删除子任务
-      await operationStack.undo();
+        // 4. 撤销删除子任务
+        await operationStack.undo();
 
-      // 撤销后，子任务应该被插回，且父任务的 subTaskIds 应该恢复连回
-      final childAfterUndo = await taskRepository.selectById(childId);
-      expect(childAfterUndo, isNotNull);
-      expect(childAfterUndo!.parentTaskId, savedParent.id);
+        // 撤销后，子任务应该被插回，且父任务的 subTaskIds 应该恢复连回
+        final childAfterUndo = await taskRepository.selectById(childId);
+        expect(childAfterUndo, isNotNull);
+        expect(childAfterUndo!.parentTaskId, savedParent.id);
 
-      final parentAfterUndo = await taskRepository.selectById(savedParent.id);
-      expect(parentAfterUndo!.subTaskIds, contains(childId));
-    });
+        final parentAfterUndo = await taskRepository.selectById(savedParent.id);
+        expect(parentAfterUndo!.subTaskIds, contains(childId));
+      },
+    );
   });
 }

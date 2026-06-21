@@ -36,10 +36,7 @@ class BaseBottomSheetLayout extends StatelessWidget {
           Center(
             child: Text(
               title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
           if (onReset != null)
@@ -112,10 +109,7 @@ class BaseBottomSheetLayout extends StatelessWidget {
                   backgroundColor: confirmButtonColor,
                   foregroundColor: Colors.white,
                 ),
-                child: Text(
-                  confirmText,
-                  style: const TextStyle(fontSize: 16),
-                ),
+                child: Text(confirmText, style: const TextStyle(fontSize: 16)),
               ),
             ],
           ),
@@ -131,10 +125,7 @@ class BaseBottomSheetLayout extends StatelessWidget {
           header,
           const Divider(height: 1),
           content,
-          if (bottomBar != null) ...[
-            const Divider(height: 1),
-            bottomBar,
-          ],
+          if (bottomBar != null) ...[const Divider(height: 1), bottomBar],
         ],
       ),
     );

@@ -1,20 +1,20 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/config/locator.dart';
-import 'package:my_dida/model/entity/checklist.dart';
-import 'package:my_dida/model/entity/habit.dart';
-import 'package:my_dida/model/entity/operation.dart';
-import 'package:my_dida/model/entity/sidebar_config.dart';
-import 'package:my_dida/model/entity/custom_tomato.dart';
-import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/model/entity/tomato_record.dart';
-import 'package:my_dida/provider/tomato_provider.dart';
-import 'package:my_dida/repository/custom_tomato_repository.dart';
-import 'package:my_dida/repository/task_repository.dart';
-import 'package:my_dida/repository/tomato_record_repository.dart';
-import 'package:my_dida/services/notification_service.dart';
-import 'package:my_dida/services/task_notification_navigation_service.dart';
+import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/features/checklist/models/checklist.dart';
+import 'package:my_dida/features/habits/models/habit.dart';
+import 'package:my_dida/features/operation_undo/models/operation.dart';
+import 'package:my_dida/features/settings/models/sidebar_config.dart';
+import 'package:my_dida/features/tomato/models/custom_tomato.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tomato/models/tomato_record.dart';
+import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
+import 'package:my_dida/features/tomato/repositories/custom_tomato_repository.dart';
+import 'package:my_dida/features/tasks/repositories/task_repository.dart';
+import 'package:my_dida/features/tomato/repositories/tomato_record_repository.dart';
+import 'package:my_dida/features/tasks/services/notification_service.dart';
+import 'package:my_dida/features/tasks/services/task_notification_navigation_service.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 
 void main() {
@@ -169,7 +169,9 @@ void main() {
       expect(provider.duration, 40 * 60);
 
       // 统计测试 (今天累计)
-      int todayMins = await provider.getCustomTomatoTodayMinutes(provider.customTomatoes[0].id);
+      int todayMins = await provider.getCustomTomatoTodayMinutes(
+        provider.customTomatoes[0].id,
+      );
       expect(todayMins, 0);
 
       // 模拟专注完成记录
@@ -177,17 +179,27 @@ void main() {
         customTomatoId: provider.customTomatoes[0].id,
         taskName: '帕梅拉',
         categoryName: '自定义番茄钟',
-        startTime: DateTime.now().subtract(const Duration(minutes: 40)),
+        startTime: DateTime(
+          DateTime.now().year,
+          DateTime.now().month,
+          DateTime.now().day,
+          12,
+          0,
+        ),
         endTime: DateTime.now(),
         durationMinutes: 40,
         isCompleted: true,
       );
       await tomatoRepository.insert(record);
 
-      todayMins = await provider.getCustomTomatoTodayMinutes(provider.customTomatoes[0].id);
+      todayMins = await provider.getCustomTomatoTodayMinutes(
+        provider.customTomatoes[0].id,
+      );
       expect(todayMins, 40);
 
-      final totalStats = await provider.getCustomTomatoTotalStats(provider.customTomatoes[0].id);
+      final totalStats = await provider.getCustomTomatoTotalStats(
+        provider.customTomatoes[0].id,
+      );
       expect(totalStats['completedCount'], 1);
       expect(totalStats['totalMinutes'], 40);
 

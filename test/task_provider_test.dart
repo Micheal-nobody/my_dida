@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/model/vo/checklist_vo.dart';
-import 'package:my_dida/provider/task_provider.dart';
-import 'package:my_dida/provider/sidebar_config_provider.dart';
-import 'package:my_dida/config/locator.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/checklist/models/checklist_vo.dart';
+import 'package:my_dida/features/tasks/providers/task_provider.dart';
+import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
+import 'package:my_dida/core/di/locator.dart';
 
 import 'test_support/task_test_harness.dart';
 
@@ -88,22 +88,26 @@ void main() {
       () async {
         await Future.delayed(Duration.zero);
 
-        await provider.execute(AddTask(
-          Task(
-            name: 'Visible',
-            isAllDay: false,
-            startTime: DateTime(2026, 4, 12, 9),
-            checklistId: 1,
+        await provider.execute(
+          AddTask(
+            Task(
+              name: 'Visible',
+              isAllDay: false,
+              startTime: DateTime(2026, 4, 12, 9),
+              checklistId: 1,
+            ),
           ),
-        ));
-        await provider.execute(AddTask(
-          Task(
-            name: 'Future',
-            isAllDay: false,
-            startTime: DateTime(2026, 4, 20, 9),
-            checklistId: 1,
+        );
+        await provider.execute(
+          AddTask(
+            Task(
+              name: 'Future',
+              isAllDay: false,
+              startTime: DateTime(2026, 4, 20, 9),
+              checklistId: 1,
+            ),
           ),
-        ));
+        );
 
         final data = await provider.loadCalendarTaskViewData(
           visibleDates: [DateTime(2026, 4, 12)],
@@ -149,24 +153,28 @@ void main() {
       final tomorrow = now.add(const Duration(days: 1));
 
       // Add a today task
-      await provider.execute(AddTask(
-        Task(
-          name: 'Today Task',
-          isAllDay: false,
-          startTime: now,
-          checklistId: 1,
+      await provider.execute(
+        AddTask(
+          Task(
+            name: 'Today Task',
+            isAllDay: false,
+            startTime: now,
+            checklistId: 1,
+          ),
         ),
-      ));
+      );
 
       // Add a tomorrow task
-      await provider.execute(AddTask(
-        Task(
-          name: 'Tomorrow Task',
-          isAllDay: false,
-          startTime: tomorrow,
-          checklistId: 1,
+      await provider.execute(
+        AddTask(
+          Task(
+            name: 'Tomorrow Task',
+            isAllDay: false,
+            startTime: tomorrow,
+            checklistId: 1,
+          ),
         ),
-      ));
+      );
 
       final counts = await provider.getSmartListCounts();
 

@@ -2,21 +2,21 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/config/locator.dart';
-import 'package:my_dida/model/entity/habit.dart';
-import 'package:my_dida/model/entity/operation.dart';
-import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/model/entity/checklist.dart';
-import 'package:my_dida/model/entity/sidebar_config.dart';
-import 'package:my_dida/model/vo/checklist_vo.dart';
-import 'package:my_dida/provider/operation_stack_provider.dart';
-import 'package:my_dida/provider/task_provider.dart';
-import 'package:my_dida/repository/task_repository.dart';
-import 'package:my_dida/services/noop_task_reminder_scheduler.dart';
-import 'package:my_dida/services/task_reminder_scheduler_port.dart';
-import 'package:my_dida/services/task_reminder_service.dart';
-import 'package:my_dida/services/task_calendar_projection_service.dart';
-import 'package:my_dida/services/task_lifecycle_manager.dart';
+import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/features/habits/models/habit.dart';
+import 'package:my_dida/features/operation_undo/models/operation.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/checklist/models/checklist.dart';
+import 'package:my_dida/features/settings/models/sidebar_config.dart';
+import 'package:my_dida/features/checklist/models/checklist_vo.dart';
+import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
+import 'package:my_dida/features/tasks/providers/task_provider.dart';
+import 'package:my_dida/features/tasks/repositories/task_repository.dart';
+import 'package:my_dida/features/tasks/services/noop_task_reminder_scheduler.dart';
+import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dart';
+import 'package:my_dida/features/tasks/services/task_reminder_service.dart';
+import 'package:my_dida/features/calendar/services/task_calendar_projection_service.dart';
+import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
 
 class TaskTestHarness {
   TaskTestHarness._(this.isar, this.tempDir);

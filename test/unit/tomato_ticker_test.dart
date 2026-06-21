@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_dida/model/domain/tomato_ticker.dart';
+import 'package:my_dida/features/tomato/models/tomato_ticker.dart';
 
 void main() {
   group('TomatoTicker 状态流转与边界测试', () {

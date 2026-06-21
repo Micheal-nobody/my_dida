@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/config/locator.dart';
-import 'package:my_dida/model/entity/calendar_page_config.dart';
-import 'package:my_dida/provider/calendar_page_provider.dart';
+import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/features/calendar/models/calendar_page_config.dart';
+import 'package:my_dida/features/calendar/providers/calendar_page_provider.dart';
 
 void main() {
   late Isar isar;

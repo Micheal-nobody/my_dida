@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:my_dida/model/entity/tomato_record.dart';
+import 'package:my_dida/features/tomato/models/tomato_record.dart';
 
 // ==========================================
 // 1. 时段分布图 (24小时柱状图)

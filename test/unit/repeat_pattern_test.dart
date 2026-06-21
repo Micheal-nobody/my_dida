@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_dida/model/vo/repeat_pattern.dart';
+import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 
 void main() {
   group('RepeatPattern Value Object Tests', () {
@@ -18,18 +18,27 @@ void main() {
       expect(weekly.type, RepeatType.weekly);
       expect(weekly.weekdays, [1, 3, 5]);
       expect(weekly.interval, 2);
-      expect(weekly.toRRuleString(), 'RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE,FR');
+      expect(
+        weekly.toRRuleString(),
+        'RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE,FR',
+      );
 
       const monthly = RepeatPattern.monthly(15, 1);
       expect(monthly.type, RepeatType.monthly);
       expect(monthly.dayOfMonth, 15);
-      expect(monthly.toRRuleString(), 'RRULE:FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=15');
+      expect(
+        monthly.toRRuleString(),
+        'RRULE:FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=15',
+      );
 
       const yearly = RepeatPattern.yearly(10, 20, 1);
       expect(yearly.type, RepeatType.yearly);
       expect(yearly.month, 10);
       expect(yearly.dayOfMonth, 20);
-      expect(yearly.toRRuleString(), 'RRULE:FREQ=YEARLY;INTERVAL=1;BYMONTH=10;BYMONTHDAY=20');
+      expect(
+        yearly.toRRuleString(),
+        'RRULE:FREQ=YEARLY;INTERVAL=1;BYMONTH=10;BYMONTHDAY=20',
+      );
 
       const ebbinghaus = RepeatPattern.ebbinghaus();
       expect(ebbinghaus.type, RepeatType.ebbinghaus);
@@ -45,19 +54,29 @@ void main() {
     test('Parsing RRule strings', () {
       expect(RepeatPattern.parse(null), const RepeatPattern.none());
       expect(RepeatPattern.parse(''), const RepeatPattern.none());
-      expect(RepeatPattern.parse('CUSTOM:EBBINGHAUS'), const RepeatPattern.ebbinghaus());
-      expect(RepeatPattern.parse('custom:workday'), const RepeatPattern.workday());
+      expect(
+        RepeatPattern.parse('CUSTOM:EBBINGHAUS'),
+        const RepeatPattern.ebbinghaus(),
+      );
+      expect(
+        RepeatPattern.parse('custom:workday'),
+        const RepeatPattern.workday(),
+      );
 
       final parsedDaily = RepeatPattern.parse('RRULE:FREQ=DAILY;INTERVAL=2');
       expect(parsedDaily.type, RepeatType.daily);
       expect(parsedDaily.interval, 2);
 
-      final parsedWeekly = RepeatPattern.parse('FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,FR');
+      final parsedWeekly = RepeatPattern.parse(
+        'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,FR',
+      );
       expect(parsedWeekly.type, RepeatType.weekly);
       expect(parsedWeekly.weekdays, [1, 5]);
       expect(parsedWeekly.interval, 1);
 
-      final parsedMonthly = RepeatPattern.parse('FREQ=MONTHLY;INTERVAL=3;BYMONTHDAY=28');
+      final parsedMonthly = RepeatPattern.parse(
+        'FREQ=MONTHLY;INTERVAL=3;BYMONTHDAY=28',
+      );
       expect(parsedMonthly.type, RepeatType.monthly);
       expect(parsedMonthly.dayOfMonth, 28);
       expect(parsedMonthly.interval, 3);
@@ -65,26 +84,57 @@ void main() {
 
     test('Human readable descriptions (toReadableString)', () {
       expect(const RepeatPattern.none().toReadableString(null), '无');
-      expect(const RepeatPattern.ebbinghaus().toReadableString(null), '艾宾浩斯记忆法');
+      expect(
+        const RepeatPattern.ebbinghaus().toReadableString(null),
+        '艾宾浩斯记忆法',
+      );
       expect(const RepeatPattern.workday().toReadableString(null), '法定工作日');
       expect(const RepeatPattern.daily(1).toReadableString(null), '每天');
       expect(const RepeatPattern.daily(5).toReadableString(null), '每 5 天');
 
-      expect(const RepeatPattern.weekly([1, 2, 3, 4, 5], 1).toReadableString(null), '每周工作日 (周一至周五)');
-      expect(const RepeatPattern.weekly([1, 3], 1).toReadableString(null), '每周（周一、周三）');
+      expect(
+        const RepeatPattern.weekly([1, 2, 3, 4, 5], 1).toReadableString(null),
+        '每周工作日 (周一至周五)',
+      );
+      expect(
+        const RepeatPattern.weekly([1, 3], 1).toReadableString(null),
+        '每周（周一、周三）',
+      );
 
       final baseDate = DateTime(2026, 6, 21); // Sunday (7)
-      expect(const RepeatPattern.weekly([], 1).toReadableString(baseDate), '每周 (周日)');
-      expect(const RepeatPattern.monthly(null, 1).toReadableString(baseDate), '每月（21 日）');
-      expect(const RepeatPattern.yearly(null, null, 1).toReadableString(baseDate), '每年（6 月 21 日）');
+      expect(
+        const RepeatPattern.weekly([], 1).toReadableString(baseDate),
+        '每周 (周日)',
+      );
+      expect(
+        const RepeatPattern.monthly(null, 1).toReadableString(baseDate),
+        '每月（21 日）',
+      );
+      expect(
+        const RepeatPattern.yearly(null, null, 1).toReadableString(baseDate),
+        '每年（6 月 21 日）',
+      );
     });
 
     test('Equality and HashCode', () {
       expect(const RepeatPattern.daily(1), const RepeatPattern.daily(1));
-      expect(const RepeatPattern.daily(1) == const RepeatPattern.daily(2), isFalse);
-      expect(const RepeatPattern.weekly([1, 2]), const RepeatPattern.weekly([1, 2]));
-      expect(const RepeatPattern.weekly([1, 2]) == const RepeatPattern.weekly([2, 1]), isFalse);
-      expect(const RepeatPattern.ebbinghaus(), const RepeatPattern.ebbinghaus());
+      expect(
+        const RepeatPattern.daily(1) == const RepeatPattern.daily(2),
+        isFalse,
+      );
+      expect(
+        const RepeatPattern.weekly([1, 2]),
+        const RepeatPattern.weekly([1, 2]),
+      );
+      expect(
+        const RepeatPattern.weekly([1, 2]) ==
+            const RepeatPattern.weekly([2, 1]),
+        isFalse,
+      );
+      expect(
+        const RepeatPattern.ebbinghaus(),
+        const RepeatPattern.ebbinghaus(),
+      );
     });
 
     test('nextOccurrenceAfter for Ebbinghaus', () {

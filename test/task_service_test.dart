@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/model/vo/repeat_pattern.dart';
-import 'package:my_dida/model/vo/task_reminder_plan.dart';
-import 'package:my_dida/provider/task_provider.dart';
-import 'package:my_dida/services/task_reminder_scheduler_port.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
+import 'package:my_dida/features/tasks/models/task_reminder_plan.dart';
+import 'package:my_dida/features/tasks/providers/task_provider.dart';
+import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dart';
 
 import 'test_support/task_test_harness.dart';
 
@@ -45,21 +45,27 @@ void main() {
         throwsA(isA<Exception>()),
       );
 
-      final parent = await provider.execute(
-        AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
-      ) as Task;
+      final parent =
+          await provider.execute(
+                AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
+              )
+              as Task;
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(provider.currentTasks, isNotEmpty);
 
-      final child = await provider.execute(
-        AddTask(Task(
-          name: 'Child',
-          isAllDay: false,
-          parentTaskId: parent.id,
-          checklistId: 1,
-        )),
-      ) as Task;
+      final child =
+          await provider.execute(
+                AddTask(
+                  Task(
+                    name: 'Child',
+                    isAllDay: false,
+                    parentTaskId: parent.id,
+                    checklistId: 1,
+                  ),
+                ),
+              )
+              as Task;
 
       final reloadedParent = await harness.taskRepository.selectById(parent.id);
       expect(child.parentTaskId, parent.id);
@@ -70,16 +76,20 @@ void main() {
       final provider = harness.createProvider();
       final startTime = DateTime.now().add(const Duration(days: 2));
 
-      final task = await provider.execute(
-        AddTask(Task(
-          name: 'Reminder',
-          isAllDay: false,
-          checklistId: 1,
-          startTime: startTime,
-          notificationEnabled: true,
-          reminderOffsetMinutes: 30,
-        )),
-      ) as Task;
+      final task =
+          await provider.execute(
+                AddTask(
+                  Task(
+                    name: 'Reminder',
+                    isAllDay: false,
+                    checklistId: 1,
+                    startTime: startTime,
+                    notificationEnabled: true,
+                    reminderOffsetMinutes: 30,
+                  ),
+                ),
+              )
+              as Task;
 
       expect(task.notificationEnabled, isTrue);
       expect(task.reminderOffsetMinutes, 30);
@@ -94,17 +104,23 @@ void main() {
     test('deleteTask removes subtree and cleans parent reference', () async {
       final provider = harness.createProvider();
 
-      final parent = await provider.execute(
-        AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
-      ) as Task;
-      final child = await provider.execute(
-        AddTask(Task(
-          name: 'Child',
-          isAllDay: false,
-          parentTaskId: parent.id,
-          checklistId: 1,
-        )),
-      ) as Task;
+      final parent =
+          await provider.execute(
+                AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
+              )
+              as Task;
+      final child =
+          await provider.execute(
+                AddTask(
+                  Task(
+                    name: 'Child',
+                    isAllDay: false,
+                    parentTaskId: parent.id,
+                    checklistId: 1,
+                  ),
+                ),
+              )
+              as Task;
 
       await provider.execute(DeleteTask(child));
 
@@ -118,16 +134,20 @@ void main() {
     test('copyTask copies nested subtasks', () async {
       final provider = harness.createProvider();
 
-      final parent = await provider.execute(
-        AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
-      ) as Task;
+      final parent =
+          await provider.execute(
+                AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
+              )
+              as Task;
       await provider.execute(
-        AddTask(Task(
-          name: 'Child',
-          isAllDay: false,
-          parentTaskId: parent.id,
-          checklistId: 1,
-        )),
+        AddTask(
+          Task(
+            name: 'Child',
+            isAllDay: false,
+            parentTaskId: parent.id,
+            checklistId: 1,
+          ),
+        ),
       );
 
       await provider.execute(CopyTask(parent));
@@ -150,16 +170,20 @@ void main() {
         final provider = harness.createProvider();
         final startTime = DateTime.now().add(const Duration(days: 2));
 
-        final task = await provider.execute(
-          AddTask(Task(
-            name: 'Reminder',
-            isAllDay: false,
-            checklistId: 1,
-            startTime: startTime,
-            notificationEnabled: true,
-            reminderOffsetMinutes: 15,
-          )),
-        ) as Task;
+        final task =
+            await provider.execute(
+                  AddTask(
+                    Task(
+                      name: 'Reminder',
+                      isAllDay: false,
+                      checklistId: 1,
+                      startTime: startTime,
+                      notificationEnabled: true,
+                      reminderOffsetMinutes: 15,
+                    ),
+                  ),
+                )
+                as Task;
 
         await provider.execute(UpdateTaskReminder(task, enabled: false));
 
@@ -176,16 +200,20 @@ void main() {
         final provider = harness.createProvider();
         final startTime = DateTime.now().add(const Duration(days: 2));
 
-        final task = await provider.execute(
-          AddTask(Task(
-            name: 'Scheduled',
-            isAllDay: false,
-            checklistId: 1,
-            startTime: startTime,
-            notificationEnabled: true,
-            reminderOffsetMinutes: 20,
-          )),
-        ) as Task;
+        final task =
+            await provider.execute(
+                  AddTask(
+                    Task(
+                      name: 'Scheduled',
+                      isAllDay: false,
+                      checklistId: 1,
+                      startTime: startTime,
+                      notificationEnabled: true,
+                      reminderOffsetMinutes: 20,
+                    ),
+                  ),
+                )
+                as Task;
 
         await provider.execute(ClearTaskSchedule(task));
 
@@ -204,17 +232,21 @@ void main() {
         final provider = harness.createProvider();
         final startTime = DateTime.now().add(const Duration(days: 2));
 
-        final currentTask = await provider.execute(
-          AddTask(Task(
-            name: 'Recurring',
-            isAllDay: false,
-            checklistId: 1,
-            startTime: startTime,
-            notificationEnabled: true,
-            reminderOffsetMinutes: 10,
-            rrule: RepeatPattern.parse('FREQ=DAILY'),
-          )),
-        ) as Task;
+        final currentTask =
+            await provider.execute(
+                  AddTask(
+                    Task(
+                      name: 'Recurring',
+                      isAllDay: false,
+                      checklistId: 1,
+                      startTime: startTime,
+                      notificationEnabled: true,
+                      reminderOffsetMinutes: 10,
+                      rrule: RepeatPattern.parse('FREQ=DAILY'),
+                    ),
+                  ),
+                )
+                as Task;
 
         final initialScheduleCount = scheduler.scheduledPlans.length;
         await provider.execute(UpdateTaskIsDone(currentTask, true));

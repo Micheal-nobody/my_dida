@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_dida/model/entity/calendar_page_config.dart';
+import 'package:my_dida/features/calendar/models/calendar_page_config.dart';
 
 void main() {
   test('CalendarPageConfig 默认配置测试', () {

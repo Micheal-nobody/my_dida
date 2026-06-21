@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/constants/colors_constants.dart';
+import 'package:my_dida/core/constants/colors_constants.dart';
 
 import 'app_message_type.dart';
 

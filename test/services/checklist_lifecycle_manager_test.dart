@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/config/locator.dart';
+import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
-import 'package:my_dida/model/entity/checklist.dart';
-import 'package:my_dida/model/entity/habit.dart';
-import 'package:my_dida/model/entity/operation.dart';
-import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/repository/checklist_repository.dart';
-import 'package:my_dida/repository/task_repository.dart';
-import 'package:my_dida/services/checklist_lifecycle_manager.dart';
+import 'package:my_dida/features/checklist/models/checklist.dart';
+import 'package:my_dida/features/habits/models/habit.dart';
+import 'package:my_dida/features/operation_undo/models/operation.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
+import 'package:my_dida/features/tasks/repositories/task_repository.dart';
+import 'package:my_dida/features/checklist/services/checklist_lifecycle_manager.dart';
 
 class FakeAppMessageService extends AppMessageService {
   final List<String> successMessages = [];
@@ -138,12 +138,21 @@ void main() {
 
         // Create tasks associated with the deleted checklist and another checklist
         final taskRepo = getIt<TaskRepository>();
-        final task1 =
-            Task(name: 'Task 1', isAllDay: false, checklistId: deleteId);
-        final task2 =
-            Task(name: 'Task 2', isAllDay: false, checklistId: deleteId);
-        final taskOther =
-            Task(name: 'Task Other', isAllDay: false, checklistId: 999);
+        final task1 = Task(
+          name: 'Task 1',
+          isAllDay: false,
+          checklistId: deleteId,
+        );
+        final task2 = Task(
+          name: 'Task 2',
+          isAllDay: false,
+          checklistId: deleteId,
+        );
+        final taskOther = Task(
+          name: 'Task Other',
+          isAllDay: false,
+          checklistId: 999,
+        );
 
         await taskRepo.addData(task1);
         await taskRepo.addData(task2);

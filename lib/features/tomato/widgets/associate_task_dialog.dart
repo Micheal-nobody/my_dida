@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/features/dialogs/add_task_dialog.dart';
-import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/provider/task_provider.dart';
-import 'package:my_dida/provider/tomato_provider.dart';
+import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tasks/providers/task_provider.dart';
+import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
 import 'package:provider/provider.dart';
 
 class AssociateTaskDialog extends StatefulWidget {

@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
-import 'package:my_dida/model/vo/repeat_pattern.dart';
+import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 
-RepeatPattern mapSelectionToRepeatPattern(String selection, DateTime? baseDate) {
+RepeatPattern mapSelectionToRepeatPattern(
+  String selection,
+  DateTime? baseDate,
+) {
   if (selection == '无') return const RepeatPattern.none();
   if (selection == '每天') return const RepeatPattern.daily();
   if (selection.startsWith('每周')) {

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_dida/features/dialogs/calendar_visible_range_dialog.dart';
-import 'package:my_dida/model/entity/calendar_page_config.dart';
-import 'package:my_dida/model/vo/checklist_vo.dart';
-import 'package:my_dida/provider/calendar_page_provider.dart';
-import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/features/calendar/widgets/calendar_visible_range_dialog.dart';
+import 'package:my_dida/features/calendar/models/calendar_page_config.dart';
+import 'package:my_dida/features/checklist/models/checklist_vo.dart';
+import 'package:my_dida/features/calendar/providers/calendar_page_provider.dart';
+import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:provider/provider.dart';
 
 class FakeCalendarPageProvider extends ChangeNotifier
@@ -58,11 +58,7 @@ void main() {
     'CalendarVisibleRangeDialog cascade logic test with Fake Providers',
     (WidgetTester tester) async {
       final checklists = [
-        ChecklistVO(
-          id: 1,
-          name: '收集箱',
-          color: Colors.orange,
-        ),
+        ChecklistVO(id: 1, name: '收集箱', color: Colors.orange),
         ChecklistVO(id: 2, name: '工作', color: Colors.blue),
         ChecklistVO(id: 3, name: '生活', color: Colors.green),
       ];

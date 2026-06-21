@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  app-ci:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/app
+    environment:
+      - ENV=PROD

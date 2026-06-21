@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:my_dida/model/vo/repeat_pattern.dart';
+import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 
 import 'custom_repeat_picker.dart';
 import 'repeat_picker_utils.dart';
@@ -267,7 +267,10 @@ class _TimeSlotTabWidgetState extends State<TimeSlotTabWidget> {
           if (repeat == null) {
             return;
           }
-          final rrule = mapSelectionToRepeatPattern(repeat, _value.selectedDate);
+          final rrule = mapSelectionToRepeatPattern(
+            repeat,
+            _value.selectedDate,
+          );
           setState(() {
             _repeatSelection = repeat;
           });
