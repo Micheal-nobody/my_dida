@@ -157,7 +157,7 @@ class OperationHabitRenderer extends StatelessWidget {
           ),
 
           // 重复规则
-          if (habit.rrule != null && habit.rrule!.isNotEmpty) ...[
+          if (!habit.rrule.isNone) ...[
             const SizedBox(height: 8),
             Row(
               children: [

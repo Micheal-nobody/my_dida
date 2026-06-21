@@ -9,6 +9,7 @@ import 'package:my_dida/features/dialogs/habit_check_in_dialog.dart';
 import 'package:my_dida/features/task_detail/task_detail_page.dart';
 import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/model/vo/task_calendar_view_data.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:my_dida/provider/habit_provider.dart';
@@ -158,7 +159,7 @@ class _CalendarPageState extends State<CalendarPage> {
           for (final habit in allHabits) {
             var shouldShowToday = false;
 
-            if (habit.rrule != null && habit.rrule!.isNotEmpty) {
+            if (!habit.rrule.isNone) {
               final startTime = DateTime(
                 habit.startDate.year,
                 habit.startDate.month,
@@ -172,7 +173,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 'rrule_habit_processing',
                 () => RRuleUtil.getOccurrencesInRange(
                   startTime,
-                  habit.rrule!,
+                  habit.rrule.toRRuleString() ?? '',
                   rangeStart,
                   rangeEnd,
                 ),

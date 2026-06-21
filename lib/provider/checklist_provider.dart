@@ -45,14 +45,12 @@ class ChecklistProvider extends ChangeNotifier {
   //region 看起来不是很有用的convert
   Checklist convertToEntity(ChecklistVO vo) => Checklist(name: vo.name)
     ..id = vo.id
-    ..colorValue = vo.color.toARGB32()
-    ..taskIds = vo.taskIds;
+    ..colorValue = vo.color.toARGB32();
 
   ChecklistVO convertToVO(Checklist entity) => ChecklistVO(
     id: entity.id,
     name: entity.name,
     color: Color(entity.colorValue),
-    taskIds: entity.taskIds,
   );
 
   //endregion

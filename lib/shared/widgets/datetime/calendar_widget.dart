@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/shared/common/selection_row.dart';
 import 'package:my_dida/utils/RRuleUtil.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
@@ -20,7 +21,7 @@ class CalendarWidgetValue {
 
   final DateTime? selectedDate;
   final TimeOfDay? selectedTime;
-  final String? rrule;
+  final RepeatPattern rrule;
   final bool isTimeOnlyDate;
 
   CalendarWidgetValue copyWith({
@@ -35,7 +36,7 @@ class CalendarWidgetValue {
     selectedTime: identical(selectedTime, _sentinel)
         ? this.selectedTime
         : selectedTime as TimeOfDay?,
-    rrule: identical(rrule, _sentinel) ? this.rrule : rrule as String?,
+    rrule: identical(rrule, _sentinel) ? this.rrule : rrule as RepeatPattern,
     isTimeOnlyDate: isTimeOnlyDate ?? this.isTimeOnlyDate,
   );
 }
@@ -83,9 +84,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final String? displayRRule = _selectedRepeat != '无'
-        ? mapSelectionToRRule(_selectedRepeat, _value.selectedDate)
-        : null;
+    final RepeatPattern displayRRule = _selectedRepeat != '无'
+        ? mapSelectionToRepeatPattern(_selectedRepeat, _value.selectedDate)
+        : const RepeatPattern.none();
 
     return SingleChildScrollView(
       child: Column(
@@ -135,8 +136,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           SelectionRow(
             icon: Icons.repeat,
             label: '重复',
-            value: RRuleUtil.humanize(displayRRule ?? ''),
-            valueColor: displayRRule != null ? Colors.orange : null,
+            value: displayRRule.toReadableString(_value.selectedDate),
+            valueColor: !displayRRule.isNone ? Colors.orange : null,
             onTap: () async {
               final repeat = await CustomRepeatPicker.show(
                 context: context,
@@ -146,7 +147,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               if (repeat == null) {
                 return;
               }
-              final rrule = mapSelectionToRRule(repeat, _value.selectedDate);
+              final rrule = mapSelectionToRepeatPattern(repeat, _value.selectedDate);
               setState(() {
                 _selectedRepeat = repeat;
               });

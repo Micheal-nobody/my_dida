@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/model/entity/revertible_entity.dart';
 import 'package:my_dida/model/entity/check_point.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 
 part 'task.g.dart';
 
@@ -35,12 +36,16 @@ class Task extends RevertibleEntity {
     this.checklistId = 1,
 
     /// 重复规则默认为 null
-    this.rrule,
+    RepeatPattern? rrule,
     this.notificationEnabled = false,
     this.reminderOffsetMinutes,
     this.priority = TaskPriority.none,
     this.tags = const [],
-  });
+  }) {
+    if (rrule != null) {
+      this.rrule = rrule;
+    }
+  }
 
   String name;
   String description;
@@ -69,7 +74,15 @@ class Task extends RevertibleEntity {
   int? checklistId;
 
   /// 重复规则 (RRule)
-  String? rrule;
+  @Name('rrule')
+  String? rruleString;
+
+  @ignore
+  RepeatPattern get rrule => RepeatPattern.parse(rruleString);
+
+  set rrule(RepeatPattern pattern) {
+    rruleString = pattern.isNone ? null : pattern.toRRuleString();
+  }
 
   /// 是否启用任务提醒
   bool notificationEnabled;
@@ -88,7 +101,7 @@ class Task extends RevertibleEntity {
   // toString 方法
   @override
   String toString() =>
-      'Task{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints,isAllDay: $isAllDay, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, checklistId: $checklistId, rrule: $rrule, notificationEnabled: $notificationEnabled, reminderOffsetMinutes: $reminderOffsetMinutes, priority: $priority, tags: $tags}';
+      'Task{id: $id, name: $name, description: $description, isDone: $isDone, checkpoints: $checkpoints,isAllDay: $isAllDay, startTime: $startTime, endTime: $endTime, parentTaskId: $parentTaskId, subTaskIds: $subTaskIds, checklistId: $checklistId, rruleString: $rruleString, notificationEnabled: $notificationEnabled, reminderOffsetMinutes: $reminderOffsetMinutes, priority: $priority, tags: $tags}';
 
   /// 深度复制 Task 实例
   Task copyWith({
@@ -102,7 +115,7 @@ class Task extends RevertibleEntity {
     int? parentTaskId,
     List<int>? subTaskIds,
     int? checklistId,
-    String? rrule,
+    RepeatPattern? rrule,
     bool? notificationEnabled,
     int? reminderOffsetMinutes,
     TaskPriority? priority,
@@ -147,7 +160,7 @@ class Task extends RevertibleEntity {
       'parentTaskId': parentTaskId,
       'subTaskIds': subTaskIds,
       'checklistId': checklistId,
-      'rrule': rrule,
+      'rrule': rruleString,
       'notificationEnabled': notificationEnabled,
       'reminderOffsetMinutes': reminderOffsetMinutes,
       'priority': priority.index,
@@ -193,9 +206,11 @@ class Task extends RevertibleEntity {
           ? List<int>.from(json['subTaskIds'] as List)
           : const [],
       checklistId: json['checklistId'] as int? ?? 1,
-      rrule: json['rrule']?.toString().isEmpty == true
-          ? null
-          : json['rrule']?.toString(),
+      rrule: RepeatPattern.parse(
+        json['rrule']?.toString().isEmpty == true
+            ? null
+            : json['rrule']?.toString(),
+      ),
       notificationEnabled: json['notificationEnabled'] == true,
       reminderOffsetMinutes: json['reminderOffsetMinutes'] as int?,
       priority: json['priority'] != null

@@ -6,6 +6,7 @@ import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/provider/habit_provider.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
@@ -945,9 +946,11 @@ class _OperationPageState extends State<OperationPage> {
         name: data['name']?.toString() ?? '',
         description: data['description']?.toString() ?? '',
         isDone: data['isDone'] == true,
-        rrule: data['rrule']?.toString().isEmpty == true
-            ? null
-            : data['rrule']?.toString(),
+        rrule: RepeatPattern.parse(
+          data['rrule']?.toString().isEmpty == true
+              ? null
+              : data['rrule']?.toString(),
+        ),
         startTime: data['startTime'] != null
             ? DateTime.parse(data['startTime'])
             : null,
@@ -977,9 +980,11 @@ class _OperationPageState extends State<OperationPage> {
             : DateTime.now(),
         totalCheckInCount: data['totalCheckInCount'] ?? 0,
         longestContinuousCheckInDays: data['longestContinuousCheckInDays'] ?? 0,
-        rrule: data['rrule']?.toString().isEmpty == true
-            ? null
-            : data['rrule']?.toString(),
+        rrule: RepeatPattern.parse(
+          data['rrule']?.toString().isEmpty == true
+              ? null
+              : data['rrule']?.toString(),
+        ),
       )..id = data['id'] ?? 0;
     } catch (e) {
       return null;

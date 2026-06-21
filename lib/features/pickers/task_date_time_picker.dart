@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/provider/task_provider.dart';
 import 'package:my_dida/shared/widgets/datetime/custom_date_time_picker.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
@@ -137,10 +138,10 @@ class TaskTimeInfo {
     this.startDateTime,
     this.endDateTime,
     this.isAllDay = false,
-    this.rrule,
+    RepeatPattern? rrule,
     this.startDate,
     this.endDate,
-  });
+  }) : rrule = rrule ?? const RepeatPattern.none();
 
   /// 从 Task 对象创建 TaskTimeInfo
   factory TaskTimeInfo.fromTask(Task? task) {
@@ -206,7 +207,7 @@ class TaskTimeInfo {
   DateTime? startDateTime;
   DateTime? endDateTime;
   bool isAllDay;
-  String? rrule;
+  RepeatPattern rrule;
 
   // 独立的开始和结束日期（用于时间段模式）
   DateTime? startDate;
@@ -226,7 +227,7 @@ class TaskTimeInfo {
     startDateTime = null;
     endDateTime = null;
     isAllDay = false;
-    rrule = null;
+    rrule = const RepeatPattern.none();
     startDate = null;
     endDate = null;
   }

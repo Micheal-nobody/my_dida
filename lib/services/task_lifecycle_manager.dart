@@ -8,6 +8,7 @@ import 'package:my_dida/core/validators/task_validator.dart';
 import 'package:my_dida/model/entity/check_point.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/repository/task_repository.dart';
 import 'package:my_dida/services/task_reminder_service.dart';
@@ -40,7 +41,7 @@ abstract class TaskLifecycleManager {
     bool? isAllDay,
   });
   Future<void> clearTaskSchedule(Task task);
-  Future<void> updateRRule(Task task, String? rrule);
+  Future<void> updateRRule(Task task, RepeatPattern? rrule);
   Future<void> updateTaskReminder(
     Task task, {
     required bool enabled,
@@ -130,7 +131,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
 
       await _syncTaskReminder(task);
 
-      if (value && task.rrule != null && task.rrule!.isNotEmpty) {
+      if (value && !task.rrule.isNone) {
         await _createRecurringTask(task);
       }
     } catch (e) {
@@ -329,7 +330,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
           draft
             ..startTime = null
             ..endTime = null
-            ..rrule = null
+            ..rrule = const RepeatPattern.none()
             ..notificationEnabled = false
             ..reminderOffsetMinutes = null;
         },
@@ -342,12 +343,12 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   }
 
   @override
-  Future<void> updateRRule(Task task, String? rrule) async {
+  Future<void> updateRRule(Task task, RepeatPattern? rrule) async {
     try {
       TaskValidator.validateRRule(rrule);
       await _updateTaskHelper(
         task: task,
-        mutate: (draft) => draft.rrule = rrule,
+        mutate: (draft) => draft.rrule = rrule ?? const RepeatPattern.none(),
         description: '修改了任务"${task.name}"的重复规则',
         syncReminder: true,
       );
@@ -470,7 +471,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
     DateTime? endTime,
     int? parentTaskId,
     int? checklistId,
-    String? rrule,
+    RepeatPattern? rrule,
     bool notificationEnabled = false,
     int? reminderOffsetMinutes,
     TaskPriority priority = TaskPriority.none,
@@ -571,43 +572,10 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
       return;
     }
 
-    final occurrences = RRuleUtil.nextOccurrences(
-      start,
-      task.rrule!,
-      AppConstants.maxRecurrenceOccurrences,
-    );
-
-    final normalizedCurrent = DateTime(start.year, start.month, start.day);
-    DateTime? nextDay;
-    for (final occurrence in occurrences) {
-      if (occurrence.isAfter(normalizedCurrent)) {
-        nextDay = occurrence;
-        break;
-      }
-    }
-
-    if (nextDay == null && occurrences.isNotEmpty) {
-      final more = RRuleUtil.nextOccurrences(
-        start.add(const Duration(days: 1)),
-        task.rrule!,
-        1,
-      );
-      if (more.isNotEmpty) {
-        nextDay = more.first;
-      }
-    }
-
-    if (nextDay == null) {
+    final nextStart = task.rrule.nextOccurrenceAfter(start, start);
+    if (nextStart == null) {
       return;
     }
-
-    final nextStart = DateTime(
-      nextDay.year,
-      nextDay.month,
-      nextDay.day,
-      start.hour,
-      start.minute,
-    );
 
     final newRecurring = Task(
       name: task.name,

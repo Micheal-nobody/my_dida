@@ -36,12 +36,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Issue tracker
 
-Issues and PRDs for this repo live as GitHub issues. External PRs are not treated as a triage surface. See `docs/agents/issue-tracker.md`.
+本仓库的问题与产品需求文档均以GitHub工单形式管理。外部提交的合并请求不纳入工单分类处理范围。详情参见`docs/agents/issue-tracker.md`。
 
 ### Triage labels
 
-Use default triage label vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+使用标准工单分类标签体系（`needs-triage`待分类、`needs-info`需补充信息、`ready-for-agent`可交由自动化处理、`ready-for-human`需人工处理、`wontfix`不予修复）。详情参见`docs/agents/triage-labels.md`。
 
 ### Domain docs
 
-Use single-context documentation layout (global `CONTEXT.md` at root + `docs/adr/`). See `docs/agents/domain.md`.
+采用单一上下文文档架构（仓库根目录放置全局`CONTEXT.md`文件 + `docs/adr/`架构决策记录目录）。详情参见`docs/agents/domain.md`。

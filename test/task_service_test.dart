@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/model/vo/task_reminder_plan.dart';
 import 'package:my_dida/provider/task_provider.dart';
 import 'package:my_dida/services/task_reminder_scheduler_port.dart';
@@ -189,7 +190,7 @@ void main() {
 
         final reloaded = await harness.taskRepository.selectById(task.id);
         expect(reloaded?.startTime, isNull);
-        expect(reloaded?.rrule, isNull);
+        expect(reloaded?.rrule.isNone, isTrue);
         expect(reloaded?.notificationEnabled, isFalse);
         expect(reloaded?.reminderOffsetMinutes, isNull);
         expect(scheduler.canceledTaskIds, contains(task.id));
@@ -210,7 +211,7 @@ void main() {
             startTime: startTime,
             notificationEnabled: true,
             reminderOffsetMinutes: 10,
-            rrule: 'FREQ=DAILY',
+            rrule: RepeatPattern.parse('FREQ=DAILY'),
           ),
         );
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -151,7 +152,7 @@ class OperationTaskRenderer extends StatelessWidget {
         ],
 
         // 重复规则
-        if (task.rrule != null && task.rrule!.isNotEmpty) ...[
+        if (!task.rrule.isNone) ...[
           const SizedBox(height: 12),
           Row(
             children: [

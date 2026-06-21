@@ -1,7 +1,9 @@
+import 'package:isar_community/isar.dart';
 import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/core/errors/exceptions.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/model/entity/checklist.dart';
+import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/repository/checklist_repository.dart';
 
 abstract class ChecklistLifecycleManager {
@@ -53,7 +55,23 @@ class ChecklistLifecycleManagerImpl implements ChecklistLifecycleManager {
   @override
   Future<void> deleteChecklist(int id, {required String name}) async {
     try {
-      await _checklistRepository.deleteById(id);
+      final isar = getIt<Isar>();
+      await isar.writeTxn(() async {
+        // Find tasks referencing this checklistId
+        final affectedTasks = await isar.tasks
+            .where()
+            .checklistIdEqualTo(id)
+            .findAll();
+
+        // Reassign affected tasks to Inbox (ID = 1)
+        for (final task in affectedTasks) {
+          task.checklistId = 1;
+        }
+        await isar.tasks.putAll(affectedTasks);
+
+        // Delete the checklist itself
+        await isar.checklists.delete(id);
+      });
       _messageService.showSuccess('Deleted "$name"');
     } catch (e) {
       _messageService.showError('Error deleting: $e');

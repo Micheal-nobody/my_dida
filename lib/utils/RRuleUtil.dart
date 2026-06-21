@@ -1,5 +1,7 @@
 // No Flutter imports needed
 
+import 'package:my_dida/model/vo/repeat_pattern.dart';
+
 class RRuleUtil {
   // Cache for memorizing RRule calculations
   static final Map<String, List<DateTime>> _rruleCache = {};
@@ -36,6 +38,44 @@ class RRuleUtil {
     final normalizedRrule = rrule.toUpperCase().startsWith('FREQ=')
         ? 'RRULE:$rrule'
         : rrule;
+
+    if (normalizedRrule == 'CUSTOM:EBBINGHAUS') {
+      final cacheKey = _generateCacheKey(startTime, normalizedRrule, count);
+      if (_rruleCache.containsKey(cacheKey)) {
+        return _rruleCache[cacheKey]!;
+      }
+      _clearCacheIfNeeded();
+
+      final results = <DateTime>[];
+      final normalizedStart = DateTime(startTime.year, startTime.month, startTime.day);
+      const offsets = [1, 2, 4, 7, 15, 30];
+      for (final offset in offsets) {
+        results.add(normalizedStart.add(Duration(days: offset)));
+        if (results.length >= count) break;
+      }
+      _rruleCache[cacheKey] = results;
+      return results;
+    }
+
+    if (normalizedRrule == 'CUSTOM:WORKDAY') {
+      final cacheKey = _generateCacheKey(startTime, normalizedRrule, count);
+      if (_rruleCache.containsKey(cacheKey)) {
+        return _rruleCache[cacheKey]!;
+      }
+      _clearCacheIfNeeded();
+
+      final results = <DateTime>[];
+      DateTime cursor = DateTime(startTime.year, startTime.month, startTime.day);
+      while (results.length < count) {
+        if (cursor.weekday >= 1 && cursor.weekday <= 5) {
+          results.add(cursor);
+        }
+        cursor = cursor.add(const Duration(days: 1));
+      }
+      _rruleCache[cacheKey] = results;
+      return results;
+    }
+
     if (!normalizedRrule.startsWith('RRULE:')) return const [];
 
     // Check cache first
@@ -222,41 +262,7 @@ class RRuleUtil {
   }
 
   static String humanize(String rrule) {
-    final normalizedRrule = rrule.toUpperCase().startsWith('FREQ=')
-        ? 'RRULE:$rrule'
-        : rrule;
-    if (!normalizedRrule.startsWith('RRULE:')) return rrule;
-    final rule = normalizedRrule.replaceFirst('RRULE:', '');
-
-    final parts = <String, String>{};
-    for (final kv in rule.split(';')) {
-      if (kv.contains('=')) {
-        final pair = kv.split('=');
-        parts[pair[0]] = pair[1];
-      }
-    }
-    final freq = parts['FREQ'];
-    final interval = int.tryParse(parts['INTERVAL'] ?? '1') ?? 1;
-    switch (freq) {
-      case 'DAILY':
-        return interval == 1 ? '每天' : '每 $interval 天';
-      case 'WEEKLY':
-        final byday = (parts['BYDAY'] ?? '')
-            .split(',')
-            .where((e) => e.isNotEmpty)
-            .toList();
-        final cn = byday.map(_weekdayCodeToCN).join('、');
-        return interval == 1 ? '每周（$cn）' : '每 $interval 周（$cn）';
-      case 'MONTHLY':
-        final md = parts['BYMONTHDAY'];
-        return interval == 1 ? '每月（$md 日）' : '每 $interval 月（$md 日）';
-      case 'YEARLY':
-        final m = parts['BYMONTH'];
-        final d = parts['BYMONTHDAY'];
-        return interval == 1 ? '每年（$m 月 $d 日）' : '每 $interval 年（$m 月 $d 日）';
-      default:
-        return '自定义规则';
-    }
+    return RepeatPattern.parse(rrule).toReadableString(null);
   }
 
   static String _weekdayCodeToCN(String code) {

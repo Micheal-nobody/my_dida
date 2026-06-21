@@ -224,7 +224,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   onPressed: () {
                     setState(() {
                       _dateTimePickerValue = _dateTimePickerValue.copyWith(
-                        rrule: mapSelectionToRRule(tempRepeat, _dateTimePickerValue.selectedDate),
+                        rrule: mapSelectionToRepeatPattern(tempRepeat, _dateTimePickerValue.selectedDate),
                       );
                       _reminderOffsetMinutes = tempOffset;
                       _notificationEnabled = tempNotify;

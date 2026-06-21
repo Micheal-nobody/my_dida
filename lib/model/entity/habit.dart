@@ -1,5 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/model/entity/revertible_entity.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 
 part 'habit.g.dart';
 
@@ -15,11 +16,15 @@ class Habit extends RevertibleEntity {
     required this.startDate,
     required this.totalCheckInCount,
     required this.longestContinuousCheckInDays,
-    this.rrule,
+    RepeatPattern? rrule,
     this.isArchived = false,
     this.sortOrder = 0,
     this.isTodaySkipped = false,
-  });
+  }) {
+    if (rrule != null) {
+      this.rrule = rrule;
+    }
+  }
 
   String name;
   String icon; // 习惯对应的 Icon
@@ -33,7 +38,15 @@ class Habit extends RevertibleEntity {
   int longestContinuousCheckInDays; // 最长连续打卡天数
 
   /// 重复规则 (RRule)
-  String? rrule;
+  @Name('rrule')
+  String? rruleString;
+
+  @ignore
+  RepeatPattern get rrule => RepeatPattern.parse(rruleString);
+
+  set rrule(RepeatPattern pattern) {
+    rruleString = pattern.isNone ? null : pattern.toRRuleString();
+  }
 
   /// 是否归档
   bool isArchived;
@@ -56,7 +69,7 @@ class Habit extends RevertibleEntity {
       'startDate': startDate.toIso8601String(),
       'totalCheckInCount': totalCheckInCount,
       'longestContinuousCheckInDays': longestContinuousCheckInDays,
-      'rrule': rrule,
+      'rrule': rruleString,
       'isArchived': isArchived,
       'sortOrder': sortOrder,
       'isTodaySkipped': isTodaySkipped,
@@ -79,9 +92,11 @@ class Habit extends RevertibleEntity {
       totalCheckInCount: json['totalCheckInCount'] as int? ?? 0,
       longestContinuousCheckInDays:
           json['longestContinuousCheckInDays'] as int? ?? 0,
-      rrule: json['rrule']?.toString().isEmpty == true
-          ? null
-          : json['rrule']?.toString(),
+      rrule: RepeatPattern.parse(
+        json['rrule']?.toString().isEmpty == true
+            ? null
+            : json['rrule']?.toString(),
+      ),
       isArchived: json['isArchived'] as bool? ?? false,
       sortOrder: json['sortOrder'] as int? ?? 0,
       isTodaySkipped: json['isTodaySkipped'] as bool? ?? false,

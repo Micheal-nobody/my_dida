@@ -10,6 +10,7 @@ import '../core/errors/exceptions.dart';
 import '../core/validators/task_validator.dart';
 import '../model/entity/check_point.dart';
 import '../model/entity/task.dart';
+import '../model/vo/repeat_pattern.dart';
 import '../model/vo/task_calendar_view_data.dart';
 import '../provider/operation_stack_provider.dart';
 import '../repository/task_repository.dart';
@@ -422,7 +423,7 @@ class TaskProvider with ChangeNotifier {
     await _taskLifecycleManager.clearTaskSchedule(task);
   }
 
-  Future<void> updateRRule(Task task, String? rrule) async {
+  Future<void> updateRRule(Task task, RepeatPattern? rrule) async {
     await _taskLifecycleManager.updateRRule(task, rrule);
   }
 

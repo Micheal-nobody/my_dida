@@ -62,10 +62,9 @@ void main() {
           id: 1,
           name: '收集箱',
           color: Colors.orange,
-          taskIds: const [],
         ),
-        ChecklistVO(id: 2, name: '工作', color: Colors.blue, taskIds: const []),
-        ChecklistVO(id: 3, name: '生活', color: Colors.green, taskIds: const []),
+        ChecklistVO(id: 2, name: '工作', color: Colors.blue),
+        ChecklistVO(id: 3, name: '生活', color: Colors.green),
       ];
 
       final fakeChecklistProvider = FakeChecklistProvider(

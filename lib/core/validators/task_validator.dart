@@ -1,3 +1,4 @@
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 import '../errors/exceptions.dart';
 
 /// Validator for task-related operations
@@ -52,11 +53,15 @@ class TaskValidator {
   }
 
   /// Validates RRule string
-  static void validateRRule(String? rrule) {
-    if (rrule != null && rrule.isNotEmpty) {
-      // Basic validation - should start with FREQ=
-      if (!rrule.toUpperCase().startsWith('FREQ=')) {
-        throw const ValidationException('Invalid RRule format');
+  static void validateRRule(RepeatPattern? rrule) {
+    if (rrule != null && !rrule.isNone) {
+      final rruleStr = rrule.toRRuleString();
+      if (rruleStr != null && !rruleStr.startsWith('CUSTOM:')) {
+        // Basic validation - should start with RRULE:FREQ= or FREQ=
+        final clean = rruleStr.replaceFirst('RRULE:', '');
+        if (!clean.toUpperCase().startsWith('FREQ=')) {
+          throw const ValidationException('Invalid RRule format');
+        }
       }
     }
   }

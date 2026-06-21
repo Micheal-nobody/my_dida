@@ -8,6 +8,7 @@ import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/repository/checklist_repository.dart';
+import 'package:my_dida/repository/task_repository.dart';
 import 'package:my_dida/services/checklist_lifecycle_manager.dart';
 
 class FakeAppMessageService extends AppMessageService {
@@ -49,6 +50,7 @@ void main() {
 
     checklistRepository = ChecklistRepository();
     getIt.registerSingleton<ChecklistRepository>(checklistRepository);
+    getIt.registerSingleton<TaskRepository>(TaskRepository());
 
     lifecycleManager = ChecklistLifecycleManagerImpl(
       checklistRepository: checklistRepository,
@@ -121,5 +123,48 @@ void main() {
       expect(checklists.isEmpty, isTrue);
       expect(messageService.successMessages, contains('Deleted "To Delete"'));
     });
+
+    test(
+      'deleteChecklist reassigns its tasks to inbox (ID=1) and deletes checklist',
+      () async {
+        // Create a checklist to delete
+        final checklist = Checklist(name: 'To Delete', colorValue: 0x00FF00);
+        await checklistRepository.addData(checklist);
+        final deleteId = checklist.id;
+
+        // Ensure Inbox checklist (ID = 1) exists in the database
+        final inboxChecklist = Checklist(name: '收集箱')..id = 1;
+        await checklistRepository.addData(inboxChecklist);
+
+        // Create tasks associated with the deleted checklist and another checklist
+        final taskRepo = getIt<TaskRepository>();
+        final task1 =
+            Task(name: 'Task 1', isAllDay: false, checklistId: deleteId);
+        final task2 =
+            Task(name: 'Task 2', isAllDay: false, checklistId: deleteId);
+        final taskOther =
+            Task(name: 'Task Other', isAllDay: false, checklistId: 999);
+
+        await taskRepo.addData(task1);
+        await taskRepo.addData(task2);
+        await taskRepo.addData(taskOther);
+
+        // Delete the checklist
+        await lifecycleManager.deleteChecklist(deleteId, name: 'To Delete');
+
+        // Verify the checklist is gone
+        final checklists = await checklistRepository.getAllData();
+        expect(checklists.any((c) => c.id == deleteId), isFalse);
+
+        // Verify task reassignment
+        final updatedTask1 = await taskRepo.selectById(task1.id);
+        final updatedTask2 = await taskRepo.selectById(task2.id);
+        final updatedTaskOther = await taskRepo.selectById(taskOther.id);
+
+        expect(updatedTask1?.checklistId, equals(1));
+        expect(updatedTask2?.checklistId, equals(1));
+        expect(updatedTaskOther?.checklistId, equals(999));
+      },
+    );
   });
 }

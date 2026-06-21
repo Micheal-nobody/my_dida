@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/utils/TimeUtils.dart';
 
 import 'calendar_widget.dart';
@@ -12,7 +13,7 @@ class CustomDateTimePickerValue {
     this.startDate,
     this.endDate,
     this.isAllDay = false,
-    this.rrule,
+    this.rrule = const RepeatPattern.none(),
     this.isTimeOnlyDate = false,
   });
 
@@ -29,7 +30,7 @@ class CustomDateTimePickerValue {
   final DateTime? startDate;
   final DateTime? endDate;
   final bool isAllDay;
-  final String? rrule;
+  final RepeatPattern rrule;
   final bool isTimeOnlyDate;
 
   CustomDateTimePickerValue copyWith({
@@ -58,7 +59,7 @@ class CustomDateTimePickerValue {
         ? this.endDate
         : endDate as DateTime?,
     isAllDay: isAllDay ?? this.isAllDay,
-    rrule: identical(rrule, _sentinel) ? this.rrule : rrule as String?,
+    rrule: identical(rrule, _sentinel) ? this.rrule : rrule as RepeatPattern,
     isTimeOnlyDate: isTimeOnlyDate ?? this.isTimeOnlyDate,
   );
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/services/habit_lifecycle_manager.dart';
 import 'package:my_dida/model/entity/habit_check_in_record.dart';
 import 'package:my_dida/repository/habit_check_in_record_repository.dart';
@@ -77,9 +78,8 @@ class HabitProvider with ChangeNotifier {
         if (hour >= 5 && hour < 18) return false;
       }
 
-      // 3. 频次过滤 (简易判定：包含 WEEKLY 判定为每周，其它为每日)
-      final isWeekly =
-          habit.rrule != null && habit.rrule!.toUpperCase().contains('WEEKLY');
+      // 3. 频次过滤
+      final isWeekly = habit.rrule.type == RepeatType.weekly;
       if (_frequencyFilter == HabitFrequencyFilter.daily && isWeekly) {
         return false;
       } else if (_frequencyFilter == HabitFrequencyFilter.weekly && !isWeekly) {

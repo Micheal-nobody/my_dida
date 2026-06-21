@@ -1,5 +1,6 @@
 import '../constants/app_constants.dart';
 import '../model/entity/task.dart';
+import '../model/vo/repeat_pattern.dart';
 import '../model/vo/task_calendar_view_data.dart';
 import '../utils/RRuleUtil.dart';
 
@@ -46,7 +47,7 @@ class TaskCalendarProjectionService {
         final normalizedDate = DateTime(date.year, date.month, date.day);
         final futureTasks =
             tasks.where((task) {
-              if (task.rrule != null && task.rrule!.isNotEmpty) {
+              if (!task.rrule.isNone) {
                 return false;
               }
               if (task.startTime == null || task.isDone) {
@@ -87,7 +88,7 @@ class TaskCalendarProjectionService {
     required int limit,
   }) {
     final baseTasksForDate = tasks.where((task) {
-      if (task.rrule != null && task.rrule!.isNotEmpty) {
+      if (!task.rrule.isNone) {
         return false;
       }
       if (task.startTime == null) {
@@ -103,13 +104,13 @@ class TaskCalendarProjectionService {
 
     final rruleTasksForDate = <Task>[];
     for (final task in tasks) {
-      if (task.rrule == null || task.rrule!.isEmpty || task.startTime == null) {
+      if (task.rrule.isNone || task.startTime == null) {
         continue;
       }
 
       final occurrences = RRuleUtil.getOccurrencesInRange(
         task.startTime!,
-        task.rrule!,
+        task.rrule.toRRuleString() ?? '',
         normalizedDate,
         normalizedDate.add(const Duration(days: 1)),
       );
@@ -141,7 +142,7 @@ class TaskCalendarProjectionService {
         combined
             .where(
               (task) =>
-                  (task.rrule == null || task.rrule!.isEmpty) && !task.isAllDay,
+                  task.rrule.isNone && !task.isAllDay,
             )
             .toList()
           ..sort(
@@ -154,8 +155,7 @@ class TaskCalendarProjectionService {
         combined
             .where(
               (task) =>
-                  task.rrule != null &&
-                  task.rrule!.isNotEmpty &&
+                  !task.rrule.isNone &&
                   !task.isAllDay,
             )
             .toList()

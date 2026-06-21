@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/services/task_calendar_projection_service.dart';
 
 void main() {
@@ -18,7 +19,7 @@ void main() {
           isAllDay: false,
           startTime: baseDate.add(Duration(minutes: index)),
           checklistId: 1,
-          rrule: 'FREQ=DAILY',
+          rrule: RepeatPattern.parse('FREQ=DAILY'),
         )..id = index + 1;
         return task;
       });

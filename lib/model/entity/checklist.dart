@@ -11,11 +11,9 @@ class Checklist extends BaseEntity {
   Checklist({
     required this.name,
     this.colorValue = 0xFFFF9800,
-    this.taskIds = const [],
   });
 
   @Index()
   String name;
   int colorValue; // 任务列表的颜色
-  List<Id> taskIds;
 }

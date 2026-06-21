@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:my_dida/model/vo/repeat_pattern.dart';
 
 import 'custom_repeat_picker.dart';
 import 'repeat_picker_utils.dart';
@@ -23,7 +24,7 @@ class TimeSlotTabValue {
   final DateTime? startDate;
   final DateTime? endDate;
   final bool isAllDay;
-  final String? rrule;
+  final RepeatPattern rrule;
 
   TimeSlotTabValue copyWith({
     Object? selectedDate = _sentinel,
@@ -50,7 +51,7 @@ class TimeSlotTabValue {
         ? this.endDate
         : endDate as DateTime?,
     isAllDay: isAllDay ?? this.isAllDay,
-    rrule: identical(rrule, _sentinel) ? this.rrule : rrule as String?,
+    rrule: identical(rrule, _sentinel) ? this.rrule : rrule as RepeatPattern,
   );
 }
 
@@ -266,7 +267,7 @@ class _TimeSlotTabWidgetState extends State<TimeSlotTabWidget> {
           if (repeat == null) {
             return;
           }
-          final rrule = mapSelectionToRRule(repeat, _value.selectedDate);
+          final rrule = mapSelectionToRepeatPattern(repeat, _value.selectedDate);
           setState(() {
             _repeatSelection = repeat;
           });
