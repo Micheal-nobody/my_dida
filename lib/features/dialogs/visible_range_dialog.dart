@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:my_dida/provider/task_provider.dart';
+import 'package:my_dida/shared/widgets/base_bottom_sheet_layout.dart';
 
 class VisibleRangeDialog extends StatelessWidget {
   const VisibleRangeDialog({super.key});
@@ -20,18 +21,11 @@ class VisibleRangeDialog extends StatelessWidget {
     final taskProvider = Provider.of<TaskProvider>(context);
     final currentRange = taskProvider.visibleRange;
 
-    return SafeArea(
+    return BaseBottomSheetLayout(
+      title: '可见范围',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Text(
-              '可见范围',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.select_all, color: Colors.orange),
             title: const Text('全部显示'),

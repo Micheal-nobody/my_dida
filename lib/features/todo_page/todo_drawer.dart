@@ -299,39 +299,42 @@ class _TodoDrawerState extends State<TodoDrawer> {
     final List<Widget> listTiles = [];
 
     // 今天 (id = -1)
-    final todayCount = counts[-1] ?? 0;
-    if (_shouldShowSmartList(-1, config.todayShowOption, todayCount)) {
+    final todayId = AppConstants.todayCheckList.id;
+    final todayCount = counts[todayId] ?? 0;
+    if (_shouldShowSmartList(todayId, config.todayShowOption, todayCount)) {
       listTiles.add(
         _buildStaticChecklistTile(
           icon: Icons.calendar_today_rounded,
           iconColor: Colors.blue,
           title: '今天',
           count: todayCount,
-          selected: currentChecklist.id == AppConstants.todayCheckList.id,
+          selected: currentChecklist.isToday,
           onTap: () => _switchChecklist(AppConstants.todayCheckList),
         ),
       );
     }
 
     // 明天 (id = -2)
-    final tomorrowCount = counts[-2] ?? 0;
-    if (_shouldShowSmartList(-2, config.tomorrowShowOption, tomorrowCount)) {
+    final tomorrowId = AppConstants.tomorrowCheckList.id;
+    final tomorrowCount = counts[tomorrowId] ?? 0;
+    if (_shouldShowSmartList(tomorrowId, config.tomorrowShowOption, tomorrowCount)) {
       listTiles.add(
         _buildStaticChecklistTile(
           icon: Icons.wb_sunny_outlined,
           iconColor: Colors.orange,
           title: '明天',
           count: tomorrowCount,
-          selected: currentChecklist.id == AppConstants.tomorrowCheckList.id,
+          selected: currentChecklist.isTomorrow,
           onTap: () => _switchChecklist(AppConstants.tomorrowCheckList),
         ),
       );
     }
 
     // 最近七天 (id = -3)
-    final nextSevenDaysCount = counts[-3] ?? 0;
+    final nextSevenDaysId = AppConstants.nextSevenDaysCheckList.id;
+    final nextSevenDaysCount = counts[nextSevenDaysId] ?? 0;
     if (_shouldShowSmartList(
-      -3,
+      nextSevenDaysId,
       config.nextSevenDaysShowOption,
       nextSevenDaysCount,
     )) {
@@ -341,68 +344,71 @@ class _TodoDrawerState extends State<TodoDrawer> {
           iconColor: Colors.purple,
           title: '最近七天',
           count: nextSevenDaysCount,
-          selected:
-              currentChecklist.id == AppConstants.nextSevenDaysCheckList.id,
+          selected: currentChecklist.isNextSevenDays,
           onTap: () => _switchChecklist(AppConstants.nextSevenDaysCheckList),
         ),
       );
     }
 
     // 收集箱 (id = 1)
-    final inboxCount = counts[1] ?? 0;
-    if (_shouldShowSmartList(1, config.inboxShowOption, inboxCount)) {
+    final inboxId = AppConstants.defaultCheckList.id;
+    final inboxCount = counts[inboxId] ?? 0;
+    if (_shouldShowSmartList(inboxId, config.inboxShowOption, inboxCount)) {
       listTiles.add(
         _buildStaticChecklistTile(
           icon: Icons.inbox_rounded,
           iconColor: Colors.deepOrange,
           title: '收集箱',
           count: inboxCount,
-          selected: currentChecklist.id == AppConstants.defaultCheckList.id,
+          selected: currentChecklist.isInbox,
           onTap: () => _switchChecklist(AppConstants.defaultCheckList),
         ),
       );
     }
 
     // 所有 (id = -4)
-    final allCount = counts[-4] ?? 0;
-    if (_shouldShowSmartList(-4, config.allShowOption, allCount)) {
+    final allId = AppConstants.allCheckList.id;
+    final allCount = counts[allId] ?? 0;
+    if (_shouldShowSmartList(allId, config.allShowOption, allCount)) {
       listTiles.add(
         _buildStaticChecklistTile(
           icon: Icons.all_inbox_rounded,
           iconColor: Colors.teal,
           title: '所有',
           count: allCount,
-          selected: currentChecklist.id == AppConstants.allCheckList.id,
+          selected: currentChecklist.isAll,
           onTap: () => _switchChecklist(AppConstants.allCheckList),
         ),
       );
     }
 
     // 已完成 (id = -5)
-    final completedCount = counts[-5] ?? 0;
-    if (_shouldShowSmartList(-5, config.completedShowOption, completedCount)) {
+    final completedId = AppConstants.completedCheckList.id;
+    final completedCount = counts[completedId] ?? 0;
+    if (_shouldShowSmartList(completedId, config.completedShowOption, completedCount)) {
       listTiles.add(
         _buildStaticChecklistTile(
           icon: Icons.check_circle_outline_rounded,
           iconColor: Colors.green,
           title: '已完成',
           count: completedCount,
-          selected: currentChecklist.id == AppConstants.completedCheckList.id,
+          selected: currentChecklist.isCompleted,
           onTap: () => _switchChecklist(AppConstants.completedCheckList),
         ),
       );
     }
 
     // 垃圾桶 (id = -6)
-    final trashCount = counts[-6] ?? 0;
-    if (_shouldShowSmartList(-6, config.trashShowOption, trashCount)) {
+    final trashId = AppConstants.trashCheckList.id;
+    final trashCount = counts[trashId] ?? 0;
+    if (_shouldShowSmartList(trashId, config.trashShowOption, trashCount)) {
       listTiles.add(
         _buildStaticChecklistTile(
           icon: Icons.delete_outline_rounded,
           iconColor: Colors.red,
           title: '垃圾桶',
           count: trashCount,
-          selected: currentChecklist.id == AppConstants.trashCheckList.id,
+          selected: currentChecklist.isTrash,
           onTap: () => _switchChecklist(AppConstants.trashCheckList),
         ),
       );
@@ -410,7 +416,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
 
     // 四象限
     if (config.showFourQuadrants == true) {
-      final fourQuadrantsCount = counts[-4] ?? 0;
+      final fourQuadrantsCount = counts[allId] ?? 0;
       listTiles.add(
         _buildStaticChecklistTile(
           icon: Icons.grid_view_rounded,

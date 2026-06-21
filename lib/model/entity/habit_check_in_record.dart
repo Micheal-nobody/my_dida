@@ -19,6 +19,25 @@ class HabitCheckInRecord extends BaseEntity {
 
   bool isSkip;
 
+  Map<String, dynamic> toJson() => {
+        'id': id == Isar.autoIncrement ? null : id,
+        'habitId': habitId,
+        'checkInTime': checkInTime.toIso8601String(),
+        'isSkip': isSkip,
+      };
+
+  static HabitCheckInRecord fromJson(Map<String, dynamic> json) {
+    final record = HabitCheckInRecord(
+      habitId: json['habitId'] as int,
+      checkInTime: DateTime.parse(json['checkInTime'] as String),
+      isSkip: json['isSkip'] as bool? ?? false,
+    );
+    if (json['id'] != null) {
+      record.id = json['id'] as int;
+    }
+    return record;
+  }
+
   @override
   String toString() =>
       'HabitCheckInRecord{id: $id, habitId: $habitId, checkInTime: $checkInTime, isSkip: $isSkip}';

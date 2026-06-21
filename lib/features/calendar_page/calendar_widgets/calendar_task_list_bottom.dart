@@ -90,7 +90,7 @@ class CalendarTaskListBottom extends StatelessWidget {
                         allChecklists,
                       ),
                       onToggleDone: (value) {
-                        taskProvider.updateTaskIsDone(task, value!);
+                        taskProvider.execute(UpdateTaskIsDone(task, value!));
                       },
                       onTap: () {
                         TaskDetailPage.show(context, task);

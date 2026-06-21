@@ -154,7 +154,7 @@ class BoardView extends StatelessWidget {
                                 task.checklistId,
                               ),
                               onToggleDone: (value) {
-                                taskProvider.updateTaskIsDone(task, value!);
+                                taskProvider.execute(UpdateTaskIsDone(task, value!));
                               },
                               onTap: () {
                                 TaskDetailPage.show(context, task);
@@ -269,16 +269,16 @@ class BoardView extends StatelessWidget {
         orElse: () => allChecklists.first,
       );
       if (task.checklistId != targetChecklist.id) {
-        await taskProvider.updateChecklist(task, targetChecklist.id);
+        await taskProvider.execute(UpdateChecklist(task, targetChecklist.id));
       }
     } else if (groupBy == TaskGroupBy.tag) {
       if (columnTitle == '无标签') {
         if (task.tags.isNotEmpty) {
-          await taskProvider.updateTags(task, []);
+          await taskProvider.execute(UpdateTags(task, []));
         }
       } else {
         if (!task.tags.contains(columnTitle)) {
-          await taskProvider.updateTags(task, [columnTitle]);
+          await taskProvider.execute(UpdateTags(task, [columnTitle]));
         }
       }
     } else if (groupBy == TaskGroupBy.date) {

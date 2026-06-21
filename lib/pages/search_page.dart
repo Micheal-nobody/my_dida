@@ -549,7 +549,7 @@ class _SearchPageState extends State<SearchPage> {
                                 context,
                                 listen: false,
                               );
-                              await taskProvider.updateTaskIsDone(task, value);
+                              await taskProvider.execute(UpdateTaskIsDone(task, value));
                               _performSearch(query);
                             }
                           },

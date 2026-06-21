@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/utils/time_formatter.dart';
 import 'package:provider/provider.dart';
 
 /// 用于在操作详情中渲染Task的组件
@@ -193,26 +194,12 @@ class OperationTaskRenderer extends StatelessWidget {
 
   String _formatTimeInfo() {
     if (task.startTime != null && task.endTime != null) {
-      return '${_formatDateTime(task.startTime!)} - ${_formatDateTime(task.endTime!)}';
+      return '${TimeFormatter.formatTaskDate(task.startTime!)} - ${TimeFormatter.formatTaskDate(task.endTime!)}';
     } else if (task.startTime != null) {
-      return '开始: ${_formatDateTime(task.startTime!)}';
+      return '开始: ${TimeFormatter.formatTaskDate(task.startTime!)}';
     } else if (task.endTime != null) {
-      return '结束: ${_formatDateTime(task.endTime!)}';
+      return '结束: ${TimeFormatter.formatTaskDate(task.endTime!)}';
     }
     return '';
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final tomorrow = today.add(const Duration(days: 1));
-
-    if (dateTime.isAtSameMomentAs(today)) {
-      return '今天 ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-    } else if (dateTime.isAtSameMomentAs(tomorrow)) {
-      return '明天 ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-    } else {
-      return '${dateTime.month}月${dateTime.day}日 ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-    }
   }
 }

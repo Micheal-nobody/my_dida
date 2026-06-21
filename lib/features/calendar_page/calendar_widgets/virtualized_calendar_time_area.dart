@@ -171,11 +171,11 @@ class _VirtualizedCalendarTimeAreaState
             context,
             listen: false,
           );
-          await taskProvider.updateStartTime(
+          await taskProvider.execute(UpdateStartTime(
             details.data,
             _dragPreviewTime,
             isAllDay: false,
-          );
+          ));
         }
         _clearDragPreview();
       },

@@ -16,6 +16,15 @@ class ChecklistVO {
   String name;
   Color color; // 任务列表的颜色
 
+  bool get isSmartList => id < 0;
+  bool get isToday => id == -1;
+  bool get isTomorrow => id == -2;
+  bool get isNextSevenDays => id == -3;
+  bool get isAll => id == -4;
+  bool get isCompleted => id == -5;
+  bool get isTrash => id == -6;
+  bool get isInbox => id == 1;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

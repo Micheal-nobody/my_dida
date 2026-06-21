@@ -41,25 +41,25 @@ void main() {
       await Future.delayed(Duration.zero);
 
       expect(
-        () => provider.addTask(Task(name: '   ', isAllDay: false)),
+        () => provider.execute(AddTask(Task(name: '   ', isAllDay: false))),
         throwsA(isA<Exception>()),
       );
 
-      final parent = await provider.addTask(
-        Task(name: 'Parent', isAllDay: false, checklistId: 1),
-      );
+      final parent = await provider.execute(
+        AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
+      ) as Task;
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(provider.currentTasks, isNotEmpty);
 
-      final child = await provider.addTask(
-        Task(
+      final child = await provider.execute(
+        AddTask(Task(
           name: 'Child',
           isAllDay: false,
           parentTaskId: parent.id,
           checklistId: 1,
-        ),
-      );
+        )),
+      ) as Task;
 
       final reloadedParent = await harness.taskRepository.selectById(parent.id);
       expect(child.parentTaskId, parent.id);
@@ -70,16 +70,16 @@ void main() {
       final provider = harness.createProvider();
       final startTime = DateTime.now().add(const Duration(days: 2));
 
-      final task = await provider.addTask(
-        Task(
+      final task = await provider.execute(
+        AddTask(Task(
           name: 'Reminder',
           isAllDay: false,
           checklistId: 1,
           startTime: startTime,
           notificationEnabled: true,
           reminderOffsetMinutes: 30,
-        ),
-      );
+        )),
+      ) as Task;
 
       expect(task.notificationEnabled, isTrue);
       expect(task.reminderOffsetMinutes, 30);
@@ -94,19 +94,19 @@ void main() {
     test('deleteTask removes subtree and cleans parent reference', () async {
       final provider = harness.createProvider();
 
-      final parent = await provider.addTask(
-        Task(name: 'Parent', isAllDay: false, checklistId: 1),
-      );
-      final child = await provider.addTask(
-        Task(
+      final parent = await provider.execute(
+        AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
+      ) as Task;
+      final child = await provider.execute(
+        AddTask(Task(
           name: 'Child',
           isAllDay: false,
           parentTaskId: parent.id,
           checklistId: 1,
-        ),
-      );
+        )),
+      ) as Task;
 
-      await provider.deleteTask(child);
+      await provider.execute(DeleteTask(child));
 
       final reloadedParent = await harness.taskRepository.selectById(parent.id);
       final deletedChild = await harness.taskRepository.selectById(child.id);
@@ -118,19 +118,19 @@ void main() {
     test('copyTask copies nested subtasks', () async {
       final provider = harness.createProvider();
 
-      final parent = await provider.addTask(
-        Task(name: 'Parent', isAllDay: false, checklistId: 1),
-      );
-      await provider.addTask(
-        Task(
+      final parent = await provider.execute(
+        AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
+      ) as Task;
+      await provider.execute(
+        AddTask(Task(
           name: 'Child',
           isAllDay: false,
           parentTaskId: parent.id,
           checklistId: 1,
-        ),
+        )),
       );
 
-      await provider.copyTask(parent);
+      await provider.execute(CopyTask(parent));
 
       final allTasks = await harness.taskRepository.selectAll();
       final copiedParent = allTasks.firstWhere(
@@ -150,21 +150,22 @@ void main() {
         final provider = harness.createProvider();
         final startTime = DateTime.now().add(const Duration(days: 2));
 
-        final task = await provider.addTask(
-          Task(
+        final task = await provider.execute(
+          AddTask(Task(
             name: 'Reminder',
             isAllDay: false,
             checklistId: 1,
             startTime: startTime,
             notificationEnabled: true,
             reminderOffsetMinutes: 15,
-          ),
-        );
+          )),
+        ) as Task;
 
-        await provider.updateTaskReminder(task, enabled: false);
+        await provider.execute(UpdateTaskReminder(task, enabled: false));
 
-        expect(task.notificationEnabled, isFalse);
-        expect(task.reminderOffsetMinutes, isNull);
+        final reloaded = await harness.taskRepository.selectById(task.id);
+        expect(reloaded?.notificationEnabled, isFalse);
+        expect(reloaded?.reminderOffsetMinutes, isNull);
         expect(scheduler.canceledTaskIds, contains(task.id));
       },
     );
@@ -175,18 +176,18 @@ void main() {
         final provider = harness.createProvider();
         final startTime = DateTime.now().add(const Duration(days: 2));
 
-        final task = await provider.addTask(
-          Task(
+        final task = await provider.execute(
+          AddTask(Task(
             name: 'Scheduled',
             isAllDay: false,
             checklistId: 1,
             startTime: startTime,
             notificationEnabled: true,
             reminderOffsetMinutes: 20,
-          ),
-        );
+          )),
+        ) as Task;
 
-        await provider.clearTaskSchedule(task);
+        await provider.execute(ClearTaskSchedule(task));
 
         final reloaded = await harness.taskRepository.selectById(task.id);
         expect(reloaded?.startTime, isNull);
@@ -203,8 +204,8 @@ void main() {
         final provider = harness.createProvider();
         final startTime = DateTime.now().add(const Duration(days: 2));
 
-        final currentTask = await provider.addTask(
-          Task(
+        final currentTask = await provider.execute(
+          AddTask(Task(
             name: 'Recurring',
             isAllDay: false,
             checklistId: 1,
@@ -212,11 +213,11 @@ void main() {
             notificationEnabled: true,
             reminderOffsetMinutes: 10,
             rrule: RepeatPattern.parse('FREQ=DAILY'),
-          ),
-        );
+          )),
+        ) as Task;
 
         final initialScheduleCount = scheduler.scheduledPlans.length;
-        await provider.updateTaskIsDone(currentTask, true);
+        await provider.execute(UpdateTaskIsDone(currentTask, true));
 
         final allTasks = await harness.taskRepository.selectAll();
         final nextTask = allTasks

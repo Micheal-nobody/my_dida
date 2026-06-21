@@ -76,7 +76,7 @@ class _AssociateMainTaskDialogState extends State<AssociateMainTaskDialog> {
     if (_selectedTask == null) return;
 
     final taskProvider = context.read<TaskProvider>();
-    await taskProvider.associateMainTask(widget.currentTask, _selectedTask!);
+    await taskProvider.execute(AssociateMainTask(widget.currentTask, _selectedTask!));
 
     if (mounted) {
       Navigator.of(context).pop();

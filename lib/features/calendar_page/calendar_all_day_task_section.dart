@@ -151,11 +151,11 @@ class _CalendarAllDayTaskSectionState extends State<CalendarAllDayTaskSection> {
               targetDate.month,
               targetDate.day,
             );
-            await taskProvider.updateStartTime(
+            await taskProvider.execute(UpdateStartTime(
               details.data,
               newTime,
               isAllDay: true,
-            );
+            ));
           },
           onWillAcceptWithDetails: (details) => true,
           builder: (context, candidateData, rejectedData) {

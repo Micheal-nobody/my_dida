@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/provider/habit_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:my_dida/shared/widgets/base_bottom_sheet_layout.dart';
 
 class HabitVisibleRangeDialog extends StatefulWidget {
   const HabitVisibleRangeDialog({super.key});
@@ -36,32 +37,29 @@ class _HabitVisibleRangeDialogState extends State<HabitVisibleRangeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
+    return BaseBottomSheetLayout(
+      title: '显示范围',
+      onReset: () {
+        setState(() {
+          _tempStatus = HabitStatusFilter.all;
+          _tempTime = HabitTimeSlotFilter.all;
+          _tempFrequency = HabitFrequencyFilter.all;
+        });
+      },
+      onConfirm: () {
+        context.read<HabitProvider>().setFilters(
+          status: _tempStatus,
+          time: _tempTime,
+          frequency: _tempFrequency,
+        );
+        Navigator.of(context).pop();
+      },
+      confirmButtonColor: Colors.blue,
+      useFullWidthButtons: true,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '显示范围',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _tempStatus = HabitStatusFilter.all;
-                    _tempTime = HabitTimeSlotFilter.all;
-                    _tempFrequency = HabitFrequencyFilter.all;
-                  });
-                },
-                child: const Text('重置'),
-              ),
-            ],
-          ),
-          const Divider(),
           const Text(
             '打卡状态',
             style: TextStyle(fontSize: 14, color: Colors.grey),
@@ -138,51 +136,23 @@ class _HabitVisibleRangeDialogState extends State<HabitVisibleRangeDialog> {
                 label: '全部',
                 selected: _tempFrequency == HabitFrequencyFilter.all,
                 onSelected: () =>
-                    setState(() => _tempFrequency = HabitFrequencyFilter.all),
+                    setState(() => _tempFrequency == HabitFrequencyFilter.all),
               ),
               _buildFilterChip(
                 label: '每日',
                 selected: _tempFrequency == HabitFrequencyFilter.daily,
                 onSelected: () =>
-                    setState(() => _tempFrequency = HabitFrequencyFilter.daily),
+                    setState(() => _tempFrequency == HabitFrequencyFilter.daily),
               ),
               _buildFilterChip(
                 label: '每周',
                 selected: _tempFrequency == HabitFrequencyFilter.weekly,
                 onSelected: () =>
-                    setState(() => _tempFrequency = HabitFrequencyFilter.weekly),
+                    setState(() => _tempFrequency == HabitFrequencyFilter.weekly),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('取消'),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: () {
-                    context.read<HabitProvider>().setFilters(
-                      status: _tempStatus,
-                      time: _tempTime,
-                      frequency: _tempFrequency,
-                    );
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('确定'),
-                ),
-              ),
-            ],
-          ),
+          const SizedBox(height: 8),
         ],
       ),
     );

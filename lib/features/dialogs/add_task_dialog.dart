@@ -128,7 +128,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
 
     logger.i('newTask == $newTask');
 
-    await context.read<TaskProvider>().addTask(newTask);
+    await context.read<TaskProvider>().execute(AddTask(newTask));
 
     if (context.mounted) {
       Navigator.pop(context);
@@ -375,7 +375,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
 
   ChecklistVO _resolveInitialChecklist(ChecklistProvider provider) {
     final preferredChecklist =
-        provider.currentCheckList == AppConstants.todayCheckList
+        provider.currentCheckList.isSmartList
         ? AppConstants.defaultCheckList
         : provider.currentCheckList;
 
@@ -443,7 +443,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
 
     final selectedChecklist =
         _selectedChecklist ?? _resolveInitialChecklist(checklistProvider);
-    newTask.checklistId = selectedChecklist.id;
+    newTask.checklistId = selectedChecklist.isSmartList
+        ? AppConstants.defaultCheckList.id
+        : selectedChecklist.id;
     return newTask;
   }
 

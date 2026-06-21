@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/task.dart';
-import 'package:my_dida/utils/TimeUtils.dart';
+import 'package:my_dida/utils/time_formatter.dart';
 
 class TaskCard extends StatelessWidget {
   const TaskCard({
@@ -91,7 +91,7 @@ class TaskCard extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                _getDateString(task.startTime, now: now),
+                TimeFormatter.formatTaskDate(task.startTime, now: now),
                 style: const TextStyle(color: Colors.orange, fontSize: 12),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -111,35 +111,5 @@ class TaskCard extends StatelessWidget {
         onTap: onTap,
       ),
     );
-  }
-
-  // 辅助方法：获取日期字符串
-  static String _getDateString(DateTime? dateTime, {DateTime? now}) {
-    if (dateTime == null) return '';
-
-    final currentTime = now ?? DateTime.now();
-    final today = DateTime(
-      currentTime.year,
-      currentTime.month,
-      currentTime.day,
-    );
-    final tomorrow = today.add(const Duration(days: 1));
-
-    if (dateTime.isAtSameMomentAs(today)) {
-      if (dateTime.hasTime()) {
-        return '今天 ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-      }
-      return '今天';
-    } else if (dateTime.isAtSameMomentAs(tomorrow)) {
-      if (dateTime.hasTime()) {
-        return '明天 ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-      }
-      return '明天';
-    } else {
-      if (dateTime.hasTime()) {
-        return '${dateTime.month}月${dateTime.day}日 ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-      }
-      return '${dateTime.month}月${dateTime.day}日';
-    }
   }
 }

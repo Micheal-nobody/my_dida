@@ -143,14 +143,14 @@ class TaskTimeSection extends StatelessWidget {
     );
 
     if (result.rrule != task.rrule) {
-      await taskProvider.updateRRule(task, result.rrule);
+      await taskProvider.execute(UpdateRRule(task, result.rrule));
     }
-    await taskProvider.updateTimeRange(
+    await taskProvider.execute(UpdateTimeRange(
       task,
       newStartTime,
       newEndTime,
       isAllDay: result.isAllDay,
-    );
+    ));
   }
 
   DateTime? _buildDateTime({

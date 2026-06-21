@@ -159,7 +159,7 @@ class FourQuadrantsPage extends StatelessWidget {
         logger.i(
           'Dragged task "${task.name}" to quadrant with priority $priority',
         );
-        await taskProvider.updatePriority(task, priority);
+        await taskProvider.execute(UpdatePriority(task, priority));
       },
       builder: (context, candidateData, rejectedData) {
         final isOver = candidateData.isNotEmpty;
@@ -268,7 +268,7 @@ class FourQuadrantsPage extends StatelessWidget {
                               allChecklists,
                             ),
                             onToggleDone: (val) async {
-                              await taskProvider.updateTaskIsDone(task, val!);
+                              await taskProvider.execute(UpdateTaskIsDone(task, val!));
                             },
                             onTap: () => TaskDetailPage.show(context, task),
                           );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/habit.dart';
+import 'package:my_dida/utils/time_formatter.dart';
 
 /// 用于在操作详情中渲染Habit的组件
 class OperationHabitRenderer extends StatelessWidget {
@@ -137,7 +138,7 @@ class OperationHabitRenderer extends StatelessWidget {
               Icon(Icons.schedule, size: 16, color: Colors.grey[600]),
               const SizedBox(width: 8),
               Text(
-                '提醒时间: ${_formatTime(habit.remindTime)}',
+                '提醒时间: ${TimeFormatter.formatTimeOnly(habit.remindTime)}',
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
@@ -150,7 +151,7 @@ class OperationHabitRenderer extends StatelessWidget {
               Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
               const SizedBox(width: 8),
               Text(
-                '开始日期: ${_formatDate(habit.startDate)}',
+                '开始日期: ${TimeFormatter.formatFullDate(habit.startDate)}',
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
@@ -236,10 +237,4 @@ class OperationHabitRenderer extends StatelessWidget {
     if (progress >= 0.5) return '进行中';
     return '未开始';
   }
-
-  String _formatTime(DateTime time) =>
-      '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-
-  String _formatDate(DateTime date) =>
-      '${date.year}年${date.month}月${date.day}日';
 }

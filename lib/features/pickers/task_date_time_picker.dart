@@ -30,9 +30,9 @@ class TaskDateTimePicker {
     final endTime = timeInfo.getFinalEndTime();
 
     if (timeInfo.rrule != task.rrule) {
-      await taskProvider.updateRRule(task, timeInfo.rrule);
+      await taskProvider.execute(UpdateRRule(task, timeInfo.rrule));
     }
-    await taskProvider.updateTimeRange(task, startTime, endTime);
+    await taskProvider.execute(UpdateTimeRange(task, startTime, endTime));
     onUpdated?.call();
   }
 

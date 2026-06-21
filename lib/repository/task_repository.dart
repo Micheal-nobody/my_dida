@@ -203,81 +203,67 @@ class TaskRepository extends BaseRepository<Task> {
     return collection.where().watch(fireImmediately: true);
   }
 
+  Future<int> getTasksCount({
+    DateTime? start,
+    DateTime? end,
+    bool? isDone,
+    int? checklistId,
+  }) async {
+    QueryBuilder<Task, Task, QAfterFilterCondition> query = collection.where().filter().idGreaterThan(0);
+    if (isDone != null) {
+      query = query.isDoneEqualTo(isDone);
+    }
+    if (checklistId != null) {
+      query = query.checklistIdEqualTo(checklistId);
+    }
+    if (start != null && end != null) {
+      query = query.group(
+        (q) => q.startTimeBetween(start, end).or().endTimeBetween(start, end),
+      );
+    }
+    return query.count();
+  }
+
   Future<int> getTodayTasksCount() async {
     final todayRange = DateTimeUtils.getTodayRange();
-    return collection
-        .where()
-        .filter()
-        .isDoneEqualTo(false)
-        .and()
-        .group(
-          (q) => q
-              .startTimeBetween(todayRange.start, todayRange.end)
-              .or()
-              .endTimeBetween(todayRange.start, todayRange.end),
-        )
-        .count();
+    return getTasksCount(
+      start: todayRange.start,
+      end: todayRange.end,
+      isDone: false,
+    );
   }
 
   Future<int> getTomorrowTasksCount() async {
     final tomorrow = DateTime.now().add(const Duration(days: 1));
     final tomorrowRange = DateTimeUtils.getDateRange(tomorrow, tomorrow);
-    return collection
-        .where()
-        .filter()
-        .isDoneEqualTo(false)
-        .and()
-        .group(
-          (q) => q
-              .startTimeBetween(tomorrowRange.start, tomorrowRange.end)
-              .or()
-              .endTimeBetween(tomorrowRange.start, tomorrowRange.end),
-        )
-        .count();
+    return getTasksCount(
+      start: tomorrowRange.start,
+      end: tomorrowRange.end,
+      isDone: false,
+    );
   }
 
   Future<int> getNext7DaysTasksCount() async {
     final now = DateTime.now();
     final end = now.add(const Duration(days: 6));
     final range = DateTimeUtils.getDateRange(now, end);
-    return collection
-        .where()
-        .filter()
-        .isDoneEqualTo(false)
-        .and()
-        .group(
-          (q) => q
-              .startTimeBetween(range.start, range.end)
-              .or()
-              .endTimeBetween(range.start, range.end),
-        )
-        .count();
+    return getTasksCount(
+      start: range.start,
+      end: range.end,
+      isDone: false,
+    );
   }
 
   Future<int> getInboxTasksCount() async {
-    return collection
-        .where()
-        .filter()
-        .checklistIdEqualTo(1)
-        .and()
-        .isDoneEqualTo(false)
-        .count();
+    return getTasksCount(checklistId: 1, isDone: false);
   }
 
   Future<int> getAllIncompleteTasksCount() async {
-    return collection
-        .where()
-        .filter()
-        .isDoneEqualTo(false)
-        .count();
+    return getTasksCount(isDone: false);
   }
 
   Future<int> getAllCompletedTasksCount() async {
-    return collection
-        .where()
-        .filter()
-        .isDoneEqualTo(true)
-        .count();
+    return getTasksCount(isDone: true);
   }
 
   Future<int> getTrashTasksCount() async {

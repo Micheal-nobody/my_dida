@@ -8,6 +8,7 @@ import 'package:my_dida/core/validators/task_validator.dart';
 import 'package:my_dida/model/entity/check_point.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/task.dart';
+import 'package:my_dida/model/domain/task_operation.dart';
 import 'package:my_dida/model/vo/repeat_pattern.dart';
 import 'package:my_dida/provider/operation_stack_provider.dart';
 import 'package:my_dida/repository/task_repository.dart';
@@ -15,6 +16,7 @@ import 'package:my_dida/services/task_reminder_service.dart';
 import 'package:my_dida/utils/RRuleUtil.dart';
 
 abstract class TaskLifecycleManager {
+  Future<dynamic> execute(TaskOperation op);
   Future<Task> addTask(Task newTask);
   Future<void> updateTaskIsDone(Task task, bool value);
   Future<void> updatePriority(Task task, TaskPriority newPriority);
@@ -67,6 +69,59 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   final TaskRepository _taskRepository;
   final TaskReminderService _taskReminderService;
   final OperationStackProvider _operationStack;
+
+  @override
+  Future<dynamic> execute(TaskOperation op) async {
+    if (op is AddTask) {
+      return await addTask(op.task);
+    } else if (op is UpdateTaskIsDone) {
+      await updateTaskIsDone(op.task, op.value);
+    } else if (op is UpdatePriority) {
+      await updatePriority(op.task, op.newPriority);
+    } else if (op is UpdateTags) {
+      await updateTags(op.task, op.newTags);
+    } else if (op is UpdateTitle) {
+      await updateTitle(op.task, op.newTitle);
+    } else if (op is UpdateDescription) {
+      await updateDescription(op.task, op.newDesc);
+    } else if (op is ToggleCheckpoint) {
+      await toggleCheckpoint(op.task, op.index, op.value);
+    } else if (op is RenameCheckpoint) {
+      await renameCheckpoint(op.task, op.index, op.newName);
+    } else if (op is AddCheckpoint) {
+      await addCheckpoint(op.task);
+    } else if (op is RemoveCheckpoint) {
+      await removeCheckpoint(op.task, op.index);
+    } else if (op is CreateSubTask) {
+      return await createSubTask(op.task, name: op.name);
+    } else if (op is DeleteSubTask) {
+      await deleteSubTask(op.task, op.subTaskId);
+    } else if (op is UpdateChecklist) {
+      await updateChecklist(op.task, op.newChecklistId);
+    } else if (op is UpdateStartTime) {
+      await updateStartTime(op.task, op.newStartTime, isAllDay: op.isAllDay);
+    } else if (op is UpdateEndTime) {
+      await updateEndTime(op.task, op.newEndTime, isAllDay: op.isAllDay);
+    } else if (op is UpdateTimeRange) {
+      await updateTimeRange(op.task, op.newStartTime, op.newEndTime, isAllDay: op.isAllDay);
+    } else if (op is ClearTaskSchedule) {
+      await clearTaskSchedule(op.task);
+    } else if (op is UpdateRRule) {
+      await updateRRule(op.task, op.rrule);
+    } else if (op is UpdateTaskReminder) {
+      await updateTaskReminder(op.task, enabled: op.enabled, offsetMinutes: op.offsetMinutes);
+    } else if (op is DeleteTask) {
+      await deleteTask(op.task);
+    } else if (op is DeletePermanently) {
+      await deletePermanently(op.task);
+    } else if (op is RestoreTask) {
+      await restoreTask(op.task);
+    } else if (op is AssociateMainTask) {
+      await associateMainTask(op.task, op.mainTask);
+    } else if (op is CopyTask) {
+      await copyTask(op.task);
+    }
+  }
 
   @override
   Future<void> updatePriority(Task task, TaskPriority newPriority) async {
@@ -171,9 +226,15 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   @override
   Future<void> toggleCheckpoint(Task task, int index, bool value) async {
     try {
-      final updated = List<CheckPoint>.from(task.checkpoints);
-      updated[index] = CheckPoint(name: updated[index].name, isDone: value);
-      await _taskRepository.update(task..checkpoints = updated);
+      await _updateTaskHelper(
+        task: task,
+        mutate: (draft) {
+          final updated = List<CheckPoint>.from(draft.checkpoints);
+          updated[index] = CheckPoint(name: updated[index].name, isDone: value);
+          draft.checkpoints = updated;
+        },
+        description: '切换了任务"${task.name}"的检查点完成状态',
+      );
     } catch (e) {
       throw TaskException('Failed to toggle checkpoint: ${e.toString()}');
     }
@@ -183,12 +244,18 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   Future<void> renameCheckpoint(Task task, int index, String newName) async {
     try {
       TaskValidator.validateCheckpointName(newName);
-      final updated = List<CheckPoint>.from(task.checkpoints);
-      updated[index] = CheckPoint(
-        name: newName.trim(),
-        isDone: updated[index].isDone,
+      await _updateTaskHelper(
+        task: task,
+        mutate: (draft) {
+          final updated = List<CheckPoint>.from(draft.checkpoints);
+          updated[index] = CheckPoint(
+            name: newName.trim(),
+            isDone: updated[index].isDone,
+          );
+          draft.checkpoints = updated;
+        },
+        description: '重命名了任务"${task.name}"的检查点',
       );
-      await _taskRepository.update(task..checkpoints = updated);
     } catch (e) {
       throw TaskException('Failed to rename checkpoint: ${e.toString()}');
     }
@@ -197,9 +264,15 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   @override
   Future<void> addCheckpoint(Task task) async {
     try {
-      final updated = List<CheckPoint>.from(task.checkpoints)
-        ..add(CheckPoint(name: ''));
-      await _taskRepository.update(task..checkpoints = updated);
+      await _updateTaskHelper(
+        task: task,
+        mutate: (draft) {
+          final updated = List<CheckPoint>.from(draft.checkpoints)
+            ..add(CheckPoint(name: ''));
+          draft.checkpoints = updated;
+        },
+        description: '添加了任务"${task.name}"的检查点',
+      );
     } catch (e) {
       throw TaskException('Failed to add checkpoint: ${e.toString()}');
     }
@@ -208,8 +281,14 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   @override
   Future<void> removeCheckpoint(Task task, int index) async {
     try {
-      final updated = List<CheckPoint>.from(task.checkpoints)..removeAt(index);
-      await _taskRepository.update(task..checkpoints = updated);
+      await _updateTaskHelper(
+        task: task,
+        mutate: (draft) {
+          final updated = List<CheckPoint>.from(draft.checkpoints)..removeAt(index);
+          draft.checkpoints = updated;
+        },
+        description: '移除了任务"${task.name}"的检查点',
+      );
     } catch (e) {
       throw TaskException('Failed to remove checkpoint: ${e.toString()}');
     }

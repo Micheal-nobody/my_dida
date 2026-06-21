@@ -73,8 +73,7 @@ class _TodoPageState extends State<TodoPage> {
               } else if (value == 'visible_range') {
                 VisibleRangeDialog.show(context);
               } else if (value == 'list_settings') {
-                if (currentChecklist.id != AppConstants.todayCheckList.id &&
-                    currentChecklist.id != AppConstants.defaultCheckList.id) {
+                if (!currentChecklist.isToday && !currentChecklist.isInbox) {
                   showDialog(
                     context: context,
                     builder: (context) =>
@@ -82,8 +81,7 @@ class _TodoPageState extends State<TodoPage> {
                   );
                 }
               } else if (value == 'delete_list') {
-                if (currentChecklist.id != AppConstants.todayCheckList.id &&
-                    currentChecklist.id != AppConstants.defaultCheckList.id) {
+                if (!currentChecklist.isToday && !currentChecklist.isInbox) {
                   final confirmed = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -112,8 +110,7 @@ class _TodoPageState extends State<TodoPage> {
             },
             itemBuilder: (context) {
               final isSystemList =
-                  currentChecklist.id == AppConstants.todayCheckList.id ||
-                  currentChecklist.id == AppConstants.defaultCheckList.id;
+                  currentChecklist.isToday || currentChecklist.isInbox;
 
               return [
                 const PopupMenuItem(
@@ -221,7 +218,7 @@ class _TodoPageState extends State<TodoPage> {
                     ],
                   ),
                   children: tasks.map((task) {
-                    final isTrashList = currentChecklist.id == -6;
+                    final isTrashList = currentChecklist.isTrash;
                     return Dismissible(
                       key: Key('list_${task.id}'),
                       background: Container(
@@ -253,11 +250,11 @@ class _TodoPageState extends State<TodoPage> {
                       confirmDismiss: (direction) async {
                         if (direction == DismissDirection.startToEnd) {
                           if (isTrashList) {
-                            await taskProvider.restoreTask(task);
+                            await taskProvider.execute(RestoreTask(task));
                             _messageService.showSuccess('任务已还原');
                             return false;
                           }
-                          await taskProvider.updateTaskIsDone(task, true);
+                          await taskProvider.execute(UpdateTaskIsDone(task, true));
                           return false;
                         } else if (direction == DismissDirection.endToStart) {
                           return showDialog<bool>(
@@ -296,7 +293,7 @@ class _TodoPageState extends State<TodoPage> {
                       onDismissed: (direction) async {
                         if (direction == DismissDirection.endToStart) {
                           try {
-                            await taskProvider.deleteTask(task);
+                            await taskProvider.execute(DeleteTask(task));
                             _messageService.showSuccess(
                               isTrashList ? '任务已永久删除' : UIStrings.taskDeleted,
                             );
@@ -315,10 +312,10 @@ class _TodoPageState extends State<TodoPage> {
                         ),
                         onToggleDone: (value) {
                           if (isTrashList) {
-                            taskProvider.restoreTask(task);
+                            taskProvider.execute(RestoreTask(task));
                             _messageService.showSuccess('任务已还原');
                           } else {
-                            taskProvider.updateTaskIsDone(task, value!);
+                            taskProvider.execute(UpdateTaskIsDone(task, value!));
                           }
                         },
                         onTap: () {

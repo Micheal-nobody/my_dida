@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/core/errors/exceptions.dart';
 import 'package:my_dida/model/entity/habit.dart';
@@ -80,8 +81,21 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
         throw HabitException('Habit not found with id: $id');
       }
 
-      // 记录删除习惯操作
-      final operation = Operation.createDeleteHabitOperation(habit);
+      // 获取要删除习惯的所有打卡记录
+      final records = await _recordRepository.getRecordsByHabitId(id);
+
+      // 记录删除习惯操作，我们将 habit 实体和 records 打包保存
+      final operation = Operation(
+        type: OperationType.delete,
+        target: OperationTarget.habit,
+        timestamp: DateTime.now(),
+        description: '删除了习惯"${habit.name}"',
+        targetId: habit.id,
+        previousData: jsonEncode({
+          'habit': habit.toJson(),
+          'records': records.map((r) => r.toJson()).toList(),
+        }),
+      );
       await _operationStack.addOperation(operation);
 
       await _recordRepository.deleteRecordsByHabitId(id);
@@ -118,6 +132,8 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
   @override
   Future<void> skipToday(Habit habit) async {
     try {
+      final oldHabit = Habit.fromJson(habit.toJson());
+
       habit.isTodaySkipped = true;
       await _habitRepository.updateHabit(habit);
 
@@ -127,6 +143,18 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
         isSkip: true,
       );
       await _recordRepository.addRecord(record);
+
+      // 录制跳过习惯操作
+      final operation = Operation(
+        type: OperationType.update,
+        target: OperationTarget.habit,
+        timestamp: DateTime.now(),
+        description: '跳过了习惯"${habit.name}"',
+        targetId: habit.id,
+        previousData: jsonEncode(oldHabit.toJson()),
+        newData: jsonEncode(habit.toJson()),
+      );
+      await _operationStack.addOperation(operation);
     } catch (e) {
       throw HabitException('Failed to skip habit: $e');
     }
@@ -206,8 +234,21 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
     try {
       final habit = await _habitRepository.getHabitById(id);
       if (habit != null) {
+        final oldHabit = Habit.fromJson(habit.toJson());
         habit.isArchived = true;
         await _habitRepository.updateHabit(habit);
+
+        // 录制归档操作
+        final operation = Operation(
+          type: OperationType.update,
+          target: OperationTarget.habit,
+          timestamp: DateTime.now(),
+          description: '归档了习惯"${habit.name}"',
+          targetId: habit.id,
+          previousData: jsonEncode(oldHabit.toJson()),
+          newData: jsonEncode(habit.toJson()),
+        );
+        await _operationStack.addOperation(operation);
       }
     } catch (e) {
       throw HabitException('Failed to archive habit: $e');
@@ -219,8 +260,21 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
     try {
       final habit = await _habitRepository.getHabitById(id);
       if (habit != null) {
+        final oldHabit = Habit.fromJson(habit.toJson());
         habit.isArchived = false;
         await _habitRepository.updateHabit(habit);
+
+        // 录制激活操作
+        final operation = Operation(
+          type: OperationType.update,
+          target: OperationTarget.habit,
+          timestamp: DateTime.now(),
+          description: '激活了习惯"${habit.name}"',
+          targetId: habit.id,
+          previousData: jsonEncode(oldHabit.toJson()),
+          newData: jsonEncode(habit.toJson()),
+        );
+        await _operationStack.addOperation(operation);
       }
     } catch (e) {
       throw HabitException('Failed to unarchive habit: $e');

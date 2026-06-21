@@ -3,7 +3,12 @@ import 'package:flutter/foundation.dart';
 import '../config/locator.dart';
 import '../model/entity/operation.dart';
 import '../model/entity/revertible_entity.dart';
+import '../model/entity/task.dart';
+import '../model/entity/habit.dart';
+import '../model/entity/habit_check_in_record.dart';
 import '../repository/base_repository.dart';
+import '../repository/task_repository.dart';
+import '../repository/habit_check_in_record_repository.dart';
 
 // ==================================================================
 // 多态还原注册器
@@ -71,6 +76,18 @@ class GenericOperationReverter implements OperationReverter {
 
       switch (operation.type) {
         case OperationType.add:
+          // 如果是撤销添加 Task，并且在删除前它有 parentTaskId，需要从父任务的 subTaskIds 中删除它。
+          if (operation.target == OperationTarget.task) {
+            final taskRepo = getIt<TaskRepository>();
+            final taskToDelete = await taskRepo.selectById(operation.targetId);
+            if (taskToDelete != null && taskToDelete.parentTaskId != null) {
+              final parent = await taskRepo.selectById(taskToDelete.parentTaskId!);
+              if (parent != null) {
+                final newIds = List<int>.from(parent.subTaskIds)..remove(taskToDelete.id);
+                await taskRepo.update(parent..subTaskIds = newIds);
+              }
+            }
+          }
           // 撤销添加：直接删除实体
           await repository.deleteById(operation.targetId);
           break;
@@ -78,8 +95,42 @@ class GenericOperationReverter implements OperationReverter {
         case OperationType.delete:
           // 撤销删除：反序列化 previousData 重建并还原写入
           if (operation.previousData != null) {
-            final entity = factory(jsonDecode(operation.previousData!));
-            await repository.insert(entity);
+            final decoded = jsonDecode(operation.previousData!);
+
+            // 对 Habit 进行特化解析（支持打包 records 的复杂 JSON）
+            if (operation.target == OperationTarget.habit &&
+                decoded is Map<String, dynamic> &&
+                decoded.containsKey('habit')) {
+              final habit = factory(decoded['habit'] as Map<String, dynamic>);
+              await repository.insert(habit);
+
+              // 恢复习惯打卡记录列表
+              final recordRepo = getIt<HabitCheckInRecordRepository>();
+              final List<dynamic> recordsJson = decoded['records'] ?? [];
+              for (final rJson in recordsJson) {
+                if (rJson is Map<String, dynamic>) {
+                  final record = HabitCheckInRecord.fromJson(rJson);
+                  await recordRepo.addRecord(record);
+                }
+              }
+            } else {
+              // 常规的反序列化
+              final entity = factory(decoded);
+              await repository.insert(entity);
+
+              // 如果是 Task 并且有 parentTaskId，需要在父任务的 subTaskIds 中连回它
+              if (entity is Task && entity.parentTaskId != null) {
+                final taskRepo = getIt<TaskRepository>();
+                final parent = await taskRepo.selectById(entity.parentTaskId!);
+                if (parent != null) {
+                  final newIds = List<int>.from(parent.subTaskIds);
+                  if (!newIds.contains(entity.id)) {
+                    newIds.add(entity.id);
+                    await taskRepo.update(parent..subTaskIds = newIds);
+                  }
+                }
+              }
+            }
           } else {
             return false;
           }
@@ -90,6 +141,27 @@ class GenericOperationReverter implements OperationReverter {
           if (operation.previousData != null) {
             final entity = factory(jsonDecode(operation.previousData!));
             await repository.update(entity);
+
+            // 如果是 Habit，检查打卡/跳过是否要删掉今天新增的打卡记录
+            if (entity is Habit) {
+              final isSkip = operation.description.contains('跳过');
+              final isCheckIn = operation.description.contains('打卡');
+              if (isSkip || isCheckIn) {
+                final recordRepo = getIt<HabitCheckInRecordRepository>();
+                final records = await recordRepo.getRecordsByHabitId(entity.id);
+                final today = DateTime.now();
+                final todayRecords = records.where((r) {
+                  return r.isSkip == isSkip &&
+                      r.checkInTime.year == today.year &&
+                      r.checkInTime.month == today.month &&
+                      r.checkInTime.day == today.day;
+                }).toList();
+                if (todayRecords.isNotEmpty) {
+                  todayRecords.sort((a, b) => b.checkInTime.compareTo(a.checkInTime));
+                  await recordRepo.deleteRecord(todayRecords.first.id);
+                }
+              }
+            }
           } else {
             return false;
           }

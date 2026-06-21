@@ -50,13 +50,13 @@ void main() {
         checklistId: 1,
       );
 
-      await provider.addTask(task);
+      await provider.execute(AddTask(task));
       final allTasksInDb = await harness.taskRepository.getAllData();
       print('DEBUG: allTasksInDb: $allTasksInDb');
       await _waitForTasks(provider, 1);
       final created = provider.currentTasks.single;
 
-      await provider.updateTitle(created, 'Updated');
+      await provider.execute(UpdateTitle(created, 'Updated'));
       await _waitForTaskCondition(
         provider,
         (tasks) => tasks.isNotEmpty && tasks.first.name == 'Updated',
@@ -88,22 +88,22 @@ void main() {
       () async {
         await Future.delayed(Duration.zero);
 
-        await provider.addTask(
+        await provider.execute(AddTask(
           Task(
             name: 'Visible',
             isAllDay: false,
             startTime: DateTime(2026, 4, 12, 9),
             checklistId: 1,
           ),
-        );
-        await provider.addTask(
+        ));
+        await provider.execute(AddTask(
           Task(
             name: 'Future',
             isAllDay: false,
             startTime: DateTime(2026, 4, 20, 9),
             checklistId: 1,
           ),
-        );
+        ));
 
         final data = await provider.loadCalendarTaskViewData(
           visibleDates: [DateTime(2026, 4, 12)],
@@ -149,24 +149,24 @@ void main() {
       final tomorrow = now.add(const Duration(days: 1));
 
       // Add a today task
-      await provider.addTask(
+      await provider.execute(AddTask(
         Task(
           name: 'Today Task',
           isAllDay: false,
           startTime: now,
           checklistId: 1,
         ),
-      );
+      ));
 
       // Add a tomorrow task
-      await provider.addTask(
+      await provider.execute(AddTask(
         Task(
           name: 'Tomorrow Task',
           isAllDay: false,
           startTime: tomorrow,
           checklistId: 1,
         ),
-      );
+      ));
 
       final counts = await provider.getSmartListCounts();
 
@@ -178,7 +178,7 @@ void main() {
       // Toggle done on Today Task
       final tasks = await harness.taskRepository.getAllData();
       final todayTask = tasks.firstWhere((t) => t.name == 'Today Task');
-      await provider.updateTaskIsDone(todayTask, true);
+      await provider.execute(UpdateTaskIsDone(todayTask, true));
 
       final counts2 = await provider.getSmartListCounts();
       expect(counts2[-1], 0); // Today now has 0 incomplete
@@ -186,7 +186,7 @@ void main() {
 
       // Delete tomorrow task (enters Trash)
       final tomorrowTask = tasks.firstWhere((t) => t.name == 'Tomorrow Task');
-      await provider.deleteTask(tomorrowTask);
+      await provider.execute(DeleteTask(tomorrowTask));
 
       final counts3 = await provider.getSmartListCounts();
       expect(counts3[-2], 0); // Tomorrow now has 0

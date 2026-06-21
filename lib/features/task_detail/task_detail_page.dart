@@ -13,6 +13,7 @@ import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/provider/task_provider.dart';
 import 'package:my_dida/shared/widgets/inline_editable_multiline_text_field.dart';
 import 'package:my_dida/shared/widgets/inline_editable_text_field.dart';
+import 'package:my_dida/utils/time_formatter.dart';
 import 'package:provider/provider.dart';
 
 // 任务详情 BottomSheet（由 TaskCard 的 onTap 触发）
@@ -128,38 +129,12 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       return;
     }
 
-    await _taskProvider.updateDescription(task, normalizedValue);
+    await _taskProvider.execute(UpdateDescription(task, normalizedValue));
     _lastSavedDescription = normalizedValue;
   }
 
   void _navigateToSubTask(int subTaskId) {
     context.push('/tasks/$subTaskId');
-  }
-
-  String _formatTaskTime(DateTime? start, DateTime? end) {
-    if (start != null && end != null) {
-      // 显示 startTime --> endTime 格式
-      if (start.hour == 0 && start.minute == 0) {
-        // 只有日期信息，不显示时间
-        return '${start.month}月${start.day}日';
-      } else {
-        final startStr =
-            "${start.month}月${start.day}日 ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}";
-        final endStr =
-            "${end.hour.toString().padLeft(2, '0')}:${end.minute.toString().padLeft(2, '0')}";
-        return '$startStr --> $endStr';
-      }
-    } else if (start != null) {
-      // 只显示开始时间
-      if (start.hour == 0 && start.minute == 0) {
-        // 只有日期信息，不显示时间
-        return '${start.month}月${start.day}日';
-      } else {
-        return "${start.month}月${start.day}日 ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}";
-      }
-    } else {
-      return '未设置时间';
-    }
   }
 
   @override
@@ -205,10 +180,10 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                           children: [
                             GestureDetector(
                               onTap: () async {
-                                await _taskProvider.updateTaskIsDone(
+                                await _taskProvider.execute(UpdateTaskIsDone(
                                   task,
                                   !task.isDone,
-                                );
+                                ));
                               },
                               child: Container(
                                 width: 16,
@@ -239,7 +214,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                 final DateTime? start = updatedTask.startTime;
                                 final DateTime? end = updatedTask.endTime;
 
-                                final String dateText = _formatTaskTime(
+                                final String dateText = TimeFormatter.formatTaskDateTimeRange(
                                   start,
                                   end,
                                 );
@@ -299,7 +274,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                             PopupMenuButton<TaskPriority>(
                               initialValue: task.priority,
                               onSelected: (val) async {
-                                await _taskProvider.updatePriority(task, val);
+                                await _taskProvider.execute(UpdatePriority(task, val));
                               },
                               itemBuilder: (context) => const [
                                 PopupMenuItem(
@@ -405,10 +380,10 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                         ),
                                       );
                                   if (updatedTags != null) {
-                                    await _taskProvider.updateTags(
+                                    await _taskProvider.execute(UpdateTags(
                                       task,
                                       updatedTags,
-                                    );
+                                    ));
                                   }
                                 },
                                 child: Container(
@@ -456,7 +431,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                         key: ValueKey('title_${task.id}'),
                         value: task.name,
                         onSubmit: (updated) async {
-                          await _taskProvider.updateTitle(task, updated);
+                          await _taskProvider.execute(UpdateTitle(task, updated));
                         },
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         style: const TextStyle(
@@ -508,24 +483,24 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                               index: entry.key,
                               checkpoint: entry.value,
                               onToggle: (isDone) async {
-                                await _taskProvider.toggleCheckpoint(
+                                await _taskProvider.execute(ToggleCheckpoint(
                                   task,
                                   entry.key,
                                   isDone,
-                                );
+                                ));
                               },
                               onRename: (newName) async {
-                                await _taskProvider.renameCheckpoint(
+                                await _taskProvider.execute(RenameCheckpoint(
                                   task,
                                   entry.key,
                                   newName,
-                                );
+                                ));
                               },
                               onDelete: () async {
-                                await _taskProvider.removeCheckpoint(
+                                await _taskProvider.execute(RemoveCheckpoint(
                                   task,
                                   entry.key,
-                                );
+                                ));
                               },
                             ),
                         ],
@@ -538,10 +513,10 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                         onOpenSubTask: _navigateToSubTask,
                         getSubTasks: (ids) => _taskProvider.getTasksByIds(ids),
                         onToggleSubTask: (subTask, isDone) async {
-                          await _taskProvider.updateTaskIsDone(subTask, isDone);
+                          await _taskProvider.execute(UpdateTaskIsDone(subTask, isDone));
                         },
                         onDeleteSubTask: (subTask) async {
-                          await _taskProvider.deleteSubTask(task, subTask.id);
+                          await _taskProvider.execute(DeleteSubTask(task, subTask.id));
                         },
                       ),
                       const SizedBox(height: 80),
@@ -564,7 +539,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                   children: [
                     TextButton.icon(
                       onPressed: () async {
-                        await _taskProvider.addCheckpoint(task);
+                        await _taskProvider.execute(AddCheckpoint(task));
                       },
                       icon: const Icon(Icons.checklist, color: Colors.orange),
                       label: const Text(

@@ -60,7 +60,7 @@ class TaskDetailHeader extends StatelessWidget {
                       ),
                   ],
                   onChanged: (v) async {
-                    await taskProvider.updateChecklist(updatedTask, v);
+                    await taskProvider.execute(UpdateChecklist(updatedTask, v));
                   },
                 ),
               ),
@@ -76,7 +76,7 @@ class TaskDetailHeader extends StatelessWidget {
                       AssociateMainTaskDialog.show(context, updatedTask);
                       break;
                     case 'delete':
-                      await taskProvider.deleteTask(updatedTask);
+                      await taskProvider.execute(DeleteTask(updatedTask));
                       if (context.mounted) {
                         Navigator.of(context).pop();
                       }

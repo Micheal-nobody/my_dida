@@ -76,8 +76,7 @@ class ChecklistProvider extends ChangeNotifier {
 
   // Delete a belonging box
   Future<void> deleteChecklist(ChecklistVO checkListVO) async {
-    if (checkListVO.id == AppConstants.todayCheckList.id ||
-        checkListVO.id == AppConstants.defaultCheckList.id) {
+    if (checkListVO.isToday || checkListVO.isInbox) {
       return; // Don't delete special "today" box
     }
 
@@ -89,7 +88,7 @@ class ChecklistProvider extends ChangeNotifier {
       await loadAllChecklistes();
 
       // If we deleted the current box, switch to "today"
-      if (_currentCheckList.id == checkListVO.id) {
+      if (_currentCheckList == checkListVO) {
         updateCurChecklist(AppConstants.todayCheckList);
       }
     } catch (e) {

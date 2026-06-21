@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:my_dida/provider/calendar_page_provider.dart';
 import 'package:my_dida/provider/checklist_provider.dart';
+import 'package:my_dida/shared/widgets/base_bottom_sheet_layout.dart';
 
 class CalendarVisibleRangeDialog extends StatefulWidget {
   const CalendarVisibleRangeDialog({super.key});
@@ -99,84 +100,45 @@ class _CalendarVisibleRangeDialogState
     final checklistProvider = Provider.of<ChecklistProvider>(context);
     final allChecklists = checklistProvider.allCheckLists;
 
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return BaseBottomSheetLayout(
+      title: '显示范围',
+      expandChild: true,
+      confirmButtonColor: Colors.orange,
+      onConfirm: () async {
+        final calendarProvider = Provider.of<CalendarPageProvider>(
+          context,
+          listen: false,
+        );
+        await calendarProvider.updateConfig(
+          visibleMode: _isAllSelected ? 'all' : 'custom',
+          visibleChecklistIds: _tempSelectedIds,
+        );
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
+      },
+      child: ListView(
+        shrinkWrap: true,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Center(
-              child: Text(
-                '显示范围',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
+          CheckboxListTile(
+            title: const Text('全部'),
+            value: _isAllSelected,
+            onChanged: _onAllChanged,
+            activeColor: Colors.orange,
+            controlAffinity: ListTileControlAffinity.trailing,
           ),
-          const Divider(height: 1),
-          Expanded(
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                CheckboxListTile(
-                  title: const Text('全部'),
-                  value: _isAllSelected,
-                  onChanged: _onAllChanged,
-                  activeColor: Colors.orange,
-                  controlAffinity: ListTileControlAffinity.trailing,
-                ),
-                const Divider(height: 1, indent: 16, endIndent: 16),
-                ...allChecklists.map((checklist) {
-                  final isSelected = _tempSelectedIds.contains(checklist.id);
-                  return CheckboxListTile(
-                    title: Text(checklist.name),
-                    secondary: Icon(Icons.folder, color: checklist.color),
-                    value: isSelected,
-                    onChanged: (val) => _onChecklistChanged(checklist.id, val),
-                    activeColor: Colors.orange,
-                    controlAffinity: ListTileControlAffinity.trailing,
-                  );
-                }),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    '取消',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () async {
-                    final calendarProvider = Provider.of<CalendarPageProvider>(
-                      context,
-                      listen: false,
-                    );
-                    await calendarProvider.updateConfig(
-                      visibleMode: _isAllSelected ? 'all' : 'custom',
-                      visibleChecklistIds: _tempSelectedIds,
-                    );
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('确定', style: TextStyle(fontSize: 16)),
-                ),
-              ],
-            ),
-          ),
+          const Divider(height: 1, indent: 16, endIndent: 16),
+          ...allChecklists.map((checklist) {
+            final isSelected = _tempSelectedIds.contains(checklist.id);
+            return CheckboxListTile(
+              title: Text(checklist.name),
+              secondary: Icon(Icons.folder, color: checklist.color),
+              value: isSelected,
+              onChanged: (val) => _onChecklistChanged(checklist.id, val),
+              activeColor: Colors.orange,
+              controlAffinity: ListTileControlAffinity.trailing,
+            );
+          }),
         ],
       ),
     );

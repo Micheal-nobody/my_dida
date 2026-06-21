@@ -8,6 +8,8 @@ import '../constants/app_constants.dart';
 import '../constants/ui_constants.dart';
 import '../core/errors/exceptions.dart';
 import '../core/validators/task_validator.dart';
+import '../model/domain/task_operation.dart';
+export '../model/domain/task_operation.dart';
 import '../model/entity/check_point.dart';
 import '../model/entity/task.dart';
 import '../model/vo/repeat_pattern.dart';
@@ -111,7 +113,9 @@ class TaskProvider with ChangeNotifier {
   ) {
     // 1. 过滤可见范围
     List<Task> filtered = List.from(_currentTasks);
-    if (currentChecklist?.id != -5 && currentChecklist?.id != -6) {
+    if (currentChecklist != null &&
+        !currentChecklist!.isCompleted &&
+        !currentChecklist!.isTrash) {
       if (_visibleRange == TaskVisibleRange.undone) {
         filtered = filtered.where((t) => !t.isDone).toList();
       } else if (_visibleRange == TaskVisibleRange.done) {
@@ -244,17 +248,17 @@ class TaskProvider with ChangeNotifier {
     await _currentTasksSubscription?.cancel();
 
     final Stream<List<Task>> stream;
-    if (newChecklist == null || newChecklist.id == -1) {
+    if (newChecklist == null || newChecklist.isToday) {
       stream = _taskRepository.watchTodayTasks();
-    } else if (newChecklist.id == -2) {
+    } else if (newChecklist.isTomorrow) {
       stream = _taskRepository.watchTomorrowTasks();
-    } else if (newChecklist.id == -3) {
+    } else if (newChecklist.isNextSevenDays) {
       stream = _taskRepository.watchNext7DaysTasks();
-    } else if (newChecklist.id == -4) {
+    } else if (newChecklist.isAll) {
       stream = _taskRepository.watchAllIncompleteTasks();
-    } else if (newChecklist.id == -5) {
+    } else if (newChecklist.isCompleted) {
       stream = _taskRepository.watchAllCompletedTasks();
-    } else if (newChecklist.id == -6) {
+    } else if (newChecklist.isTrash) {
       stream = _taskRepository.watchTrashTasks();
     } else {
       stream = _taskRepository.watchByChecklistId(newChecklist.id);
@@ -319,13 +323,13 @@ class TaskProvider with ChangeNotifier {
   Future<Map<int, int>> getSmartListCounts() async {
     final counts = <int, int>{};
 
-    counts[-1] = await _taskRepository.getTodayTasksCount();
-    counts[-2] = await _taskRepository.getTomorrowTasksCount();
-    counts[-3] = await _taskRepository.getNext7DaysTasksCount();
-    counts[1] = await _taskRepository.getInboxTasksCount();
-    counts[-4] = await _taskRepository.getAllIncompleteTasksCount();
-    counts[-5] = await _taskRepository.getAllCompletedTasksCount();
-    counts[-6] = await _taskRepository.getTrashTasksCount();
+    counts[AppConstants.todayCheckList.id] = await _taskRepository.getTodayTasksCount();
+    counts[AppConstants.tomorrowCheckList.id] = await _taskRepository.getTomorrowTasksCount();
+    counts[AppConstants.nextSevenDaysCheckList.id] = await _taskRepository.getNext7DaysTasksCount();
+    counts[AppConstants.defaultCheckList.id] = await _taskRepository.getInboxTasksCount();
+    counts[AppConstants.allCheckList.id] = await _taskRepository.getAllIncompleteTasksCount();
+    counts[AppConstants.completedCheckList.id] = await _taskRepository.getAllCompletedTasksCount();
+    counts[AppConstants.trashCheckList.id] = await _taskRepository.getTrashTasksCount();
 
     return counts;
   }
@@ -510,7 +514,7 @@ class TaskProvider with ChangeNotifier {
 
   Future<void> deleteTask(Task task) async {
     try {
-      if (currentChecklist?.id == -6) {
+      if (currentChecklist != null && currentChecklist!.isTrash) {
         await _taskLifecycleManager.deletePermanently(task);
         return;
       }
@@ -564,4 +568,54 @@ class TaskProvider with ChangeNotifier {
   // ==================================================================
   // 刷新与重载辅助方法
   // ==================================================================
+
+  Future<dynamic> execute(TaskOperation op) async {
+    if (op is AddTask) {
+      return await addTask(op.task);
+    } else if (op is UpdateTaskIsDone) {
+      await updateTaskIsDone(op.task, op.value);
+    } else if (op is UpdatePriority) {
+      await updatePriority(op.task, op.newPriority);
+    } else if (op is UpdateTags) {
+      await updateTags(op.task, op.newTags);
+    } else if (op is UpdateTitle) {
+      await updateTitle(op.task, op.newTitle);
+    } else if (op is UpdateDescription) {
+      await updateDescription(op.task, op.newDesc);
+    } else if (op is ToggleCheckpoint) {
+      await toggleCheckpoint(op.task, op.index, op.value);
+    } else if (op is RenameCheckpoint) {
+      await renameCheckpoint(op.task, op.index, op.newName);
+    } else if (op is AddCheckpoint) {
+      await addCheckpoint(op.task);
+    } else if (op is RemoveCheckpoint) {
+      await removeCheckpoint(op.task, op.index);
+    } else if (op is CreateSubTask) {
+      return await createSubTask(op.task, name: op.name);
+    } else if (op is DeleteSubTask) {
+      await deleteSubTask(op.task, op.subTaskId);
+    } else if (op is UpdateChecklist) {
+      await updateChecklist(op.task, op.newChecklistId);
+    } else if (op is UpdateStartTime) {
+      await updateStartTime(op.task, op.newStartTime, isAllDay: op.isAllDay);
+    } else if (op is UpdateEndTime) {
+      await updateEndTime(op.task, op.newEndTime, isAllDay: op.isAllDay);
+    } else if (op is UpdateTimeRange) {
+      await updateTimeRange(op.task, op.newStartTime, op.newEndTime, isAllDay: op.isAllDay);
+    } else if (op is ClearTaskSchedule) {
+      await clearTaskSchedule(op.task);
+    } else if (op is UpdateRRule) {
+      await updateRRule(op.task, op.rrule);
+    } else if (op is UpdateTaskReminder) {
+      await updateTaskReminder(op.task, enabled: op.enabled, offsetMinutes: op.offsetMinutes);
+    } else if (op is DeleteTask) {
+      await deleteTask(op.task);
+    } else if (op is RestoreTask) {
+      await restoreTask(op.task);
+    } else if (op is AssociateMainTask) {
+      await associateMainTask(op.task, op.mainTask);
+    } else if (op is CopyTask) {
+      await copyTask(op.task);
+    }
+  }
 }
