@@ -4,9 +4,11 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/config/locator.dart';
 import 'package:my_dida/model/entity/checklist.dart';
+import 'package:my_dida/model/entity/custom_tomato.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/entity/tomato_record.dart';
 import 'package:my_dida/model/domain/tomato_ticker.dart';
+import 'package:my_dida/repository/custom_tomato_repository.dart';
 import 'package:my_dida/repository/tomato_record_repository.dart';
 import 'package:my_dida/services/notification_service.dart';
 import 'package:my_dida/repository/task_repository.dart';
@@ -24,19 +26,24 @@ export 'package:my_dida/model/domain/tomato_ticker.dart'
 class TomatoProvider with ChangeNotifier {
   TomatoProvider({
     TomatoRecordRepository? tomatoRecordRepository,
+    CustomTomatoRepository? customTomatoRepository,
     TaskRepository? taskRepository,
     NotificationService? notificationService,
     TomatoTicker? ticker,
   }) : _tomatoRecordRepository =
            tomatoRecordRepository ?? getIt<TomatoRecordRepository>(),
+       _customTomatoRepository =
+           customTomatoRepository ?? getIt<CustomTomatoRepository>(),
        _taskRepository = taskRepository ?? getIt<TaskRepository>(),
        _notificationService =
            notificationService ?? getIt<NotificationService>() {
     _ticker = ticker ?? TomatoTicker();
     _tickerSubscription = _ticker.eventStream.listen(_handleTomatoEvent);
+    loadCustomTomatoes();
   }
 
   final TomatoRecordRepository _tomatoRecordRepository;
+  final CustomTomatoRepository _customTomatoRepository;
   final TaskRepository _taskRepository;
   final NotificationService _notificationService;
 
@@ -44,6 +51,9 @@ class TomatoProvider with ChangeNotifier {
   StreamSubscription<TomatoEvent>? _tickerSubscription;
   Timer? _timer;
   Task? _associatedTask;
+  CustomTomato? _activeCustomTomato;
+  List<CustomTomato> _customTomatoes = [];
+  bool _isDisposed = false;
 
   // 1. 完全对外的属性代理，兼容现有 UI 获取状态
   int get duration => _ticker.duration;
@@ -54,6 +64,8 @@ class TomatoProvider with ChangeNotifier {
   int get completedTomatoCount => _ticker.completedTomatoCount;
   DateTime? get startTime => _ticker.startTime;
   Task? get associatedTask => _associatedTask;
+  CustomTomato? get activeCustomTomato => _activeCustomTomato;
+  List<CustomTomato> get customTomatoes => _customTomatoes;
 
   // 配置项代理
   int get focusMinutes => _ticker.focusMinutes;
@@ -98,8 +110,9 @@ class TomatoProvider with ChangeNotifier {
       // 副作用：保存专注成功记录至 Isar
       final record = TomatoRecord(
         taskId: _associatedTask?.id,
-        taskName: _associatedTask?.name,
-        categoryName: await _getChecklistName(_associatedTask?.checklistId),
+        customTomatoId: _activeCustomTomato?.id,
+        taskName: _activeCustomTomato != null ? _activeCustomTomato!.name : _associatedTask?.name,
+        categoryName: _activeCustomTomato != null ? '自定义番茄钟' : await _getChecklistName(_associatedTask?.checklistId),
         startTime: event.startTime,
         endTime: event.endTime,
         durationMinutes: event.durationMinutes,
@@ -137,8 +150,9 @@ class TomatoProvider with ChangeNotifier {
       // 副作用：保存未完成记录至 Isar
       final record = TomatoRecord(
         taskId: _associatedTask?.id,
-        taskName: _associatedTask?.name,
-        categoryName: await _getChecklistName(_associatedTask?.checklistId),
+        customTomatoId: _activeCustomTomato?.id,
+        taskName: _activeCustomTomato != null ? _activeCustomTomato!.name : _associatedTask?.name,
+        categoryName: _activeCustomTomato != null ? '自定义番茄钟' : await _getChecklistName(_associatedTask?.checklistId),
         startTime: event.startTime,
         endTime: event.endTime,
         durationMinutes: event.durationMinutes,
@@ -208,7 +222,72 @@ class TomatoProvider with ChangeNotifier {
 
   void setAssociatedTask(Task? task) {
     _associatedTask = task;
+    if (task != null) {
+      _activeCustomTomato = null;
+      _ticker.updateSettings(focusMin: 25);
+    }
     notifyListeners();
+  }
+
+  Future<void> loadCustomTomatoes() async {
+    _customTomatoes = await _customTomatoRepository.getAll();
+    notifyListeners();
+  }
+
+  Future<void> addCustomTomato(String name, int focusMinutes) async {
+    final tomato = CustomTomato(name: name, focusMinutes: focusMinutes);
+    await _customTomatoRepository.insert(tomato);
+    await loadCustomTomatoes();
+  }
+
+  Future<void> deleteCustomTomato(int id) async {
+    if (_activeCustomTomato?.id == id) {
+      _activeCustomTomato = null;
+      _ticker.updateSettings(focusMin: 25);
+    }
+    await _customTomatoRepository.deleteById(id);
+    await loadCustomTomatoes();
+  }
+
+  void setActiveCustomTomato(CustomTomato? tomato) {
+    _activeCustomTomato = tomato;
+    if (tomato != null) {
+      _ticker.updateSettings(focusMin: tomato.focusMinutes);
+      _associatedTask = null;
+    } else {
+      _ticker.updateSettings(focusMin: 25);
+    }
+    notifyListeners();
+  }
+
+  Future<int> getCustomTomatoTodayMinutes(int customTomatoId) async {
+    final now = DateTime.now();
+    final start = DateTime(now.year, now.month, now.day);
+    final end = DateTime(now.year, now.month, now.day, 23, 59, 59);
+    final records = await _tomatoRecordRepository.getRecordsInPeriod(start, end);
+    int total = 0;
+    for (var r in records) {
+      if (r.customTomatoId == customTomatoId && r.isCompleted) {
+        total += r.durationMinutes;
+      }
+    }
+    return total;
+  }
+
+  Future<Map<String, dynamic>> getCustomTomatoTotalStats(int customTomatoId) async {
+    final records = await _tomatoRecordRepository.selectAll();
+    int completedCount = 0;
+    int totalMinutes = 0;
+    for (var r in records) {
+      if (r.customTomatoId == customTomatoId && r.isCompleted) {
+        completedCount++;
+        totalMinutes += r.durationMinutes;
+      }
+    }
+    return {
+      'completedCount': completedCount,
+      'totalMinutes': totalMinutes,
+    };
   }
 
   void updateSettings({
@@ -314,7 +393,15 @@ class TomatoProvider with ChangeNotifier {
   }
 
   @override
+  void notifyListeners() {
+    if (!_isDisposed) {
+      super.notifyListeners();
+    }
+  }
+
+  @override
   void dispose() {
+    _isDisposed = true;
     _stopTimer();
     _tickerSubscription?.cancel();
     _ticker.dispose();

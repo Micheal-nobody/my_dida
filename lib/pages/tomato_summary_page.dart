@@ -73,119 +73,115 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
   }
 
   // 本日视图
-  Widget _buildDayView(TomatoProvider provider) {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: provider.getSummaryData(_today),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final data = snapshot.data!;
-        final List<TomatoRecord> records = List<TomatoRecord>.from(
-          data['records'] ?? [],
-        );
-        final completedCount = data['completedCount'] as int;
-        final totalMinutes = data['totalMinutes'] as int;
+  Widget _buildDayView(TomatoProvider provider) =>
+      FutureBuilder<Map<String, dynamic>>(
+        future: provider.getSummaryData(_today),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final data = snapshot.data!;
+          final List<TomatoRecord> records = List<TomatoRecord>.from(
+            data['records'] ?? [],
+          );
+          final completedCount = data['completedCount'] as int;
+          final totalMinutes = data['totalMinutes'] as int;
 
-        return _buildScrollContent(
-          records: records,
-          completedCount: completedCount,
-          totalMinutes: totalMinutes,
-          children: [
-            TomatoHourlyDistributionChart(records: records),
-            const SizedBox(height: 16),
-            TomatoCategoryRatioChart(records: records),
-          ],
-        );
-      },
-    );
-  }
+          return _buildScrollContent(
+            records: records,
+            completedCount: completedCount,
+            totalMinutes: totalMinutes,
+            children: [
+              TomatoHourlyDistributionChart(records: records),
+              const SizedBox(height: 16),
+              TomatoCategoryRatioChart(records: records),
+            ],
+          );
+        },
+      );
 
   // 本周视图
-  Widget _buildWeekView(TomatoProvider provider) {
-    return FutureBuilder<List<TomatoRecord>>(
-      future: provider.getWeeklyRecords(_today),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final records = snapshot.data!;
-        final completed = records.where((r) => r.isCompleted).toList();
-        final completedCount = completed.length;
-        final totalMinutes = completed.fold(
-          0,
-          (sum, r) => sum + r.durationMinutes,
-        );
+  Widget _buildWeekView(TomatoProvider provider) =>
+      FutureBuilder<List<TomatoRecord>>(
+        future: provider.getWeeklyRecords(_today),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final records = snapshot.data!;
+          final completed = records.where((r) => r.isCompleted).toList();
+          final completedCount = completed.length;
+          final totalMinutes = completed.fold(
+            0,
+            (sum, r) => sum + r.durationMinutes,
+          );
 
-        return _buildScrollContent(
-          records: records,
-          completedCount: completedCount,
-          totalMinutes: totalMinutes,
-          children: [
-            TomatoTrendChart(records: records, daysCount: 7),
-            const SizedBox(height: 16),
-            TomatoCategoryRatioChart(records: records),
-          ],
-        );
-      },
-    );
-  }
+          return _buildScrollContent(
+            records: records,
+            completedCount: completedCount,
+            totalMinutes: totalMinutes,
+            children: [
+              TomatoTrendChart(records: records, daysCount: 7),
+              const SizedBox(height: 16),
+              TomatoCategoryRatioChart(records: records),
+            ],
+          );
+        },
+      );
 
   // 本月视图
-  Widget _buildMonthView(TomatoProvider provider) {
-    return FutureBuilder<List<TomatoRecord>>(
-      future: provider.getMonthlyRecords(_today),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final records = snapshot.data!;
-        final completed = records.where((r) => r.isCompleted).toList();
-        final completedCount = completed.length;
-        final totalMinutes = completed.fold(
-          0,
-          (sum, r) => sum + r.durationMinutes,
-        );
+  Widget _buildMonthView(TomatoProvider provider) =>
+      FutureBuilder<List<TomatoRecord>>(
+        future: provider.getMonthlyRecords(_today),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final records = snapshot.data!;
+          final completed = records.where((r) => r.isCompleted).toList();
+          final completedCount = completed.length;
+          final totalMinutes = completed.fold(
+            0,
+            (sum, r) => sum + r.durationMinutes,
+          );
 
-        return _buildScrollContent(
-          records: records,
-          completedCount: completedCount,
-          totalMinutes: totalMinutes,
-          children: [
-            TomatoTrendChart(records: records, daysCount: 30),
-            const SizedBox(height: 16),
-            TomatoCategoryRatioChart(records: records),
-          ],
-        );
-      },
-    );
-  }
+          return _buildScrollContent(
+            records: records,
+            completedCount: completedCount,
+            totalMinutes: totalMinutes,
+            children: [
+              TomatoTrendChart(records: records, daysCount: 30),
+              const SizedBox(height: 16),
+              TomatoCategoryRatioChart(records: records),
+            ],
+          );
+        },
+      );
 
   // 总览视图
-  Widget _buildAllView(TomatoProvider provider) {
-    return FutureBuilder<List<TomatoRecord>>(
-      future: provider.getAllRecords(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final records = snapshot.data!;
-        final completed = records.where((r) => r.isCompleted).toList();
-        final completedCount = completed.length;
-        final totalMinutes = completed.fold(
-          0,
-          (sum, r) => sum + r.durationMinutes,
-        );
+  Widget _buildAllView(TomatoProvider provider) =>
+      FutureBuilder<List<TomatoRecord>>(
+        future: provider.getAllRecords(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final records = snapshot.data!;
+          final completed = records.where((r) => r.isCompleted).toList();
+          final completedCount = completed.length;
+          final totalMinutes = completed.fold(
+            0,
+            (sum, r) => sum + r.durationMinutes,
+          );
 
-        return _buildScrollContent(
-          records: records,
-          completedCount: completedCount,
-          totalMinutes: totalMinutes,
-          children: [TomatoCategoryRatioChart(records: records)],
-        );
-      },
-    );
-  }
+          return _buildScrollContent(
+            records: records,
+            completedCount: completedCount,
+            totalMinutes: totalMinutes,
+            children: [TomatoCategoryRatioChart(records: records)],
+          );
+        },
+      );
 
   // 通用的可滚动组件列表构建
   Widget _buildScrollContent({
@@ -194,6 +190,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
     required int totalMinutes,
     required List<Widget> children,
   }) {
+    final provider = context.read<TomatoProvider>();
     final totalCount = records.length;
     final double completionRate = totalCount == 0
         ? 0.0
@@ -226,7 +223,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
             Expanded(
               child: _buildMetricCard(
                 '番茄完成率',
-                '${(completionRate * 100).toStringAsFixed(0)}',
+                (completionRate * 100).toStringAsFixed(0),
                 '%',
                 Colors.teal,
               ),
@@ -238,6 +235,104 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
         // 外部传入的不同维度的图表
         ...children,
         const SizedBox(height: 20),
+
+        // 各番茄钟专注明细
+        if (provider.customTomatoes.isNotEmpty) ...[
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    '各预设番茄钟统计',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: provider.customTomatoes.length,
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final tomato = provider.customTomatoes[index];
+                    return FutureBuilder<Map<String, dynamic>>(
+                      future: provider.getCustomTomatoTotalStats(tomato.id),
+                      builder: (context, snapshot) {
+                        final stats = snapshot.data;
+                        final count = stats?['completedCount'] ?? 0;
+                        final minutes = stats?['totalMinutes'] ?? 0;
+
+                        return ListTile(
+                          leading: Icon(
+                            Icons.hourglass_full_rounded,
+                            color: Colors.orange.shade700,
+                            size: 20,
+                          ),
+                          title: Text(
+                            tomato.name,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '单次时长: ${tomato.focusMinutes}分钟',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '完成 $count 次',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '累计 $minutes分钟',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
 
         // 历史明细记录
         Container(
@@ -298,48 +393,48 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
   }
 
   // 单个指标卡片
-  Widget _buildMetricCard(String title, String val, String unit, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                val,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
+  Widget _buildMetricCard(
+    String title,
+    String val,
+    String unit,
+    Color color,
+  ) => Container(
+    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 6,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              val,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: color,
               ),
-              const SizedBox(width: 2),
-              Text(
-                unit,
-                style: const TextStyle(fontSize: 9, color: Colors.grey),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+            ),
+            const SizedBox(width: 2),
+            Text(unit, style: const TextStyle(fontSize: 9, color: Colors.grey)),
+          ],
+        ),
+      ],
+    ),
+  );
 
   // 历史明细瓦片
   Widget _buildRecordTile(BuildContext context, TomatoRecord record) {

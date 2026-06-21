@@ -6,9 +6,11 @@ import 'package:my_dida/model/entity/checklist.dart';
 import 'package:my_dida/model/entity/habit.dart';
 import 'package:my_dida/model/entity/operation.dart';
 import 'package:my_dida/model/entity/sidebar_config.dart';
+import 'package:my_dida/model/entity/custom_tomato.dart';
 import 'package:my_dida/model/entity/task.dart';
 import 'package:my_dida/model/entity/tomato_record.dart';
 import 'package:my_dida/provider/tomato_provider.dart';
+import 'package:my_dida/repository/custom_tomato_repository.dart';
 import 'package:my_dida/repository/task_repository.dart';
 import 'package:my_dida/repository/tomato_record_repository.dart';
 import 'package:my_dida/services/notification_service.dart';
@@ -34,6 +36,7 @@ void main() {
         ChecklistSchema,
         SidebarConfigSchema,
         TomatoRecordSchema,
+        CustomTomatoSchema,
       ],
       directory: tempDir.path,
       name: 'tomato_test_${DateTime.now().microsecondsSinceEpoch}',
@@ -47,6 +50,7 @@ void main() {
       )
       ..registerSingleton<TaskRepository>(TaskRepository())
       ..registerSingleton<TomatoRecordRepository>(TomatoRecordRepository())
+      ..registerSingleton<CustomTomatoRepository>(CustomTomatoRepository())
       // 注册一个最小化的 NotificationService 依赖
       ..registerSingleton<NotificationService>(NotificationService());
 
@@ -140,6 +144,58 @@ void main() {
       await provider.abandon();
       final records = await tomatoRepository.selectAll();
       expect(records.isEmpty, true);
+    });
+
+    test('自定义番茄钟的增删、激活和统计测试', () async {
+      final customRepo = getIt<CustomTomatoRepository>();
+      final provider = TomatoProvider(
+        tomatoRecordRepository: tomatoRepository,
+        customTomatoRepository: customRepo,
+        taskRepository: taskRepository,
+      );
+
+      await provider.loadCustomTomatoes();
+      expect(provider.customTomatoes.isEmpty, true);
+
+      // 添加自定义番茄钟
+      await provider.addCustomTomato('帕梅拉', 40);
+      expect(provider.customTomatoes.length, 1);
+      expect(provider.customTomatoes[0].name, '帕梅拉');
+      expect(provider.customTomatoes[0].focusMinutes, 40);
+
+      // 激活自定义番茄钟
+      provider.setActiveCustomTomato(provider.customTomatoes[0]);
+      expect(provider.activeCustomTomato?.name, '帕梅拉');
+      expect(provider.duration, 40 * 60);
+
+      // 统计测试 (今天累计)
+      int todayMins = await provider.getCustomTomatoTodayMinutes(provider.customTomatoes[0].id);
+      expect(todayMins, 0);
+
+      // 模拟专注完成记录
+      final record = TomatoRecord(
+        customTomatoId: provider.customTomatoes[0].id,
+        taskName: '帕梅拉',
+        categoryName: '自定义番茄钟',
+        startTime: DateTime.now().subtract(const Duration(minutes: 40)),
+        endTime: DateTime.now(),
+        durationMinutes: 40,
+        isCompleted: true,
+      );
+      await tomatoRepository.insert(record);
+
+      todayMins = await provider.getCustomTomatoTodayMinutes(provider.customTomatoes[0].id);
+      expect(todayMins, 40);
+
+      final totalStats = await provider.getCustomTomatoTotalStats(provider.customTomatoes[0].id);
+      expect(totalStats['completedCount'], 1);
+      expect(totalStats['totalMinutes'], 40);
+
+      // 删除自定义番茄钟
+      final tomatoId = provider.customTomatoes[0].id;
+      await provider.deleteCustomTomato(tomatoId);
+      expect(provider.customTomatoes.isEmpty, true);
+      expect(provider.activeCustomTomato, null);
     });
   });
 }

@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:my_dida/model/entity/tomato_record.dart';
 
@@ -6,7 +7,7 @@ import 'package:my_dida/model/entity/tomato_record.dart';
 // 1. 时段分布图 (24小时柱状图)
 // ==========================================
 class TomatoHourlyDistributionChart extends StatelessWidget {
-  const TomatoHourlyDistributionChart({super.key, required this.records});
+  const TomatoHourlyDistributionChart({required this.records, super.key});
 
   final List<TomatoRecord> records;
 
@@ -15,7 +16,7 @@ class TomatoHourlyDistributionChart extends StatelessWidget {
     // 将 24 小时划分为 6 个时段，每个时段 4 小时
     // 0: 00-04, 1: 04-08, 2: 08-12, 3: 12-16, 4: 16-20, 5: 20-24
     final List<int> hourlyMinutes = List.filled(6, 0);
-    for (var r in records) {
+    for (final r in records) {
       if (!r.isCompleted) continue;
       final hour = r.startTime.hour;
       final index = (hour / 4).floor().clamp(0, 5);
@@ -107,7 +108,7 @@ class TomatoHourlyDistributionChart extends StatelessWidget {
 // 2. 任务/清单专注占比环形图
 // ==========================================
 class TomatoCategoryRatioChart extends StatelessWidget {
-  const TomatoCategoryRatioChart({super.key, required this.records});
+  const TomatoCategoryRatioChart({required this.records, super.key});
 
   final List<TomatoRecord> records;
 
@@ -117,7 +118,7 @@ class TomatoCategoryRatioChart extends StatelessWidget {
     final Map<String, int> categoryMap = {};
     int totalMinutes = 0;
 
-    for (var r in records) {
+    for (final r in records) {
       if (!r.isCompleted) continue;
       final name = r.categoryName ?? '默认收集箱';
       categoryMap[name] = (categoryMap[name] ?? 0) + r.durationMinutes;
@@ -324,9 +325,9 @@ class _DonutChartPainter extends CustomPainter {
 // ==========================================
 class TomatoTrendChart extends StatelessWidget {
   const TomatoTrendChart({
-    super.key,
     required this.records,
     required this.daysCount,
+    super.key,
   });
 
   final List<TomatoRecord> records;
@@ -342,7 +343,7 @@ class TomatoTrendChart extends StatelessWidget {
       final date = now.subtract(Duration(days: i));
       // 匹配日期数据
       int minutes = 0;
-      for (var r in records) {
+      for (final r in records) {
         if (!r.isCompleted) continue;
         if (r.startTime.year == date.year &&
             r.startTime.month == date.month &&
@@ -407,15 +408,16 @@ class TomatoTrendChart extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(daysCount, (i) {
-              return Expanded(
+            children: List.generate(
+              daysCount,
+              (i) => Expanded(
                 child: Text(
                   labels[i],
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 8, color: Colors.grey),
                 ),
-              );
-            }),
+              ),
+            ),
           ),
         ],
       ),
@@ -482,8 +484,9 @@ class _LineChartPainter extends CustomPainter {
 
       if (i == 0) {
         path.moveTo(x, y);
-        fillPath.moveTo(x, height);
-        fillPath.lineTo(x, y);
+        fillPath
+          ..moveTo(x, height)
+          ..lineTo(x, y);
       } else {
         // 使用二阶贝塞尔曲线，使折线圆滑一些
         final prevPt = points[i - 1];
@@ -508,22 +511,24 @@ class _LineChartPainter extends CustomPainter {
 
       if (i == data.length - 1) {
         path.lineTo(x, y);
-        fillPath.lineTo(x, y);
-        fillPath.lineTo(x, height);
-        fillPath.close();
+        fillPath
+          ..lineTo(x, y)
+          ..lineTo(x, height)
+          ..close();
       }
     }
 
     // 绘制阴影填充
-    canvas.drawPath(fillPath, fillPaint);
-
-    // 绘制折线
-    canvas.drawPath(path, linePaint);
+    canvas
+      ..drawPath(fillPath, fillPaint)
+      // 绘制折线
+      ..drawPath(path, linePaint);
 
     // 绘制数据点小红圈
-    for (var pt in points) {
-      canvas.drawCircle(pt, 4.5, pointPaint);
-      canvas.drawCircle(pt, 4.5, pointOuterPaint);
+    for (final pt in points) {
+      canvas
+        ..drawCircle(pt, 4.5, pointPaint)
+        ..drawCircle(pt, 4.5, pointOuterPaint);
     }
   }
 

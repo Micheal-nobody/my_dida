@@ -8,12 +8,10 @@ import 'package:provider/provider.dart';
 class AssociateTaskDialog extends StatefulWidget {
   const AssociateTaskDialog({super.key});
 
-  static Future<Task?> show(BuildContext context) {
-    return showDialog<Task?>(
-      context: context,
-      builder: (context) => const AssociateTaskDialog(),
-    );
-  }
+  static Future<Task?> show(BuildContext context) => showDialog<Task?>(
+    context: context,
+    builder: (context) => const AssociateTaskDialog(),
+  );
 
   @override
   State<AssociateTaskDialog> createState() => _AssociateTaskDialogState();
@@ -102,7 +100,7 @@ class _AssociateTaskDialogState extends State<AssociateTaskDialog> {
         if (tomatoProvider.associatedTask != null)
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(null); // 返回 null 表示清除绑定
+              Navigator.of(context).pop(); // 返回 null 表示清除绑定
             },
             child: const Text('取消关联', style: TextStyle(color: Colors.red)),
           ),

@@ -9,6 +9,7 @@ class TomatoRecord extends BaseEntity {
     this.taskId,
     this.taskName,
     this.categoryName,
+    this.customTomatoId,
     required this.startTime,
     required this.endTime,
     required this.durationMinutes,
@@ -17,6 +18,9 @@ class TomatoRecord extends BaseEntity {
 
   @Index()
   int? taskId;
+
+  @Index()
+  int? customTomatoId;
 
   String? taskName;
 

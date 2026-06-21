@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:my_dida/features/tomato/widgets/associate_task_dialog.dart';
+import 'package:my_dida/model/entity/custom_tomato.dart';
+import 'package:my_dida/pages/tomato_summary_page.dart';
+import 'package:my_dida/pages/tomato_timer_full_screen_page.dart';
 import 'package:my_dida/provider/tomato_provider.dart';
 import 'package:provider/provider.dart';
-import 'tomato_summary_page.dart';
 
 class TomatoPage extends StatelessWidget {
   const TomatoPage({super.key});
@@ -12,24 +12,13 @@ class TomatoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<TomatoProvider>();
 
-    // 状态冷暖背景色定义
-    Color backgroundColor;
-    Color buttonColor;
-    switch (provider.status) {
-      case TomatoStatus.focus:
-        backgroundColor = Colors.redAccent.shade700;
-        buttonColor = Colors.white.withValues(alpha: 0.2);
-        break;
-      case TomatoStatus.shortBreak:
-      case TomatoStatus.longBreak:
-        backgroundColor = Colors.teal.shade700;
-        buttonColor = Colors.white.withValues(alpha: 0.2);
-        break;
-      case TomatoStatus.idle:
-      default:
-        backgroundColor = Colors.blueGrey.shade800;
-        buttonColor = Colors.white.withValues(alpha: 0.15);
-        break;
+    // 格式化今日累计时间显示 (例如 0m, 4h37m, 25m)
+    String formatTodayMinutes(int minutes) {
+      if (minutes <= 0) return '0m';
+      if (minutes < 60) return '${minutes}m';
+      final hrs = minutes ~/ 60;
+      final mins = minutes % 60;
+      return '${hrs}h${mins}m';
     }
 
     // 格式化时间为 分:秒
@@ -40,19 +29,29 @@ class TomatoPage extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: const Color(0xFFFFF0EC), // 暖色调单色背景
       appBar: AppBar(
         title: const Text(
           '番茄专注',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black87),
         actions: [
           IconButton(
             icon: const Icon(
+              Icons.add_circle_outline_rounded,
+              color: Colors.black87,
+              size: 26,
+            ),
+            tooltip: '新建番茄钟',
+            onPressed: () => _showAddTomatoDialog(context, provider),
+          ),
+          IconButton(
+            icon: const Icon(
               Icons.bar_chart_rounded,
-              color: Colors.white,
+              color: Colors.black87,
               size: 28,
             ),
             tooltip: '专注统计',
@@ -67,7 +66,7 @@ class TomatoPage extends StatelessWidget {
           IconButton(
             icon: const Icon(
               Icons.settings_outlined,
-              color: Colors.white,
+              color: Colors.black87,
               size: 24,
             ),
             tooltip: '番茄设置',
@@ -77,308 +76,370 @@ class TomatoPage extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // 1. 顶部关联任务区域
+        child: Column(
+          children: [
+            // 顶部自定义番茄钟预设列表
+            Expanded(
+              child: provider.customTomatoes.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.hourglass_empty_rounded,
+                            size: 64,
+                            color: Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            '暂无自定义番茄钟',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange.shade700,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: () =>
+                                _showAddTomatoDialog(context, provider),
+                            icon: const Icon(Icons.add),
+                            label: const Text('立即创建'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 12.0,
+                      ),
+                      itemCount: provider.customTomatoes.length,
+                      itemBuilder: (context, index) {
+                        final tomato = provider.customTomatoes[index];
+                        final isCurrentActive =
+                            provider.activeCustomTomato?.id == tomato.id;
+                        final isRunningThis =
+                            isCurrentActive && provider.isRunning;
+
+                        return GestureDetector(
+                          onLongPress: () =>
+                              _confirmDelete(context, provider, tomato),
+                          child: Card(
+                            color: Colors.white,
+                            elevation: 0.5,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            margin: const EdgeInsets.only(bottom: 12.0),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 12.0,
+                              ),
+                              child: Row(
+                                children: [
+                                  // 笑脸图标
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.shade50,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.sentiment_satisfied_alt_rounded,
+                                      color: Colors.green.shade600,
+                                      size: 28,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  // 名字与今日专注时间
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          tomato.name,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        FutureBuilder<int>(
+                                          future: provider
+                                              .getCustomTomatoTodayMinutes(
+                                                tomato.id,
+                                              ),
+                                          builder: (context, snapshot) {
+                                            final todayMins =
+                                                snapshot.data ?? 0;
+                                            return Text(
+                                              formatTodayMinutes(todayMins),
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // 右侧播放/旋转状态
+                                  GestureDetector(
+                                    onTap: () {
+                                      if (isRunningThis) {
+                                        // 如果当前就是这一个正在运行，点击它可以去往全屏，或者暂停
+                                        provider.pause();
+                                      } else {
+                                        // 激活这个自定义番茄钟并直接启动
+                                        provider
+                                          ..setActiveCustomTomato(tomato)
+                                          ..start();
+                                      }
+                                    },
+                                    child: isRunningThis
+                                        ? SizedBox(
+                                            width: 36,
+                                            height: 36,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 3,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    Colors.orange.shade700,
+                                                  ),
+                                              backgroundColor:
+                                                  Colors.orange.shade100,
+                                            ),
+                                          )
+                                        : Container(
+                                            width: 36,
+                                            height: 36,
+                                            decoration: BoxDecoration(
+                                              color: Colors.orange.shade50,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              isCurrentActive &&
+                                                      provider.isPaused
+                                                  ? Icons.pause_rounded
+                                                  : Icons.play_arrow_rounded,
+                                              color: Colors.orange.shade800,
+                                              size: 22,
+                                            ),
+                                          ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            // 底部常驻迷你倒计时控制栏
+            if (provider.status != TomatoStatus.idle || provider.isRunning)
               GestureDetector(
-                onTap: provider.isRunning
-                    ? null
-                    : () => _selectTask(context, provider),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const TomatoTimerFullScreenPage(),
+                    ),
+                  );
+                },
                 child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, -4),
+                      ),
+                    ],
+                  ),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
-                    vertical: 12.0,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(30),
+                    vertical: 14.0,
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.playlist_add_check_rounded,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          provider.associatedTask != null
-                              ? '当前任务: ${provider.associatedTask!.name}'
-                              : '关联待办任务开始高效专注...',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      // 左侧绿色微笑图标
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.sentiment_satisfied_alt_rounded,
+                          color: Colors.green.shade600,
+                          size: 30,
                         ),
                       ),
-                      if (provider.associatedTask != null &&
-                          !provider.isRunning) ...[
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () => provider.setAssociatedTask(null),
-                          child: const Icon(
-                            Icons.close_rounded,
-                            color: Colors.white70,
-                            size: 18,
+                      const SizedBox(width: 14),
+                      // 番茄钟名称与倒计时
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              provider.activeCustomTomato != null
+                                  ? provider.activeCustomTomato!.name
+                                  : (provider.associatedTask != null
+                                        ? provider.associatedTask!.name
+                                        : '普通番茄钟'),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              provider.statusText,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // 倒计时文字显示
+                      Text(
+                        formatTime(provider.duration),
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // 播放/暂停控制按钮
+                      GestureDetector(
+                        onTap: () {
+                          if (provider.isRunning && !provider.isPaused) {
+                            provider.pause();
+                          } else {
+                            if (provider.isPaused) {
+                              provider.resume();
+                            } else {
+                              provider.start();
+                            }
+                          }
+                        },
+                        child: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            provider.isRunning && !provider.isPaused
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                            color: Colors.orange.shade800,
+                            size: 24,
                           ),
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ),
               ),
-
-              // 2. 中间大圆形计时器
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  // 圆环背景
-                  SizedBox(
-                    width: 250,
-                    height: 250,
-                    child: CircularProgressIndicator(
-                      value: provider.totalDuration > 0
-                          ? provider.duration / provider.totalDuration
-                          : 1.0,
-                      strokeWidth: 10,
-                      backgroundColor: Colors.white.withValues(alpha: 0.1),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        Colors.white,
-                      ),
-                    ),
-                  ),
-                  // 时间文字与状态
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        formatTime(provider.duration),
-                        style: const TextStyle(
-                          fontSize: 54,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        provider.statusText,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              // 3. 快捷时间设定区 + 周期小圆圈
-              Column(
-                children: [
-                  if (!provider.isRunning)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildQuickSetButton(
-                          context,
-                          '专注',
-                          buttonColor,
-                          () => provider.selectFocus(),
-                        ),
-                        const SizedBox(width: 12),
-                        _buildQuickSetButton(
-                          context,
-                          '短休',
-                          buttonColor,
-                          () => provider.selectShortBreak(),
-                        ),
-                        const SizedBox(width: 12),
-                        _buildQuickSetButton(
-                          context,
-                          '长休',
-                          buttonColor,
-                          () => provider.selectLongBreak(),
-                        ),
-                      ],
-                    ),
-                  const SizedBox(height: 20),
-                  // 番茄数点点 (例如 4 个周期小点)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(provider.longBreakInterval, (
-                      index,
-                    ) {
-                      final isCompleted = index < provider.completedTomatoCount;
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isCompleted
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.25),
-                          border: Border.all(color: Colors.white, width: 1.5),
-                        ),
-                      );
-                    }),
-                  ),
-                ],
-              ),
-
-              // 4. 底部主控制区
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (!provider.isRunning) ...[
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: backgroundColor,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 36,
-                          vertical: 14,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        elevation: 4,
-                      ),
-                      onPressed: () => provider.start(),
-                      icon: const Icon(Icons.play_arrow_rounded, size: 24),
-                      label: const Text(
-                        '开始专注',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ] else ...[
-                    if (provider.isPaused) ...[
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: backgroundColor,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        onPressed: () => provider.resume(),
-                        icon: const Icon(Icons.play_arrow_rounded),
-                        label: const Text('继续'),
-                      ),
-                    ] else ...[
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha: 0.2),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        onPressed: () => provider.pause(),
-                        icon: const Icon(Icons.pause_rounded),
-                        label: const Text('暂停'),
-                      ),
-                    ],
-                    const SizedBox(width: 16),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade900,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: () => _confirmAbandon(context, provider),
-                      icon: const Icon(Icons.stop_rounded),
-                      label: Text(
-                        provider.status == TomatoStatus.focus ? '放弃' : '跳过',
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildQuickSetButton(
-    BuildContext context,
-    String label,
-    Color buttonColor,
-    VoidCallback onTap,
-  ) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        decoration: BoxDecoration(
-          color: buttonColor,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
+  // 新建番茄钟预设对话框
+  void _showAddTomatoDialog(BuildContext context, TomatoProvider provider) {
+    final nameController = TextEditingController();
+    int focusVal = 25;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('新建自定义番茄钟'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: '番茄钟名称',
+                    hintText: '例如：帕梅拉 / 冥想 / 写作',
+                  ),
+                  maxLength: 20,
+                  autofocus: true,
+                ),
+                const SizedBox(height: 16),
+                _buildSlider(
+                  '专注时间',
+                  focusVal,
+                  5,
+                  120,
+                  (val) => setState(() => focusVal = val.round()),
+                  '分钟',
+                ),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('取消'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final name = nameController.text.trim();
+                if (name.isEmpty) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('请输入番茄钟名称')));
+                  return;
+                }
+                await provider.addCustomTomato(name, focusVal);
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text('确定'),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Future<void> _selectTask(
+  // 长按删除确认对话框
+  Future<void> _confirmDelete(
     BuildContext context,
     TomatoProvider provider,
+    CustomTomato tomato,
   ) async {
-    final selectedTask = await AssociateTaskDialog.show(context);
-    // 如果返回 null，表示点击了取消关联
-    provider.setAssociatedTask(selectedTask);
-  }
-
-  Future<void> _confirmAbandon(
-    BuildContext context,
-    TomatoProvider provider,
-  ) async {
-    if (provider.status != TomatoStatus.focus) {
-      provider.skipBreak();
-      return;
-    }
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('放弃当前专注'),
-        content: const Text('确定要放弃本次专注吗？放弃将记录为未完成专注。'),
+        title: const Text('删除番茄预设'),
+        content: Text('确定要删除自定义番茄钟“${tomato.name}”吗？'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -387,13 +448,13 @@ class TomatoPage extends StatelessWidget {
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('放弃'),
+            child: const Text('删除'),
           ),
         ],
       ),
     );
     if (confirmed == true) {
-      await provider.abandon();
+      await provider.deleteCustomTomato(tomato.id);
     }
   }
 
@@ -415,7 +476,7 @@ class TomatoPage extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildSettingSlider(
+                _buildSlider(
                   '专注时长',
                   focusVal,
                   5,
@@ -423,7 +484,7 @@ class TomatoPage extends StatelessWidget {
                   (val) => setDialogState(() => focusVal = val.round()),
                   '分钟',
                 ),
-                _buildSettingSlider(
+                _buildSlider(
                   '短休时长',
                   shortVal,
                   1,
@@ -431,7 +492,7 @@ class TomatoPage extends StatelessWidget {
                   (val) => setDialogState(() => shortVal = val.round()),
                   '分钟',
                 ),
-                _buildSettingSlider(
+                _buildSlider(
                   '长休时长',
                   longVal,
                   5,
@@ -439,7 +500,7 @@ class TomatoPage extends StatelessWidget {
                   (val) => setDialogState(() => longVal = val.round()),
                   '分钟',
                 ),
-                _buildSettingSlider(
+                _buildSlider(
                   '长休间隔',
                   intervalVal,
                   2,
@@ -494,48 +555,43 @@ class TomatoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingSlider(
+  Widget _buildSlider(
     String label,
     int currentValue,
     double min,
     double max,
     ValueChanged<double> onChanged,
     String unit,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+  ) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+            Text(
+              '$currentValue $unit',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
               ),
-              Text(
-                '$currentValue $unit',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-        Slider(
-          value: currentValue.toDouble(),
-          min: min,
-          max: max,
-          divisions: (max - min).toInt(),
-          onChanged: onChanged,
-        ),
-      ],
-    );
-  }
+      ),
+      Slider(
+        value: currentValue.toDouble(),
+        min: min,
+        max: max,
+        divisions: (max - min).toInt(),
+        onChanged: onChanged,
+      ),
+    ],
+  );
 }
