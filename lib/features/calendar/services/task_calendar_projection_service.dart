@@ -204,8 +204,7 @@ class TaskCalendarProjectionService {
       return true;
     }
 
-    return task.isAllDay ||
-        (task.startTime!.hour == 0 && task.startTime!.minute == 0);
+    return task.isAllDay;
   }
 
   bool _isCrossDayTask(Task task) {

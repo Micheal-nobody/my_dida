@@ -16,6 +16,8 @@ import 'package:my_dida/features/settings/pages/sidebar_settings_page.dart';
 import 'package:my_dida/features/tasks/pages/search_page.dart';
 import 'package:my_dida/features/tasks/pages/four_quadrants_page.dart';
 import 'package:my_dida/core/router/shell_scaffold_key.dart';
+import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
+import 'package:provider/provider.dart';
 
 final GoRouter goRouter = GoRouter(
   // 初始路由
@@ -82,28 +84,51 @@ final GoRouter goRouter = GoRouter(
         //? StatefulNavigationShell 是一个特殊的路由组件，它允许在底部导航栏中切换不同的分支（branch），每个分支都有自己的导航栈。
         body: navigationShell,
 
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: navigationShell.currentIndex,
+        bottomNavigationBar: Consumer<TomatoProvider>(
+          builder: (context, tomatoProvider, child) {
+            final isRunning = tomatoProvider.isRunning && tomatoProvider.status != TomatoStatus.idle;
+            final progress = tomatoProvider.totalDuration > 0
+                ? (tomatoProvider.totalDuration - tomatoProvider.duration) / tomatoProvider.totalDuration
+                : 0.0;
 
-          //? index 参数表示当前选中的底部导航项索引， initialLocation 表示是否初始化页面导航栈（可以理解为是否切换分支），如果为 true，则该分支的导航栈将初始化为该分支的根路由。
-          onTap: (index) => navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          ),
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.masks), label: '待办清单'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month),
-              label: '日历视图',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.lock_clock), label: '习惯'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.timer_outlined),
-              label: '番茄钟',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.history), label: '操作记录'),
-          ],
+            return BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: navigationShell.currentIndex,
+              onTap: (index) => navigationShell.goBranch(
+                index,
+                initialLocation: index == navigationShell.currentIndex,
+              ),
+              items: [
+                const BottomNavigationBarItem(icon: Icon(Icons.masks), label: '待办清单'),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.calendar_month),
+                  label: '日历视图',
+                ),
+                const BottomNavigationBarItem(icon: Icon(Icons.lock_clock), label: '习惯'),
+                BottomNavigationBarItem(
+                  icon: isRunning
+                      ? Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            const Icon(Icons.timer),
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                value: progress,
+                                strokeWidth: 2,
+                                valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
+                              ),
+                            ),
+                          ],
+                        )
+                      : const Icon(Icons.timer_outlined),
+                  label: '番茄钟',
+                ),
+                const BottomNavigationBarItem(icon: Icon(Icons.history), label: '操作记录'),
+              ],
+            );
+          },
         ),
       ),
 

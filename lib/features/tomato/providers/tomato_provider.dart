@@ -66,6 +66,12 @@ class TomatoProvider with ChangeNotifier {
   Task? get associatedTask => _associatedTask;
   CustomTomato? get activeCustomTomato => _activeCustomTomato;
   List<CustomTomato> get customTomatoes => _customTomatoes;
+  bool countUpMode = false;
+
+  void toggleCountUpMode() {
+    countUpMode = !countUpMode;
+    notifyListeners();
+  }
 
   // 配置项代理
   int get focusMinutes => _ticker.focusMinutes;

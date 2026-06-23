@@ -32,7 +32,9 @@ class TaskDateTimePicker {
     if (timeInfo.rrule != task.rrule) {
       await taskProvider.execute(UpdateRRule(task, timeInfo.rrule));
     }
-    await taskProvider.execute(UpdateTimeRange(task, startTime, endTime));
+    await taskProvider.execute(
+      UpdateTimeRange(task, startTime, endTime, isAllDay: timeInfo.isAllDay),
+    );
     onUpdated?.call();
   }
 

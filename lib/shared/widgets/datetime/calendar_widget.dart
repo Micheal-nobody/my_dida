@@ -103,17 +103,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             icon: Icons.access_time,
             label: '时间',
             value:
-                _value.selectedTime != null &&
-                    (!_value.isTimeOnlyDate &&
-                        _value.selectedTime!.hour != 0 &&
-                        _value.selectedTime!.minute != 0)
+                _value.selectedTime != null && !_value.isTimeOnlyDate
                 ? '${_value.selectedTime!.hour.toString().padLeft(2, '0')}:${_value.selectedTime!.minute.toString().padLeft(2, '0')}'
                 : '无',
             valueColor:
-                _value.selectedTime != null &&
-                    (!_value.isTimeOnlyDate &&
-                        _value.selectedTime!.hour != 0 &&
-                        _value.selectedTime!.minute != 0)
+                _value.selectedTime != null && !_value.isTimeOnlyDate
                 ? Colors.orange
                 : null,
             onTap: () async {
@@ -127,7 +121,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 return;
               }
               _updateValue(
-                _value.copyWith(selectedTime: pickedTime, rrule: _value.rrule),
+                _value.copyWith(
+                  selectedTime: pickedTime,
+                  rrule: _value.rrule,
+                  isTimeOnlyDate: false,
+                ),
               );
             },
           ),

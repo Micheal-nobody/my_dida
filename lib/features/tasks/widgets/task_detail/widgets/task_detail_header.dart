@@ -7,9 +7,10 @@ import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:provider/provider.dart';
 
 class TaskDetailHeader extends StatelessWidget {
-  const TaskDetailHeader({required this.task, super.key});
+  const TaskDetailHeader({required this.task, this.onDelete, super.key});
 
   final Task task;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +77,7 @@ class TaskDetailHeader extends StatelessWidget {
                       AssociateMainTaskDialog.show(context, updatedTask);
                       break;
                     case 'delete':
+                      onDelete?.call();
                       await taskProvider.execute(DeleteTask(updatedTask));
                       if (context.mounted) {
                         Navigator.of(context).pop();

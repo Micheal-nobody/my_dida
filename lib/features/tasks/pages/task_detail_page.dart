@@ -85,6 +85,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   String _lastSavedDescription = '';
   bool _hasResolvedTask = false;
   bool _didShowMissingTaskMessage = false;
+  bool _isDeletingActively = false;
 
   @override
   void initState() {
@@ -101,7 +102,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         }
       });
 
-      if (t == null && !_didShowMissingTaskMessage) {
+      if (t == null && !_didShowMissingTaskMessage && !_isDeletingActively) {
         _didShowMissingTaskMessage = true;
         getIt<AppMessageService>().showWarning('任务不存在或已删除');
       }
@@ -170,7 +171,15 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                       const SizedBox(height: 8),
 
                       // 任务详情头部
-                      TaskDetailHeader(task: task),
+                      TaskDetailHeader(
+                        task: task,
+                        onDelete: () {
+                          setState(() {
+                            _isDeletingActively = true;
+                          });
+                          _taskSub?.cancel();
+                        },
+                      ),
                       const SizedBox(height: 6),
 
                       // 时间显示和确认按钮区域

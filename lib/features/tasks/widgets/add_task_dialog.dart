@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/core/logger/logger.dart';
+import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/core/constants/app_constants.dart';
 import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
@@ -257,35 +258,16 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   }
 
   Future<void> _editTags() async {
-    final textController = TextEditingController(text: _tags.join(', '));
-    final updatedTags = await showDialog<List<String>>(
+    final allTasks = context.read<TaskProvider>().tasks;
+    final allTags = allTasks.expand((t) => t.tags).toSet().toList();
+
+    final updatedTags = await showModalBottomSheet<List<String>>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('修改标签'),
-        content: TextField(
-          controller: textController,
-          decoration: const InputDecoration(hintText: '输入标签，以逗号分隔'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () {
-              final text = textController.text.trim();
-              final tags = text.isEmpty
-                  ? <String>[]
-                  : text
-                        .split(RegExp('[，,]'))
-                        .map((e) => e.trim())
-                        .where((e) => e.isNotEmpty)
-                        .toList();
-              Navigator.pop(context, tags);
-            },
-            child: const Text('保存'),
-          ),
-        ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _TagSelectorBottomSheet(
+        initialTags: _tags,
+        allHistoryTags: allTags,
       ),
     );
     if (updatedTags != null) {
@@ -579,55 +561,75 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     );
   }
 
-  Widget _buildBottomSheetLayout(BuildContext context) => Container(
-    padding: EdgeInsets.only(
-      left: 16,
-      right: 16,
-      top: 16,
-      bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-    ),
-    decoration: const BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    child: SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildBottomSheetLayout(BuildContext context) {
+    double totalDragY = 0;
+
+    Future<void> triggerExtendedDetail() async {
+      final String taskName = _textController.text.trim();
+      if (taskName.isEmpty) {
+        setState(() {
+          _hasError = true;
+        });
+        return;
+      }
+      final newTask = _buildTaskFromForm(
+        taskName: taskName,
+        checklistProvider: context.read<ChecklistProvider>(),
+      );
+      final savedTask = await context.read<TaskProvider>().addTask(newTask);
+      if (context.mounted) {
+        Navigator.pop(context);
+        TaskDetailPage.show(context, savedTask);
+      }
+    }
+
+    return GestureDetector(
+      onVerticalDragUpdate: (details) {
+        totalDragY += details.primaryDelta ?? 0;
+      },
+      onVerticalDragEnd: (details) {
+        if (totalDragY < -40 || (details.primaryVelocity ?? 0) < -300) {
+          triggerExtendedDetail();
+        }
+        totalDragY = 0;
+      },
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.48,
+        ),
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '添加任务',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.open_in_full,
-                  size: 20,
-                  color: Colors.grey,
-                ),
-                tooltip: '全屏编辑',
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AddTaskDialog(
-                        initialIsFullScreen: true,
-                        presetTask: _buildTaskFromForm(
-                          taskName: _textController.text.trim(),
-                          checklistProvider: context.read<ChecklistProvider>(),
-                        ),
-                        parentTask: parentTask,
-                      ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    '添加任务',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.open_in_full,
+                      size: 20,
+                      color: Colors.grey,
                     ),
-                  );
-                },
+                    tooltip: '全屏编辑',
+                    onPressed: triggerExtendedDetail,
+                  ),
+                ],
               ),
-            ],
-          ),
           TextField(
             controller: _textController,
             autofocus: !_hasInitPreset,
@@ -844,7 +846,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         ],
       ),
     ),
-  );
+  ),
+);
+  }
 
   Widget _buildTimeDisplayRow(BuildContext context) => InkWell(
     onTap: () => _showDateTimePicker(context),
@@ -1180,5 +1184,144 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     } else {
       return _buildBottomSheetLayout(context);
     }
+  }
+}
+
+class _TagSelectorBottomSheet extends StatefulWidget {
+  const _TagSelectorBottomSheet({
+    required this.initialTags,
+    required this.allHistoryTags,
+  });
+
+  final List<String> initialTags;
+  final List<String> allHistoryTags;
+
+  @override
+  State<_TagSelectorBottomSheet> createState() => __TagSelectorBottomSheetState();
+}
+
+class __TagSelectorBottomSheetState extends State<_TagSelectorBottomSheet> {
+  late List<String> _selectedTags;
+  final TextEditingController _inputController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTags = List.from(widget.initialTags);
+  }
+
+  @override
+  void dispose() {
+    _inputController.dispose();
+    super.dispose();
+  }
+
+  void _addTag(String tag) {
+    final trimmed = tag.trim();
+    if (trimmed.isNotEmpty && !_selectedTags.contains(trimmed)) {
+      setState(() {
+        _selectedTags.add(trimmed);
+      });
+    }
+    _inputController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final recommendedTags = widget.allHistoryTags
+        .where((tag) => !_selectedTags.contains(tag))
+        .toList();
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: bottomInset + 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('取消', style: TextStyle(color: Colors.grey)),
+              ),
+              const Text(
+                '管理标签',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, _selectedTags),
+                child: const Text('保存', style: TextStyle(color: Colors.orange)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_selectedTags.isNotEmpty) ...[
+            const Text(
+              '当前已选标签',
+              style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: _selectedTags.map((tag) {
+                return InputChip(
+                  label: Text(tag),
+                  onDeleted: () {
+                    setState(() {
+                      _selectedTags.remove(tag);
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+          ],
+          TextField(
+            controller: _inputController,
+            decoration: const InputDecoration(
+              hintText: '输入新标签并回车确认',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+            onSubmitted: _addTag,
+          ),
+          const SizedBox(height: 16),
+          if (recommendedTags.isNotEmpty) ...[
+            const Text(
+              '推荐常用标签',
+              style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 120),
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: recommendedTags.map((tag) {
+                    return ActionChip(
+                      label: Text(tag),
+                      onPressed: () => _addTag(tag),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }

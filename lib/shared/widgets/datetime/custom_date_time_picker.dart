@@ -174,6 +174,9 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
           ? TimeOfDay.fromDateTime(startDateTime)
           : null,
       endTime: endDateTime != null ? TimeOfDay.fromDateTime(endDateTime) : null,
+      isAllDay: _tabController.index == 0
+          ? (_value.startTime == null)
+          : _value.isAllDay,
       rrule: _value.rrule,
     );
   }

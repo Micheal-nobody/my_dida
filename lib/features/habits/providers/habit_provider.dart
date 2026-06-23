@@ -141,8 +141,8 @@ class HabitProvider with ChangeNotifier {
   }
 
   // 打卡一次
-  Future<void> checkIn(Habit habit) async {
-    await _habitLifecycleManager.checkIn(habit);
+  Future<void> checkIn(Habit habit, {double? value}) async {
+    await _habitLifecycleManager.checkIn(habit, value: value);
   }
 
   // 跳过今天
@@ -151,13 +151,24 @@ class HabitProvider with ChangeNotifier {
   }
 
   // 检查今日是否完成打卡
-  bool isTodayCompleted(Habit habit) =>
-      habit.currentCheckInCount >= habit.checkInCount;
+  bool isTodayCompleted(Habit habit) {
+    if (habit.habitType == 'yesNo') {
+      return habit.currentCheckInCount >= habit.checkInCount;
+    } else {
+      return habit.currentValue >= (habit.targetValue ?? 1.0);
+    }
+  }
 
   // 获取今日打卡进度
   double getTodayProgress(Habit habit) {
-    if (habit.checkInCount == 0) return 0.0;
-    return habit.currentCheckInCount / habit.checkInCount;
+    if (habit.habitType == 'yesNo') {
+      if (habit.checkInCount == 0) return 0.0;
+      return habit.currentCheckInCount / habit.checkInCount;
+    } else {
+      final target = habit.targetValue ?? 1.0;
+      if (target == 0.0) return 0.0;
+      return habit.currentValue / target;
+    }
   }
 
   // 重置今日打卡次数（每天开始时调用）

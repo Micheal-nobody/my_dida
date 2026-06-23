@@ -42,6 +42,7 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
   late AnimationController _slideController;
   late Animation<double> _slideAnimation;
   bool _isCheckedIn = false;
+  final TextEditingController _inputController = TextEditingController();
 
   @override
   void initState() {
@@ -53,11 +54,25 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
     _slideAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _slideController, curve: Curves.easeInOut),
     );
+
+    // 设定默认打卡增量
+    if (widget.habit.habitType == 'duration') {
+      _inputController.text = '15';
+    } else if (widget.habit.habitType == 'count') {
+      if (widget.habit.unit == '毫升') {
+        _inputController.text = '250';
+      } else if (widget.habit.unit == '页') {
+        _inputController.text = '5';
+      } else {
+        _inputController.text = '1';
+      }
+    }
   }
 
   @override
   void dispose() {
     _slideController.dispose();
+    _inputController.dispose();
     super.dispose();
   }
 
@@ -107,7 +122,9 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${habit.currentCheckInCount}/${habit.checkInCount}',
+                    habit.habitType == 'yesNo'
+                        ? '${habit.currentCheckInCount}/${habit.checkInCount}'
+                        : '${habit.currentValue.toStringAsFixed(0)}/${habit.targetValue?.toStringAsFixed(0) ?? 0} ${habit.unit ?? ""}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -120,6 +137,44 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
 
             // 滑动按钮
             if (!isCompleted) ...[
+              if (habit.habitType == 'count' || habit.habitType == 'duration') ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      onPressed: () {
+                        double val = double.tryParse(_inputController.text) ?? 0.0;
+                        double step = habit.habitType == 'duration' ? 15.0 : (habit.unit == '毫升' ? 250.0 : (habit.unit == '页' ? 5.0 : 1.0));
+                        val = (val - step).clamp(0.0, 999999.0);
+                        _inputController.text = val.toStringAsFixed(0);
+                      },
+                    ),
+                    SizedBox(
+                      width: 100,
+                      child: TextField(
+                        controller: _inputController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          suffixText: habit.unit ?? '',
+                          hintText: '输入数值',
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: () {
+                        double val = double.tryParse(_inputController.text) ?? 0.0;
+                        double step = habit.habitType == 'duration' ? 15.0 : (habit.unit == '毫升' ? 250.0 : (habit.unit == '页' ? 5.0 : 1.0));
+                        val = val + step;
+                        _inputController.text = val.toStringAsFixed(0);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
               Text(
                 '向右滑动完成打卡',
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
@@ -241,7 +296,10 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
               onPanEnd: (details) {
                 if (_slideController.value > 0.8) {
                   _slideController.forward().then((_) async {
-                    await habitProvider.checkIn(widget.habit);
+                    await habitProvider.checkIn(
+                      widget.habit,
+                      value: double.tryParse(_inputController.text),
+                    );
                     setState(() {
                       _isCheckedIn = true;
                     });

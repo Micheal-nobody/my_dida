@@ -32,6 +32,11 @@ class Habit extends RevertibleEntity {
   int checkInCount; // 所需打卡次数
   int currentCheckInCount; // 当前打卡次数
 
+  String habitType = 'yesNo'; // 'yesNo', 'count', 'duration'
+  String? unit;
+  double? targetValue;
+  double currentValue = 0.0;
+
   //用于统计数据的字段，这些字段需要根据打卡记录进行更新
   DateTime startDate; // 习惯开始日期
   int totalCheckInCount; // 总打卡次数
@@ -73,6 +78,10 @@ class Habit extends RevertibleEntity {
       'isArchived': isArchived,
       'sortOrder': sortOrder,
       'isTodaySkipped': isTodaySkipped,
+      'habitType': habitType,
+      'unit': unit,
+      'targetValue': targetValue,
+      'currentValue': currentValue,
     };
   }
 
@@ -101,6 +110,10 @@ class Habit extends RevertibleEntity {
       sortOrder: json['sortOrder'] as int? ?? 0,
       isTodaySkipped: json['isTodaySkipped'] as bool? ?? false,
     );
+    habit.habitType = json['habitType']?.toString() ?? 'yesNo';
+    habit.unit = json['unit']?.toString();
+    habit.targetValue = (json['targetValue'] as num?)?.toDouble();
+    habit.currentValue = (json['currentValue'] as num?)?.toDouble() ?? 0.0;
     if (json['id'] != null) {
       habit.id = json['id'] as int;
     }

@@ -41,11 +41,8 @@ class VirtualizedCalendarTimeArea extends StatefulWidget {
 
 class _VirtualizedCalendarTimeAreaState
     extends State<VirtualizedCalendarTimeArea> {
-  final ScrollController _scrollController = ScrollController();
   final GlobalKey _containerKey = GlobalKey();
 
-  static const int _hoursPerScreen = 12;
-  static const int _bufferHours = 2;
   static const int _minutesPerDay = 24 * 60;
   static const int _snapGranularityMinutes = 15;
   DateTime? _dragPreviewTime;
@@ -58,23 +55,7 @@ class _VirtualizedCalendarTimeAreaState
   @override
   void dispose() {
     widget.onDragPreviewChanged(null);
-    _scrollController.dispose();
     super.dispose();
-  }
-
-  List<int> _getVisibleHours(List<int> activeHours) {
-    if (!_scrollController.hasClients) {
-      return List.generate(activeHours.length.clamp(0, 12), (index) => index);
-    }
-
-    final scrollOffset = _scrollController.offset;
-    final startIndex = (scrollOffset / _hourHeight).floor() - _bufferHours;
-    final endIndex = startIndex + _hoursPerScreen + (_bufferHours * 2);
-
-    return List.generate(
-      (endIndex - startIndex).clamp(0, activeHours.length),
-      (index) => (startIndex + index).clamp(0, activeHours.length - 1),
-    );
   }
 
   double _getDateColumnWidth(double availableWidth) {
@@ -207,19 +188,11 @@ class _VirtualizedCalendarTimeAreaState
               ),
               child: Stack(
                 children: [
-                  ListView.builder(
-                    controller: _scrollController,
-                    itemCount: activeHours.length,
-                    itemExtent: _hourHeight,
-                    itemBuilder: (context, index) {
-                      final visibleIndices = _getVisibleHours(activeHours);
-                      if (!visibleIndices.contains(index)) {
-                        return SizedBox(height: _hourHeight);
-                      }
-
+                  Column(
+                    children: List.generate(activeHours.length, (index) {
                       final actualHour = activeHours[index];
                       return _buildHourRow(actualHour, availableWidth);
-                    },
+                    }),
                   ),
                   if (candidateData.isNotEmpty && previewLineTop != null)
                     Positioned(

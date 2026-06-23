@@ -12,7 +12,7 @@ abstract class HabitLifecycleManager {
   Future<void> addHabit(Habit habit);
   Future<void> updateHabit(Habit habit);
   Future<void> deleteHabit(int id);
-  Future<void> checkIn(Habit habit);
+  Future<void> checkIn(Habit habit, {double? value});
   Future<void> skipToday(Habit habit);
   Future<void> resetTodayCheckInCounts();
   Future<void> undoLastCheckIn(Habit habit);
@@ -106,24 +106,25 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
   }
 
   @override
-  Future<void> checkIn(Habit habit) async {
+  Future<void> checkIn(Habit habit, {double? value}) async {
     try {
-      if (habit.currentCheckInCount < habit.checkInCount) {
-        // 记录打卡操作
-        final operation = Operation.createCheckInOperation(habit);
-        await _operationStack.addOperation(operation);
+      final double increment = value ?? 1.0;
+      // 记录打卡操作
+      final operation = Operation.createCheckInOperation(habit);
+      await _operationStack.addOperation(operation);
 
-        // 领域逻辑：修改实体字段后持久化
-        habit.currentCheckInCount += 1;
-        habit.totalCheckInCount += 1;
-        await _habitRepository.updateHabit(habit);
+      // 领域逻辑：修改实体字段后持久化
+      habit.currentCheckInCount += 1;
+      habit.totalCheckInCount += 1;
+      habit.currentValue += increment;
+      await _habitRepository.updateHabit(habit);
 
-        final record = HabitCheckInRecord(
-          habitId: habit.id,
-          checkInTime: DateTime.now(),
-        );
-        await _recordRepository.addRecord(record);
-      }
+      final record = HabitCheckInRecord(
+        habitId: habit.id,
+        checkInTime: DateTime.now(),
+        checkInValue: increment,
+      );
+      await _recordRepository.addRecord(record);
     } catch (e) {
       throw HabitException('Failed to check in habit: $e');
     }
@@ -166,6 +167,7 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
       final habits = await _habitRepository.getAllHabits();
       for (final Habit habit in habits) {
         habit.currentCheckInCount = 0;
+        habit.currentValue = 0.0;
         habit.isTodaySkipped = false;
         await _habitRepository.updateHabit(habit);
       }
@@ -178,12 +180,6 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
   Future<void> undoLastCheckIn(Habit habit) async {
     try {
       if (habit.currentCheckInCount > 0) {
-        habit.currentCheckInCount -= 1;
-        if (habit.totalCheckInCount > 0) {
-          habit.totalCheckInCount -= 1;
-        }
-        await _habitRepository.updateHabit(habit);
-
         // 删除最后一条打卡记录
         final records = await _recordRepository.getRecordsByHabitId(habit.id);
         final today = DateTime.now();
@@ -193,10 +189,21 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
               r.checkInTime.month == today.month &&
               r.checkInTime.day == today.day;
         }).toList();
+
+        double subtractedValue = 1.0;
         if (todayRecords.isNotEmpty) {
           todayRecords.sort((a, b) => b.checkInTime.compareTo(a.checkInTime));
-          await _recordRepository.deleteRecord(todayRecords.first.id);
+          final lastRecord = todayRecords.first;
+          subtractedValue = lastRecord.checkInValue;
+          await _recordRepository.deleteRecord(lastRecord.id);
         }
+
+        habit.currentCheckInCount -= 1;
+        if (habit.totalCheckInCount > 0) {
+          habit.totalCheckInCount -= 1;
+        }
+        habit.currentValue = (habit.currentValue - subtractedValue).clamp(0.0, 999999.0);
+        await _habitRepository.updateHabit(habit);
       }
     } catch (e) {
       throw HabitException('Failed to undo last check in: $e');
@@ -212,6 +219,7 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
         0,
         999999,
       );
+      habit.currentValue = 0.0;
       await _habitRepository.updateHabit(habit);
 
       // 删除今天所有的非Skip打卡记录

@@ -9,6 +9,7 @@ class HabitCheckInRecord extends BaseEntity {
     required this.habitId,
     required this.checkInTime,
     this.isSkip = false,
+    this.checkInValue = 1.0,
   });
 
   @Index()
@@ -19,11 +20,14 @@ class HabitCheckInRecord extends BaseEntity {
 
   bool isSkip;
 
+  double checkInValue;
+
   Map<String, dynamic> toJson() => {
     'id': id == Isar.autoIncrement ? null : id,
     'habitId': habitId,
     'checkInTime': checkInTime.toIso8601String(),
     'isSkip': isSkip,
+    'checkInValue': checkInValue,
   };
 
   static HabitCheckInRecord fromJson(Map<String, dynamic> json) {
@@ -31,6 +35,7 @@ class HabitCheckInRecord extends BaseEntity {
       habitId: json['habitId'] as int,
       checkInTime: DateTime.parse(json['checkInTime'] as String),
       isSkip: json['isSkip'] as bool? ?? false,
+      checkInValue: (json['checkInValue'] as num?)?.toDouble() ?? 1.0,
     );
     if (json['id'] != null) {
       record.id = json['id'] as int;
