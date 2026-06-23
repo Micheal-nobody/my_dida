@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/logger/logger.dart';
 import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
-import 'package:my_dida/core/constants/ui_constants.dart';
 import 'package:my_dida/features/tasks/widgets/task_card.dart';
 import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
@@ -435,7 +434,7 @@ class _FourQuadrantsSettingsSheetState
               title: const Text('隐藏已完成任务'),
               subtitle: const Text('开启后只显示未完成的待办'),
               value: _hideCompleted,
-              activeColor: Colors.orange,
+              activeThumbColor: Colors.orange,
               onChanged: (val) {
                 setState(() {
                   _hideCompleted = val;

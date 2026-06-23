@@ -10,7 +10,6 @@ import 'package:my_dida/features/tasks/widgets/task_card.dart';
 import 'package:my_dida/features/habits/widgets/edit_habit_dialog.dart';
 import 'package:my_dida/features/habits/widgets/habit_check_in_dialog.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/habits/providers/habit_provider.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';

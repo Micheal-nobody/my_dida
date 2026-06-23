@@ -7,9 +7,7 @@ import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
-import 'package:my_dida/features/habits/providers/habit_provider.dart';
 import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
-import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:my_dida/features/operation_undo/widgets/operation_habit_renderer.dart';

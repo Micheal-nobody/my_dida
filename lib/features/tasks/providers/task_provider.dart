@@ -1,16 +1,13 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
-import 'package:my_dida/core/utils/time_utils.dart';
 
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/constants/app_constants.dart';
 import 'package:my_dida/core/constants/ui_constants.dart';
 import 'package:my_dida/core/errors/exceptions.dart';
-import 'package:my_dida/features/tasks/validators/task_validator.dart';
 import 'package:my_dida/features/tasks/models/task_operation.dart';
 export 'package:my_dida/features/tasks/models/task_operation.dart';
-import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/features/calendar/models/task_calendar_view_data.dart';
@@ -18,7 +15,6 @@ import 'package:my_dida/features/operation_undo/providers/operation_stack_provid
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/calendar/services/task_calendar_projection_service.dart';
 import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
-import 'package:my_dida/core/utils/rrule_util.dart';
 
 enum TaskViewMode { list, board }
 

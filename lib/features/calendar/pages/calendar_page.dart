@@ -9,7 +9,6 @@ import 'package:my_dida/features/habits/widgets/habit_check_in_dialog.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/features/calendar/models/task_calendar_view_data.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/habits/providers/habit_provider.dart';
@@ -20,7 +19,6 @@ import 'package:my_dida/features/calendar/widgets/calendar_visible_range_dialog.
 import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_widgets/calendar_task_list_bottom.dart';
 import 'package:my_dida/shared/widgets/datetime/calendar_grid.dart';
-import 'package:my_dida/shared/widgets/custom_floating_action_button.dart';
 import 'package:my_dida/shared/widgets/datetime/custom_date_picker_dialog.dart';
 import 'package:my_dida/shared/widgets/datetime/time_axis_column.dart';
 import 'package:my_dida/core/utils/performance_monitor.dart';

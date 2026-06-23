@@ -1,6 +1,5 @@
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
-import 'package:my_dida/features/tasks/models/check_point.dart';
 
 abstract class TaskOperation {
   final Task task;
