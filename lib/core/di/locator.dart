@@ -32,6 +32,7 @@ import 'package:my_dida/features/checklist/services/checklist_lifecycle_manager.
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/services/task_operation_reverter.dart';
 import 'package:my_dida/features/habits/services/habit_operation_reverter.dart';
+import 'package:my_dida/features/checklist/services/checklist_operation_reverter.dart';
 import 'package:my_dida/core/config/app_config.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -67,7 +68,8 @@ Future<void> setupLocator(AppConfig config) async {
     ..registerSingleton<EntityRegistry>(
       EntityRegistry()
         ..register(OperationTarget.task, TaskOperationReverter())
-        ..register(OperationTarget.habit, HabitOperationReverter()),
+        ..register(OperationTarget.habit, HabitOperationReverter())
+        ..register(OperationTarget.checklist, ChecklistOperationReverter()),
     )
     // 注册泛化撤销实例适配器（取代原本两个 instanceName 子类）
     ..registerSingleton<OperationReverter>(GenericOperationReverter())
@@ -98,6 +100,8 @@ Future<void> setupLocator(AppConfig config) async {
     ..registerSingleton<ChecklistLifecycleManager>(
       ChecklistLifecycleManagerImpl(
         checklistRepository: getIt<ChecklistRepository>(),
+        taskRepository: getIt<TaskRepository>(),
+        operationStack: getIt<OperationStackProvider>(),
         messageService: getIt<AppMessageService>(),
       ),
     );

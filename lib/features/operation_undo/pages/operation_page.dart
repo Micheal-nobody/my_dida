@@ -10,6 +10,8 @@ import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'package:my_dida/features/checklist/models/checklist.dart';
+import 'package:my_dida/features/operation_undo/widgets/operation_checklist_renderer.dart';
 import 'package:my_dida/features/operation_undo/widgets/operation_habit_renderer.dart';
 import 'package:my_dida/features/operation_undo/widgets/operation_task_renderer.dart';
 
@@ -185,27 +187,46 @@ class _OperationPageState extends State<OperationPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatItem(
-                      '总操作',
-                      totalOperations.toString(),
-                      Icons.history,
-                      Colors.blue,
+                    Expanded(
+                      child: _buildStatItem(
+                        '总操作',
+                        totalOperations.toString(),
+                        Icons.history,
+                        Colors.blue,
+                      ),
                     ),
-                    _buildStatItem(
-                      '任务操作',
-                      (stats['task_add'] ?? 0) +
-                          (stats['task_update'] ?? 0) +
-                          (stats['task_delete'] ?? 0),
-                      Icons.task,
-                      Colors.orange,
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: _buildStatItem(
+                        '任务',
+                        (stats['task_add'] ?? 0) +
+                            (stats['task_update'] ?? 0) +
+                            (stats['task_delete'] ?? 0),
+                        Icons.task,
+                        Colors.orange,
+                      ),
                     ),
-                    _buildStatItem(
-                      '习惯操作',
-                      (stats['habit_add'] ?? 0) +
-                          (stats['habit_update'] ?? 0) +
-                          (stats['habit_delete'] ?? 0),
-                      Icons.psychology,
-                      Colors.purple,
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: _buildStatItem(
+                        '习惯',
+                        (stats['habit_add'] ?? 0) +
+                            (stats['habit_update'] ?? 0) +
+                            (stats['habit_delete'] ?? 0),
+                        Icons.psychology,
+                        Colors.purple,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: _buildStatItem(
+                        '清单',
+                        (stats['checklist_add'] ?? 0) +
+                            (stats['checklist_update'] ?? 0) +
+                            (stats['checklist_delete'] ?? 0),
+                        Icons.list,
+                        Colors.teal,
+                      ),
                     ),
                   ],
                 ),
@@ -223,7 +244,7 @@ class _OperationPageState extends State<OperationPage> {
     IconData icon,
     Color color,
   ) => Container(
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
     decoration: BoxDecoration(
       color: color.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(16),
@@ -439,12 +460,18 @@ class _OperationPageState extends State<OperationPage> {
     final colors = {
       OperationTarget.task: Colors.orange,
       OperationTarget.habit: Colors.purple,
+      OperationTarget.checklist: Colors.teal,
     };
 
-    final labels = {OperationTarget.task: '任务', OperationTarget.habit: '习惯'};
+    final labels = {
+      OperationTarget.task: '任务',
+      OperationTarget.habit: '习惯',
+      OperationTarget.checklist: '清单',
+    };
     final icons = {
       OperationTarget.task: Icons.task,
       OperationTarget.habit: Icons.psychology,
+      OperationTarget.checklist: Icons.list,
     };
 
     return Container(
@@ -905,6 +932,15 @@ class _OperationPageState extends State<OperationPage> {
             isPreviousData: isPreviousData,
           );
         }
+      } else if (target == OperationTarget.checklist) {
+        // 创建Checklist对象
+        final checklist = _createChecklistFromJson(data);
+        if (checklist != null) {
+          return OperationChecklistRenderer(
+            checklist: checklist,
+            isPreviousData: isPreviousData,
+          );
+        }
       }
     } catch (e) {
       // JSON解析失败，显示原始数据
@@ -989,6 +1025,20 @@ class _OperationPageState extends State<OperationPage> {
     }
   }
 
+  Checklist? _createChecklistFromJson(Map<String, dynamic> data) {
+    try {
+      final checklistData = data.containsKey('checklist')
+          ? data['checklist'] as Map<String, dynamic>
+          : data;
+      return Checklist(
+        name: checklistData['name']?.toString() ?? '',
+        colorValue: checklistData['colorValue'] ?? 0xFFFF9800,
+      )..id = checklistData['id'] ?? 0;
+    } catch (e) {
+      return null;
+    }
+  }
+
   static String _getOperationTypeLabel(OperationType type) {
     switch (type) {
       case OperationType.add:
@@ -1006,6 +1056,8 @@ class _OperationPageState extends State<OperationPage> {
         return '任务';
       case OperationTarget.habit:
         return '习惯';
+      case OperationTarget.checklist:
+        return '清单';
     }
   }
 }

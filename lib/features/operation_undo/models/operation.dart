@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:isar_community/isar.dart';
+import 'package:my_dida/features/checklist/models/checklist.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/shared/models/revertible_entity.dart';
@@ -18,6 +19,7 @@ enum OperationType {
 enum OperationTarget {
   task, // 任务
   habit, // 习惯
+  checklist, // 清单
 }
 
 @Collection()
@@ -61,6 +63,50 @@ class Operation {
   // ==================================================================
   // 多态创建工厂方法，基于 RevertibleEntity 抽象接口
   // ==================================================================
+
+  /// 创建添加清单操作
+  static Operation createAddChecklistOperation(RevertibleEntity entity) =>
+      Operation(
+        type: OperationType.add,
+        target: OperationTarget.checklist,
+        timestamp: DateTime.now(),
+        description: _buildDescription('添加', entity),
+        targetId: entity.id,
+        newData: _entityToJson(entity),
+      );
+
+  /// 创建删除清单操作，包含被影响任务ID列表
+  static Operation createDeleteChecklistOperation(
+    RevertibleEntity entity,
+    List<int> affectedTaskIds,
+  ) =>
+      Operation(
+        type: OperationType.delete,
+        target: OperationTarget.checklist,
+        timestamp: DateTime.now(),
+        description: _buildDescription('删除', entity),
+        targetId: entity.id,
+        previousData: jsonEncode({
+          'checklist': entity.toJson(),
+          'affectedTaskIds': affectedTaskIds,
+        }),
+      );
+
+  /// 创建更新清单操作
+  static Operation createUpdateChecklistOperation(
+    RevertibleEntity oldEntity,
+    RevertibleEntity newEntity,
+    String changeDescription,
+  ) =>
+      Operation(
+        type: OperationType.update,
+        target: OperationTarget.checklist,
+        timestamp: DateTime.now(),
+        description: changeDescription,
+        targetId: newEntity.id,
+        previousData: _entityToJson(oldEntity),
+        newData: _entityToJson(newEntity),
+      );
 
   /// 创建添加任务操作
   static Operation createAddTaskOperation(RevertibleEntity entity) => Operation(
@@ -197,6 +243,7 @@ class Operation {
   static String? _tryGetEntityName(RevertibleEntity entity) {
     if (entity is Task) return entity.name;
     if (entity is Habit) return entity.name;
+    if (entity is Checklist) return entity.name;
     return null;
   }
 
