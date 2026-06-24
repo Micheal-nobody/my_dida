@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
+import 'package:provider/provider.dart';
 
 class ViewChangerDialog extends StatelessWidget {
   const ViewChangerDialog({super.key});

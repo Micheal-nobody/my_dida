@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
+import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
+import 'package:provider/provider.dart';
 
 class SidebarSettingsPage extends StatelessWidget {
   const SidebarSettingsPage({super.key});

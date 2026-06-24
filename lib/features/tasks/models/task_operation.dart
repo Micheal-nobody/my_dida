@@ -1,9 +1,10 @@
-import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
 
 abstract class TaskOperation {
-  final Task task;
+
   TaskOperation(this.task);
+  final Task task;
 }
 
 class AddTask extends TaskOperation {
@@ -11,40 +12,47 @@ class AddTask extends TaskOperation {
 }
 
 class UpdateTaskIsDone extends TaskOperation {
-  final bool value;
+
   UpdateTaskIsDone(super.task, this.value);
+  final bool value;
 }
 
 class UpdatePriority extends TaskOperation {
-  final TaskPriority newPriority;
+
   UpdatePriority(super.task, this.newPriority);
+  final TaskPriority newPriority;
 }
 
 class UpdateTags extends TaskOperation {
-  final List<String> newTags;
+
   UpdateTags(super.task, this.newTags);
+  final List<String> newTags;
 }
 
 class UpdateTitle extends TaskOperation {
-  final String newTitle;
+
   UpdateTitle(super.task, this.newTitle);
+  final String newTitle;
 }
 
 class UpdateDescription extends TaskOperation {
-  final String newDesc;
+
   UpdateDescription(super.task, this.newDesc);
+  final String newDesc;
 }
 
 class ToggleCheckpoint extends TaskOperation {
+
+  ToggleCheckpoint(super.task, this.index, this.value);
   final int index;
   final bool value;
-  ToggleCheckpoint(super.task, this.index, this.value);
 }
 
 class RenameCheckpoint extends TaskOperation {
+
+  RenameCheckpoint(super.task, this.index, this.newName);
   final int index;
   final String newName;
-  RenameCheckpoint(super.task, this.index, this.newName);
 }
 
 class AddCheckpoint extends TaskOperation {
@@ -52,47 +60,54 @@ class AddCheckpoint extends TaskOperation {
 }
 
 class RemoveCheckpoint extends TaskOperation {
-  final int index;
+
   RemoveCheckpoint(super.task, this.index);
+  final int index;
 }
 
 class CreateSubTask extends TaskOperation {
-  final String name;
+
   CreateSubTask(super.task, {required this.name});
+  final String name;
 }
 
 class DeleteSubTask extends TaskOperation {
-  final int subTaskId;
+
   DeleteSubTask(super.task, this.subTaskId);
+  final int subTaskId;
 }
 
 class UpdateChecklist extends TaskOperation {
-  final int? newChecklistId;
+
   UpdateChecklist(super.task, this.newChecklistId);
+  final int? newChecklistId;
 }
 
 class UpdateStartTime extends TaskOperation {
+
+  UpdateStartTime(super.task, this.newStartTime, {this.isAllDay});
   final DateTime? newStartTime;
   final bool? isAllDay;
-  UpdateStartTime(super.task, this.newStartTime, {this.isAllDay});
 }
 
 class UpdateEndTime extends TaskOperation {
+
+  UpdateEndTime(super.task, this.newEndTime, {this.isAllDay});
   final DateTime? newEndTime;
   final bool? isAllDay;
-  UpdateEndTime(super.task, this.newEndTime, {this.isAllDay});
 }
 
 class UpdateTimeRange extends TaskOperation {
-  final DateTime? newStartTime;
-  final DateTime? newEndTime;
-  final bool? isAllDay;
+
   UpdateTimeRange(
     super.task,
     this.newStartTime,
     this.newEndTime, {
     this.isAllDay,
   });
+  final DateTime? newStartTime;
+  final DateTime? newEndTime;
+  final bool? isAllDay;
 }
 
 class ClearTaskSchedule extends TaskOperation {
@@ -100,14 +115,16 @@ class ClearTaskSchedule extends TaskOperation {
 }
 
 class UpdateRRule extends TaskOperation {
-  final RepeatPattern? rrule;
+
   UpdateRRule(super.task, this.rrule);
+  final RepeatPattern? rrule;
 }
 
 class UpdateTaskReminder extends TaskOperation {
+
+  UpdateTaskReminder(super.task, {required this.enabled, this.offsetMinutes});
   final bool enabled;
   final int? offsetMinutes;
-  UpdateTaskReminder(super.task, {required this.enabled, this.offsetMinutes});
 }
 
 class DeleteTask extends TaskOperation {
@@ -123,8 +140,9 @@ class RestoreTask extends TaskOperation {
 }
 
 class AssociateMainTask extends TaskOperation {
-  final Task mainTask;
+
   AssociateMainTask(super.task, this.mainTask);
+  final Task mainTask;
 }
 
 class CopyTask extends TaskOperation {

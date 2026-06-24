@@ -10,7 +10,5 @@ class CustomTomatoRepository extends BaseRepository<CustomTomato> {
   @override
   IsarCollection<CustomTomato> get collection => _isar.customTomatos;
 
-  Future<List<CustomTomato>> getAll() async {
-    return collection.where().findAll();
-  }
+  Future<List<CustomTomato>> getAll() async => collection.where().findAll();
 }

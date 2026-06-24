@@ -1,7 +1,6 @@
 import 'package:my_dida/core/logger/logger.dart';
 import 'package:my_dida/features/tasks/models/task_reminder_plan.dart';
-
-import 'task_reminder_scheduler_port.dart';
+import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dart';
 
 class NoopTaskReminderScheduler implements TaskReminderSchedulerPort {
   @override

@@ -1,7 +1,6 @@
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/shared/models/base_entity.dart';
-
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/shared/models/base_entity.dart';
 
 abstract class BaseRepository<T extends BaseEntity> {
   // 获取对应的 Isar 集合,需要继承类自己实现

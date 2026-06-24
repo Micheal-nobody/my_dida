@@ -9,7 +9,9 @@ import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 
 abstract class ChecklistLifecycleManager {
   Future<void> createChecklist(String name, int colorValue);
+
   Future<void> updateChecklist(Checklist checklist);
+
   Future<void> deleteChecklist(int id, {required String name});
 }
 
@@ -22,7 +24,8 @@ class ChecklistLifecycleManagerImpl implements ChecklistLifecycleManager {
   }) : _checklistRepository =
            checklistRepository ?? getIt<ChecklistRepository>(),
        _taskRepository = taskRepository ?? getIt<TaskRepository>(),
-       _operationStack = operationStack ??
+       _operationStack =
+           operationStack ??
            (getIt.isRegistered<OperationStackProvider>()
                ? getIt<OperationStackProvider>()
                : null),

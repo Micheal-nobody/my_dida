@@ -60,7 +60,9 @@ class RepeatPattern {
       month = null;
 
   bool get isNone => type == RepeatType.none;
+
   bool get isEbbinghaus => type == RepeatType.ebbinghaus;
+
   bool get isWorkday => type == RepeatType.workday;
 
   /// Parse from standard RRule string or CUSTOM string

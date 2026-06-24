@@ -1,12 +1,11 @@
 import 'package:flutter/cupertino.dart';
-import 'package:my_dida/features/checklist/models/checklist.dart';
-import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
-import 'package:my_dida/features/checklist/services/checklist_lifecycle_manager.dart';
-
+import 'package:my_dida/core/constants/app_constants.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/logger/logger.dart';
-import 'package:my_dida/core/constants/app_constants.dart';
+import 'package:my_dida/features/checklist/models/checklist.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
+import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
+import 'package:my_dida/features/checklist/services/checklist_lifecycle_manager.dart';
 
 ///1、记录todoList页面当前所属收藏夹
 class ChecklistProvider extends ChangeNotifier {

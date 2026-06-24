@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
+import 'package:my_dida/core/utils/time_formatter.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
 import 'package:my_dida/features/tasks/widgets/task_date_time_picker.dart';
 import 'package:my_dida/features/tasks/widgets/task_detail/widgets/checkpoint_item_widget.dart';
 import 'package:my_dida/features/tasks/widgets/task_detail/widgets/sub_task_section.dart';
 import 'package:my_dida/features/tasks/widgets/task_detail/widgets/task_detail_header.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/shared/widgets/inline_editable_multiline_text_field.dart';
 import 'package:my_dida/shared/widgets/inline_editable_text_field.dart';
-import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:provider/provider.dart';
 
 // 任务详情 BottomSheet（由 TaskCard 的 onTap 触发）
@@ -142,13 +142,13 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   Widget build(BuildContext context) {
     final task = _task;
     final sortedCheckpointEntries =
-        task?.checkpoints.asMap().entries.toList() ?? const [];
-    sortedCheckpointEntries.sort((a, b) {
-      if (a.value.isDone == b.value.isDone) {
-        return a.key.compareTo(b.key);
-      }
-      return a.value.isDone ? 1 : -1;
-    });
+        task?.checkpoints.asMap().entries.toList() ?? const []
+          ..sort((a, b) {
+            if (a.value.isDone == b.value.isDone) {
+              return a.key.compareTo(b.key);
+            }
+            return a.value.isDone ? 1 : -1;
+          });
 
     final body = task == null
         ? SizedBox(
@@ -375,9 +375,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                                 final tags = text.isEmpty
                                                     ? <String>[]
                                                     : text
-                                                          .split(
-                                                            RegExp(r'[，,]'),
-                                                          )
+                                                          .split(RegExp('[，,]'))
                                                           .map((e) => e.trim())
                                                           .where(
                                                             (e) => e.isNotEmpty,
@@ -445,15 +443,11 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                             UpdateTitle(task, updated),
                           );
                         },
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Colors.orange,
                           decoration: TextDecoration.underline,
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -469,10 +463,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                         onChanged: (value) {
                           _scheduleDescriptionUpdate(task, value);
                         },
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
                         hintText: '添加备注...',
                         decoration: const InputDecoration(
                           hintText: '添加备注...',

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:path_provider/path_provider.dart';
 
 class SearchHistoryManager {
@@ -34,14 +35,15 @@ class SearchHistoryManager {
 
   static Future<List<String>> addHistory(String query) async {
     final trimmed = query.trim();
-    if (trimmed.isEmpty) return await loadHistory();
+    if (trimmed.isEmpty) return loadHistory();
 
     final history = await loadHistory();
 
     // 排重
-    history.remove(trimmed);
-    // 放入最前面
-    history.insert(0, trimmed);
+    history
+      ..remove(trimmed)
+      // 放入最前面
+      ..insert(0, trimmed);
 
     // 数量限制
     if (history.length > _maxHistoryCount) {

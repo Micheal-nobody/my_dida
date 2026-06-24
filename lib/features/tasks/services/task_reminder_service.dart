@@ -1,9 +1,9 @@
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/errors/exceptions.dart';
-import 'package:my_dida/features/tasks/validators/task_validator.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/models/task_reminder_plan.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dart';
+import 'package:my_dida/features/tasks/validators/task_validator.dart';
 
 class TaskReminderService {
   TaskReminderService({TaskReminderSchedulerPort? scheduler})

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/core/utils/time_formatter.dart';
+import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:provider/provider.dart';
 
 /// 用于在操作详情中渲染Task的组件

@@ -1,20 +1,20 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
-import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 
-import 'package:my_dida/core/di/locator.dart';
+import 'package:flutter/foundation.dart';
 import 'package:my_dida/core/constants/app_constants.dart';
 import 'package:my_dida/core/constants/ui_constants.dart';
+import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/errors/exceptions.dart';
-import 'package:my_dida/features/tasks/models/task_operation.dart';
-export 'package:my_dida/features/tasks/models/task_operation.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/features/calendar/models/task_calendar_view_data.dart';
-import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
-import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/calendar/services/task_calendar_projection_service.dart';
+import 'package:my_dida/features/checklist/models/checklist_vo.dart';
+import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tasks/models/task_operation.dart';
+import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
+
+export 'package:my_dida/features/tasks/models/task_operation.dart';
 
 enum TaskViewMode { list, board }
 
@@ -29,13 +29,11 @@ class TaskProvider with ChangeNotifier {
     ChecklistVO? newChecklist, {
     TaskRepository? taskRepository,
     TaskCalendarProjectionService? taskCalendarProjectionService,
-    OperationStackProvider? operationStack,
     TaskLifecycleManager? taskLifecycleManager,
   }) : _taskRepository = taskRepository ?? getIt<TaskRepository>(),
        _taskCalendarProjectionService =
            taskCalendarProjectionService ??
            getIt<TaskCalendarProjectionService>(),
-       _operationStack = operationStack ?? getIt<OperationStackProvider>(),
        _taskLifecycleManager =
            taskLifecycleManager ?? getIt<TaskLifecycleManager>(),
        currentChecklist = newChecklist {
@@ -44,7 +42,6 @@ class TaskProvider with ChangeNotifier {
 
   final TaskRepository _taskRepository;
   final TaskCalendarProjectionService _taskCalendarProjectionService;
-  final OperationStackProvider _operationStack;
   final TaskLifecycleManager _taskLifecycleManager;
 
   List<Task> _tasks = [];
@@ -64,8 +61,11 @@ class TaskProvider with ChangeNotifier {
   TaskVisibleRange _visibleRange = TaskVisibleRange.undone;
 
   TaskViewMode get viewMode => _viewMode;
+
   TaskGroupBy get groupBy => _groupBy;
+
   TaskSortBy get sortBy => _sortBy;
+
   TaskVisibleRange get visibleRange => _visibleRange;
 
   void setViewMode(TaskViewMode val) {
@@ -261,7 +261,11 @@ class TaskProvider with ChangeNotifier {
     }
 
     _currentTasksSubscription = stream.listen((tasks) {
-      print('DEBUG: Stream emitted tasks: $tasks, type: ${tasks.runtimeType}');
+      if (kDebugMode) {
+        print(
+          'DEBUG: Stream emitted tasks: $tasks, type: ${tasks.runtimeType}',
+        );
+      }
       _currentTasks = tasks;
       notifyListeners();
     });
@@ -341,9 +345,8 @@ class TaskProvider with ChangeNotifier {
   // 写入方法 (完全委派给 TaskService 处理，随后刷新本地状态与缓存)
   // ==================================================================
 
-  Future<Task> addTask(Task newTask) async {
-    return _taskLifecycleManager.addTask(newTask);
-  }
+  Future<Task> addTask(Task newTask) async =>
+      _taskLifecycleManager.addTask(newTask);
 
   Future<void> updateTaskIsDone(Task task, bool value) async {
     await _taskLifecycleManager.updateTaskIsDone(task, value);
@@ -376,9 +379,7 @@ class TaskProvider with ChangeNotifier {
   Future<int> createSubTask(
     Task parent, {
     String name = UIStrings.subTask,
-  }) async {
-    return _taskLifecycleManager.createSubTask(parent, name: name);
-  }
+  }) async => _taskLifecycleManager.createSubTask(parent, name: name);
 
   Future<void> deleteSubTask(Task parent, int subTaskId) async {
     await _taskLifecycleManager.deleteSubTask(parent, subTaskId);
@@ -574,7 +575,7 @@ class TaskProvider with ChangeNotifier {
 
   Future<dynamic> execute(TaskOperation op) async {
     if (op is AddTask) {
-      return await addTask(op.task);
+      return addTask(op.task);
     } else if (op is UpdateTaskIsDone) {
       await updateTaskIsDone(op.task, op.value);
     } else if (op is UpdatePriority) {
@@ -594,7 +595,7 @@ class TaskProvider with ChangeNotifier {
     } else if (op is RemoveCheckpoint) {
       await removeCheckpoint(op.task, op.index);
     } else if (op is CreateSubTask) {
-      return await createSubTask(op.task, name: op.name);
+      return createSubTask(op.task, name: op.name);
     } else if (op is DeleteSubTask) {
       await deleteSubTask(op.task, op.subTaskId);
     } else if (op is UpdateChecklist) {

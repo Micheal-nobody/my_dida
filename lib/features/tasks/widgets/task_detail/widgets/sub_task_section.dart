@@ -18,8 +18,7 @@ class SubTaskSection extends StatelessWidget {
   final void Function(Task subTask)? onDeleteSubTask;
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
+  Widget build(BuildContext context) => Padding(
       padding: const EdgeInsets.all(12),
       child: Container(
         decoration: BoxDecoration(
@@ -75,5 +74,4 @@ class SubTaskSection extends StatelessWidget {
         ),
       ),
     );
-  }
 }

@@ -6,46 +6,51 @@ abstract class TomatoEvent {}
 
 /// 计时滴答事件，携带当前剩余秒数
 class TomatoTickEvent extends TomatoEvent {
-  final int remainingSeconds;
+
   TomatoTickEvent(this.remainingSeconds);
+  final int remainingSeconds;
 }
 
 /// 专注完成事件
 class TomatoFocusCompleteEvent extends TomatoEvent {
-  final DateTime startTime;
-  final DateTime endTime;
-  final int durationMinutes;
+
   TomatoFocusCompleteEvent({
     required this.startTime,
     required this.endTime,
     required this.durationMinutes,
   });
+  final DateTime startTime;
+  final DateTime endTime;
+  final int durationMinutes;
 }
 
 /// 休息（短休/长休）完成事件
 class TomatoBreakCompleteEvent extends TomatoEvent {
+
+  TomatoBreakCompleteEvent({required this.startTime, required this.endTime});
   final DateTime startTime;
   final DateTime endTime;
-  TomatoBreakCompleteEvent({required this.startTime, required this.endTime});
 }
 
 /// 放弃专注事件
 class TomatoAbandonEvent extends TomatoEvent {
-  final DateTime startTime;
-  final DateTime endTime;
-  final int durationMinutes;
+
   TomatoAbandonEvent({
     required this.startTime,
     required this.endTime,
     required this.durationMinutes,
   });
+  final DateTime startTime;
+  final DateTime endTime;
+  final int durationMinutes;
 }
 
 /// 状态流转事件
 class TomatoStatusChangedEvent extends TomatoEvent {
+
+  TomatoStatusChangedEvent(this.oldStatus, this.newStatus);
   final TomatoStatus oldStatus;
   final TomatoStatus newStatus;
-  TomatoStatusChangedEvent(this.oldStatus, this.newStatus);
 }
 
 /// 纯 Dart 领域类，封装番茄钟倒计时状态机和时流规则，不依赖任何 Flutter 与 I/O 库
@@ -66,7 +71,7 @@ class TomatoTicker {
        _autoStartBreak = autoStartBreak,
        _autoStartFocus = autoStartFocus,
        _autoCompletedTask = autoCompletedTask,
-       _currentTimeProvider = currentTimeProvider ?? (() => DateTime.now()) {
+       _currentTimeProvider = currentTimeProvider ?? DateTime.now {
     _duration = _focusMinutes * 60;
     _totalDuration = _focusMinutes * 60;
   }
@@ -97,19 +102,31 @@ class TomatoTicker {
 
   // 属性暴露
   int get duration => _duration;
+
   int get totalDuration => _totalDuration;
+
   TomatoStatus get status => _status;
+
   bool get isRunning => _isRunning;
+
   bool get isPaused => _isPaused;
+
   int get completedTomatoCount => _completedTomatoCount;
+
   DateTime? get startTime => _startTime;
 
   int get focusMinutes => _focusMinutes;
+
   int get shortBreakMinutes => _shortBreakMinutes;
+
   int get longBreakMinutes => _longBreakMinutes;
+
   int get longBreakInterval => _longBreakInterval;
+
   bool get autoStartBreak => _autoStartBreak;
+
   bool get autoStartFocus => _autoStartFocus;
+
   bool get autoCompletedTask => _autoCompletedTask;
 
   void selectFocus() {

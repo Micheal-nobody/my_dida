@@ -1,10 +1,11 @@
 import 'dart:convert';
+
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/utils/time_utils.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/shared/repositories/base_repository.dart';
-import 'package:my_dida/core/utils/time_utils.dart';
 
 class TaskRepository extends BaseRepository<Task> {
   TaskRepository() : _isar = getIt<Isar>();
@@ -163,45 +164,37 @@ class TaskRepository extends BaseRepository<Task> {
         .watch(fireImmediately: true);
   }
 
-  Stream<List<Task>> watchAllIncompleteTasks() {
-    return collection
-        .where()
-        .filter()
-        .isDoneEqualTo(false)
-        .watch(fireImmediately: true);
-  }
+  Stream<List<Task>> watchAllIncompleteTasks() => collection
+      .where()
+      .filter()
+      .isDoneEqualTo(false)
+      .watch(fireImmediately: true);
 
-  Stream<List<Task>> watchAllCompletedTasks() {
-    return collection
-        .where()
-        .filter()
-        .isDoneEqualTo(true)
-        .watch(fireImmediately: true);
-  }
+  Stream<List<Task>> watchAllCompletedTasks() => collection
+      .where()
+      .filter()
+      .isDoneEqualTo(true)
+      .watch(fireImmediately: true);
 
-  Stream<List<Task>> watchTrashTasks() {
-    return _isar.operations
-        .where()
-        .filter()
-        .typeEqualTo(OperationType.delete)
-        .and()
-        .targetEqualTo(OperationTarget.task)
-        .watch(fireImmediately: true)
-        .map((ops) {
-          return ops.map((op) {
-            if (op.previousData == null) {
-              return Task(name: '未知任务', isAllDay: false);
-            }
-            final task = Task.fromJson(jsonDecode(op.previousData!));
-            task.id = op.id;
-            return task;
-          }).toList();
-        });
-  }
+  Stream<List<Task>> watchTrashTasks() => _isar.operations
+      .where()
+      .filter()
+      .typeEqualTo(OperationType.delete)
+      .and()
+      .targetEqualTo(OperationTarget.task)
+      .watch(fireImmediately: true)
+      .map(
+        (ops) => ops.map((op) {
+          if (op.previousData == null) {
+            return Task(name: '未知任务', isAllDay: false);
+          }
+          final task = Task.fromJson(jsonDecode(op.previousData!))..id = op.id;
+          return task;
+        }).toList(),
+      );
 
-  Stream<List<Task>> watchAllTasks() {
-    return collection.where().watch(fireImmediately: true);
-  }
+  Stream<List<Task>> watchAllTasks() =>
+      collection.where().watch(fireImmediately: true);
 
   Future<int> getTasksCount({
     DateTime? start,
@@ -253,25 +246,19 @@ class TaskRepository extends BaseRepository<Task> {
     return getTasksCount(start: range.start, end: range.end, isDone: false);
   }
 
-  Future<int> getInboxTasksCount() async {
-    return getTasksCount(checklistId: 1, isDone: false);
-  }
+  Future<int> getInboxTasksCount() async =>
+      getTasksCount(checklistId: 1, isDone: false);
 
-  Future<int> getAllIncompleteTasksCount() async {
-    return getTasksCount(isDone: false);
-  }
+  Future<int> getAllIncompleteTasksCount() async =>
+      getTasksCount(isDone: false);
 
-  Future<int> getAllCompletedTasksCount() async {
-    return getTasksCount(isDone: true);
-  }
+  Future<int> getAllCompletedTasksCount() async => getTasksCount(isDone: true);
 
-  Future<int> getTrashTasksCount() async {
-    return _isar.operations
-        .where()
-        .filter()
-        .typeEqualTo(OperationType.delete)
-        .and()
-        .targetEqualTo(OperationTarget.task)
-        .count();
-  }
+  Future<int> getTrashTasksCount() async => _isar.operations
+      .where()
+      .filter()
+      .typeEqualTo(OperationType.delete)
+      .and()
+      .targetEqualTo(OperationTarget.task)
+      .count();
 }

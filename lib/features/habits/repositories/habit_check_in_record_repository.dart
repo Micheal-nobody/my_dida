@@ -1,8 +1,7 @@
 import 'package:isar_community/isar.dart';
+import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/features/habits/models/habit_check_in_record.dart';
 import 'package:my_dida/shared/repositories/base_repository.dart';
-
-import 'package:my_dida/core/di/locator.dart';
 
 class HabitCheckInRecordRepository extends BaseRepository<HabitCheckInRecord> {
   HabitCheckInRecordRepository() : _isar = getIt<Isar>();

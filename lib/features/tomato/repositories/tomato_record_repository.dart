@@ -14,7 +14,5 @@ class TomatoRecordRepository extends BaseRepository<TomatoRecord> {
   Future<List<TomatoRecord>> getRecordsInPeriod(
     DateTime start,
     DateTime end,
-  ) async {
-    return collection.where().filter().startTimeBetween(start, end).findAll();
-  }
+  ) async => collection.where().filter().startTimeBetween(start, end).findAll();
 }

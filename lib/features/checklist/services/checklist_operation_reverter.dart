@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
 import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
@@ -22,7 +23,9 @@ class ChecklistOperationReverter implements DomainOperationReverter {
     final decoded = jsonDecode(previousData);
 
     if (decoded is Map<String, dynamic> && decoded.containsKey('checklist')) {
-      final checklist = Checklist.fromJson(decoded['checklist'] as Map<String, dynamic>);
+      final checklist = Checklist.fromJson(
+        decoded['checklist'] as Map<String, dynamic>,
+      );
       await _checklistRepo.insert(checklist);
 
       final List<dynamic>? affectedTaskIds = decoded['affectedTaskIds'];

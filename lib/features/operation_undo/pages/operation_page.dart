@@ -3,17 +3,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
+import 'package:my_dida/features/checklist/models/checklist.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
-import 'package:provider/provider.dart';
-
-import 'package:my_dida/features/checklist/models/checklist.dart';
 import 'package:my_dida/features/operation_undo/widgets/operation_checklist_renderer.dart';
 import 'package:my_dida/features/operation_undo/widgets/operation_habit_renderer.dart';
 import 'package:my_dida/features/operation_undo/widgets/operation_task_renderer.dart';
+import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:provider/provider.dart';
 
 class OperationPage extends StatefulWidget {
   const OperationPage({super.key});

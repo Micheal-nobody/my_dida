@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/habits/models/habit_check_in_record.dart';
@@ -41,36 +42,34 @@ class _HabitDataSummaryPageState extends State<HabitDataSummaryPage>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('打卡数据统计'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: '日汇总'),
-            Tab(text: '周汇总'),
-            Tab(text: '月汇总'),
-          ],
-        ),
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const Text('打卡数据统计'),
+      backgroundColor: Colors.blue,
+      foregroundColor: Colors.white,
+      bottom: TabBar(
+        controller: _tabController,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white70,
+        indicatorColor: Colors.white,
+        tabs: const [
+          Tab(text: '日汇总'),
+          Tab(text: '周汇总'),
+          Tab(text: '月汇总'),
+        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildDaySummary(),
-                _buildWeekSummary(),
-                _buildMonthSummary(),
-              ],
-            ),
-    );
-  }
+    ),
+    body: _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : TabBarView(
+            controller: _tabController,
+            children: [
+              _buildDaySummary(),
+              _buildWeekSummary(),
+              _buildMonthSummary(),
+            ],
+          ),
+  );
 
   // ==========================================
   // 1. 日汇总 (data_day_summary.jpg)
@@ -81,16 +80,17 @@ class _HabitDataSummaryPageState extends State<HabitDataSummaryPage>
     final today = DateTime.now();
 
     // 筛选今日打卡流水
-    final todayRecords = _allRecords.where((r) {
-      return r.checkInTime.year == today.year &&
-          r.checkInTime.month == today.month &&
-          r.checkInTime.day == today.day;
-    }).toList();
+    final todayRecords = _allRecords
+        .where(
+          (r) =>
+              r.checkInTime.year == today.year &&
+              r.checkInTime.month == today.month &&
+              r.checkInTime.day == today.day,
+        )
+        .toList();
 
     // 计算今日打卡完成度
-    final completedCount = activeHabits
-        .where((h) => provider.isTodayCompleted(h))
-        .length;
+    final completedCount = activeHabits.where(provider.isTodayCompleted).length;
     final totalCount = activeHabits.length;
     final completionRate = totalCount == 0
         ? 0.0
@@ -182,57 +182,53 @@ class _HabitDataSummaryPageState extends State<HabitDataSummaryPage>
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          todayRecords.isEmpty
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Text(
-                      '今天还没有打卡记录',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: todayRecords.length,
-                  itemBuilder: (context, index) {
-                    final record = todayRecords[index];
-                    final habitName = activeHabits
-                        .firstWhere(
-                          (h) => h.id == record.habitId,
-                          orElse: () => Habit(
-                            name: '未知习惯',
-                            icon: '',
-                            remindTime: DateTime.now(),
-                            checkInCount: 1,
-                            currentCheckInCount: 0,
-                            startDate: DateTime.now(),
-                            totalCheckInCount: 0,
-                            longestContinuousCheckInDays: 0,
-                          ),
-                        )
-                        .name;
+          if (todayRecords.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Text('今天还没有打卡记录', style: TextStyle(color: Colors.grey)),
+              ),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: todayRecords.length,
+              itemBuilder: (context, index) {
+                final record = todayRecords[index];
+                final habitName = activeHabits
+                    .firstWhere(
+                      (h) => h.id == record.habitId,
+                      orElse: () => Habit(
+                        name: '未知习惯',
+                        icon: '',
+                        remindTime: DateTime.now(),
+                        checkInCount: 1,
+                        currentCheckInCount: 0,
+                        startDate: DateTime.now(),
+                        totalCheckInCount: 0,
+                        longestContinuousCheckInDays: 0,
+                      ),
+                    )
+                    .name;
 
-                    final timeStr =
-                        '${record.checkInTime.hour.toString().padLeft(2, '0')}:${record.checkInTime.minute.toString().padLeft(2, '0')}';
-                    return ListTile(
-                      leading: Icon(
-                        record.isSkip ? Icons.skip_next : Icons.check,
-                        color: record.isSkip ? Colors.amber : Colors.blue,
-                      ),
-                      title: Text(
-                        record.isSkip
-                            ? '跳过了习惯 "$habitName"'
-                            : '打卡习惯 "$habitName"',
-                      ),
-                      trailing: Text(
-                        timeStr,
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                    );
-                  },
-                ),
+                final timeStr =
+                    '${record.checkInTime.hour.toString().padLeft(2, '0')}:${record.checkInTime.minute.toString().padLeft(2, '0')}';
+                return ListTile(
+                  leading: Icon(
+                    record.isSkip ? Icons.skip_next : Icons.check,
+                    color: record.isSkip ? Colors.amber : Colors.blue,
+                  ),
+                  title: Text(
+                    record.isSkip ? '跳过了习惯 "$habitName"' : '打卡习惯 "$habitName"',
+                  ),
+                  trailing: Text(
+                    timeStr,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );
@@ -253,17 +249,20 @@ class _HabitDataSummaryPageState extends State<HabitDataSummaryPage>
     // 过去7天每日完成状态
     for (int i = 0; i < 7; i++) {
       final date = startOfWeek.add(Duration(days: i));
-      final dayRecords = _allRecords.where((r) {
-        return !r.isSkip &&
-            r.checkInTime.year == date.year &&
-            r.checkInTime.month == date.month &&
-            r.checkInTime.day == date.day;
-      }).toList();
+      final dayRecords = _allRecords
+          .where(
+            (r) =>
+                !r.isSkip &&
+                r.checkInTime.year == date.year &&
+                r.checkInTime.month == date.month &&
+                r.checkInTime.day == date.day,
+          )
+          .toList();
 
       // 如果有习惯需要在这天打卡，计算打卡总次数或打卡率
       if (activeHabits.isNotEmpty) {
-        int checkInCount = dayRecords.length;
-        int targetTotal = activeHabits
+        final int checkInCount = dayRecords.length;
+        final int targetTotal = activeHabits
             .map((e) => e.checkInCount)
             .reduce((a, b) => a + b);
         weeklyCompletionRate[i] = targetTotal == 0
@@ -273,13 +272,13 @@ class _HabitDataSummaryPageState extends State<HabitDataSummaryPage>
     }
 
     // 本周总打卡次数
-    final thisWeekRecords = _allRecords.where((r) {
-      return !r.isSkip && r.checkInTime.isAfter(startOfWeek);
-    }).length;
+    final thisWeekRecords = _allRecords
+        .where((r) => !r.isSkip && r.checkInTime.isAfter(startOfWeek))
+        .length;
 
     // 习惯本周排行榜
     final Map<int, int> habitCounts = {};
-    for (var r in _allRecords) {
+    for (final r in _allRecords) {
       if (!r.isSkip && r.checkInTime.isAfter(startOfWeek)) {
         habitCounts[r.habitId] = (habitCounts[r.habitId] ?? 0) + 1;
       }
@@ -356,56 +355,54 @@ class _HabitDataSummaryPageState extends State<HabitDataSummaryPage>
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          sortedRank.isEmpty
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
+          if (sortedRank.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Text('本周暂无排行榜数据', style: TextStyle(color: Colors.grey)),
+              ),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: sortedRank.length,
+              itemBuilder: (context, index) {
+                final entry = sortedRank[index];
+                final habitName = activeHabits
+                    .firstWhere(
+                      (h) => h.id == entry.key,
+                      orElse: () => Habit(
+                        name: '已删除习惯',
+                        icon: '',
+                        remindTime: DateTime.now(),
+                        checkInCount: 1,
+                        currentCheckInCount: 0,
+                        startDate: DateTime.now(),
+                        totalCheckInCount: 0,
+                        longestContinuousCheckInDays: 0,
+                      ),
+                    )
+                    .name;
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.green.shade100,
                     child: Text(
-                      '本周暂无排行榜数据',
-                      style: TextStyle(color: Colors.grey),
+                      '${index + 1}',
+                      style: const TextStyle(color: Colors.green),
                     ),
                   ),
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: sortedRank.length,
-                  itemBuilder: (context, index) {
-                    final entry = sortedRank[index];
-                    final habitName = activeHabits
-                        .firstWhere(
-                          (h) => h.id == entry.key,
-                          orElse: () => Habit(
-                            name: '已删除习惯',
-                            icon: '',
-                            remindTime: DateTime.now(),
-                            checkInCount: 1,
-                            currentCheckInCount: 0,
-                            startDate: DateTime.now(),
-                            totalCheckInCount: 0,
-                            longestContinuousCheckInDays: 0,
-                          ),
-                        )
-                        .name;
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.green.shade100,
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(color: Colors.green),
-                        ),
-                      ),
-                      title: Text(
-                        habitName,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      trailing: Text(
-                        '本周打卡 ${entry.value} 次',
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                    );
-                  },
-                ),
+                  title: Text(
+                    habitName,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  trailing: Text(
+                    '本周打卡 ${entry.value} 次',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );
@@ -425,12 +422,15 @@ class _HabitDataSummaryPageState extends State<HabitDataSummaryPage>
 
     for (int i = 0; i < 35; i++) {
       final date = startOfGrid.add(Duration(days: i));
-      final dayRecords = _allRecords.where((r) {
-        return !r.isSkip &&
-            r.checkInTime.year == date.year &&
-            r.checkInTime.month == date.month &&
-            r.checkInTime.day == date.day;
-      }).toList();
+      final dayRecords = _allRecords
+          .where(
+            (r) =>
+                !r.isSkip &&
+                r.checkInTime.year == date.year &&
+                r.checkInTime.month == date.month &&
+                r.checkInTime.day == date.day,
+          )
+          .toList();
       gridCounts[i] = dayRecords.length;
     }
 
@@ -536,16 +536,14 @@ class _HabitDataSummaryPageState extends State<HabitDataSummaryPage>
     );
   }
 
-  Widget _buildColorBox(Color color) {
-    return Container(
-      width: 14,
-      height: 14,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(2),
-      ),
-    );
-  }
+  Widget _buildColorBox(Color color) => Container(
+    width: 14,
+    height: 14,
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(2),
+    ),
+  );
 }
 
 // ==========================================
@@ -553,6 +551,7 @@ class _HabitDataSummaryPageState extends State<HabitDataSummaryPage>
 // ==========================================
 class _WeekBarChartPainter extends CustomPainter {
   _WeekBarChartPainter({required this.rates});
+
   final List<double> rates;
 
   @override
@@ -604,15 +603,16 @@ class _WeekBarChartPainter extends CustomPainter {
       }
 
       // 绘制星期文字
-      textPainter.text = TextSpan(
-        text: weekdays[i],
-        style: const TextStyle(color: Colors.grey, fontSize: 11),
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(i * stepX + (stepX - textPainter.width) / 2, height - 16),
-      );
+      textPainter
+        ..text = TextSpan(
+          text: weekdays[i],
+          style: const TextStyle(color: Colors.grey, fontSize: 11),
+        )
+        ..layout()
+        ..paint(
+          canvas,
+          Offset(i * stepX + (stepX - textPainter.width) / 2, height - 16),
+        );
     }
   }
 
@@ -625,6 +625,7 @@ class _WeekBarChartPainter extends CustomPainter {
 // ==========================================
 class _HeatmapGridPainter extends CustomPainter {
   _HeatmapGridPainter({required this.counts});
+
   final List<int> counts;
 
   @override
@@ -675,18 +676,19 @@ class _HeatmapGridPainter extends CustomPainter {
     final weekdayLabels = ['一', '', '三', '', '五', '', '日'];
     for (int r = 0; r < 7; r++) {
       if (weekdayLabels[r].isNotEmpty) {
-        textPainter.text = TextSpan(
-          text: weekdayLabels[r],
-          style: const TextStyle(color: Colors.grey, fontSize: 9),
-        );
-        textPainter.layout();
-        textPainter.paint(
-          canvas,
-          Offset(
-            2,
-            r * (sizeBox + spacing) + 10 + (sizeBox - textPainter.height) / 2,
-          ),
-        );
+        textPainter
+          ..text = TextSpan(
+            text: weekdayLabels[r],
+            style: const TextStyle(color: Colors.grey, fontSize: 9),
+          )
+          ..layout()
+          ..paint(
+            canvas,
+            Offset(
+              2,
+              r * (sizeBox + spacing) + 10 + (sizeBox - textPainter.height) / 2,
+            ),
+          );
       }
     }
   }

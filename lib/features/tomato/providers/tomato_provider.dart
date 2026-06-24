@@ -1,17 +1,18 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
-import 'package:my_dida/features/tomato/models/custom_tomato.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tasks/repositories/task_repository.dart';
+import 'package:my_dida/features/tasks/services/notification_service.dart';
+import 'package:my_dida/features/tomato/models/custom_tomato.dart';
 import 'package:my_dida/features/tomato/models/tomato_record.dart';
 import 'package:my_dida/features/tomato/models/tomato_ticker.dart';
 import 'package:my_dida/features/tomato/repositories/custom_tomato_repository.dart';
 import 'package:my_dida/features/tomato/repositories/tomato_record_repository.dart';
-import 'package:my_dida/features/tasks/services/notification_service.dart';
-import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 
 export 'package:my_dida/features/tomato/models/tomato_ticker.dart'
     show
@@ -57,14 +58,23 @@ class TomatoProvider with ChangeNotifier {
 
   // 1. 完全对外的属性代理，兼容现有 UI 获取状态
   int get duration => _ticker.duration;
+
   int get totalDuration => _ticker.totalDuration;
+
   TomatoStatus get status => _ticker.status;
+
   bool get isRunning => _ticker.isRunning;
+
   bool get isPaused => _ticker.isPaused;
+
   int get completedTomatoCount => _ticker.completedTomatoCount;
+
   DateTime? get startTime => _ticker.startTime;
+
   Task? get associatedTask => _associatedTask;
+
   CustomTomato? get activeCustomTomato => _activeCustomTomato;
+
   List<CustomTomato> get customTomatoes => _customTomatoes;
   bool countUpMode = false;
 
@@ -75,20 +85,32 @@ class TomatoProvider with ChangeNotifier {
 
   // 配置项代理
   int get focusMinutes => _ticker.focusMinutes;
+
   int get shortBreakMinutes => _ticker.shortBreakMinutes;
+
   int get longBreakMinutes => _ticker.longBreakMinutes;
+
   int get longBreakInterval => _ticker.longBreakInterval;
+
   bool get autoStartBreak => _ticker.autoStartBreak;
+
   bool get autoStartFocus => _ticker.autoStartFocus;
+
   bool get autoCompletedTask => _ticker.autoCompletedTask;
 
   // 允许在设置面板读取和修改，重置时代理到底层 Ticker
   set focusMinutes(int val) => updateSettings(focusMin: val);
+
   set shortBreakMinutes(int val) => updateSettings(shortMin: val);
+
   set longBreakMinutes(int val) => updateSettings(longMin: val);
+
   set longBreakInterval(int val) => updateSettings(interval: val);
+
   set autoStartBreak(bool val) => updateSettings(autoBreak: val);
+
   set autoStartFocus(bool val) => updateSettings(autoFocus: val);
+
   set autoCompletedTask(bool val) => updateSettings(autoComp: val);
 
   String get statusText {
@@ -283,7 +305,7 @@ class TomatoProvider with ChangeNotifier {
       end,
     );
     int total = 0;
-    for (var r in records) {
+    for (final r in records) {
       if (r.customTomatoId == customTomatoId && r.isCompleted) {
         total += r.durationMinutes;
       }
@@ -297,7 +319,7 @@ class TomatoProvider with ChangeNotifier {
     final records = await _tomatoRecordRepository.selectAll();
     int completedCount = 0;
     int totalMinutes = 0;
-    for (var r in records) {
+    for (final r in records) {
       if (r.customTomatoId == customTomatoId && r.isCompleted) {
         completedCount++;
         totalMinutes += r.durationMinutes;
@@ -339,7 +361,7 @@ class TomatoProvider with ChangeNotifier {
 
     int completedCount = 0;
     int totalMinutes = 0;
-    for (var r in records) {
+    for (final r in records) {
       if (r.isCompleted) {
         completedCount++;
         totalMinutes += r.durationMinutes;
@@ -370,9 +392,7 @@ class TomatoProvider with ChangeNotifier {
     return _tomatoRecordRepository.getRecordsInPeriod(start, end);
   }
 
-  Future<List<TomatoRecord>> getAllRecords() async {
-    return _tomatoRecordRepository.selectAll();
-  }
+  Future<List<TomatoRecord>> getAllRecords() async => _tomatoRecordRepository.selectAll();
 
   Future<void> deleteRecord(int id) async {
     await _tomatoRecordRepository.deleteById(id);
@@ -392,7 +412,7 @@ class TomatoProvider with ChangeNotifier {
 
   Future<void> _sendNotification(String title, String body) async {
     try {
-      final details = const NotificationDetails(
+      const details = NotificationDetails(
         android: AndroidNotificationDetails(
           'pomodoro_reminders',
           '番茄钟提醒',

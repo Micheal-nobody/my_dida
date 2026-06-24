@@ -1,24 +1,35 @@
 import 'dart:convert';
+
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/errors/exceptions.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/habits/models/habit_check_in_record.dart';
+import 'package:my_dida/features/habits/repositories/habit_check_in_record_repository.dart';
+import 'package:my_dida/features/habits/repositories/habit_repository.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
-import 'package:my_dida/features/habits/repositories/habit_repository.dart';
-import 'package:my_dida/features/habits/repositories/habit_check_in_record_repository.dart';
 
 abstract class HabitLifecycleManager {
   Future<void> addHabit(Habit habit);
+
   Future<void> updateHabit(Habit habit);
+
   Future<void> deleteHabit(int id);
+
   Future<void> checkIn(Habit habit, {double? value});
+
   Future<void> skipToday(Habit habit);
+
   Future<void> resetTodayCheckInCounts();
+
   Future<void> undoLastCheckIn(Habit habit);
+
   Future<void> undoAllCheckIns(Habit habit);
+
   Future<void> archiveHabit(int id);
+
   Future<void> unarchiveHabit(int id);
+
   Future<void> reorderHabits(List<Habit> reorderedHabits);
 }
 

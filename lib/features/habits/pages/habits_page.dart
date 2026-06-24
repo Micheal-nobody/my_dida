@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_dida/features/habits/widgets/habit_card.dart';
+import 'package:my_dida/features/habits/providers/habit_provider.dart';
 import 'package:my_dida/features/habits/widgets/add_habit_dialog.dart';
 import 'package:my_dida/features/habits/widgets/edit_habit_dialog.dart';
+import 'package:my_dida/features/habits/widgets/habit_card.dart';
 import 'package:my_dida/features/habits/widgets/habit_check_in_dialog.dart';
 import 'package:my_dida/features/habits/widgets/habit_visible_range_dialog.dart';
-import 'package:my_dida/features/habits/providers/habit_provider.dart';
 import 'package:provider/provider.dart';
 
 class HabitsPage extends StatefulWidget {

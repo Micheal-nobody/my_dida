@@ -1,8 +1,7 @@
 import 'package:isar_community/isar.dart';
+import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/shared/repositories/base_repository.dart';
-
-import 'package:my_dida/core/di/locator.dart';
 
 class HabitRepository extends BaseRepository<Habit> {
   HabitRepository() : _isar = getIt<Isar>();

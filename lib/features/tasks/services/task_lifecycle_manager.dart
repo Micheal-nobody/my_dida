@@ -1,57 +1,82 @@
 import 'dart:async';
+
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/constants/app_constants.dart';
 import 'package:my_dida/core/constants/ui_constants.dart';
+import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/errors/exceptions.dart';
-import 'package:my_dida/features/tasks/validators/task_validator.dart';
-import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
+import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
+import 'package:my_dida/features/tasks/models/check_point.dart';
+import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/models/task_operation.dart';
-import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
-import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_service.dart';
+import 'package:my_dida/features/tasks/validators/task_validator.dart';
 
 abstract class TaskLifecycleManager {
   Future<dynamic> execute(TaskOperation op);
+
   Future<Task> addTask(Task newTask);
+
   Future<void> updateTaskIsDone(Task task, bool value);
+
   Future<void> updatePriority(Task task, TaskPriority newPriority);
+
   Future<void> updateTags(Task task, List<String> newTags);
+
   Future<void> updateTitle(Task task, String newTitle);
+
   Future<void> updateDescription(Task task, String newDesc);
+
   Future<void> toggleCheckpoint(Task task, int index, bool value);
+
   Future<void> renameCheckpoint(Task task, int index, String newName);
+
   Future<void> addCheckpoint(Task task);
+
   Future<void> removeCheckpoint(Task task, int index);
+
   Future<int> createSubTask(Task parent, {String name});
+
   Future<void> deleteSubTask(Task parent, int subTaskId);
+
   Future<void> updateChecklist(Task task, int? newChecklistId);
+
   Future<void> updateStartTime(
     Task task,
     DateTime? newStartTime, {
     bool? isAllDay,
   });
+
   Future<void> updateEndTime(Task task, DateTime? newEndTime, {bool? isAllDay});
+
   Future<void> updateTimeRange(
     Task task,
     DateTime? newStartTime,
     DateTime? newEndTime, {
     bool? isAllDay,
   });
+
   Future<void> clearTaskSchedule(Task task);
+
   Future<void> updateRRule(Task task, RepeatPattern? rrule);
+
   Future<void> updateTaskReminder(
     Task task, {
     required bool enabled,
     int? offsetMinutes,
   });
+
   Future<void> deleteTask(Task task);
+
   Future<void> deletePermanently(Task task);
+
   Future<void> restoreTask(Task task);
+
   Future<void> associateMainTask(Task subTask, Task mainTask);
+
   Future<void> copyTask(Task originalTask);
 }
 
@@ -72,7 +97,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   @override
   Future<dynamic> execute(TaskOperation op) async {
     if (op is AddTask) {
-      return await addTask(op.task);
+      return addTask(op.task);
     } else if (op is UpdateTaskIsDone) {
       await updateTaskIsDone(op.task, op.value);
     } else if (op is UpdatePriority) {
@@ -92,7 +117,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
     } else if (op is RemoveCheckpoint) {
       await removeCheckpoint(op.task, op.index);
     } else if (op is CreateSubTask) {
-      return await createSubTask(op.task, name: op.name);
+      return createSubTask(op.task, name: op.name);
     } else if (op is DeleteSubTask) {
       await deleteSubTask(op.task, op.subTaskId);
     } else if (op is UpdateChecklist) {

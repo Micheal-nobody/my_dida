@@ -1,7 +1,7 @@
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/shared/models/revertible_entity.dart';
 import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
+import 'package:my_dida/shared/models/revertible_entity.dart';
 
 part 'task.g.dart';
 
@@ -45,6 +45,61 @@ class Task extends RevertibleEntity {
     if (rrule != null) {
       this.rrule = rrule;
     }
+  }
+
+  /// 从标准 JSON Map 反序列化生成 Task
+  factory Task.fromJson(Map<String, dynamic> json) {
+    // 处理 checkpoints 列表
+    final List<CheckPoint> cpList = [];
+    if (json['checkpoints'] != null && json['checkpoints'] is List) {
+      for (final cp in json['checkpoints']) {
+        if (cp is Map) {
+          cpList.add(
+            CheckPoint(
+              name: cp['name']?.toString() ?? '',
+              isDone: cp['isDone'] == true,
+            ),
+          );
+        }
+      }
+    }
+
+    final task = Task(
+      name: json['name']?.toString() ?? '',
+      isAllDay: json['isAllDay'] == true,
+      description: json['description']?.toString() ?? '',
+      isDone: json['isDone'] == true,
+      checkpoints: cpList,
+      startTime:
+          json['startTime'] != null && json['startTime'].toString().isNotEmpty
+          ? DateTime.parse(json['startTime'].toString())
+          : null,
+      endTime: json['endTime'] != null && json['endTime'].toString().isNotEmpty
+          ? DateTime.parse(json['endTime'].toString())
+          : null,
+      parentTaskId: json['parentTaskId'] as int?,
+      subTaskIds: json['subTaskIds'] != null
+          ? List<int>.from(json['subTaskIds'] as List)
+          : const [],
+      checklistId: json['checklistId'] as int? ?? 1,
+      rrule: RepeatPattern.parse(
+        json['rrule']?.toString().isEmpty == true
+            ? null
+            : json['rrule']?.toString(),
+      ),
+      notificationEnabled: json['notificationEnabled'] == true,
+      reminderOffsetMinutes: json['reminderOffsetMinutes'] as int?,
+      priority: json['priority'] != null
+          ? TaskPriority.values[json['priority'] as int? ?? 0]
+          : TaskPriority.none,
+      tags: json['tags'] != null
+          ? List<String>.from(json['tags'] as List)
+          : const [],
+    );
+    if (json['id'] != null) {
+      task.id = json['id'] as int;
+    }
+    return task;
   }
 
   String name;
@@ -142,87 +197,31 @@ class Task extends RevertibleEntity {
           reminderOffsetMinutes ?? this.reminderOffsetMinutes,
       priority: priority ?? this.priority,
       tags: tags ?? List<String>.from(this.tags),
-    );
-    copy.id = id;
+    )
+    ..id = id;
     return copy;
   }
 
   /// 转换为标准 JSON Map
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'isDone': isDone,
-      'isAllDay': isAllDay,
-      'startTime': startTime?.toIso8601String(),
-      'endTime': endTime?.toIso8601String(),
-      'parentTaskId': parentTaskId,
-      'subTaskIds': subTaskIds,
-      'checklistId': checklistId,
-      'rrule': rruleString,
-      'notificationEnabled': notificationEnabled,
-      'reminderOffsetMinutes': reminderOffsetMinutes,
-      'priority': priority.index,
-      'tags': tags,
-      'checkpoints': checkpoints
-          .map((cp) => {'name': cp.name, 'isDone': cp.isDone})
-          .toList(),
-    };
-  }
-
-  /// 从标准 JSON Map 反序列化生成 Task
-  factory Task.fromJson(Map<String, dynamic> json) {
-    // 处理 checkpoints 列表
-    List<CheckPoint> cpList = [];
-    if (json['checkpoints'] != null && json['checkpoints'] is List) {
-      for (final cp in json['checkpoints']) {
-        if (cp is Map) {
-          cpList.add(
-            CheckPoint(
-              name: cp['name']?.toString() ?? '',
-              isDone: cp['isDone'] == true,
-            ),
-          );
-        }
-      }
-    }
-
-    final task = Task(
-      name: json['name']?.toString() ?? '',
-      isAllDay: json['isAllDay'] == true,
-      description: json['description']?.toString() ?? '',
-      isDone: json['isDone'] == true,
-      checkpoints: cpList,
-      startTime:
-          json['startTime'] != null && json['startTime'].toString().isNotEmpty
-          ? DateTime.parse(json['startTime'].toString())
-          : null,
-      endTime: json['endTime'] != null && json['endTime'].toString().isNotEmpty
-          ? DateTime.parse(json['endTime'].toString())
-          : null,
-      parentTaskId: json['parentTaskId'] as int?,
-      subTaskIds: json['subTaskIds'] != null
-          ? List<int>.from(json['subTaskIds'] as List)
-          : const [],
-      checklistId: json['checklistId'] as int? ?? 1,
-      rrule: RepeatPattern.parse(
-        json['rrule']?.toString().isEmpty == true
-            ? null
-            : json['rrule']?.toString(),
-      ),
-      notificationEnabled: json['notificationEnabled'] == true,
-      reminderOffsetMinutes: json['reminderOffsetMinutes'] as int?,
-      priority: json['priority'] != null
-          ? TaskPriority.values[json['priority'] as int? ?? 0]
-          : TaskPriority.none,
-      tags: json['tags'] != null
-          ? List<String>.from(json['tags'] as List)
-          : const [],
-    );
-    if (json['id'] != null) {
-      task.id = json['id'] as int;
-    }
-    return task;
-  }
+  @override
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+    'isDone': isDone,
+    'isAllDay': isAllDay,
+    'startTime': startTime?.toIso8601String(),
+    'endTime': endTime?.toIso8601String(),
+    'parentTaskId': parentTaskId,
+    'subTaskIds': subTaskIds,
+    'checklistId': checklistId,
+    'rrule': rruleString,
+    'notificationEnabled': notificationEnabled,
+    'reminderOffsetMinutes': reminderOffsetMinutes,
+    'priority': priority.index,
+    'tags': tags,
+    'checkpoints': checkpoints
+        .map((cp) => {'name': cp.name, 'isDone': cp.isDone})
+        .toList(),
+  };
 }

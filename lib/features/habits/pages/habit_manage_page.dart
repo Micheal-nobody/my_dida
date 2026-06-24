@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_dida/features/habits/widgets/edit_habit_dialog.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/habits/providers/habit_provider.dart';
+import 'package:my_dida/features/habits/widgets/edit_habit_dialog.dart';
 import 'package:provider/provider.dart';
 
 class HabitManagePage extends StatefulWidget {

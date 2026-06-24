@@ -6,8 +6,7 @@ class HabitArchivedPage extends StatelessWidget {
   const HabitArchivedPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('已归档的习惯'),
         backgroundColor: Colors.blue,
@@ -51,7 +50,7 @@ class HabitArchivedPage extends StatelessWidget {
                           '确定要恢复习惯"${habit.name}"吗？恢复后将重新进入主打卡列表中。',
                         );
                         if (confirmed == true) {
-                          habitProvider.unarchiveHabit(habit.id);
+                          await habitProvider.unarchiveHabit(habit.id);
                         }
                       },
                     ),
@@ -64,7 +63,7 @@ class HabitArchivedPage extends StatelessWidget {
                           '确定要彻底删除已归档的习惯"${habit.name}"吗？所有历史数据都会消失！',
                         );
                         if (confirmed == true) {
-                          habitProvider.deleteHabit(habit.id);
+                          await habitProvider.deleteHabit(habit.id);
                         }
                       },
                     ),
@@ -76,7 +75,6 @@ class HabitArchivedPage extends StatelessWidget {
         },
       ),
     );
-  }
 
   String _formatDate(DateTime date) =>
       '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
@@ -85,8 +83,7 @@ class HabitArchivedPage extends StatelessWidget {
     BuildContext context,
     String title,
     String content,
-  ) {
-    return showDialog<bool>(
+  ) => showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(title),
@@ -103,5 +100,4 @@ class HabitArchivedPage extends StatelessWidget {
         ],
       ),
     );
-  }
 }

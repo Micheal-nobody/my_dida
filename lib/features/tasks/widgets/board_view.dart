@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/features/tasks/widgets/task_card.dart';
-import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
-import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
+import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
+import 'package:my_dida/features/tasks/widgets/task_card.dart';
 import 'package:provider/provider.dart';
 
 class BoardView extends StatelessWidget {
@@ -113,34 +113,23 @@ class BoardView extends StatelessWidget {
                       taskProvider,
                     );
                   },
-                  builder: (context, candidateData, rejectedData) {
-                    return Container(
-                      color: candidateData.isNotEmpty
-                          ? Colors.orange.withValues(alpha: 0.1)
-                          : Colors.transparent,
-                      child: ListView.builder(
-                        itemCount: tasks.length,
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        itemBuilder: (context, taskIndex) {
-                          final task = tasks[taskIndex];
+                  builder: (context, candidateData, rejectedData) => Container(
+                    color: candidateData.isNotEmpty
+                        ? Colors.orange.withValues(alpha: 0.1)
+                        : Colors.transparent,
+                    child: ListView.builder(
+                      itemCount: tasks.length,
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      itemBuilder: (context, taskIndex) {
+                        final task = tasks[taskIndex];
 
-                          return LongPressDraggable<Task>(
-                            data: task,
-                            feedback: Material(
-                              elevation: 4,
-                              borderRadius: BorderRadius.circular(8),
-                              child: SizedBox(
-                                width: 284,
-                                child: TaskCard(
-                                  task: task,
-                                  checklistName: _getChecklistName(
-                                    task.checklistId,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            childWhenDragging: Opacity(
-                              opacity: 0.3,
+                        return LongPressDraggable<Task>(
+                          data: task,
+                          feedback: Material(
+                            elevation: 4,
+                            borderRadius: BorderRadius.circular(8),
+                            child: SizedBox(
+                              width: 284,
                               child: TaskCard(
                                 task: task,
                                 checklistName: _getChecklistName(
@@ -148,25 +137,32 @@ class BoardView extends StatelessWidget {
                                 ),
                               ),
                             ),
+                          ),
+                          childWhenDragging: Opacity(
+                            opacity: 0.3,
                             child: TaskCard(
                               task: task,
                               checklistName: _getChecklistName(
                                 task.checklistId,
                               ),
-                              onToggleDone: (value) {
-                                taskProvider.execute(
-                                  UpdateTaskIsDone(task, value!),
-                                );
-                              },
-                              onTap: () {
-                                TaskDetailPage.show(context, task);
-                              },
                             ),
-                          );
-                        },
-                      ),
-                    );
-                  },
+                          ),
+                          child: TaskCard(
+                            task: task,
+                            checklistName: _getChecklistName(task.checklistId),
+                            onToggleDone: (value) {
+                              taskProvider.execute(
+                                UpdateTaskIsDone(task, value!),
+                              );
+                            },
+                            onTap: () {
+                              TaskDetailPage.show(context, task);
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -195,12 +191,14 @@ class BoardView extends StatelessWidget {
 
     if (groupBy == TaskGroupBy.priority) {
       TaskPriority priority = TaskPriority.none;
-      if (columnTitle == '高优先级')
+
+      if (columnTitle == '高优先级') {
         priority = TaskPriority.high;
-      else if (columnTitle == '中优先级')
+      } else if (columnTitle == '中优先级')
         priority = TaskPriority.medium;
       else if (columnTitle == '低优先级')
         priority = TaskPriority.low;
+
       presetTask = Task(name: '', isAllDay: true, priority: priority);
     } else if (groupBy == TaskGroupBy.checklist) {
       final cl = allChecklists.firstWhere(
@@ -255,9 +253,9 @@ class BoardView extends StatelessWidget {
   ) async {
     if (groupBy == TaskGroupBy.priority) {
       TaskPriority newPriority = TaskPriority.none;
-      if (columnTitle == '高优先级')
+      if (columnTitle == '高优先级') {
         newPriority = TaskPriority.high;
-      else if (columnTitle == '中优先级')
+      } else if (columnTitle == '中优先级')
         newPriority = TaskPriority.medium;
       else if (columnTitle == '低优先级')
         newPriority = TaskPriority.low;

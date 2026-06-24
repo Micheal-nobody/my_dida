@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_dida/core/logger/logger.dart';
 import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
-import 'package:my_dida/features/tasks/widgets/task_card.dart';
-import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
-import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/core/logger/logger.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
+import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
+import 'package:my_dida/features/tasks/widgets/task_card.dart';
 import 'package:provider/provider.dart';
 
 class FourQuadrantsPage extends StatelessWidget {
@@ -72,68 +72,66 @@ class FourQuadrantsPage extends StatelessWidget {
               .toList();
 
           return LayoutBuilder(
-            builder: (context, constraints) {
-              return Column(
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _buildQuadrantCard(
-                            context: context,
-                            title: config.quadrantName1,
-                            color: Color(config.quadrantColor1),
-                            tasks: highTasks,
-                            priority: TaskPriority.high,
-                            taskProvider: taskProvider,
-                            allChecklists: checklistProvider.allCheckLists,
-                          ),
+            builder: (context, constraints) => Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildQuadrantCard(
+                          context: context,
+                          title: config.quadrantName1,
+                          color: Color(config.quadrantColor1),
+                          tasks: highTasks,
+                          priority: TaskPriority.high,
+                          taskProvider: taskProvider,
+                          allChecklists: checklistProvider.allCheckLists,
                         ),
-                        Expanded(
-                          child: _buildQuadrantCard(
-                            context: context,
-                            title: config.quadrantName2,
-                            color: Color(config.quadrantColor2),
-                            tasks: mediumTasks,
-                            priority: TaskPriority.medium,
-                            taskProvider: taskProvider,
-                            allChecklists: checklistProvider.allCheckLists,
-                          ),
+                      ),
+                      Expanded(
+                        child: _buildQuadrantCard(
+                          context: context,
+                          title: config.quadrantName2,
+                          color: Color(config.quadrantColor2),
+                          tasks: mediumTasks,
+                          priority: TaskPriority.medium,
+                          taskProvider: taskProvider,
+                          allChecklists: checklistProvider.allCheckLists,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _buildQuadrantCard(
-                            context: context,
-                            title: config.quadrantName3,
-                            color: Color(config.quadrantColor3),
-                            tasks: lowTasks,
-                            priority: TaskPriority.low,
-                            taskProvider: taskProvider,
-                            allChecklists: checklistProvider.allCheckLists,
-                          ),
+                ),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildQuadrantCard(
+                          context: context,
+                          title: config.quadrantName3,
+                          color: Color(config.quadrantColor3),
+                          tasks: lowTasks,
+                          priority: TaskPriority.low,
+                          taskProvider: taskProvider,
+                          allChecklists: checklistProvider.allCheckLists,
                         ),
-                        Expanded(
-                          child: _buildQuadrantCard(
-                            context: context,
-                            title: config.quadrantName4,
-                            color: Color(config.quadrantColor4),
-                            tasks: noneTasks,
-                            priority: TaskPriority.none,
-                            taskProvider: taskProvider,
-                            allChecklists: checklistProvider.allCheckLists,
-                          ),
+                      ),
+                      Expanded(
+                        child: _buildQuadrantCard(
+                          context: context,
+                          title: config.quadrantName4,
+                          color: Color(config.quadrantColor4),
+                          tasks: noneTasks,
+                          priority: TaskPriority.none,
+                          taskProvider: taskProvider,
+                          allChecklists: checklistProvider.allCheckLists,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              );
-            },
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -336,9 +334,7 @@ class FourQuadrantsPage extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) {
-        return _FourQuadrantsSettingsSheet(provider: provider);
-      },
+      builder: (context) => _FourQuadrantsSettingsSheet(provider: provider),
     );
   }
 }
@@ -401,111 +397,109 @@ class _FourQuadrantsSettingsSheetState
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.fromLTRB(
+      16,
+      16,
+      16,
+      MediaQuery.of(context).viewInsets.bottom + 16,
+    ),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              '四象限视图设置',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            SwitchListTile(
-              title: const Text('隐藏已完成任务'),
-              subtitle: const Text('开启后只显示未完成的待办'),
-              value: _hideCompleted,
-              activeThumbColor: Colors.orange,
-              onChanged: (val) {
-                setState(() {
-                  _hideCompleted = val;
-                });
-                widget.provider.updateQuadrantHideCompleted(val);
-              },
-            ),
-            const Divider(),
-            const SizedBox(height: 8),
-            const Text(
-              '自定义象限名称与颜色',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            const SizedBox(height: 12),
-            _buildQuadrantEditor(
-              1,
-              _name1Controller,
-              _color1,
-              (color) {
-                setState(() => _color1 = color);
-                widget.provider.updateQuadrantColors(color1: color);
-              },
-              (text) {
-                widget.provider.updateQuadrantNames(name1: text);
-              },
-            ),
-            const SizedBox(height: 12),
-            _buildQuadrantEditor(
-              2,
-              _name2Controller,
-              _color2,
-              (color) {
-                setState(() => _color2 = color);
-                widget.provider.updateQuadrantColors(color2: color);
-              },
-              (text) {
-                widget.provider.updateQuadrantNames(name2: text);
-              },
-            ),
-            const SizedBox(height: 12),
-            _buildQuadrantEditor(
-              3,
-              _name3Controller,
-              _color3,
-              (color) {
-                setState(() => _color3 = color);
-                widget.provider.updateQuadrantColors(color3: color);
-              },
-              (text) {
-                widget.provider.updateQuadrantNames(name3: text);
-              },
-            ),
-            const SizedBox(height: 12),
-            _buildQuadrantEditor(
-              4,
-              _name4Controller,
-              _color4,
-              (color) {
-                setState(() => _color4 = color);
-                widget.provider.updateQuadrantColors(color4: color);
-              },
-              (text) {
-                widget.provider.updateQuadrantNames(name4: text);
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            '四象限视图设置',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          SwitchListTile(
+            title: const Text('隐藏已完成任务'),
+            subtitle: const Text('开启后只显示未完成的待办'),
+            value: _hideCompleted,
+            activeThumbColor: Colors.orange,
+            onChanged: (val) {
+              setState(() {
+                _hideCompleted = val;
+              });
+              widget.provider.updateQuadrantHideCompleted(val);
+            },
+          ),
+          const Divider(),
+          const SizedBox(height: 8),
+          const Text(
+            '自定义象限名称与颜色',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          const SizedBox(height: 12),
+          _buildQuadrantEditor(
+            1,
+            _name1Controller,
+            _color1,
+            (color) {
+              setState(() => _color1 = color);
+              widget.provider.updateQuadrantColors(color1: color);
+            },
+            (text) {
+              widget.provider.updateQuadrantNames(name1: text);
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildQuadrantEditor(
+            2,
+            _name2Controller,
+            _color2,
+            (color) {
+              setState(() => _color2 = color);
+              widget.provider.updateQuadrantColors(color2: color);
+            },
+            (text) {
+              widget.provider.updateQuadrantNames(name2: text);
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildQuadrantEditor(
+            3,
+            _name3Controller,
+            _color3,
+            (color) {
+              setState(() => _color3 = color);
+              widget.provider.updateQuadrantColors(color3: color);
+            },
+            (text) {
+              widget.provider.updateQuadrantNames(name3: text);
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildQuadrantEditor(
+            4,
+            _name4Controller,
+            _color4,
+            (color) {
+              setState(() => _color4 = color);
+              widget.provider.updateQuadrantColors(color4: color);
+            },
+            (text) {
+              widget.provider.updateQuadrantNames(name4: text);
+            },
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
-    );
-  }
+    ),
+  );
 
   Widget _buildQuadrantEditor(
     int index,
@@ -513,81 +507,79 @@ class _FourQuadrantsSettingsSheetState
     int selectedColor,
     ValueChanged<int> onColorChanged,
     ValueChanged<String> onNameSubmitted,
-  ) {
-    return Card(
-      elevation: 0,
-      color: Colors.grey[50],
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Colors.grey[200]!),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(radius: 6, backgroundColor: Color(selectedColor)),
-                const SizedBox(width: 8),
-                Text(
-                  '第 $index 象限',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    color: Colors.black54,
-                  ),
+  ) => Card(
+    elevation: 0,
+    color: Colors.grey[50],
+    shape: RoundedRectangleBorder(
+      side: BorderSide(color: Colors.grey[200]!),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(radius: 6, backgroundColor: Color(selectedColor)),
+              const SizedBox(width: 8),
+              Text(
+                '第 $index 象限',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: Colors.black54,
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      border: OutlineInputBorder(),
-                      hintText: '请输入象限名称',
-                    ),
-                    style: const TextStyle(fontSize: 14),
-                    onChanged: onNameSubmitted,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: _presetColors.map((hexColor) {
-                  final isSelected = selectedColor == hexColor;
-                  return GestureDetector(
-                    onTap: () => onColorChanged(hexColor),
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      width: 22,
-                      height: 22,
-                      decoration: BoxDecoration(
-                        color: Color(hexColor),
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(color: Colors.black87, width: 2)
-                            : null,
-                      ),
-                    ),
-                  );
-                }).toList(),
               ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    border: OutlineInputBorder(),
+                    hintText: '请输入象限名称',
+                  ),
+                  style: const TextStyle(fontSize: 14),
+                  onChanged: onNameSubmitted,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _presetColors.map((hexColor) {
+                final isSelected = selectedColor == hexColor;
+                return GestureDetector(
+                  onTap: () => onColorChanged(hexColor),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: Color(hexColor),
+                      shape: BoxShape.circle,
+                      border: isSelected
+                          ? Border.all(color: Colors.black87, width: 2)
+                          : null,
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }

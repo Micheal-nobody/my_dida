@@ -1,6 +1,6 @@
-import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/calendar/models/task_calendar_view_data.dart';
 import 'package:my_dida/core/utils/rrule_util.dart';
+import 'package:my_dida/features/calendar/models/task_calendar_view_data.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
 
 /// Service class for assembling calendar-specific task visualization maps.
 class TaskCalendarProjectionService {

@@ -1,13 +1,13 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
-import 'package:my_dida/features/habits/services/habit_lifecycle_manager.dart';
-import 'package:my_dida/features/habits/models/habit_check_in_record.dart';
-import 'package:my_dida/features/habits/repositories/habit_check_in_record_repository.dart';
 
+import 'package:flutter/material.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
+import 'package:my_dida/features/habits/models/habit_check_in_record.dart';
+import 'package:my_dida/features/habits/repositories/habit_check_in_record_repository.dart';
 import 'package:my_dida/features/habits/repositories/habit_repository.dart';
+import 'package:my_dida/features/habits/services/habit_lifecycle_manager.dart';
+import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 
 enum HabitStatusFilter { all, incomplete, completed }
 
@@ -30,6 +30,7 @@ class HabitProvider with ChangeNotifier {
       notifyListeners();
     });
   }
+
   List<Habit> _habits = [];
   final HabitRepository _habitRepository;
   final HabitCheckInRecordRepository _recordRepository;
@@ -43,7 +44,9 @@ class HabitProvider with ChangeNotifier {
 
   // Getters
   HabitStatusFilter get statusFilter => _statusFilter;
+
   HabitTimeSlotFilter get timeFilter => _timeFilter;
+
   HabitFrequencyFilter get frequencyFilter => _frequencyFilter;
 
   // 获取所有进行中的习惯（未归档），并按 sortOrder 排序

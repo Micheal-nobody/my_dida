@@ -79,34 +79,32 @@ class Operation {
   static Operation createDeleteChecklistOperation(
     RevertibleEntity entity,
     List<int> affectedTaskIds,
-  ) =>
-      Operation(
-        type: OperationType.delete,
-        target: OperationTarget.checklist,
-        timestamp: DateTime.now(),
-        description: _buildDescription('删除', entity),
-        targetId: entity.id,
-        previousData: jsonEncode({
-          'checklist': entity.toJson(),
-          'affectedTaskIds': affectedTaskIds,
-        }),
-      );
+  ) => Operation(
+    type: OperationType.delete,
+    target: OperationTarget.checklist,
+    timestamp: DateTime.now(),
+    description: _buildDescription('删除', entity),
+    targetId: entity.id,
+    previousData: jsonEncode({
+      'checklist': entity.toJson(),
+      'affectedTaskIds': affectedTaskIds,
+    }),
+  );
 
   /// 创建更新清单操作
   static Operation createUpdateChecklistOperation(
     RevertibleEntity oldEntity,
     RevertibleEntity newEntity,
     String changeDescription,
-  ) =>
-      Operation(
-        type: OperationType.update,
-        target: OperationTarget.checklist,
-        timestamp: DateTime.now(),
-        description: changeDescription,
-        targetId: newEntity.id,
-        previousData: _entityToJson(oldEntity),
-        newData: _entityToJson(newEntity),
-      );
+  ) => Operation(
+    type: OperationType.update,
+    target: OperationTarget.checklist,
+    timestamp: DateTime.now(),
+    description: changeDescription,
+    targetId: newEntity.id,
+    previousData: _entityToJson(oldEntity),
+    newData: _entityToJson(newEntity),
+  );
 
   /// 创建添加任务操作
   static Operation createAddTaskOperation(RevertibleEntity entity) => Operation(

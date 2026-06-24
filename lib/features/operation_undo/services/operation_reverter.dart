@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import '../models/operation.dart';
-import '../../../../core/di/locator.dart';
+import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/features/operation_undo/models/operation.dart';
 
 // ==================================================================
 // 领域撤销委托接口定义
@@ -9,7 +9,9 @@ import '../../../../core/di/locator.dart';
 /// 领域撤销委托接口：各业务模块只需实现此接口并注册，即可获得撤销/重做联动支持。
 abstract class DomainOperationReverter {
   Future<bool> revertAdd(int id);
+
   Future<bool> revertDelete(int id, String? previousData);
+
   Future<bool> revertUpdate(int id, String? previousData, String description);
 }
 

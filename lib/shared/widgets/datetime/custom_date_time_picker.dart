@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/core/utils/time_utils.dart';
+import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 
 import 'calendar_widget.dart';
 import 'time_slot_tab_widget.dart';

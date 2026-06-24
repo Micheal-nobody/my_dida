@@ -166,8 +166,8 @@ final Map<String, String> pathMappings = {
   "package:my_dida/services/operation_reverter.dart":
       "package:my_dida/features/operation_undo/services/operation_reverter.dart",
 
-  "package:my_dida/pages/todo_page.dart":
-      "package:my_dida/features/tasks/pages/todo_page.dart",
+  "package:my_dida/pages/task_page.dart":
+      "package:my_dida/features/tasks/pages/task_page.dart",
   "package:my_dida/pages/task_detail_route_page.dart":
       "package:my_dida/features/tasks/pages/task_detail_route_page.dart",
   "package:my_dida/pages/four_quadrants_page.dart":

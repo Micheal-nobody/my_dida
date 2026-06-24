@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/features/tomato/widgets/associate_task_dialog.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
+import 'package:my_dida/features/tomato/widgets/associate_task_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -40,7 +40,7 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
     Color foregroundColor = Colors.white;
     Color subForegroundColor = Colors.white70;
     Color buttonBgColor;
-    Color buttonTextColor = Colors.white;
+    const Color buttonTextColor = Colors.white;
 
     if (_themeStyle == 0) {
       // 默认彩色背景

@@ -12,6 +12,19 @@ class HabitCheckInRecord extends BaseEntity {
     this.checkInValue = 1.0,
   });
 
+  factory HabitCheckInRecord.fromJson(Map<String, dynamic> json) {
+    final record = HabitCheckInRecord(
+      habitId: json['habitId'] as int,
+      checkInTime: DateTime.parse(json['checkInTime'] as String),
+      isSkip: json['isSkip'] as bool? ?? false,
+      checkInValue: (json['checkInValue'] as num?)?.toDouble() ?? 1.0,
+    );
+    if (json['id'] != null) {
+      record.id = json['id'] as int;
+    }
+    return record;
+  }
+
   @Index()
   int habitId;
 
@@ -29,19 +42,6 @@ class HabitCheckInRecord extends BaseEntity {
     'isSkip': isSkip,
     'checkInValue': checkInValue,
   };
-
-  static HabitCheckInRecord fromJson(Map<String, dynamic> json) {
-    final record = HabitCheckInRecord(
-      habitId: json['habitId'] as int,
-      checkInTime: DateTime.parse(json['checkInTime'] as String),
-      isSkip: json['isSkip'] as bool? ?? false,
-      checkInValue: (json['checkInValue'] as num?)?.toDouble() ?? 1.0,
-    );
-    if (json['id'] != null) {
-      record.id = json['id'] as int;
-    }
-    return record;
-  }
 
   @override
   String toString() =>

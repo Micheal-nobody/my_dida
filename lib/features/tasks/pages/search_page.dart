@@ -1,14 +1,15 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
-import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/core/di/locator.dart';
-import 'package:my_dida/features/tasks/models/check_point.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
+import 'package:my_dida/features/tasks/models/check_point.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/services/search_history_manager.dart';
 import 'package:provider/provider.dart';
@@ -286,7 +287,7 @@ class _SearchPageState extends State<SearchPage> {
                   controller: _searchController,
                   focusNode: _focusNode,
                   onChanged: _onSearchChanged,
-                  onSubmitted: (value) => _addSearchHistory(value),
+                  onSubmitted: _addSearchHistory,
                   decoration: const InputDecoration(
                     hintText: '搜索任务、步骤、备注',
                     hintStyle: TextStyle(
@@ -334,85 +335,83 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildFilterChips() {
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingM),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          // 状态筛选
-          ChoiceChip(
-            label: const Text('全部'),
-            selected: _statusFilter == TaskVisibleRange.all,
-            onSelected: (selected) {
-              if (selected) {
-                setState(() => _statusFilter = TaskVisibleRange.all);
-                _applyFilter();
-              }
-            },
-          ),
-          const SizedBox(width: 8),
-          ChoiceChip(
-            label: const Text('未完成'),
-            selected: _statusFilter == TaskVisibleRange.undone,
-            onSelected: (selected) {
-              if (selected) {
-                setState(() => _statusFilter = TaskVisibleRange.undone);
-                _applyFilter();
-              }
-            },
-          ),
-          const SizedBox(width: 8),
-          ChoiceChip(
-            label: const Text('已完成'),
-            selected: _statusFilter == TaskVisibleRange.done,
-            onSelected: (selected) {
-              if (selected) {
-                setState(() => _statusFilter = TaskVisibleRange.done);
-                _applyFilter();
-              }
-            },
-          ),
-          const SizedBox(width: 16),
-          // 分割垂直线
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 12),
-            width: 1,
-            color: Colors.grey.shade300,
-          ),
-          const SizedBox(width: 16),
-          // 类型检索筛选
-          FilterChip(
-            label: const Text('文本'),
-            selected: _searchInText,
-            onSelected: (selected) {
-              setState(() => _searchInText = selected);
+  Widget _buildFilterChips() => Container(
+    height: 48,
+    padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingM),
+    child: ListView(
+      scrollDirection: Axis.horizontal,
+      children: [
+        // 状态筛选
+        ChoiceChip(
+          label: const Text('全部'),
+          selected: _statusFilter == TaskVisibleRange.all,
+          onSelected: (selected) {
+            if (selected) {
+              setState(() => _statusFilter = TaskVisibleRange.all);
               _applyFilter();
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChip(
-            label: const Text('子任务'),
-            selected: _searchInSubtasks,
-            onSelected: (selected) {
-              setState(() => _searchInSubtasks = selected);
+            }
+          },
+        ),
+        const SizedBox(width: 8),
+        ChoiceChip(
+          label: const Text('未完成'),
+          selected: _statusFilter == TaskVisibleRange.undone,
+          onSelected: (selected) {
+            if (selected) {
+              setState(() => _statusFilter = TaskVisibleRange.undone);
               _applyFilter();
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChip(
-            label: const Text('备注'),
-            selected: _searchInNotes,
-            onSelected: (selected) {
-              setState(() => _searchInNotes = selected);
+            }
+          },
+        ),
+        const SizedBox(width: 8),
+        ChoiceChip(
+          label: const Text('已完成'),
+          selected: _statusFilter == TaskVisibleRange.done,
+          onSelected: (selected) {
+            if (selected) {
+              setState(() => _statusFilter = TaskVisibleRange.done);
               _applyFilter();
-            },
-          ),
-        ],
-      ),
-    );
-  }
+            }
+          },
+        ),
+        const SizedBox(width: 16),
+        // 分割垂直线
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 12),
+          width: 1,
+          color: Colors.grey.shade300,
+        ),
+        const SizedBox(width: 16),
+        // 类型检索筛选
+        FilterChip(
+          label: const Text('文本'),
+          selected: _searchInText,
+          onSelected: (selected) {
+            setState(() => _searchInText = selected);
+            _applyFilter();
+          },
+        ),
+        const SizedBox(width: 8),
+        FilterChip(
+          label: const Text('子任务'),
+          selected: _searchInSubtasks,
+          onSelected: (selected) {
+            setState(() => _searchInSubtasks = selected);
+            _applyFilter();
+          },
+        ),
+        const SizedBox(width: 8),
+        FilterChip(
+          label: const Text('备注'),
+          selected: _searchInNotes,
+          onSelected: (selected) {
+            setState(() => _searchInNotes = selected);
+            _applyFilter();
+          },
+        ),
+      ],
+    ),
+  );
 
   Widget _buildHistorySection() {
     if (_history.isEmpty) {
@@ -526,7 +525,7 @@ class _SearchPageState extends State<SearchPage> {
             onTap: () async {
               await _addSearchHistory(query);
               if (context.mounted) {
-                context.push('/tasks/${task.id}');
+                await context.push('/tasks/${task.id}');
               }
             },
             child: Padding(
@@ -552,7 +551,7 @@ class _SearchPageState extends State<SearchPage> {
                               await taskProvider.execute(
                                 UpdateTaskIsDone(task, value),
                               );
-                              _performSearch(query);
+                              await _performSearch(query);
                             }
                           },
                           activeColor: Colors.blue,

@@ -1,6 +1,6 @@
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/shared/models/revertible_entity.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
+import 'package:my_dida/shared/models/revertible_entity.dart';
 
 part 'habit.g.dart';
 
@@ -24,6 +24,41 @@ class Habit extends RevertibleEntity {
     if (rrule != null) {
       this.rrule = rrule;
     }
+  }
+
+  /// 从标准 JSON Map 反序列化生成 Habit
+  factory Habit.fromJson(Map<String, dynamic> json) {
+    final habit = Habit(
+      name: json['name']?.toString() ?? '',
+      icon: json['icon']?.toString() ?? '',
+      remindTime: json['remindTime'] != null
+          ? DateTime.parse(json['remindTime'].toString())
+          : DateTime.now(),
+      checkInCount: json['checkInCount'] as int? ?? 1,
+      currentCheckInCount: json['currentCheckInCount'] as int? ?? 0,
+      startDate: json['startDate'] != null
+          ? DateTime.parse(json['startDate'].toString())
+          : DateTime.now(),
+      totalCheckInCount: json['totalCheckInCount'] as int? ?? 0,
+      longestContinuousCheckInDays:
+          json['longestContinuousCheckInDays'] as int? ?? 0,
+      rrule: RepeatPattern.parse(
+        json['rrule']?.toString().isEmpty == true
+            ? null
+            : json['rrule']?.toString(),
+      ),
+      isArchived: json['isArchived'] as bool? ?? false,
+      sortOrder: json['sortOrder'] as int? ?? 0,
+      isTodaySkipped: json['isTodaySkipped'] as bool? ?? false,
+    )
+    ..habitType = json['habitType']?.toString() ?? 'yesNo'
+    ..unit = json['unit']?.toString()
+    ..targetValue = (json['targetValue'] as num?)?.toDouble()
+    ..currentValue = (json['currentValue'] as num?)?.toDouble() ?? 0.0;
+    if (json['id'] != null) {
+      habit.id = json['id'] as int;
+    }
+    return habit;
   }
 
   String name;
@@ -63,8 +98,8 @@ class Habit extends RevertibleEntity {
   bool isTodaySkipped;
 
   /// 转换为标准 JSON Map
-  Map<String, dynamic> toJson() {
-    return {
+  @override
+  Map<String, dynamic> toJson() => {
       'id': id,
       'name': name,
       'icon': icon,
@@ -83,40 +118,4 @@ class Habit extends RevertibleEntity {
       'targetValue': targetValue,
       'currentValue': currentValue,
     };
-  }
-
-  /// 从标准 JSON Map 反序列化生成 Habit
-  factory Habit.fromJson(Map<String, dynamic> json) {
-    final habit = Habit(
-      name: json['name']?.toString() ?? '',
-      icon: json['icon']?.toString() ?? '',
-      remindTime: json['remindTime'] != null
-          ? DateTime.parse(json['remindTime'].toString())
-          : DateTime.now(),
-      checkInCount: json['checkInCount'] as int? ?? 1,
-      currentCheckInCount: json['currentCheckInCount'] as int? ?? 0,
-      startDate: json['startDate'] != null
-          ? DateTime.parse(json['startDate'].toString())
-          : DateTime.now(),
-      totalCheckInCount: json['totalCheckInCount'] as int? ?? 0,
-      longestContinuousCheckInDays:
-          json['longestContinuousCheckInDays'] as int? ?? 0,
-      rrule: RepeatPattern.parse(
-        json['rrule']?.toString().isEmpty == true
-            ? null
-            : json['rrule']?.toString(),
-      ),
-      isArchived: json['isArchived'] as bool? ?? false,
-      sortOrder: json['sortOrder'] as int? ?? 0,
-      isTodaySkipped: json['isTodaySkipped'] as bool? ?? false,
-    );
-    habit.habitType = json['habitType']?.toString() ?? 'yesNo';
-    habit.unit = json['unit']?.toString();
-    habit.targetValue = (json['targetValue'] as num?)?.toDouble();
-    habit.currentValue = (json['currentValue'] as num?)?.toDouble() ?? 0.0;
-    if (json['id'] != null) {
-      habit.id = json['id'] as int;
-    }
-    return habit;
-  }
 }

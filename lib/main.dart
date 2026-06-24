@@ -2,21 +2,21 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:my_dida/core/config/app_config.dart';
 import 'package:my_dida/features/tasks/services/notification_service.dart';
 import 'package:my_dida/features/tasks/services/task_notification_navigation_service.dart';
-import 'package:my_dida/core/config/app_config.dart';
 import 'package:provider/provider.dart';
 
-import 'core/ui/app_message_service.dart';
 import 'core/di/locator.dart';
-import 'features/checklist/providers/checklist_provider.dart';
+import 'core/router/go_router.dart';
+import 'core/ui/app_message_service.dart';
 import 'features/calendar/providers/calendar_page_provider.dart';
+import 'features/checklist/providers/checklist_provider.dart';
 import 'features/habits/providers/habit_provider.dart';
 import 'features/operation_undo/providers/operation_stack_provider.dart';
 import 'features/settings/providers/sidebar_config_provider.dart';
 import 'features/tasks/providers/task_provider.dart';
 import 'features/tomato/providers/tomato_provider.dart';
-import 'core/router/go_router.dart';
 
 void mainCommon(AppConfig config) async {
   // ensureInitialized() 方法的作用是确保 Flutter 运行时环境已经初始化完毕。

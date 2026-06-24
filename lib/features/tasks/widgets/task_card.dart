@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/core/utils/time_formatter.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
 
 class TaskCard extends StatelessWidget {
   const TaskCard({
