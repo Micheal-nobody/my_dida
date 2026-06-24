@@ -102,12 +102,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           SelectionRow(
             icon: Icons.access_time,
             label: '时间',
-            value:
-                _value.selectedTime != null && !_value.isTimeOnlyDate
+            value: _value.selectedTime != null && !_value.isTimeOnlyDate
                 ? '${_value.selectedTime!.hour.toString().padLeft(2, '0')}:${_value.selectedTime!.minute.toString().padLeft(2, '0')}'
                 : '无',
-            valueColor:
-                _value.selectedTime != null && !_value.isTimeOnlyDate
+            valueColor: _value.selectedTime != null && !_value.isTimeOnlyDate
                 ? Colors.orange
                 : null,
             onTap: () async {

@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   * 开发环境：`flutter run -t lib/main_dev.dart`
   * 测试环境：`flutter run -t lib/main_test.dart`
   * 生产环境：`flutter run -t lib/main_prod.dart`
+  * 构建生产环境 APK：`flutter build apk -t lib/main_prod.dart --release`
 * 代码静态检查：`flutter analyze`
 * 代码格式化：`dart format .`
 * 运行所有测试：`flutter test`

@@ -50,6 +50,8 @@ class _TodoPageState extends State<TodoPage> {
     final allChecklists = checklistProvider.allCheckLists;
 
     return Scaffold(
+      drawerEnableOpenDragGesture: false,
+      endDrawerEnableOpenDragGesture: false,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.menu),

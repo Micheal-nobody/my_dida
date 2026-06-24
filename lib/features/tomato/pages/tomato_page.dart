@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:my_dida/features/tomato/models/custom_tomato.dart';
 import 'package:my_dida/features/tomato/pages/tomato_summary_page.dart';
 import 'package:my_dida/features/tomato/pages/tomato_timer_full_screen_page.dart';
@@ -249,11 +250,7 @@ class TomatoPage extends StatelessWidget {
             if (provider.status != TomatoStatus.idle || provider.isRunning)
               GestureDetector(
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const TomatoTimerFullScreenPage(),
-                    ),
-                  );
+                  context.push('/pomodoro/timer');
                 },
                 child: Container(
                   decoration: BoxDecoration(

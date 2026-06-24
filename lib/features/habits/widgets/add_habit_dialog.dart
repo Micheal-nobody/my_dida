@@ -216,21 +216,22 @@ class _AddHabitDialogState extends BaseFormDialogState<AddHabitDialog> {
     final habitProvider = Provider.of<HabitProvider>(context, listen: false);
     final now = DateTime.now();
 
-    final habit = Habit(
-      name: _nameController.text.trim(),
-      icon: _selectedIcon,
-      remindTime: DateTimeUtils.createDateTime(now, _selectedTime),
-      checkInCount: _habitType == 'yesNo' ? _checkInCount : 1,
-      currentCheckInCount: 0,
-      startDate: now,
-      totalCheckInCount: 0,
-      longestContinuousCheckInDays: 0,
-      rrule: _rrule,
-    )
-      ..habitType = _habitType
-      ..unit = _unit
-      ..targetValue = _targetValue
-      ..currentValue = 0.0;
+    final habit =
+        Habit(
+            name: _nameController.text.trim(),
+            icon: _selectedIcon,
+            remindTime: DateTimeUtils.createDateTime(now, _selectedTime),
+            checkInCount: _habitType == 'yesNo' ? _checkInCount : 1,
+            currentCheckInCount: 0,
+            startDate: now,
+            totalCheckInCount: 0,
+            longestContinuousCheckInDays: 0,
+            rrule: _rrule,
+          )
+          ..habitType = _habitType
+          ..unit = _unit
+          ..targetValue = _targetValue
+          ..currentValue = 0.0;
 
     await habitProvider.addHabit(habit);
     showSuccess('习惯"${habit.name}"创建成功！');

@@ -202,7 +202,10 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
         if (habit.totalCheckInCount > 0) {
           habit.totalCheckInCount -= 1;
         }
-        habit.currentValue = (habit.currentValue - subtractedValue).clamp(0.0, 999999.0);
+        habit.currentValue = (habit.currentValue - subtractedValue).clamp(
+          0.0,
+          999999.0,
+        );
         await _habitRepository.updateHabit(habit);
       }
     } catch (e) {

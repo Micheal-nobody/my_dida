@@ -17,12 +17,18 @@ import 'package:my_dida/features/tasks/pages/search_page.dart';
 import 'package:my_dida/features/tasks/pages/four_quadrants_page.dart';
 import 'package:my_dida/core/router/shell_scaffold_key.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
+import 'package:my_dida/features/tomato/pages/tomato_timer_full_screen_page.dart';
 import 'package:provider/provider.dart';
 
 final GoRouter goRouter = GoRouter(
   // 初始路由
   initialLocation: '/todoList',
   routes: [
+    GoRoute(
+      path: '/pomodoro/timer',
+      pageBuilder: (context, state) =>
+          const MaterialPage(child: TomatoTimerFullScreenPage()),
+    ),
     GoRoute(
       path: '/tasks/:taskId',
       pageBuilder: (context, state) {
@@ -86,10 +92,9 @@ final GoRouter goRouter = GoRouter(
 
         bottomNavigationBar: Consumer<TomatoProvider>(
           builder: (context, tomatoProvider, child) {
-            final isRunning = tomatoProvider.isRunning && tomatoProvider.status != TomatoStatus.idle;
-            final progress = tomatoProvider.totalDuration > 0
-                ? (tomatoProvider.totalDuration - tomatoProvider.duration) / tomatoProvider.totalDuration
-                : 0.0;
+            final isRunning =
+                tomatoProvider.isRunning &&
+                tomatoProvider.status != TomatoStatus.idle;
 
             return BottomNavigationBar(
               type: BottomNavigationBarType.fixed,
@@ -99,25 +104,32 @@ final GoRouter goRouter = GoRouter(
                 initialLocation: index == navigationShell.currentIndex,
               ),
               items: [
-                const BottomNavigationBarItem(icon: Icon(Icons.masks), label: '待办清单'),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.masks),
+                  label: '待办清单',
+                ),
                 const BottomNavigationBarItem(
                   icon: Icon(Icons.calendar_month),
                   label: '日历视图',
                 ),
-                const BottomNavigationBarItem(icon: Icon(Icons.lock_clock), label: '习惯'),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.lock_clock),
+                  label: '习惯',
+                ),
                 BottomNavigationBarItem(
                   icon: isRunning
-                      ? Stack(
+                      ? const Stack(
                           alignment: Alignment.center,
                           children: [
-                            const Icon(Icons.timer),
+                            Icon(Icons.timer),
                             SizedBox(
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(
-                                value: progress,
                                 strokeWidth: 2,
-                                valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.orange,
+                                ),
                               ),
                             ),
                           ],
@@ -125,7 +137,10 @@ final GoRouter goRouter = GoRouter(
                       : const Icon(Icons.timer_outlined),
                   label: '番茄钟',
                 ),
-                const BottomNavigationBarItem(icon: Icon(Icons.history), label: '操作记录'),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.history),
+                  label: '操作记录',
+                ),
               ],
             );
           },

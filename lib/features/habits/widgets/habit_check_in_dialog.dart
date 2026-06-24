@@ -137,15 +137,21 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
 
             // 滑动按钮
             if (!isCompleted) ...[
-              if (habit.habitType == 'count' || habit.habitType == 'duration') ...[
+              if (habit.habitType == 'count' ||
+                  habit.habitType == 'duration') ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.remove_circle_outline),
                       onPressed: () {
-                        double val = double.tryParse(_inputController.text) ?? 0.0;
-                        double step = habit.habitType == 'duration' ? 15.0 : (habit.unit == '毫升' ? 250.0 : (habit.unit == '页' ? 5.0 : 1.0));
+                        double val =
+                            double.tryParse(_inputController.text) ?? 0.0;
+                        double step = habit.habitType == 'duration'
+                            ? 15.0
+                            : (habit.unit == '毫升'
+                                  ? 250.0
+                                  : (habit.unit == '页' ? 5.0 : 1.0));
                         val = (val - step).clamp(0.0, 999999.0);
                         _inputController.text = val.toStringAsFixed(0);
                       },
@@ -154,7 +160,9 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
                       width: 100,
                       child: TextField(
                         controller: _inputController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         textAlign: TextAlign.center,
                         decoration: InputDecoration(
                           suffixText: habit.unit ?? '',
@@ -165,8 +173,13 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
                     IconButton(
                       icon: const Icon(Icons.add_circle_outline),
                       onPressed: () {
-                        double val = double.tryParse(_inputController.text) ?? 0.0;
-                        double step = habit.habitType == 'duration' ? 15.0 : (habit.unit == '毫升' ? 250.0 : (habit.unit == '页' ? 5.0 : 1.0));
+                        double val =
+                            double.tryParse(_inputController.text) ?? 0.0;
+                        double step = habit.habitType == 'duration'
+                            ? 15.0
+                            : (habit.unit == '毫升'
+                                  ? 250.0
+                                  : (habit.unit == '页' ? 5.0 : 1.0));
                         val = val + step;
                         _inputController.text = val.toStringAsFixed(0);
                       },

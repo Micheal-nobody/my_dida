@@ -265,10 +265,8 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _TagSelectorBottomSheet(
-        initialTags: _tags,
-        allHistoryTags: allTags,
-      ),
+      builder: (context) =>
+          _TagSelectorBottomSheet(initialTags: _tags, allHistoryTags: allTags),
     );
     if (updatedTags != null) {
       setState(() {
@@ -630,224 +628,233 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   ),
                 ],
               ),
-          TextField(
-            controller: _textController,
-            autofocus: !_hasInitPreset,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            decoration: InputDecoration(
-              hintText: '准备做点什么？',
-              errorText: _hasError ? '请输入任务名称！' : null,
-              errorStyle: const TextStyle(color: Colors.red),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 8),
-            ),
-            onSubmitted: (value) => _addTask(context),
-            onChanged: (value) {
-              if (_hasError && value.isNotEmpty) {
-                setState(() {
-                  _hasError = false;
-                });
-              }
-            },
-          ),
-          TextField(
-            controller: _descController,
-            maxLines: null,
-            style: TextStyle(fontSize: 14, color: Colors.grey[800]),
-            decoration: const InputDecoration(
-              hintText: '添加描述或备注...',
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(vertical: 4),
-            ),
-          ),
-          const SizedBox(height: 8),
-          _buildSelectedAttributesChips(),
-          if (_checkpoints.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            const Text(
-              '检查点',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-            _buildCheckpointsList(),
-          ],
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextButton.icon(
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                        ),
-                        icon: Icon(
-                          Icons.calendar_today,
-                          size: 18,
-                          color: _dateTimePickerValue.selectedDate != null
-                              ? Colors.orange
-                              : Colors.grey[600],
-                        ),
-                        label: Text(
-                          _getDateDisplayText(),
-                          style: TextStyle(
-                            color: _dateTimePickerValue.selectedDate != null
-                                ? Colors.orange
-                                : Colors.grey[600],
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        onPressed: () => _showDateTimePicker(context),
-                      ),
-                      const SizedBox(width: 4),
-                      PopupMenuButton<TaskPriority>(
-                        initialValue: _priority,
-                        onSelected: (val) {
-                          setState(() {
-                            _priority = val;
-                          });
-                        },
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(
-                            value: TaskPriority.high,
-                            child: Text('🔴 高优先级'),
-                          ),
-                          PopupMenuItem(
-                            value: TaskPriority.medium,
-                            child: Text('🟠 中优先级'),
-                          ),
-                          PopupMenuItem(
-                            value: TaskPriority.low,
-                            child: Text('🔵 低优先级'),
-                          ),
-                          PopupMenuItem(
-                            value: TaskPriority.none,
-                            child: Text('⚪ 无优先级'),
-                          ),
-                        ],
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Icon(
-                            Icons.flag,
-                            size: 20,
-                            color: _priority == TaskPriority.high
-                                ? Colors.red
-                                : _priority == TaskPriority.medium
-                                ? Colors.orange
-                                : _priority == TaskPriority.low
-                                ? Colors.blue
-                                : Colors.grey[600],
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.label_outline,
-                          size: 20,
-                          color: _tags.isNotEmpty
-                              ? Colors.orange
-                              : Colors.grey[600],
-                        ),
-                        onPressed: _editTags,
-                      ),
-                      if (parentTask == null)
-                        Consumer<ChecklistProvider>(
-                          builder: (context, provider, child) {
-                            _ensureSelectedChecklist(provider);
-                            return PopupMenuButton<ChecklistVO>(
-                              initialValue: _selectedChecklist,
-                              onSelected: (newValue) {
-                                setState(() {
-                                  _selectedChecklist = newValue;
-                                });
-                              },
-                              itemBuilder: (context) => provider.allCheckLists
-                                  .map(
-                                    (checklist) => PopupMenuItem<ChecklistVO>(
-                                      value: checklist,
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.folder,
-                                            color: checklist.color,
-                                            size: 18,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(checklist.name),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.folder_open,
-                                      size: 20,
-                                      color: _selectedChecklist != null
-                                          ? Colors.orange
-                                          : Colors.grey[600],
-                                    ),
-                                    if (_selectedChecklist != null) ...[
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        _selectedChecklist!.name,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.orange,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                    ],
-                  ),
+              TextField(
+                controller: _textController,
+                autofocus: !_hasInitPreset,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                decoration: InputDecoration(
+                  hintText: '准备做点什么？',
+                  errorText: _hasError ? '请输入任务名称！' : null,
+                  errorStyle: const TextStyle(color: Colors.red),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+                onSubmitted: (value) => _addTask(context),
+                onChanged: (value) {
+                  if (_hasError && value.isNotEmpty) {
+                    setState(() {
+                      _hasError = false;
+                    });
+                  }
+                },
+              ),
+              TextField(
+                controller: _descController,
+                maxLines: null,
+                style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                decoration: const InputDecoration(
+                  hintText: '添加描述或备注...',
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 4),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(height: 8),
+              _buildSelectedAttributesChips(),
+              if (_checkpoints.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  '检查点',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+                _buildCheckpointsList(),
+              ],
+              const SizedBox(height: 12),
               Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.mic, color: Colors.grey[600], size: 20),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('语音录入功能暂未集成')),
-                      );
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.send,
-                      color: Colors.orange,
-                      size: 20,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextButton.icon(
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                            ),
+                            icon: Icon(
+                              Icons.calendar_today,
+                              size: 18,
+                              color: _dateTimePickerValue.selectedDate != null
+                                  ? Colors.orange
+                                  : Colors.grey[600],
+                            ),
+                            label: Text(
+                              _getDateDisplayText(),
+                              style: TextStyle(
+                                color: _dateTimePickerValue.selectedDate != null
+                                    ? Colors.orange
+                                    : Colors.grey[600],
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            onPressed: () => _showDateTimePicker(context),
+                          ),
+                          const SizedBox(width: 4),
+                          PopupMenuButton<TaskPriority>(
+                            initialValue: _priority,
+                            onSelected: (val) {
+                              setState(() {
+                                _priority = val;
+                              });
+                            },
+                            itemBuilder: (context) => const [
+                              PopupMenuItem(
+                                value: TaskPriority.high,
+                                child: Text('🔴 高优先级'),
+                              ),
+                              PopupMenuItem(
+                                value: TaskPriority.medium,
+                                child: Text('🟠 中优先级'),
+                              ),
+                              PopupMenuItem(
+                                value: TaskPriority.low,
+                                child: Text('🔵 低优先级'),
+                              ),
+                              PopupMenuItem(
+                                value: TaskPriority.none,
+                                child: Text('⚪ 无优先级'),
+                              ),
+                            ],
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Icon(
+                                Icons.flag,
+                                size: 20,
+                                color: _priority == TaskPriority.high
+                                    ? Colors.red
+                                    : _priority == TaskPriority.medium
+                                    ? Colors.orange
+                                    : _priority == TaskPriority.low
+                                    ? Colors.blue
+                                    : Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.label_outline,
+                              size: 20,
+                              color: _tags.isNotEmpty
+                                  ? Colors.orange
+                                  : Colors.grey[600],
+                            ),
+                            onPressed: _editTags,
+                          ),
+                          if (parentTask == null)
+                            Consumer<ChecklistProvider>(
+                              builder: (context, provider, child) {
+                                _ensureSelectedChecklist(provider);
+                                return PopupMenuButton<ChecklistVO>(
+                                  initialValue: _selectedChecklist,
+                                  onSelected: (newValue) {
+                                    setState(() {
+                                      _selectedChecklist = newValue;
+                                    });
+                                  },
+                                  itemBuilder: (context) => provider
+                                      .allCheckLists
+                                      .map(
+                                        (checklist) =>
+                                            PopupMenuItem<ChecklistVO>(
+                                              value: checklist,
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.folder,
+                                                    color: checklist.color,
+                                                    size: 18,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Text(checklist.name),
+                                                ],
+                                              ),
+                                            ),
+                                      )
+                                      .toList(),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.folder_open,
+                                          size: 20,
+                                          color: _selectedChecklist != null
+                                              ? Colors.orange
+                                              : Colors.grey[600],
+                                        ),
+                                        if (_selectedChecklist != null) ...[
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            _selectedChecklist!.name,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.orange,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
+                      ),
                     ),
-                    onPressed: () => _addTask(context),
+                  ),
+                  const SizedBox(width: 8),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.mic,
+                          color: Colors.grey[600],
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('语音录入功能暂未集成')),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.send,
+                          color: Colors.orange,
+                          size: 20,
+                        ),
+                        onPressed: () => _addTask(context),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ],
           ),
-        ],
+        ),
       ),
-    ),
-  ),
-);
+    );
   }
 
   Widget _buildTimeDisplayRow(BuildContext context) => InkWell(
@@ -1197,7 +1204,8 @@ class _TagSelectorBottomSheet extends StatefulWidget {
   final List<String> allHistoryTags;
 
   @override
-  State<_TagSelectorBottomSheet> createState() => __TagSelectorBottomSheetState();
+  State<_TagSelectorBottomSheet> createState() =>
+      __TagSelectorBottomSheetState();
 }
 
 class __TagSelectorBottomSheetState extends State<_TagSelectorBottomSheet> {
@@ -1269,7 +1277,11 @@ class __TagSelectorBottomSheetState extends State<_TagSelectorBottomSheet> {
           if (_selectedTags.isNotEmpty) ...[
             const Text(
               '当前已选标签',
-              style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -1301,7 +1313,11 @@ class __TagSelectorBottomSheetState extends State<_TagSelectorBottomSheet> {
           if (recommendedTags.isNotEmpty) ...[
             const Text(
               '推荐常用标签',
-              style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             ConstrainedBox(
