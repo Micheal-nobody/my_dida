@@ -780,7 +780,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         color: Colors.black54,
                       ),
                       const SizedBox(width: 8),
-                      const Text('显示完成任务'),
+                      const Text('显示已完成任务'),
                     ],
                   ),
                 ),

@@ -13,7 +13,6 @@ import 'package:my_dida/features/tasks/widgets/task_description_editor.dart';
 import 'package:my_dida/features/tasks/widgets/task_detail/widgets/checkpoint_item_widget.dart';
 import 'package:my_dida/features/tasks/widgets/task_detail/widgets/sub_task_section.dart';
 import 'package:my_dida/features/tasks/widgets/task_detail/widgets/task_detail_header.dart';
-import 'package:my_dida/shared/widgets/inline_editable_multiline_text_field.dart';
 import 'package:my_dida/shared/widgets/inline_editable_text_field.dart';
 import 'package:provider/provider.dart';
 

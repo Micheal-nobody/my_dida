@@ -201,8 +201,8 @@ final Map<String, String> pathMappings = {
 
   "package:my_dida/features/todo_page/board_view.dart":
       "package:my_dida/features/tasks/widgets/board_view.dart",
-  "package:my_dida/features/todo_page/todo_drawer.dart":
-      "package:my_dida/features/tasks/widgets/todo_drawer.dart",
+  "package:my_dida/features/todo_page/task_drawer.dart":
+      "package:my_dida/features/tasks/widgets/task_drawer.dart",
   "package:my_dida/features/cards/task_card.dart":
       "package:my_dida/features/tasks/widgets/task_card.dart",
   "package:my_dida/features/dialogs/add_task_dialog.dart":

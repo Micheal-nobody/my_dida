@@ -3,13 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
 import 'package:my_dida/core/logger/logger.dart';
-import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
-import 'package:my_dida/features/tasks/widgets/task_card.dart';
 import 'package:provider/provider.dart';
 
 class FourQuadrantsPage extends StatelessWidget {
@@ -19,7 +17,6 @@ class FourQuadrantsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final taskProvider = Provider.of<TaskProvider>(context);
     final configProvider = Provider.of<SidebarConfigProvider>(context);
-    final checklistProvider = Provider.of<ChecklistProvider>(context);
     final config = configProvider.config;
 
     return Scaffold(
@@ -85,7 +82,6 @@ class FourQuadrantsPage extends StatelessWidget {
                           tasks: highTasks,
                           priority: TaskPriority.high,
                           taskProvider: taskProvider,
-                          allChecklists: checklistProvider.allCheckLists,
                         ),
                       ),
                       Expanded(
@@ -96,7 +92,6 @@ class FourQuadrantsPage extends StatelessWidget {
                           tasks: mediumTasks,
                           priority: TaskPriority.medium,
                           taskProvider: taskProvider,
-                          allChecklists: checklistProvider.allCheckLists,
                         ),
                       ),
                     ],
@@ -113,7 +108,6 @@ class FourQuadrantsPage extends StatelessWidget {
                           tasks: lowTasks,
                           priority: TaskPriority.low,
                           taskProvider: taskProvider,
-                          allChecklists: checklistProvider.allCheckLists,
                         ),
                       ),
                       Expanded(
@@ -124,7 +118,6 @@ class FourQuadrantsPage extends StatelessWidget {
                           tasks: noneTasks,
                           priority: TaskPriority.none,
                           taskProvider: taskProvider,
-                          allChecklists: checklistProvider.allCheckLists,
                         ),
                       ),
                     ],
@@ -138,6 +131,19 @@ class FourQuadrantsPage extends StatelessWidget {
     );
   }
 
+  Color _getPriorityColor(TaskPriority priority) {
+    switch (priority) {
+      case TaskPriority.high:
+        return Colors.red;
+      case TaskPriority.medium:
+        return Colors.orange;
+      case TaskPriority.low:
+        return Colors.blue;
+      case TaskPriority.none:
+        return Colors.grey;
+    }
+  }
+
   Widget _buildQuadrantCard({
     required BuildContext context,
     required String title,
@@ -145,7 +151,6 @@ class FourQuadrantsPage extends StatelessWidget {
     required List<Task> tasks,
     required TaskPriority priority,
     required TaskProvider taskProvider,
-    required List<dynamic> allChecklists,
   }) {
     final activeCount = tasks.where((t) => !t.isDone).length;
 
@@ -258,18 +263,68 @@ class FourQuadrantsPage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         itemBuilder: (context, index) {
                           final task = tasks[index];
-                          final cardWidget = TaskCard(
-                            task: task,
-                            checklistName: _getChecklistName(
-                              task.checklistId,
-                              allChecklists,
+                          final priorityColor = _getPriorityColor(task.priority);
+                          final cardWidget = Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
                             ),
-                            onToggleDone: (val) async {
-                              await taskProvider.execute(
-                                UpdateTaskIsDone(task, val!),
-                              );
-                            },
-                            onTap: () => TaskDetailPage.show(context, task),
+                            child: Row(
+                              children: [
+                                // 方框：点击切换完成状态
+                                GestureDetector(
+                                  key: ValueKey('task_checkbox_${task.name}'),
+                                  onTap: () async {
+                                    await taskProvider.execute(
+                                      UpdateTaskIsDone(task, !task.isDone),
+                                    );
+                                  },
+                                  child: Container(
+                                    width: 16,
+                                    height: 16,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: priorityColor,
+                                        width: 1.5,
+                                      ),
+                                      borderRadius: BorderRadius.circular(3),
+                                      color: task.isDone
+                                          ? priorityColor
+                                          : Colors.transparent,
+                                    ),
+                                    child: task.isDone
+                                        ? const Icon(
+                                            Icons.check,
+                                            size: 11,
+                                            color: Colors.white,
+                                          )
+                                        : null,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                // 任务名：点击进入详情
+                                Expanded(
+                                  child: GestureDetector(
+                                    key: ValueKey('task_name_${task.name}'),
+                                    onTap: () => TaskDetailPage.show(context, task),
+                                    child: Text(
+                                      task.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        decoration: task.isDone
+                                            ? TextDecoration.lineThrough
+                                            : TextDecoration.none,
+                                        color: task.isDone
+                                            ? Colors.grey
+                                            : Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           );
 
                           return LongPressDraggable<Task>(
@@ -298,15 +353,6 @@ class FourQuadrantsPage extends StatelessWidget {
         );
       },
     );
-  }
-
-  String _getChecklistName(int? id, List<dynamic> allChecklists) {
-    if (id == null) return '';
-    final cl = allChecklists.firstWhere(
-      (c) => c.id == id,
-      orElse: () => allChecklists.first,
-    );
-    return cl.name;
   }
 
   void _addNewTask(BuildContext context, TaskPriority priority) {
