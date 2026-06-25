@@ -4,6 +4,7 @@ This file provides guidance to ZCode and other agents when working with code in 
 
 ## 约束与规范
 * **使用中文输出**：与用户的所有沟通、讨论、解答都必须使用中文。
+* **版本目标管理 (Version Goal)**：未来所有的任务都将依赖于 `docs/version_goal/` 文件夹下对应版本的规划。每当完成一个版本的需求开发、Bug 修复或功能优化时，必须在该版本文件夹下的 `summary.md` 文件中记录当前版本修复的 bug、优化或新增的功能（仅记录产品/用户层面的变化，不包括任何关于具体代码实现的细节）。此项作为版本交付的必要前置约束。
 
 ## 常用开发命令
 * 运行/构建应用 (多环境)：
