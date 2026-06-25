@@ -22,9 +22,6 @@
      - **圆环进度条样式**：带有白色极简环形进度条、大字号时间和当前状态展示。
      - **纯数字样式**：无进度环，仅以极简超大字号显示剩余时间及状态。
    - 修复并优化了专注进度指示器的同步与显示逻辑。
-2. **代码结构优化与页面臃肿文件重构**
-   - 针对操作历史管理页面 (`operation_page.dart`)、打卡数据统计页面 (`habit_data_summary_page.dart`) 和全局搜索页面 (`search_page.dart`) 进行了深度的模块化重构与臃肿代码拆分。
-   - 分别将原页面中混杂的复杂弹窗、图表几何绘制、过滤器面板、历史记录管理等辅助显示区域抽离为独立的可复用 Widget 实体（如 `OperationDetailDialog`, `HabitDaySummarySection`, `SearchFilterChips`, `SearchHistorySection` 等），显著精简页面体积，核心页面文件行数均缩减 50% 以上，提高了代码的独立性、可读性与可测试性。
 
 ## 问题修复
 1. **Android 构建环境兼容性修复**

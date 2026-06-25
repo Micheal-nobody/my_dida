@@ -78,9 +78,10 @@ class _AddChecklistDialogState extends BaseFormDialogState<AddChecklistDialog> {
       );
     } else {
       // Update existing belonging box
-      final updatedBox = checklist!
-        ..name = _nameController.text.trim()
-        ..color = _selectedColor;
+      final updatedBox = checklist!.copyWith(
+        name: _nameController.text.trim(),
+        color: _selectedColor,
+      );
       await provider.updateChecklist(updatedBox);
     }
   }

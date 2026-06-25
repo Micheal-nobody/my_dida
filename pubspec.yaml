@@ -32,6 +32,7 @@ dependencies:
   markdown_editor_plus: ^0.2.14 # 带 Markdown 工具栏的编辑器（任务备注编辑态）
   image_picker: ^1.1.2 # 相册/相机选取附件图片
   file_picker: ^8.1.4 # 文件选择器（任意类型附件）
+  freezed_annotation: ^3.1.0
 
 # dev_dependencies 表示测试依赖
 dev_dependencies:
@@ -41,5 +42,6 @@ dev_dependencies:
   isar_community_generator: ^3.3.0 # Isar 数据库代码生成
   build_runner: ^2.4.13 # 代码生成
   rename: ^3.1.0
+  freezed: ^3.2.5
 flutter:
   uses-material-design: true

@@ -35,14 +35,10 @@ class CalendarPage extends StatefulWidget {
 class _CalendarPageState extends State<CalendarPage> {
   static const double _timeAxisWidth = 60.0;
   static const double _timeAxisGap = 8.0;
-  static const double _timeAreaHeight = 1440.0;
-  static const double _timeAxisSpacerHeight = 4000.0;
   static const double _timedEntryHeight = 15.0;
   static const double _allDayEntryHeight = 28.0;
 
-  late final DateTime _currentDate;
   late DateTime _selectedDate;
-  int _dateRange = 3;
   Map<DateTime, List<Task>> _tasksForDates = {};
   Map<DateTime, List<Task>> _allDayTasksForDates = {};
   List<Task> _crossDayTasks = [];
@@ -62,7 +58,6 @@ class _CalendarPageState extends State<CalendarPage> {
   void initState() {
     super.initState();
     final now = DateTime.now();
-    _currentDate = now;
     _selectedDate = now;
     _taskProvider = Provider.of<TaskProvider>(context, listen: false);
     _habitProvider = Provider.of<HabitProvider>(context, listen: false);
@@ -112,8 +107,7 @@ class _CalendarPageState extends State<CalendarPage> {
     }
   }
 
-  List<Task> _filterTasks(List<Task> tasks, CalendarPageConfig config) {
-    return tasks.where((task) {
+  List<Task> _filterTasks(List<Task> tasks, CalendarPageConfig config) => tasks.where((task) {
       if (!config.showCompletedTasks && task.isDone) {
         return false;
       }
@@ -124,7 +118,6 @@ class _CalendarPageState extends State<CalendarPage> {
       }
       return true;
     }).toList();
-  }
 
   Future<void> _loadTasksForVisibleDates() async {
     await PerformanceMonitor.timeAsyncOperation(
@@ -211,13 +204,9 @@ class _CalendarPageState extends State<CalendarPage> {
   void _applyTaskViewData(TaskCalendarViewData taskViewData) {
     final config = _calendarPageProvider.config;
 
-    _tasksForDates = taskViewData.tasksForDates.map((date, list) {
-      return MapEntry(date, _filterTasks(list, config));
-    });
+    _tasksForDates = taskViewData.tasksForDates.map((date, list) => MapEntry(date, _filterTasks(list, config)));
 
-    _allDayTasksForDates = taskViewData.allDayTasksForDates.map((date, list) {
-      return MapEntry(date, _filterTasks(list, config));
-    });
+    _allDayTasksForDates = taskViewData.allDayTasksForDates.map((date, list) => MapEntry(date, _filterTasks(list, config)));
 
     _crossDayTasks = _filterTasks(taskViewData.crossDayTasks, config);
 
@@ -248,9 +237,7 @@ class _CalendarPageState extends State<CalendarPage> {
       _crossDayTaskCountForDates[normalizedDate] = count;
     }
 
-    _futureTasks = taskViewData.futureTasks.map((date, list) {
-      return MapEntry(date, _filterTasks(list, config));
-    });
+    _futureTasks = taskViewData.futureTasks.map((date, list) => MapEntry(date, _filterTasks(list, config)));
 
     _rruleHasMore
       ..clear()
