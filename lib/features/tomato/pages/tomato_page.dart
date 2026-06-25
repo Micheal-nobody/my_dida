@@ -124,7 +124,9 @@ class TomatoPage extends StatelessWidget {
                         final isCurrentActive =
                             provider.activeCustomTomato?.id == tomato.id;
                         final isRunningThis =
-                            isCurrentActive && provider.isRunning;
+                            isCurrentActive &&
+                            provider.isRunning &&
+                            !provider.isPaused;
 
                         return GestureDetector(
                           onLongPress: () =>
@@ -196,9 +198,15 @@ class TomatoPage extends StatelessWidget {
                                   // 右侧播放/旋转状态
                                   GestureDetector(
                                     onTap: () {
-                                      if (isRunningThis) {
-                                        // 如果当前就是这一个正在运行，点击它可以去往全屏，或者暂停
-                                        provider.pause();
+                                      if (isCurrentActive) {
+                                        if (provider.isRunning &&
+                                            !provider.isPaused) {
+                                          provider.pause();
+                                        } else if (provider.isPaused) {
+                                          provider.resume();
+                                        } else {
+                                          provider.start();
+                                        }
                                       } else {
                                         // 激活这个自定义番茄钟并直接启动
                                         provider
@@ -211,6 +219,10 @@ class TomatoPage extends StatelessWidget {
                                             width: 36,
                                             height: 36,
                                             child: CircularProgressIndicator(
+                                              value: provider.totalDuration > 0
+                                                  ? provider.duration /
+                                                      provider.totalDuration
+                                                  : 1.0,
                                               strokeWidth: 3,
                                               valueColor:
                                                   AlwaysStoppedAnimation<Color>(
@@ -228,10 +240,7 @@ class TomatoPage extends StatelessWidget {
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
-                                              isCurrentActive &&
-                                                      provider.isPaused
-                                                  ? Icons.pause_rounded
-                                                  : Icons.play_arrow_rounded,
+                                              Icons.play_arrow_rounded,
                                               color: Colors.orange.shade800,
                                               size: 22,
                                             ),

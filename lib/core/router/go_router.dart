@@ -94,6 +94,7 @@ final GoRouter goRouter = GoRouter(
           builder: (context, tomatoProvider, child) {
             final isRunning =
                 tomatoProvider.isRunning &&
+                !tomatoProvider.isPaused &&
                 tomatoProvider.status != TomatoStatus.idle;
 
             return BottomNavigationBar(
@@ -118,16 +119,19 @@ final GoRouter goRouter = GoRouter(
                 ),
                 BottomNavigationBarItem(
                   icon: isRunning
-                      ? const Stack(
+                      ? Stack(
                           alignment: Alignment.center,
                           children: [
-                            Icon(Icons.timer),
+                            const Icon(Icons.timer),
                             SizedBox(
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(
+                                value: tomatoProvider.totalDuration > 0
+                                    ? tomatoProvider.duration / tomatoProvider.totalDuration
+                                    : 1.0,
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
+                                valueColor: const AlwaysStoppedAnimation<Color>(
                                   Colors.orange,
                                 ),
                               ),
