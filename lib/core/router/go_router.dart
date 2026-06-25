@@ -18,6 +18,7 @@ import 'package:my_dida/features/tasks/widgets/todo_drawer.dart';
 import 'package:my_dida/features/tomato/pages/tomato_page.dart';
 import 'package:my_dida/features/tomato/pages/tomato_timer_full_screen_page.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
+import 'package:my_dida/shared/widgets/dynamic_calendar_icon.dart';
 import 'package:provider/provider.dart';
 
 final GoRouter goRouter = GoRouter(
@@ -110,7 +111,7 @@ final GoRouter goRouter = GoRouter(
                   label: '待办清单',
                 ),
                 const BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_month),
+                  icon: DynamicCalendarIcon(),
                   label: '日历视图',
                 ),
                 const BottomNavigationBarItem(
