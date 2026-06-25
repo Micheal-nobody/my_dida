@@ -2,9 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/di/locator.dart';
-import 'package:my_dida/features/checklist/models/checklist.dart';
+import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/tasks/services/notification_service.dart';
@@ -30,6 +29,7 @@ class TomatoProvider with ChangeNotifier {
     CustomTomatoRepository? customTomatoRepository,
     TaskRepository? taskRepository,
     NotificationService? notificationService,
+    ChecklistRepository? checklistRepository,
     TomatoTicker? ticker,
   }) : _tomatoRecordRepository =
            tomatoRecordRepository ?? getIt<TomatoRecordRepository>(),
@@ -37,7 +37,9 @@ class TomatoProvider with ChangeNotifier {
            customTomatoRepository ?? getIt<CustomTomatoRepository>(),
        _taskRepository = taskRepository ?? getIt<TaskRepository>(),
        _notificationService =
-           notificationService ?? getIt<NotificationService>() {
+           notificationService ?? getIt<NotificationService>(),
+       _checklistRepository =
+           checklistRepository ?? getIt<ChecklistRepository>() {
     _ticker = ticker ?? TomatoTicker();
     _tickerSubscription = _ticker.eventStream.listen(_handleTomatoEvent);
     loadCustomTomatoes();
@@ -47,6 +49,7 @@ class TomatoProvider with ChangeNotifier {
   final CustomTomatoRepository _customTomatoRepository;
   final TaskRepository _taskRepository;
   final NotificationService _notificationService;
+  final ChecklistRepository _checklistRepository;
 
   late final TomatoTicker _ticker;
   StreamSubscription<TomatoEvent>? _tickerSubscription;
@@ -402,8 +405,7 @@ class TomatoProvider with ChangeNotifier {
   Future<String?> _getChecklistName(int? checklistId) async {
     if (checklistId == null) return null;
     try {
-      final isar = getIt<Isar>();
-      final checklist = await isar.collection<Checklist>().get(checklistId);
+      final checklist = await _checklistRepository.selectById(checklistId);
       return checklist?.name;
     } catch (_) {
       return null;

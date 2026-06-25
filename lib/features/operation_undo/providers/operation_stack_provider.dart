@@ -248,4 +248,31 @@ class OperationStackProvider with ChangeNotifier {
       'operations': operationsJson,
     });
   }
+
+  /// 获取指定 ID 的操作
+  Future<Operation?> getOperationById(int id) async {
+    try {
+      return await _isar.operations.get(id);
+    } catch (e) {
+      logger.e('获取操作记录失败: $e');
+      return null;
+    }
+  }
+
+  /// 删除指定 ID 的操作
+  Future<bool> deleteOperationById(int id) async {
+    try {
+      final success = await _isar.writeTxn(() async {
+        return await _isar.operations.delete(id);
+      });
+      if (success) {
+        _operations.removeWhere((op) => op.id == id);
+        notifyListeners();
+      }
+      return success;
+    } catch (e) {
+      logger.e('删除操作记录失败: $e');
+      return false;
+    }
+  }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:my_dida/core/config/app_config.dart';
+import 'package:my_dida/core/config/prod_config.dart';
 import 'package:my_dida/features/tasks/services/notification_service.dart';
 import 'package:my_dida/features/tasks/services/task_notification_navigation_service.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +17,13 @@ import 'features/habits/providers/habit_provider.dart';
 import 'features/operation_undo/providers/operation_stack_provider.dart';
 import 'features/settings/providers/sidebar_config_provider.dart';
 import 'features/tasks/providers/task_provider.dart';
+import 'package:isar_community/isar.dart';
+import 'package:my_dida/core/logger/logger.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tasks/services/attachment_service.dart';
 import 'features/tomato/providers/tomato_provider.dart';
+
+void main() => mainCommon(ProdConfig());
 
 void mainCommon(AppConfig config) async {
   // ensureInitialized() 方法的作用是确保 Flutter 运行时环境已经初始化完毕。
@@ -31,6 +38,9 @@ void mainCommon(AppConfig config) async {
   // 初始化操作栈
   final operationStack = getIt<OperationStackProvider>();
   await operationStack.initialize();
+
+  // 异步清理孤儿附件目录，不阻塞启动
+  unawaited(_runAttachmentCleanup());
 
   runApp(
     MultiProvider(
@@ -145,3 +155,14 @@ class _MyAppState extends State<MyApp> {
     ],
   );
 }
+
+Future<void> _runAttachmentCleanup() async {
+  try {
+    final isar = getIt<Isar>();
+    final taskIds = await isar.tasks.where().idProperty().findAll();
+    await getIt<AttachmentService>().cleanupOrphans(taskIds);
+  } catch (e) {
+    logger.e('启动扫描清理孤儿附件目录异常: $e');
+  }
+}
+

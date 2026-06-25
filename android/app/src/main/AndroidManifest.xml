@@ -3,6 +3,14 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- 任务附件：相机拍照（image_picker） -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 任务附件：读取媒体文件（Android 13+ 使用 READ_MEDIA_*，旧版本回退 READ_EXTERNAL_STORAGE） -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <application
         android:label="my_dida"

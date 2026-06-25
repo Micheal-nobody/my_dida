@@ -103,6 +103,8 @@ class Task extends RevertibleEntity {
   }
 
   String name;
+
+  /// 任务备注。支持 Markdown 语法，附件（图片/文件）以 attachments:// 虚拟路径形式引用。
   String description;
   @Index(name: 'is_done_start_time', composite: [CompositeIndex('startTime')])
   @Index(name: 'is_done_end_time', composite: [CompositeIndex('endTime')])

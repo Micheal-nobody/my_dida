@@ -17,6 +17,7 @@ import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dar
 import 'package:my_dida/features/tasks/services/task_reminder_service.dart';
 import 'package:my_dida/features/calendar/services/task_calendar_projection_service.dart';
 import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
+import 'package:my_dida/features/tasks/services/attachment_service.dart';
 
 class TaskTestHarness {
   TaskTestHarness._(this.isar, this.tempDir);
@@ -61,6 +62,9 @@ class TaskTestHarness {
 
     getIt
       ..registerSingleton<Isar>(isar)
+      ..registerSingleton<AttachmentService>(
+        AttachmentServiceImpl(documentsDirectoryProvider: () async => tempDir),
+      )
       ..registerSingleton<TaskRepository>(TaskRepository())
       ..registerSingleton<OperationStackProvider>(OperationStackProvider())
       ..registerSingleton<TaskReminderSchedulerPort>(

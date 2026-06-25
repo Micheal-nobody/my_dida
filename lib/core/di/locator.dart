@@ -25,6 +25,7 @@ import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/tasks/services/flutter_local_task_reminder_scheduler.dart';
 import 'package:my_dida/features/tasks/services/notification_service.dart';
+import 'package:my_dida/features/tasks/services/attachment_service.dart';
 import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
 import 'package:my_dida/features/tasks/services/task_notification_navigation_service.dart';
 import 'package:my_dida/features/tasks/services/task_operation_reverter.dart';
@@ -56,6 +57,7 @@ Future<void> setupLocator(AppConfig config) async {
       TaskNotificationNavigationService(),
     )
     ..registerSingleton<NotificationService>(NotificationService())
+    ..registerSingleton<AttachmentService>(AttachmentServiceImpl())
     ..registerSingleton<TaskRepository>(TaskRepository())
     ..registerSingleton<ChecklistRepository>(ChecklistRepository())
     ..registerSingleton<HabitRepository>(HabitRepository())

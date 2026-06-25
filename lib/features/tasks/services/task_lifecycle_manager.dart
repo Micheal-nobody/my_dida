@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/constants/app_constants.dart';
 import 'package:my_dida/core/constants/ui_constants.dart';
 import 'package:my_dida/core/di/locator.dart';
@@ -12,6 +11,7 @@ import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/models/task_operation.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
+import 'package:my_dida/features/tasks/services/attachment_service.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_service.dart';
 import 'package:my_dida/features/tasks/validators/task_validator.dart';
 
@@ -85,14 +85,17 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
     TaskRepository? taskRepository,
     TaskReminderService? taskReminderService,
     OperationStackProvider? operationStack,
+    AttachmentService? attachmentService,
   }) : _taskRepository = taskRepository ?? getIt<TaskRepository>(),
        _taskReminderService =
            taskReminderService ?? getIt<TaskReminderService>(),
-       _operationStack = operationStack ?? getIt<OperationStackProvider>();
+       _operationStack = operationStack ?? getIt<OperationStackProvider>(),
+       _attachmentService = attachmentService ?? getIt<AttachmentService>();
 
   final TaskRepository _taskRepository;
   final TaskReminderService _taskReminderService;
   final OperationStackProvider _operationStack;
+  final AttachmentService _attachmentService;
 
   @override
   Future<dynamic> execute(TaskOperation op) async {
@@ -511,10 +514,9 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   @override
   Future<void> deletePermanently(Task task) async {
     try {
-      final isar = getIt<Isar>();
-      await isar.writeTxn(() async {
-        await isar.operations.delete(task.id);
-      });
+      await _operationStack.deleteOperationById(task.id);
+      // 任务被永久删除（不再处于可撤销状态），清理其全部物理附件
+      await _attachmentService.deleteAllAttachments(task.id);
     } catch (e) {
       throw TaskException('Failed to delete task permanently: ${e.toString()}');
     }
@@ -523,8 +525,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   @override
   Future<void> restoreTask(Task task) async {
     try {
-      final isar = getIt<Isar>();
-      final op = await isar.operations.get(task.id);
+      final op = await _operationStack.getOperationById(task.id);
       if (op != null) {
         await _operationStack.undoOperation(op);
       }

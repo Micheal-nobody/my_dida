@@ -19,6 +19,7 @@ dependencies:
   isar_community: ^3.3.0 # 数据库支持
   isar_community_flutter_libs: ^3.3.0 # Flutter 特定支持
   path_provider: ^2.1.0 # 获取存储路径
+  path: ^1.9.0 # 跨平台路径拼接（附件服务）
   table_calendar: ^3.2.0 # 日历组件
   logger: ^2.6.1 # 日志
   get_it: ^7.2.0 # 依赖注入，用于实现 服务定位器（Service Locator）模式
@@ -27,6 +28,10 @@ dependencies:
   flutter_timezone: 4.1.1
   timezone: ^0.10.1
   wakelock_plus: ^1.2.8
+  flutter_markdown_plus: ^1.0.1 # Markdown 渲染（任务备注只读态，flutter_markdown 社区维护版）
+  markdown_editor_plus: ^0.2.14 # 带 Markdown 工具栏的编辑器（任务备注编辑态）
+  image_picker: ^1.1.2 # 相册/相机选取附件图片
+  file_picker: ^8.1.4 # 文件选择器（任意类型附件）
 
 # dev_dependencies 表示测试依赖
 dev_dependencies:

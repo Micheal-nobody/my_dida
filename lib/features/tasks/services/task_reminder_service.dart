@@ -1,5 +1,6 @@
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/errors/exceptions.dart';
+import 'package:my_dida/core/utils/markdown_utils.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/models/task_reminder_plan.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dart';
@@ -64,11 +65,13 @@ class TaskReminderService {
       return null;
     }
 
+    // 通知栏无法渲染 Markdown，剥离标记后降级展示纯文本
+    final plainBody = MarkdownUtils.stripMarkdown(task.description).trim();
     return TaskReminderPlan(
       taskId: task.id,
       triggerAt: triggerAt,
       title: task.name,
-      body: task.description.trim().isEmpty ? null : task.description.trim(),
+      body: plainBody.isEmpty ? null : plainBody,
     );
   }
 

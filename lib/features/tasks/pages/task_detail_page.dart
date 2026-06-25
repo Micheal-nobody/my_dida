@@ -9,6 +9,7 @@ import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
 import 'package:my_dida/features/tasks/widgets/task_date_time_picker.dart';
+import 'package:my_dida/features/tasks/widgets/task_description_editor.dart';
 import 'package:my_dida/features/tasks/widgets/task_detail/widgets/checkpoint_item_widget.dart';
 import 'package:my_dida/features/tasks/widgets/task_detail/widgets/sub_task_section.dart';
 import 'package:my_dida/features/tasks/widgets/task_detail/widgets/task_detail_header.dart';
@@ -452,9 +453,10 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                       ),
                       const SizedBox(height: 8),
 
-                      // 描述
-                      InlineEditableMultilineTextField(
+                      // 描述（富文本）
+                      TaskDescriptionEditor(
                         key: ValueKey('desc_${task.id}'),
+                        taskId: task.id,
                         value: task.description,
                         onSubmit: (newDesc) async {
                           _descriptionDebounce?.cancel();
@@ -463,11 +465,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                         onChanged: (value) {
                           _scheduleDescriptionUpdate(task, value);
                         },
-                        hintText: '添加备注...',
-                        decoration: const InputDecoration(
-                          hintText: '添加备注...',
-                          border: InputBorder.none,
-                        ),
                       ),
 
                       // CheckpointItems

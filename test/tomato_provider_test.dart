@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
+import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/settings/models/sidebar_config.dart';
@@ -49,6 +50,7 @@ void main() {
         TaskNotificationNavigationService(),
       )
       ..registerSingleton<TaskRepository>(TaskRepository())
+      ..registerSingleton<ChecklistRepository>(ChecklistRepository())
       ..registerSingleton<TomatoRecordRepository>(TomatoRecordRepository())
       ..registerSingleton<CustomTomatoRepository>(CustomTomatoRepository())
       // 注册一个最小化的 NotificationService 依赖

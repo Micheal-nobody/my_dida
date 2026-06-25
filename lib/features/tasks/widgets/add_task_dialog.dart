@@ -528,22 +528,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         spacing: 6,
         runSpacing: 4,
         children: [
-          if (hasRepeat)
-            InputChip(
-              avatar: const Icon(Icons.repeat, size: 14, color: Colors.orange),
-              label: Text(
-                rruleToSelection(_dateTimePickerValue.rrule),
-                style: const TextStyle(color: Colors.orange, fontSize: 11),
-              ),
-              onDeleted: () {
-                setState(() {
-                  _dateTimePickerValue = _dateTimePickerValue.copyWith(
-                    rrule: null,
-                  );
-                });
-              },
-              onPressed: () => _showDateTimePicker(context),
-            ),
           ..._tags.map(
             (tag) => InputChip(
               label: Text(tag, style: const TextStyle(fontSize: 11)),
