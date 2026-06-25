@@ -199,8 +199,7 @@ class Task extends RevertibleEntity {
           reminderOffsetMinutes ?? this.reminderOffsetMinutes,
       priority: priority ?? this.priority,
       tags: tags ?? List<String>.from(this.tags),
-    )
-    ..id = id;
+    )..id = id;
     return copy;
   }
 

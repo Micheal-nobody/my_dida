@@ -11,9 +11,9 @@ class Checklist extends RevertibleEntity {
   Checklist({required this.name, this.colorValue = 0xFFFF9800});
 
   factory Checklist.fromJson(Map<String, dynamic> json) => Checklist(
-      name: json['name'] as String,
-      colorValue: json['colorValue'] as int,
-    )..id = json['id'] as int;
+    name: json['name'] as String,
+    colorValue: json['colorValue'] as int,
+  )..id = json['id'] as int;
 
   @Index()
   String name;

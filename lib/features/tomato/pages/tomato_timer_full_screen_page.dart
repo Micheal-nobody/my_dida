@@ -12,11 +12,7 @@ class TomatoTimerFullScreenPage extends StatefulWidget {
       _TomatoTimerFullScreenPageState();
 }
 
-enum TimerThemeMode {
-  white,
-  black,
-  immersive,
-}
+enum TimerThemeMode { white, black, immersive }
 
 class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
   bool _isWakelockEnabled = false;
@@ -55,8 +51,12 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
 
     final backgroundColor = isWhiteMode ? Colors.white : Colors.black;
     final foregroundColor = isWhiteMode ? Colors.black87 : Colors.white;
-    final subForegroundColor = isWhiteMode ? Colors.black54 : Colors.grey.shade600;
-    final buttonBgColor = isWhiteMode ? Colors.grey.shade200 : Colors.grey.shade900;
+    final subForegroundColor = isWhiteMode
+        ? Colors.black54
+        : Colors.grey.shade600;
+    final buttonBgColor = isWhiteMode
+        ? Colors.grey.shade200
+        : Colors.grey.shade900;
     final buttonTextColor = isWhiteMode ? Colors.black87 : Colors.white;
 
     return Scaffold(
@@ -65,7 +65,10 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
           ? null
           : AppBar(
               leading: IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded, color: foregroundColor),
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: foregroundColor,
+                ),
                 onPressed: () {
                   if (isWhiteMode) {
                     Navigator.of(context).pop();
@@ -80,12 +83,17 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
                 provider.activeCustomTomato != null
                     ? '番茄钟: ${provider.activeCustomTomato!.name}'
                     : '番茄专注',
-                style: TextStyle(color: foregroundColor, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: foregroundColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               actions: [
                 IconButton(
                   icon: Icon(
-                    _isWakelockEnabled ? Icons.lightbulb : Icons.lightbulb_outline,
+                    _isWakelockEnabled
+                        ? Icons.lightbulb
+                        : Icons.lightbulb_outline,
                     color: _isWakelockEnabled ? Colors.yellow : foregroundColor,
                   ),
                   onPressed: () async {
@@ -112,7 +120,9 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
               _currentMode = TimerThemeMode.black;
             } else if (_currentMode == TimerThemeMode.black) {
               _currentMode = TimerThemeMode.immersive;
-              _immersivePageController = PageController(initialPage: _immersivePageIndex);
+              _immersivePageController = PageController(
+                initialPage: _immersivePageIndex,
+              );
             } else {
               _currentMode = TimerThemeMode.black;
             }
@@ -159,7 +169,11 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       // 1. 顶部关联区域
-                      _buildTopAssociatedArea(provider, foregroundColor, subForegroundColor),
+                      _buildTopAssociatedArea(
+                        provider,
+                        foregroundColor,
+                        subForegroundColor,
+                      ),
 
                       // 2. 中间大圆形计时器 (计时区域)
                       _buildTimerArea(
@@ -172,10 +186,20 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
                       ),
 
                       // 3. 快捷时间设定区 + 周期小圆圈
-                      _buildQuickSettingsAndDots(provider, foregroundColor, buttonBgColor, buttonTextColor),
+                      _buildQuickSettingsAndDots(
+                        provider,
+                        foregroundColor,
+                        buttonBgColor,
+                        buttonTextColor,
+                      ),
 
                       // 4. 底部主控制区
-                      _buildBottomControls(provider, backgroundColor, foregroundColor, buttonBgColor),
+                      _buildBottomControls(
+                        provider,
+                        backgroundColor,
+                        foregroundColor,
+                        buttonBgColor,
+                      ),
                     ],
                   ),
                 ),
@@ -191,10 +215,7 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
   ) {
     if (provider.activeCustomTomato != null) {
       return Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16.0,
-          vertical: 12.0,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         decoration: BoxDecoration(
           color: foregroundColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(30),
@@ -225,14 +246,9 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
       );
     } else {
       return GestureDetector(
-        onTap: provider.isRunning
-            ? null
-            : () => _selectTask(context, provider),
+        onTap: provider.isRunning ? null : () => _selectTask(context, provider),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16.0,
-            vertical: 12.0,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           decoration: BoxDecoration(
             color: foregroundColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(30),
@@ -301,9 +317,7 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
                   : 1.0,
               strokeWidth: isImmersive ? 12 : 10,
               backgroundColor: foregroundColor.withValues(alpha: 0.1),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                foregroundColor,
-              ),
+              valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
             ),
           ),
           // 时间文字与状态
@@ -382,65 +396,62 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
     Color buttonBgColor,
     Color buttonTextColor,
   ) => Column(
-      children: [
-        if (!provider.isRunning)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildQuickSetButton(
-                context,
-                '专注',
-                buttonBgColor,
-                buttonTextColor,
-                () {
-                  provider
-                    ..setActiveCustomTomato(null)
-                    ..selectFocus();
-                },
-              ),
-              const SizedBox(width: 12),
-              _buildQuickSetButton(
-                context,
-                '短休',
-                buttonBgColor,
-                buttonTextColor,
-                provider.selectShortBreak,
-              ),
-              const SizedBox(width: 12),
-              _buildQuickSetButton(
-                context,
-                '长休',
-                buttonBgColor,
-                buttonTextColor,
-                provider.selectLongBreak,
-              ),
-            ],
-          ),
-        const SizedBox(height: 20),
-        // 番茄数点点 (例如 4 个周期小点)
+    children: [
+      if (!provider.isRunning)
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(provider.longBreakInterval, (index) {
-            final isCompleted = index < provider.completedTomatoCount;
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isCompleted
-                    ? foregroundColor
-                    : foregroundColor.withValues(alpha: 0.25),
-                border: Border.all(
-                  color: foregroundColor,
-                  width: 1.5,
-                ),
-              ),
-            );
-          }),
+          children: [
+            _buildQuickSetButton(
+              context,
+              '专注',
+              buttonBgColor,
+              buttonTextColor,
+              () {
+                provider
+                  ..setActiveCustomTomato(null)
+                  ..selectFocus();
+              },
+            ),
+            const SizedBox(width: 12),
+            _buildQuickSetButton(
+              context,
+              '短休',
+              buttonBgColor,
+              buttonTextColor,
+              provider.selectShortBreak,
+            ),
+            const SizedBox(width: 12),
+            _buildQuickSetButton(
+              context,
+              '长休',
+              buttonBgColor,
+              buttonTextColor,
+              provider.selectLongBreak,
+            ),
+          ],
         ),
-      ],
-    );
+      const SizedBox(height: 20),
+      // 番茄数点点 (例如 4 个周期小点)
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(provider.longBreakInterval, (index) {
+          final isCompleted = index < provider.completedTomatoCount;
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4.0),
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isCompleted
+                  ? foregroundColor
+                  : foregroundColor.withValues(alpha: 0.25),
+              border: Border.all(color: foregroundColor, width: 1.5),
+            ),
+          );
+        }),
+      ),
+    ],
+  );
 
   Widget _buildBottomControls(
     TomatoProvider provider,
@@ -455,12 +466,11 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
         if (!provider.isRunning) ...[
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: isWhiteMode ? Colors.grey.shade200 : buttonBgColor,
+              backgroundColor: isWhiteMode
+                  ? Colors.grey.shade200
+                  : buttonBgColor,
               foregroundColor: foregroundColor,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 36,
-                vertical: 14,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
@@ -470,17 +480,16 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
             icon: const Icon(Icons.play_arrow_rounded, size: 24),
             label: const Text(
               '开始专注',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ] else ...[
           if (provider.isPaused) ...[
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: isWhiteMode ? Colors.grey.shade200 : buttonBgColor,
+                backgroundColor: isWhiteMode
+                    ? Colors.grey.shade200
+                    : buttonBgColor,
                 foregroundColor: foregroundColor,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -519,10 +528,7 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red.shade900,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
@@ -530,9 +536,7 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
             ),
             onPressed: () => _confirmAbandon(context, provider),
             icon: const Icon(Icons.stop_rounded),
-            label: Text(
-              provider.status == TomatoStatus.focus ? '放弃' : '跳过',
-            ),
+            label: Text(provider.status == TomatoStatus.focus ? '放弃' : '跳过'),
           ),
         ],
       ],

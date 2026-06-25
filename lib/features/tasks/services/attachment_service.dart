@@ -69,7 +69,7 @@ class AttachmentServiceImpl implements AttachmentService {
     Future<Directory> Function()? documentsDirectoryProvider,
     ImagePicker? imagePicker,
   }) : _documentsDirectoryProvider =
-            documentsDirectoryProvider ?? getApplicationDocumentsDirectory,
+           documentsDirectoryProvider ?? getApplicationDocumentsDirectory,
        _imagePicker = imagePicker ?? ImagePicker();
 
   final Future<Directory> Function() _documentsDirectoryProvider;
@@ -125,9 +125,7 @@ class AttachmentServiceImpl implements AttachmentService {
   @override
   Future<String?> pickImageFromGallery(int taskId) async {
     try {
-      final xFile = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-      );
+      final xFile = await _imagePicker.pickImage(source: ImageSource.gallery);
       if (xFile == null) return null; // 用户取消
       return await _persistPickedFile(taskId, xFile, isImage: true);
     } on AttachmentLimitException {
@@ -142,9 +140,7 @@ class AttachmentServiceImpl implements AttachmentService {
   @override
   Future<String?> pickImageFromCamera(int taskId) async {
     try {
-      final xFile = await _imagePicker.pickImage(
-        source: ImageSource.camera,
-      );
+      final xFile = await _imagePicker.pickImage(source: ImageSource.camera);
       if (xFile == null) return null;
       return await _persistPickedFile(taskId, xFile, isImage: true);
     } on AttachmentLimitException {
@@ -198,7 +194,10 @@ class AttachmentServiceImpl implements AttachmentService {
       final dir = await _taskDir(taskId);
       if (!await dir.exists()) return 0;
       var total = 0;
-      await for (final entity in dir.list(recursive: false, followLinks: false)) {
+      await for (final entity in dir.list(
+        recursive: false,
+        followLinks: false,
+      )) {
         if (entity is File) {
           total += await entity.length();
         }
@@ -230,8 +229,10 @@ class AttachmentServiceImpl implements AttachmentService {
       if (!await baseDir.exists()) return;
 
       final valid = validTaskIds.toSet();
-      await for (final entity
-          in baseDir.list(recursive: false, followLinks: false)) {
+      await for (final entity in baseDir.list(
+        recursive: false,
+        followLinks: false,
+      )) {
         if (entity is! Directory) continue;
         final name = p.basename(entity.path);
         final id = int.tryParse(name);

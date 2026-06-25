@@ -1,0 +1,70 @@
+import 'package:flutter/material.dart';
+import 'package:my_dida/core/constants/colors_constants.dart';
+
+class SearchHighlightedText extends StatelessWidget {
+  final String text;
+  final String highlight;
+  final TextStyle? style;
+  final TextStyle? highlightStyle;
+
+  const SearchHighlightedText({
+    super.key,
+    required this.text,
+    required this.highlight,
+    this.style,
+    this.highlightStyle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (highlight.isEmpty ||
+        !text.toLowerCase().contains(highlight.toLowerCase())) {
+      return Text(text, style: style);
+    }
+
+    final List<TextSpan> spans = [];
+    final lowercaseText = text.toLowerCase();
+    final lowercaseHighlight = highlight.toLowerCase();
+
+    int start = 0;
+    int indexOfHighlight;
+
+    while ((indexOfHighlight = lowercaseText.indexOf(
+          lowercaseHighlight,
+          start,
+        )) !=
+        -1) {
+      if (indexOfHighlight > start) {
+        spans.add(TextSpan(text: text.substring(start, indexOfHighlight)));
+      }
+      spans.add(
+        TextSpan(
+          text: text.substring(
+            indexOfHighlight,
+            indexOfHighlight + highlight.length,
+          ),
+          style:
+              highlightStyle ??
+              const TextStyle(
+                color: Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+      );
+      start = indexOfHighlight + highlight.length;
+    }
+
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+
+    return RichText(
+      text: TextSpan(
+        style:
+            style ??
+            const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+        children: spans,
+      ),
+    );
+  }
+}

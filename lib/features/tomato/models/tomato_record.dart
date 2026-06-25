@@ -6,7 +6,10 @@ part 'tomato_record.g.dart';
 @Collection()
 class TomatoRecord extends BaseEntity {
   TomatoRecord({
-    required this.startTime, required this.endTime, required this.durationMinutes, this.taskId,
+    required this.startTime,
+    required this.endTime,
+    required this.durationMinutes,
+    this.taskId,
     this.taskName,
     this.categoryName,
     this.customTomatoId,

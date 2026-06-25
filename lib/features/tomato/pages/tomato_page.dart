@@ -221,7 +221,7 @@ class TomatoPage extends StatelessWidget {
                                             child: CircularProgressIndicator(
                                               value: provider.totalDuration > 0
                                                   ? provider.duration /
-                                                      provider.totalDuration
+                                                        provider.totalDuration
                                                   : 1.0,
                                               strokeWidth: 3,
                                               valueColor:

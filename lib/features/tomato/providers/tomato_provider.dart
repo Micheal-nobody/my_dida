@@ -395,7 +395,8 @@ class TomatoProvider with ChangeNotifier {
     return _tomatoRecordRepository.getRecordsInPeriod(start, end);
   }
 
-  Future<List<TomatoRecord>> getAllRecords() async => _tomatoRecordRepository.selectAll();
+  Future<List<TomatoRecord>> getAllRecords() async =>
+      _tomatoRecordRepository.selectAll();
 
   Future<void> deleteRecord(int id) async {
     await _tomatoRecordRepository.deleteById(id);

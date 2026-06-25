@@ -6,14 +6,12 @@ abstract class TomatoEvent {}
 
 /// 计时滴答事件，携带当前剩余秒数
 class TomatoTickEvent extends TomatoEvent {
-
   TomatoTickEvent(this.remainingSeconds);
   final int remainingSeconds;
 }
 
 /// 专注完成事件
 class TomatoFocusCompleteEvent extends TomatoEvent {
-
   TomatoFocusCompleteEvent({
     required this.startTime,
     required this.endTime,
@@ -26,7 +24,6 @@ class TomatoFocusCompleteEvent extends TomatoEvent {
 
 /// 休息（短休/长休）完成事件
 class TomatoBreakCompleteEvent extends TomatoEvent {
-
   TomatoBreakCompleteEvent({required this.startTime, required this.endTime});
   final DateTime startTime;
   final DateTime endTime;
@@ -34,7 +31,6 @@ class TomatoBreakCompleteEvent extends TomatoEvent {
 
 /// 放弃专注事件
 class TomatoAbandonEvent extends TomatoEvent {
-
   TomatoAbandonEvent({
     required this.startTime,
     required this.endTime,
@@ -47,7 +43,6 @@ class TomatoAbandonEvent extends TomatoEvent {
 
 /// 状态流转事件
 class TomatoStatusChangedEvent extends TomatoEvent {
-
   TomatoStatusChangedEvent(this.oldStatus, this.newStatus);
   final TomatoStatus oldStatus;
   final TomatoStatus newStatus;

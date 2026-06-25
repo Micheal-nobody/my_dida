@@ -84,7 +84,9 @@ void main() {
     });
 
     test('cleanupOrphans should delete folders of missing taskIds', () async {
-      final attachmentsRoot = Directory(p.join(tempDir.path, kAttachmentDirName));
+      final attachmentsRoot = Directory(
+        p.join(tempDir.path, kAttachmentDirName),
+      );
       await attachmentsRoot.create(recursive: true);
 
       // 创建三个任务附件目录：1, 2, 3

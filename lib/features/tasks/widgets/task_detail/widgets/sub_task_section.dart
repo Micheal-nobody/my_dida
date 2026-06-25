@@ -19,59 +19,59 @@ class SubTaskSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-      padding: const EdgeInsets.all(12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFF2E8),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 6),
-              FutureBuilder<List<Task>>(
-                future: getSubTasks?.call(task.subTaskIds) ?? Future.value([]),
-                builder: (context, snapshot) {
-                  final List<Task> subs = snapshot.data ?? [];
-                  if (subs.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
-                  return Column(
-                    children: [
-                      for (final st in subs)
-                        ListTile(
-                          leading: Checkbox(
-                            value: st.isDone,
-                            onChanged: (v) {
-                              if (v == null) return;
-                              onToggleSubTask?.call(st, v);
-                            },
-                          ),
-                          title: GestureDetector(
-                            onTap: () {
-                              onOpenSubTask(st.id);
-                            },
-                            child: Text(st.name),
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: Colors.red,
-                            ),
-                            onPressed: () {
-                              onDeleteSubTask?.call(st);
-                            },
-                          ),
+    padding: const EdgeInsets.all(12),
+    child: Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF2E8),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 6),
+            FutureBuilder<List<Task>>(
+              future: getSubTasks?.call(task.subTaskIds) ?? Future.value([]),
+              builder: (context, snapshot) {
+                final List<Task> subs = snapshot.data ?? [];
+                if (subs.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                return Column(
+                  children: [
+                    for (final st in subs)
+                      ListTile(
+                        leading: Checkbox(
+                          value: st.isDone,
+                          onChanged: (v) {
+                            if (v == null) return;
+                            onToggleSubTask?.call(st, v);
+                          },
                         ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
+                        title: GestureDetector(
+                          onTap: () {
+                            onOpenSubTask(st.id);
+                          },
+                          child: Text(st.name),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                          ),
+                          onPressed: () {
+                            onDeleteSubTask?.call(st);
+                          },
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
         ),
       ),
-    );
+    ),
+  );
 }

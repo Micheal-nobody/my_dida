@@ -38,23 +38,26 @@ void main() {
       ]);
     });
 
-    test('isEffectivelyEmpty should check content and attachments correctly', () {
-      expect(MarkdownUtils.isEffectivelyEmpty(''), isTrue);
-      expect(MarkdownUtils.isEffectivelyEmpty('   '), isTrue);
-      expect(MarkdownUtils.isEffectivelyEmpty('\n\n'), isTrue);
-      expect(MarkdownUtils.isEffectivelyEmpty('### '), isTrue);
-      expect(MarkdownUtils.isEffectivelyEmpty('- '), isTrue);
+    test(
+      'isEffectivelyEmpty should check content and attachments correctly',
+      () {
+        expect(MarkdownUtils.isEffectivelyEmpty(''), isTrue);
+        expect(MarkdownUtils.isEffectivelyEmpty('   '), isTrue);
+        expect(MarkdownUtils.isEffectivelyEmpty('\n\n'), isTrue);
+        expect(MarkdownUtils.isEffectivelyEmpty('### '), isTrue);
+        expect(MarkdownUtils.isEffectivelyEmpty('- '), isTrue);
 
-      expect(MarkdownUtils.isEffectivelyEmpty('有内容'), isFalse);
-      expect(
-        MarkdownUtils.isEffectivelyEmpty('![](attachments://1/a.png)'),
-        isFalse,
-      );
-      expect(
-        MarkdownUtils.isEffectivelyEmpty('[文件](attachments://1/b.txt)'),
-        isFalse,
-      );
-    });
+        expect(MarkdownUtils.isEffectivelyEmpty('有内容'), isFalse);
+        expect(
+          MarkdownUtils.isEffectivelyEmpty('![](attachments://1/a.png)'),
+          isFalse,
+        );
+        expect(
+          MarkdownUtils.isEffectivelyEmpty('[文件](attachments://1/b.txt)'),
+          isFalse,
+        );
+      },
+    );
 
     test('stripMarkdown should clean headers, links, and bold/italic markup', () {
       expect(MarkdownUtils.stripMarkdown(''), '');
@@ -66,7 +69,8 @@ void main() {
       expect(MarkdownUtils.stripMarkdown('1. 步骤一\n2. 步骤二'), '步骤一\n步骤二');
 
       // 链接与图片混合
-      const mixed = '查看文档 [我的文档](attachments://123/doc.pdf) 还有图片 ![图](attachments://123/img.png)';
+      const mixed =
+          '查看文档 [我的文档](attachments://123/doc.pdf) 还有图片 ![图](attachments://123/img.png)';
       expect(MarkdownUtils.stripMarkdown(mixed).trim(), '查看文档 我的文档 还有图片');
     });
   });

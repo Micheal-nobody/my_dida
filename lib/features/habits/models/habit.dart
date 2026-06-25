@@ -28,33 +28,34 @@ class Habit extends RevertibleEntity {
 
   /// 从标准 JSON Map 反序列化生成 Habit
   factory Habit.fromJson(Map<String, dynamic> json) {
-    final habit = Habit(
-      name: json['name']?.toString() ?? '',
-      icon: json['icon']?.toString() ?? '',
-      remindTime: json['remindTime'] != null
-          ? DateTime.parse(json['remindTime'].toString())
-          : DateTime.now(),
-      checkInCount: json['checkInCount'] as int? ?? 1,
-      currentCheckInCount: json['currentCheckInCount'] as int? ?? 0,
-      startDate: json['startDate'] != null
-          ? DateTime.parse(json['startDate'].toString())
-          : DateTime.now(),
-      totalCheckInCount: json['totalCheckInCount'] as int? ?? 0,
-      longestContinuousCheckInDays:
-          json['longestContinuousCheckInDays'] as int? ?? 0,
-      rrule: RepeatPattern.parse(
-        json['rrule']?.toString().isEmpty == true
-            ? null
-            : json['rrule']?.toString(),
-      ),
-      isArchived: json['isArchived'] as bool? ?? false,
-      sortOrder: json['sortOrder'] as int? ?? 0,
-      isTodaySkipped: json['isTodaySkipped'] as bool? ?? false,
-    )
-    ..habitType = json['habitType']?.toString() ?? 'yesNo'
-    ..unit = json['unit']?.toString()
-    ..targetValue = (json['targetValue'] as num?)?.toDouble()
-    ..currentValue = (json['currentValue'] as num?)?.toDouble() ?? 0.0;
+    final habit =
+        Habit(
+            name: json['name']?.toString() ?? '',
+            icon: json['icon']?.toString() ?? '',
+            remindTime: json['remindTime'] != null
+                ? DateTime.parse(json['remindTime'].toString())
+                : DateTime.now(),
+            checkInCount: json['checkInCount'] as int? ?? 1,
+            currentCheckInCount: json['currentCheckInCount'] as int? ?? 0,
+            startDate: json['startDate'] != null
+                ? DateTime.parse(json['startDate'].toString())
+                : DateTime.now(),
+            totalCheckInCount: json['totalCheckInCount'] as int? ?? 0,
+            longestContinuousCheckInDays:
+                json['longestContinuousCheckInDays'] as int? ?? 0,
+            rrule: RepeatPattern.parse(
+              json['rrule']?.toString().isEmpty == true
+                  ? null
+                  : json['rrule']?.toString(),
+            ),
+            isArchived: json['isArchived'] as bool? ?? false,
+            sortOrder: json['sortOrder'] as int? ?? 0,
+            isTodaySkipped: json['isTodaySkipped'] as bool? ?? false,
+          )
+          ..habitType = json['habitType']?.toString() ?? 'yesNo'
+          ..unit = json['unit']?.toString()
+          ..targetValue = (json['targetValue'] as num?)?.toDouble()
+          ..currentValue = (json['currentValue'] as num?)?.toDouble() ?? 0.0;
     if (json['id'] != null) {
       habit.id = json['id'] as int;
     }
@@ -100,22 +101,22 @@ class Habit extends RevertibleEntity {
   /// 转换为标准 JSON Map
   @override
   Map<String, dynamic> toJson() => {
-      'id': id,
-      'name': name,
-      'icon': icon,
-      'remindTime': remindTime.toIso8601String(),
-      'checkInCount': checkInCount,
-      'currentCheckInCount': currentCheckInCount,
-      'startDate': startDate.toIso8601String(),
-      'totalCheckInCount': totalCheckInCount,
-      'longestContinuousCheckInDays': longestContinuousCheckInDays,
-      'rrule': rruleString,
-      'isArchived': isArchived,
-      'sortOrder': sortOrder,
-      'isTodaySkipped': isTodaySkipped,
-      'habitType': habitType,
-      'unit': unit,
-      'targetValue': targetValue,
-      'currentValue': currentValue,
-    };
+    'id': id,
+    'name': name,
+    'icon': icon,
+    'remindTime': remindTime.toIso8601String(),
+    'checkInCount': checkInCount,
+    'currentCheckInCount': currentCheckInCount,
+    'startDate': startDate.toIso8601String(),
+    'totalCheckInCount': totalCheckInCount,
+    'longestContinuousCheckInDays': longestContinuousCheckInDays,
+    'rrule': rruleString,
+    'isArchived': isArchived,
+    'sortOrder': sortOrder,
+    'isTodaySkipped': isTodaySkipped,
+    'habitType': habitType,
+    'unit': unit,
+    'targetValue': targetValue,
+    'currentValue': currentValue,
+  };
 }

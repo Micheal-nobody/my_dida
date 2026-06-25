@@ -91,36 +91,15 @@ class MarkdownUtils {
 
     // 7. 强调：**bold** / __bold__ / *italic* / _italic_ / ~~strike~~
     text = text
-        .replaceAllMapped(
-          RegExp(r'\*\*([^*]+)\*\*'),
-          (m) => m.group(1) ?? '',
-        )
-        .replaceAllMapped(
-          RegExp('__([^_]+)__'),
-          (m) => m.group(1) ?? '',
-        )
-        .replaceAllMapped(
-          RegExp(r'\*([^*]+)\*'),
-          (m) => m.group(1) ?? '',
-        )
-        .replaceAllMapped(
-          RegExp('_([^_]+)_'),
-          (m) => m.group(1) ?? '',
-        )
-        .replaceAllMapped(
-          RegExp('~~([^~]+)~~'),
-          (m) => m.group(1) ?? '',
-        );
+        .replaceAllMapped(RegExp(r'\*\*([^*]+)\*\*'), (m) => m.group(1) ?? '')
+        .replaceAllMapped(RegExp('__([^_]+)__'), (m) => m.group(1) ?? '')
+        .replaceAllMapped(RegExp(r'\*([^*]+)\*'), (m) => m.group(1) ?? '')
+        .replaceAllMapped(RegExp('_([^_]+)_'), (m) => m.group(1) ?? '')
+        .replaceAllMapped(RegExp('~~([^~]+)~~'), (m) => m.group(1) ?? '');
 
     // 8. 列表标记 - / * / + / 1.
-    text = text.replaceAll(
-      RegExp(r'^\s{0,3}[-*+]\s+', multiLine: true),
-      '',
-    );
-    text = text.replaceAll(
-      RegExp(r'^\s{0,3}\d+\.\s+', multiLine: true),
-      '',
-    );
+    text = text.replaceAll(RegExp(r'^\s{0,3}[-*+]\s+', multiLine: true), '');
+    text = text.replaceAll(RegExp(r'^\s{0,3}\d+\.\s+', multiLine: true), '');
 
     // 9. 水平分割线
     text = text.replaceAll(

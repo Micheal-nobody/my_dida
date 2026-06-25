@@ -13,7 +13,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   * 构建生产环境 APK：`flutter build apk -t lib/main_prod.dart --release`
 * 代码静态检查：`flutter analyze`
 * 代码格式化：`dart format .`
-* 运行所有测试：`flutter test`
+* 运行所有测试：`flutter test
+* `
 * 运行单个测试：`flutter test <file_path>` (例如 `flutter test test/task_service_test.dart`)
 * 代码与数据模型类生成：`dart run build_runner build` (可追加 `--delete-conflicting-outputs` 参数来强制覆盖冲突文件)
 

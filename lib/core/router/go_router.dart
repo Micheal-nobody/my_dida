@@ -128,7 +128,8 @@ final GoRouter goRouter = GoRouter(
                               height: 24,
                               child: CircularProgressIndicator(
                                 value: tomatoProvider.totalDuration > 0
-                                    ? tomatoProvider.duration / tomatoProvider.totalDuration
+                                    ? tomatoProvider.duration /
+                                          tomatoProvider.totalDuration
                                     : 1.0,
                                 strokeWidth: 2,
                                 valueColor: const AlwaysStoppedAnimation<Color>(

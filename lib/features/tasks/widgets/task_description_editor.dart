@@ -195,7 +195,8 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
   @override
   Widget build(BuildContext context) {
     // 空内容或正处于编辑态时，显示编辑器
-    final showEditor = _isEditing || MarkdownUtils.isEffectivelyEmpty(widget.value);
+    final showEditor =
+        _isEditing || MarkdownUtils.isEffectivelyEmpty(widget.value);
 
     if (showEditor) {
       return Column(
@@ -308,7 +309,9 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const SizedBox(
                     height: 100,
-                    child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    child: Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
                   );
                 }
                 if (snapshot.hasError || !snapshot.hasData) {
@@ -336,7 +339,8 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
             );
           },
           onTapLink: (text, href, title) {
-            if (href != null && href.startsWith(MarkdownUtils.attachmentScheme)) {
+            if (href != null &&
+                href.startsWith(MarkdownUtils.attachmentScheme)) {
               _handleAttachmentClick(context, text, href);
             }
           },

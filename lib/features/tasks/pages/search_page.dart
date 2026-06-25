@@ -12,6 +12,9 @@ import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/services/search_history_manager.dart';
+import 'package:my_dida/features/tasks/widgets/search_filter_chips.dart';
+import 'package:my_dida/features/tasks/widgets/search_highlighted_text.dart';
+import 'package:my_dida/features/tasks/widgets/search_history_section.dart';
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
@@ -167,63 +170,6 @@ class _SearchPageState extends State<SearchPage> {
     return cl.name;
   }
 
-  Widget _buildHighlightedText(
-    String text,
-    String highlight, {
-    TextStyle? style,
-    TextStyle? highlightStyle,
-  }) {
-    if (highlight.isEmpty ||
-        !text.toLowerCase().contains(highlight.toLowerCase())) {
-      return Text(text, style: style);
-    }
-
-    final List<TextSpan> spans = [];
-    final lowercaseText = text.toLowerCase();
-    final lowercaseHighlight = highlight.toLowerCase();
-
-    int start = 0;
-    int indexOfHighlight;
-
-    while ((indexOfHighlight = lowercaseText.indexOf(
-          lowercaseHighlight,
-          start,
-        )) !=
-        -1) {
-      if (indexOfHighlight > start) {
-        spans.add(TextSpan(text: text.substring(start, indexOfHighlight)));
-      }
-      spans.add(
-        TextSpan(
-          text: text.substring(
-            indexOfHighlight,
-            indexOfHighlight + highlight.length,
-          ),
-          style:
-              highlightStyle ??
-              const TextStyle(
-                color: Colors.orange,
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-      );
-      start = indexOfHighlight + highlight.length;
-    }
-
-    if (start < text.length) {
-      spans.add(TextSpan(text: text.substring(start)));
-    }
-
-    return RichText(
-      text: TextSpan(
-        style:
-            style ??
-            const TextStyle(color: AppColors.textPrimary, fontSize: 16),
-        children: spans,
-      ),
-    );
-  }
-
   String _getNotesSnippet(String notes, String query) {
     if (notes.isEmpty || query.isEmpty) return '';
     final lowerNotes = notes.toLowerCase();
@@ -321,157 +267,47 @@ class _SearchPageState extends State<SearchPage> {
       body: Column(
         children: [
           // 过滤标签栏 (Chips)
-          _buildFilterChips(),
+          SearchFilterChips(
+            statusFilter: _statusFilter,
+            onStatusFilterChanged: (status) {
+              setState(() => _statusFilter = status);
+              _applyFilter();
+            },
+            searchInText: _searchInText,
+            onSearchInTextChanged: (selected) {
+              setState(() => _searchInText = selected);
+              _applyFilter();
+            },
+            searchInSubtasks: _searchInSubtasks,
+            onSearchInSubtasksChanged: (selected) {
+              setState(() => _searchInSubtasks = selected);
+              _applyFilter();
+            },
+            searchInNotes: _searchInNotes,
+            onSearchInNotesChanged: (selected) {
+              setState(() => _searchInNotes = selected);
+              _applyFilter();
+            },
+          ),
           const Divider(height: 1, color: AppColors.border),
 
           // 主体展示区
           Expanded(
             child: showHistory
-                ? _buildHistorySection()
+                ? SearchHistorySection(
+                    history: _history,
+                    onHistoryItemTapped: (item) {
+                      _searchController.text = item;
+                      _performSearch(item);
+                      setState(() {});
+                    },
+                    onHistoryItemRemoved: _removeSearchHistory,
+                    onClearHistoryTapped: _clearSearchHistory,
+                  )
                 : _buildSearchResultsSection(),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildFilterChips() => Container(
-    height: 48,
-    padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingM),
-    child: ListView(
-      scrollDirection: Axis.horizontal,
-      children: [
-        // 状态筛选
-        ChoiceChip(
-          label: const Text('全部'),
-          selected: _statusFilter == TaskVisibleRange.all,
-          onSelected: (selected) {
-            if (selected) {
-              setState(() => _statusFilter = TaskVisibleRange.all);
-              _applyFilter();
-            }
-          },
-        ),
-        const SizedBox(width: 8),
-        ChoiceChip(
-          label: const Text('未完成'),
-          selected: _statusFilter == TaskVisibleRange.undone,
-          onSelected: (selected) {
-            if (selected) {
-              setState(() => _statusFilter = TaskVisibleRange.undone);
-              _applyFilter();
-            }
-          },
-        ),
-        const SizedBox(width: 8),
-        ChoiceChip(
-          label: const Text('已完成'),
-          selected: _statusFilter == TaskVisibleRange.done,
-          onSelected: (selected) {
-            if (selected) {
-              setState(() => _statusFilter = TaskVisibleRange.done);
-              _applyFilter();
-            }
-          },
-        ),
-        const SizedBox(width: 16),
-        // 分割垂直线
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 12),
-          width: 1,
-          color: Colors.grey.shade300,
-        ),
-        const SizedBox(width: 16),
-        // 类型检索筛选
-        FilterChip(
-          label: const Text('文本'),
-          selected: _searchInText,
-          onSelected: (selected) {
-            setState(() => _searchInText = selected);
-            _applyFilter();
-          },
-        ),
-        const SizedBox(width: 8),
-        FilterChip(
-          label: const Text('子任务'),
-          selected: _searchInSubtasks,
-          onSelected: (selected) {
-            setState(() => _searchInSubtasks = selected);
-            _applyFilter();
-          },
-        ),
-        const SizedBox(width: 8),
-        FilterChip(
-          label: const Text('备注'),
-          selected: _searchInNotes,
-          onSelected: (selected) {
-            setState(() => _searchInNotes = selected);
-            _applyFilter();
-          },
-        ),
-      ],
-    ),
-  );
-
-  Widget _buildHistorySection() {
-    if (_history.isEmpty) {
-      return const Center(
-        child: Text(
-          '输入关键字搜索任务',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-        ),
-      );
-    }
-
-    return ListView(
-      padding: const EdgeInsets.all(Dimensions.paddingM),
-      children: [
-        const Text(
-          '历史搜索',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: Dimensions.paddingS),
-        ..._history.map(
-          (item) => ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.history, color: AppColors.textDisabled),
-            title: Text(
-              item,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 15,
-              ),
-            ),
-            trailing: IconButton(
-              icon: const Icon(
-                Icons.close,
-                color: AppColors.textDisabled,
-                size: 18,
-              ),
-              onPressed: () => _removeSearchHistory(item),
-            ),
-            onTap: () {
-              _searchController.text = item;
-              _performSearch(item);
-              setState(() {});
-            },
-          ),
-        ),
-        const SizedBox(height: Dimensions.paddingM),
-        Center(
-          child: TextButton(
-            onPressed: _clearSearchHistory,
-            child: const Text(
-              '清除历史搜索记录',
-              style: TextStyle(color: Colors.red, fontSize: 14),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -561,9 +397,9 @@ class _SearchPageState extends State<SearchPage> {
                       const SizedBox(width: Dimensions.paddingS),
                       // 任务标题与高亮
                       Expanded(
-                        child: _buildHighlightedText(
-                          task.name,
-                          query,
+                        child: SearchHighlightedText(
+                          text: task.name,
+                          highlight: query,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -594,9 +430,9 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                           const SizedBox(width: 4),
                           Expanded(
-                            child: _buildHighlightedText(
-                              notesSnippet,
-                              query,
+                            child: SearchHighlightedText(
+                              text: notesSnippet,
+                              highlight: query,
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: AppColors.textSecondary,
@@ -625,9 +461,9 @@ class _SearchPageState extends State<SearchPage> {
                             ),
                             const SizedBox(width: 4),
                             Expanded(
-                              child: _buildHighlightedText(
-                                cp.name,
-                                query,
+                              child: SearchHighlightedText(
+                                text: cp.name,
+                                highlight: query,
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary,
