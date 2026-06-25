@@ -46,7 +46,7 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
       // 默认彩色背景
       switch (provider.status) {
         case TomatoStatus.focus:
-          backgroundColor = Colors.redAccent.shade700;
+          backgroundColor = Colors.white;
           buttonBgColor = Colors.white.withValues(alpha: 0.2);
           break;
         case TomatoStatus.shortBreak:
