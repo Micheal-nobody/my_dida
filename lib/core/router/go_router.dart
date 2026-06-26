@@ -21,7 +21,10 @@ import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
 import 'package:my_dida/shared/widgets/dynamic_calendar_icon.dart';
 import 'package:provider/provider.dart';
 
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final GoRouter goRouter = GoRouter(
+  navigatorKey: rootNavigatorKey,
   // 初始路由
   initialLocation: '/todoList',
   routes: [

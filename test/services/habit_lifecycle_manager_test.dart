@@ -1,16 +1,17 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/habits/models/habit_check_in_record.dart';
-import 'package:my_dida/features/operation_undo/models/operation.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
-import 'package:my_dida/features/habits/repositories/habit_repository.dart';
 import 'package:my_dida/features/habits/repositories/habit_check_in_record_repository.dart';
+import 'package:my_dida/features/habits/repositories/habit_repository.dart';
 import 'package:my_dida/features/habits/services/habit_lifecycle_manager.dart';
+import 'package:my_dida/features/operation_undo/models/operation.dart';
+import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
 
 void main() {
   late Isar isar;

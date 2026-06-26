@@ -64,36 +64,34 @@ class HabitProvider with ChangeNotifier {
   }
 
   // 获取过滤后的未归档习惯列表
-  List<Habit> get habits {
-    return activeHabits.where((habit) {
-      // 1. 打卡状态过滤
-      if (_statusFilter == HabitStatusFilter.incomplete) {
-        if (isTodayCompleted(habit) || habit.isTodaySkipped) return false;
-      } else if (_statusFilter == HabitStatusFilter.completed) {
-        if (!isTodayCompleted(habit)) return false;
-      }
+  List<Habit> get habits => activeHabits.where((habit) {
+    // 1. 打卡状态过滤
+    if (_statusFilter == HabitStatusFilter.incomplete) {
+      if (isTodayCompleted(habit) || habit.isTodaySkipped) return false;
+    } else if (_statusFilter == HabitStatusFilter.completed) {
+      if (!isTodayCompleted(habit)) return false;
+    }
 
-      // 2. 时段过滤
-      final hour = habit.remindTime.hour;
-      if (_timeFilter == HabitTimeSlotFilter.morning) {
-        if (hour < 5 || hour >= 12) return false;
-      } else if (_timeFilter == HabitTimeSlotFilter.afternoon) {
-        if (hour < 12 || hour >= 18) return false;
-      } else if (_timeFilter == HabitTimeSlotFilter.evening) {
-        if (hour >= 5 && hour < 18) return false;
-      }
+    // 2. 时段过滤
+    final hour = habit.remindTime.hour;
+    if (_timeFilter == HabitTimeSlotFilter.morning) {
+      if (hour < 5 || hour >= 12) return false;
+    } else if (_timeFilter == HabitTimeSlotFilter.afternoon) {
+      if (hour < 12 || hour >= 18) return false;
+    } else if (_timeFilter == HabitTimeSlotFilter.evening) {
+      if (hour >= 5 && hour < 18) return false;
+    }
 
-      // 3. 频次过滤
-      final isWeekly = habit.rrule.type == RepeatType.weekly;
-      if (_frequencyFilter == HabitFrequencyFilter.daily && isWeekly) {
-        return false;
-      } else if (_frequencyFilter == HabitFrequencyFilter.weekly && !isWeekly) {
-        return false;
-      }
+    // 3. 频次过滤
+    final isWeekly = habit.rrule.type == RepeatType.weekly;
+    if (_frequencyFilter == HabitFrequencyFilter.daily && isWeekly) {
+      return false;
+    } else if (_frequencyFilter == HabitFrequencyFilter.weekly && !isWeekly) {
+      return false;
+    }
 
-      return true;
-    }).toList();
-  }
+    return true;
+  }).toList();
 
   // 设置过滤条件
   void setFilters({

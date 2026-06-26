@@ -5,14 +5,13 @@ import 'package:my_dida/features/habits/providers/habit_provider.dart';
 import 'package:my_dida/features/habits/widgets/habit_summary_painters.dart';
 
 class HabitWeekSummarySection extends StatelessWidget {
-  final List<HabitCheckInRecord> allRecords;
-  final HabitProvider provider;
-
   const HabitWeekSummarySection({
-    super.key,
     required this.allRecords,
     required this.provider,
+    super.key,
   });
+  final List<HabitCheckInRecord> allRecords;
+  final HabitProvider provider;
 
   @override
   Widget build(BuildContext context) {

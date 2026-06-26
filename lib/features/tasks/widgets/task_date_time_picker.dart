@@ -150,11 +150,7 @@ class TaskTimeInfo {
     if (task == null) {
       // 为新任务不设置默认时间，让用户主动选择
       final now = DateTime.now().toBeijingTime();
-      return TaskTimeInfo(
-        selectedDate: now.dateOnly,
-        startTime: null, // 不设置默认时间
-        endTime: null, // 不设置默认时间
-      );
+      return TaskTimeInfo(selectedDate: now.dateOnly);
     }
 
     final DateTime selectedDate =

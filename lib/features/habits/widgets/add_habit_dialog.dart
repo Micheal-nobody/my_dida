@@ -81,7 +81,7 @@ class _AddHabitDialogState extends BaseFormDialogState<AddHabitDialog> {
 
       // 习惯类型
       DropdownButtonFormField<String>(
-        value: _habitType,
+        initialValue: _habitType,
         decoration: const InputDecoration(labelText: '习惯类型'),
         items: const [
           DropdownMenuItem(value: 'yesNo', child: Text('是/否打卡')),

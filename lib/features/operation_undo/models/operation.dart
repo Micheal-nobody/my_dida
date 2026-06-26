@@ -235,7 +235,7 @@ class Operation {
   static String _buildDescription(String action, RevertibleEntity entity) {
     // 对已知实体提取 name 字段；无法取得时回退
     final name = _tryGetEntityName(entity) ?? '未知';
-    return '${action}了"$name"';
+    return '$action了"$name"';
   }
 
   static String? _tryGetEntityName(RevertibleEntity entity) {

@@ -2,26 +2,26 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/config/app_config.dart';
 import 'package:my_dida/core/config/prod_config.dart';
+import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/logger/logger.dart';
+import 'package:my_dida/core/router/go_router.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
+import 'package:my_dida/features/calendar/providers/calendar_page_provider.dart';
+import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
+import 'package:my_dida/features/habits/providers/habit_provider.dart';
+import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
+import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tasks/providers/task_provider.dart';
+import 'package:my_dida/features/tasks/services/active_reminder_manager.dart';
+import 'package:my_dida/features/tasks/services/attachment_service.dart';
 import 'package:my_dida/features/tasks/services/notification_service.dart';
 import 'package:my_dida/features/tasks/services/task_notification_navigation_service.dart';
+import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
 import 'package:provider/provider.dart';
-
-import 'core/di/locator.dart';
-import 'core/router/go_router.dart';
-import 'core/ui/app_message_service.dart';
-import 'features/calendar/providers/calendar_page_provider.dart';
-import 'features/checklist/providers/checklist_provider.dart';
-import 'features/habits/providers/habit_provider.dart';
-import 'features/operation_undo/providers/operation_stack_provider.dart';
-import 'features/settings/providers/sidebar_config_provider.dart';
-import 'features/tasks/providers/task_provider.dart';
-import 'package:isar_community/isar.dart';
-import 'package:my_dida/core/logger/logger.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/services/attachment_service.dart';
-import 'features/tomato/providers/tomato_provider.dart';
 
 void main() => mainCommon(ProdConfig());
 
@@ -111,11 +111,14 @@ class _MyAppState extends State<MyApp> {
         _openTaskDetailRoute(pendingTaskId);
       }
     });
+
+    getIt<ActiveReminderManager>().startForegroundCheck();
   }
 
   @override
   void dispose() {
     _taskSelectionSubscription.cancel();
+    getIt<ActiveReminderManager>().stopForegroundCheck();
     super.dispose();
   }
 

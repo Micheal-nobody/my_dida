@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/core/constants/colors_constants.dart';
 
 class SearchHighlightedText extends StatelessWidget {
+  const SearchHighlightedText({
+    required this.text,
+    required this.highlight,
+    super.key,
+    this.style,
+    this.highlightStyle,
+  });
   final String text;
   final String highlight;
   final TextStyle? style;
   final TextStyle? highlightStyle;
-
-  const SearchHighlightedText({
-    super.key,
-    required this.text,
-    required this.highlight,
-    this.style,
-    this.highlightStyle,
-  });
 
   @override
   Widget build(BuildContext context) {

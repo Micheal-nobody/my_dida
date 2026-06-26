@@ -55,12 +55,15 @@ class HabitOperationReverter implements DomainOperationReverter {
     if (isSkip || isCheckIn) {
       final records = await _recordRepo.getRecordsByHabitId(habit.id);
       final today = DateTime.now();
-      final todayRecords = records.where((r) {
-        return r.isSkip == isSkip &&
-            r.checkInTime.year == today.year &&
-            r.checkInTime.month == today.month &&
-            r.checkInTime.day == today.day;
-      }).toList();
+      final todayRecords = records
+          .where(
+            (r) =>
+                r.isSkip == isSkip &&
+                r.checkInTime.year == today.year &&
+                r.checkInTime.month == today.month &&
+                r.checkInTime.day == today.day,
+          )
+          .toList();
 
       if (todayRecords.isNotEmpty) {
         todayRecords.sort((a, b) => b.checkInTime.compareTo(a.checkInTime));

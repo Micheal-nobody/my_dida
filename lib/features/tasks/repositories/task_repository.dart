@@ -24,6 +24,15 @@ class TaskRepository extends BaseRepository<Task> {
   // 获取所有数据
   Future<List<Task>> getAllData() async => collection.where().findAll();
 
+  // 获取启用了通知提醒且未完成的任务
+  Future<List<Task>> getActiveReminderTasks() async => collection
+      .where()
+      .filter()
+      .isDoneEqualTo(false)
+      .and()
+      .notificationEnabledEqualTo(true)
+      .findAll();
+
   Future<List<Task>> getTodayTasks() async {
     final todayRange = DateTimeUtils.getTodayRange();
 

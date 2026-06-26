@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 /// 动态显示当前日期（天数）的日历图标
 class DynamicCalendarIcon extends StatelessWidget {
-  final DateTime? date;
-
   const DynamicCalendarIcon({super.key, this.date});
+  final DateTime? date;
 
   @override
   Widget build(BuildContext context) {
     // 获取当前 IconTheme 的颜色，以适配 BottomNavigationBar 的 active/inactive 颜色
-    final themeColor = IconTheme.of(context).color ?? Theme.of(context).primaryColor;
+    final themeColor =
+        IconTheme.of(context).color ?? Theme.of(context).primaryColor;
     final currentDate = date ?? DateTime.now();
     final dayStr = currentDate.day.toString();
 

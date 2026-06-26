@@ -1,25 +1,26 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/di/locator.dart';
-import 'package:my_dida/features/tasks/models/task_operation.dart';
+import 'package:my_dida/features/calendar/services/task_calendar_projection_service.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
-import 'package:my_dida/features/tasks/models/check_point.dart';
-import 'package:my_dida/features/operation_undo/models/operation.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/settings/models/sidebar_config.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
+import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
+import 'package:my_dida/features/operation_undo/services/operation_reverter.dart';
+import 'package:my_dida/features/settings/models/sidebar_config.dart';
+import 'package:my_dida/features/tasks/models/check_point.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tasks/models/task_operation.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
+import 'package:my_dida/features/tasks/services/attachment_service.dart';
 import 'package:my_dida/features/tasks/services/noop_task_reminder_scheduler.dart';
+import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
+import 'package:my_dida/features/tasks/services/task_operation_reverter.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_service.dart';
-import 'package:my_dida/features/calendar/services/task_calendar_projection_service.dart';
-import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
-import 'package:my_dida/features/tasks/services/attachment_service.dart';
-import 'package:my_dida/features/operation_undo/services/operation_reverter.dart';
-import 'package:my_dida/features/tasks/services/task_operation_reverter.dart';
 
 void main() {
   late Isar isar;
@@ -97,7 +98,7 @@ void main() {
       final task = Task(
         name: 'Task with checkpoints',
         isAllDay: false,
-        checkpoints: [CheckPoint(name: 'CP1', isDone: false)],
+        checkpoints: [CheckPoint(name: 'CP1')],
       );
       await lifecycleManager.execute(AddTask(task));
 

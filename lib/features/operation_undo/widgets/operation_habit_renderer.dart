@@ -26,7 +26,6 @@ class OperationHabitRenderer extends StatelessWidget {
         color: isPreviousData
             ? Colors.grey[300]!
             : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-        width: 1,
       ),
       boxShadow: [
         BoxShadow(

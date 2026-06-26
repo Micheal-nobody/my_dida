@@ -81,7 +81,7 @@ class SmartListsSettingsPage extends StatelessWidget {
             trailing: Switch(
               value: config.showFourQuadrants,
               activeThumbColor: Colors.orange,
-              onChanged: (val) => provider.updateFourQuadrantsVisibility(val),
+              onChanged: provider.updateFourQuadrantsVisibility,
             ),
           ),
           const Divider(height: 1, indent: 16, color: AppColors.border),

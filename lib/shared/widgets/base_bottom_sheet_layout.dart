@@ -1,17 +1,6 @@
 import 'package:flutter/material.dart';
 
 class BaseBottomSheetLayout extends StatelessWidget {
-  final String title;
-  final Widget child;
-  final VoidCallback? onReset;
-  final VoidCallback? onConfirm;
-  final VoidCallback? onCancel;
-  final Color confirmButtonColor;
-  final String confirmText;
-  final String cancelText;
-  final bool expandChild;
-  final bool useFullWidthButtons;
-
   const BaseBottomSheetLayout({
     required this.title,
     required this.child,
@@ -25,10 +14,20 @@ class BaseBottomSheetLayout extends StatelessWidget {
     this.useFullWidthButtons = false,
     super.key,
   });
+  final String title;
+  final Widget child;
+  final VoidCallback? onReset;
+  final VoidCallback? onConfirm;
+  final VoidCallback? onCancel;
+  final Color confirmButtonColor;
+  final String confirmText;
+  final String cancelText;
+  final bool expandChild;
+  final bool useFullWidthButtons;
 
   @override
   Widget build(BuildContext context) {
-    Widget header = Container(
+    final Widget header = Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Stack(

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
 class WeekBarChartPainter extends CustomPainter {
-  final List<double> rates;
-
   const WeekBarChartPainter({required this.rates});
+  final List<double> rates;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -72,9 +71,8 @@ class WeekBarChartPainter extends CustomPainter {
 }
 
 class HeatmapGridPainter extends CustomPainter {
-  final List<int> counts;
-
   const HeatmapGridPainter({required this.counts});
+  final List<int> counts;
 
   @override
   void paint(Canvas canvas, Size size) {

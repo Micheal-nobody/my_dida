@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
-import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
-import 'package:my_dida/core/di/locator.dart';
 
 import 'test_support/task_test_harness.dart';
 
@@ -46,7 +46,6 @@ void main() {
         name: 'Original',
         isAllDay: false,
         startTime: DateTime(2026, 4, 12, 9),
-        checklistId: 1,
       );
 
       await provider.execute(AddTask(task));
@@ -67,15 +66,11 @@ void main() {
     test('pure isar watch test', () async {
       final repo = harness.taskRepository;
       final list = <List<Task>>[];
-      final sub = repo.watchByChecklistId(1).listen((event) {
-        list.add(event);
-      });
+      final sub = repo.watchByChecklistId(1).listen(list.add);
 
       await Future.delayed(Duration.zero);
 
-      await repo.addTask(
-        Task(name: 'Test Task', checklistId: 1, isAllDay: false),
-      );
+      await repo.addTask(Task(name: 'Test Task', isAllDay: false));
       await Future.delayed(const Duration(milliseconds: 100));
 
       print('DEBUG: Pure watch events count: ${list.length}, events: $list');
@@ -93,7 +88,6 @@ void main() {
               name: 'Visible',
               isAllDay: false,
               startTime: DateTime(2026, 4, 12, 9),
-              checklistId: 1,
             ),
           ),
         );
@@ -103,7 +97,6 @@ void main() {
               name: 'Future',
               isAllDay: false,
               startTime: DateTime(2026, 4, 20, 9),
-              checklistId: 1,
             ),
           ),
         );
@@ -153,25 +146,13 @@ void main() {
 
       // Add a today task
       await provider.execute(
-        AddTask(
-          Task(
-            name: 'Today Task',
-            isAllDay: false,
-            startTime: now,
-            checklistId: 1,
-          ),
-        ),
+        AddTask(Task(name: 'Today Task', isAllDay: false, startTime: now)),
       );
 
       // Add a tomorrow task
       await provider.execute(
         AddTask(
-          Task(
-            name: 'Tomorrow Task',
-            isAllDay: false,
-            startTime: tomorrow,
-            checklistId: 1,
-          ),
+          Task(name: 'Tomorrow Task', isAllDay: false, startTime: tomorrow),
         ),
       );
 

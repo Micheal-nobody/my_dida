@@ -4,12 +4,7 @@ import 'package:my_dida/features/tomato/models/tomato_ticker.dart';
 void main() {
   group('TomatoTicker 状态流转与边界测试', () {
     test('初始状态校验', () {
-      final ticker = TomatoTicker(
-        focusMinutes: 25,
-        shortBreakMinutes: 5,
-        longBreakMinutes: 15,
-        longBreakInterval: 4,
-      );
+      final ticker = TomatoTicker();
       expect(ticker.status, TomatoStatus.idle);
       expect(ticker.duration, 25 * 60);
       expect(ticker.isRunning, false);
@@ -53,12 +48,10 @@ void main() {
     test(
       '使用自定义 TimeProvider 和 tick() 快速跑完 25分钟 专注，触发 FocusCompleteEvent 转换到短休状态',
       () async {
-        DateTime mockTime = DateTime(2026, 6, 19, 10, 0, 0);
+        DateTime mockTime = DateTime(2026, 6, 19, 10);
 
         // 创建 Ticker 并将 autoStartBreak 设为 false 以便断言当前状态
         final ticker = TomatoTicker(
-          focusMinutes: 25,
-          shortBreakMinutes: 5,
           autoStartBreak: false,
           currentTimeProvider: () => mockTime,
         );
@@ -86,8 +79,8 @@ void main() {
 
         final event = completeEvents.first;
         expect(event.durationMinutes, 25);
-        expect(event.startTime, DateTime(2026, 6, 19, 10, 0, 0));
-        expect(event.endTime, DateTime(2026, 6, 19, 10, 25, 0));
+        expect(event.startTime, DateTime(2026, 6, 19, 10));
+        expect(event.endTime, DateTime(2026, 6, 19, 10, 25));
 
         await subscription.cancel();
       },
@@ -95,12 +88,8 @@ void main() {
 
     test('多次专注循环后自动流转为长休，并在长休结束后重置循环', () {
       final ticker = TomatoTicker(
-        focusMinutes: 25,
-        shortBreakMinutes: 5,
-        longBreakMinutes: 15,
         longBreakInterval: 2, // 设长休间隔为 2 次专注
         autoStartBreak: false,
-        autoStartFocus: false,
       );
 
       // 第一轮专注
@@ -125,11 +114,8 @@ void main() {
     });
 
     test('中途放弃专注，触发 TomatoAbandonEvent', () async {
-      DateTime mockTime = DateTime(2026, 6, 19, 10, 0, 0);
-      final ticker = TomatoTicker(
-        focusMinutes: 25,
-        currentTimeProvider: () => mockTime,
-      );
+      DateTime mockTime = DateTime(2026, 6, 19, 10);
+      final ticker = TomatoTicker(currentTimeProvider: () => mockTime);
 
       ticker.start();
 
@@ -150,8 +136,8 @@ void main() {
 
       final event = abandonEvents.first;
       expect(event.durationMinutes, 10);
-      expect(event.startTime, DateTime(2026, 6, 19, 10, 0, 0));
-      expect(event.endTime, DateTime(2026, 6, 19, 10, 10, 0));
+      expect(event.startTime, DateTime(2026, 6, 19, 10));
+      expect(event.endTime, DateTime(2026, 6, 19, 10, 10));
 
       await subscription.cancel();
     });

@@ -98,7 +98,7 @@ class _CalendarPageState extends State<CalendarPage> {
   List<DateTime> get _loadRangeDates {
     final config = _calendarPageProvider.config;
     if (config.viewMode == 'month') {
-      final firstDay = DateTime(_selectedDate.year, _selectedDate.month, 1);
+      final firstDay = DateTime(_selectedDate.year, _selectedDate.month);
       final lastDay = DateTime(_selectedDate.year, _selectedDate.month + 1, 0);
       final days = lastDay.difference(firstDay).inDays + 1;
       return List.generate(days, (i) => firstDay.add(Duration(days: i)));
@@ -107,17 +107,18 @@ class _CalendarPageState extends State<CalendarPage> {
     }
   }
 
-  List<Task> _filterTasks(List<Task> tasks, CalendarPageConfig config) => tasks.where((task) {
-      if (!config.showCompletedTasks && task.isDone) {
-        return false;
-      }
-      if (config.visibleMode == 'custom') {
-        if (!config.visibleChecklistIds.contains(task.checklistId)) {
+  List<Task> _filterTasks(List<Task> tasks, CalendarPageConfig config) =>
+      tasks.where((task) {
+        if (!config.showCompletedTasks && task.isDone) {
           return false;
         }
-      }
-      return true;
-    }).toList();
+        if (config.visibleMode == 'custom') {
+          if (!config.visibleChecklistIds.contains(task.checklistId)) {
+            return false;
+          }
+        }
+        return true;
+      }).toList();
 
   Future<void> _loadTasksForVisibleDates() async {
     await PerformanceMonitor.timeAsyncOperation(
@@ -204,9 +205,13 @@ class _CalendarPageState extends State<CalendarPage> {
   void _applyTaskViewData(TaskCalendarViewData taskViewData) {
     final config = _calendarPageProvider.config;
 
-    _tasksForDates = taskViewData.tasksForDates.map((date, list) => MapEntry(date, _filterTasks(list, config)));
+    _tasksForDates = taskViewData.tasksForDates.map(
+      (date, list) => MapEntry(date, _filterTasks(list, config)),
+    );
 
-    _allDayTasksForDates = taskViewData.allDayTasksForDates.map((date, list) => MapEntry(date, _filterTasks(list, config)));
+    _allDayTasksForDates = taskViewData.allDayTasksForDates.map(
+      (date, list) => MapEntry(date, _filterTasks(list, config)),
+    );
 
     _crossDayTasks = _filterTasks(taskViewData.crossDayTasks, config);
 
@@ -237,7 +242,9 @@ class _CalendarPageState extends State<CalendarPage> {
       _crossDayTaskCountForDates[normalizedDate] = count;
     }
 
-    _futureTasks = taskViewData.futureTasks.map((date, list) => MapEntry(date, _filterTasks(list, config)));
+    _futureTasks = taskViewData.futureTasks.map(
+      (date, list) => MapEntry(date, _filterTasks(list, config)),
+    );
 
     _rruleHasMore
       ..clear()
@@ -395,8 +402,8 @@ class _CalendarPageState extends State<CalendarPage> {
 
     Widget buildCard({
       required Color backgroundColor,
-      Color? borderColor,
       required VoidCallback onPressed,
+      Color? borderColor,
     }) => SizedBox(
       width: columnWidth,
       height: _timedEntryHeight,
@@ -497,8 +504,8 @@ class _CalendarPageState extends State<CalendarPage> {
 
     Widget buildCard({
       required Color backgroundColor,
-      Color? borderColor,
       required VoidCallback onPressed,
+      Color? borderColor,
     }) => SizedBox(
       width: width ?? columnWidth,
       height: taskHeight,
@@ -618,10 +625,8 @@ class _CalendarPageState extends State<CalendarPage> {
           maxHeight: activeHours.length * 60.0,
           alignment: Alignment.topCenter,
           child: TimeAxisColumn(
-            width: _timeAxisWidth,
             previewTime: _dragPreviewTime,
             hours: activeHours,
-            hourHeight: 60.0,
           ),
         ),
       ),
@@ -678,71 +683,67 @@ class _CalendarPageState extends State<CalendarPage> {
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                 ),
-                builder: (context) {
-                  return SafeArea(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Text(
-                            '切换日历视图',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                builder: (context) => SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Text(
+                          '切换日历视图',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const Divider(height: 1),
-                        ListTile(
-                          leading: const Icon(
-                            Icons.view_module,
-                            color: Colors.orange,
-                          ),
-                          title: const Text('月视图'),
-                          trailing: config.viewMode == 'month'
-                              ? const Icon(Icons.check, color: Colors.orange)
-                              : null,
-                          onTap: () {
-                            calendarPageProvider.updateConfig(
-                              viewMode: 'month',
-                            );
-                            Navigator.pop(context);
-                          },
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.view_module,
+                          color: Colors.orange,
                         ),
-                        ListTile(
-                          leading: const Icon(
-                            Icons.view_week,
-                            color: Colors.orange,
-                          ),
-                          title: const Text('周视图 (7天)'),
-                          trailing: config.viewMode == 'week'
-                              ? const Icon(Icons.check, color: Colors.orange)
-                              : null,
-                          onTap: () {
-                            calendarPageProvider.updateConfig(viewMode: 'week');
-                            Navigator.pop(context);
-                          },
+                        title: const Text('月视图'),
+                        trailing: config.viewMode == 'month'
+                            ? const Icon(Icons.check, color: Colors.orange)
+                            : null,
+                        onTap: () {
+                          calendarPageProvider.updateConfig(viewMode: 'month');
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.view_week,
+                          color: Colors.orange,
                         ),
-                        ListTile(
-                          leading: const Icon(
-                            Icons.view_day,
-                            color: Colors.orange,
-                          ),
-                          title: const Text('3天视图'),
-                          trailing: config.viewMode == '3day'
-                              ? const Icon(Icons.check, color: Colors.orange)
-                              : null,
-                          onTap: () {
-                            calendarPageProvider.updateConfig(viewMode: '3day');
-                            Navigator.pop(context);
-                          },
+                        title: const Text('周视图 (7天)'),
+                        trailing: config.viewMode == 'week'
+                            ? const Icon(Icons.check, color: Colors.orange)
+                            : null,
+                        onTap: () {
+                          calendarPageProvider.updateConfig(viewMode: 'week');
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.view_day,
+                          color: Colors.orange,
                         ),
-                        const SizedBox(height: 8),
-                      ],
-                    ),
-                  );
-                },
+                        title: const Text('3天视图'),
+                        trailing: config.viewMode == '3day'
+                            ? const Icon(Icons.check, color: Colors.orange)
+                            : null,
+                        onTap: () {
+                          calendarPageProvider.updateConfig(viewMode: '3day');
+                          Navigator.pop(context);
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
               );
             },
           ),
@@ -757,35 +758,33 @@ class _CalendarPageState extends State<CalendarPage> {
                 );
               }
             },
-            itemBuilder: (context) {
-              return [
-                const PopupMenuItem<String>(
-                  value: 'visible_range',
-                  child: Row(
-                    children: [
-                      Icon(Icons.filter_list, color: Colors.black54),
-                      SizedBox(width: 8),
-                      Text('显示范围'),
-                    ],
-                  ),
+            itemBuilder: (context) => [
+              const PopupMenuItem<String>(
+                value: 'visible_range',
+                child: Row(
+                  children: [
+                    Icon(Icons.filter_list, color: Colors.black54),
+                    SizedBox(width: 8),
+                    Text('显示范围'),
+                  ],
                 ),
-                PopupMenuItem<String>(
-                  value: 'show_completed',
-                  child: Row(
-                    children: [
-                      Icon(
-                        config.showCompletedTasks
-                            ? Icons.check_box
-                            : Icons.check_box_outline_blank,
-                        color: Colors.black54,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text('显示已完成任务'),
-                    ],
-                  ),
+              ),
+              PopupMenuItem<String>(
+                value: 'show_completed',
+                child: Row(
+                  children: [
+                    Icon(
+                      config.showCompletedTasks
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank,
+                      color: Colors.black54,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('显示已完成任务'),
+                  ],
                 ),
-              ];
-            },
+              ),
+            ],
           ),
           const SizedBox(width: 8),
         ],

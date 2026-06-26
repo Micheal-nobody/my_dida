@@ -19,37 +19,31 @@ class HabitCheckInRecordRepository extends BaseRepository<HabitCheckInRecord> {
   }
 
   // 获取特定习惯的所有打卡记录
-  Future<List<HabitCheckInRecord>> getRecordsByHabitId(int habitId) async {
-    return _isar.habitCheckInRecords.where().habitIdEqualTo(habitId).findAll();
-  }
+  Future<List<HabitCheckInRecord>> getRecordsByHabitId(int habitId) async =>
+      _isar.habitCheckInRecords.where().habitIdEqualTo(habitId).findAll();
 
   // 获取特定时间段内的打卡记录
   Future<List<HabitCheckInRecord>> getRecordsInTimeRange(
     DateTime start,
     DateTime end,
-  ) async {
-    return _isar.habitCheckInRecords
-        .where()
-        .checkInTimeBetween(start, end)
-        .findAll();
-  }
+  ) async => _isar.habitCheckInRecords
+      .where()
+      .checkInTimeBetween(start, end)
+      .findAll();
 
   // 删除特定打卡记录
-  Future<bool> deleteRecord(int id) async {
-    return _isar.writeTxn(() async => _isar.habitCheckInRecords.delete(id));
-  }
+  Future<bool> deleteRecord(int id) async =>
+      _isar.writeTxn(() async => _isar.habitCheckInRecords.delete(id));
 
   // 删除特定习惯的所有记录
-  Future<int> deleteRecordsByHabitId(int habitId) async {
-    return _isar.writeTxn(() async {
-      final records = await getRecordsByHabitId(habitId);
-      final ids = records.map((e) => e.id).toList();
-      return _isar.habitCheckInRecords.deleteAll(ids);
-    });
-  }
+  Future<int> deleteRecordsByHabitId(int habitId) async =>
+      _isar.writeTxn(() async {
+        final records = await getRecordsByHabitId(habitId);
+        final ids = records.map((e) => e.id).toList();
+        return _isar.habitCheckInRecords.deleteAll(ids);
+      });
 
   // 获取所有打卡记录
-  Future<List<HabitCheckInRecord>> getAllRecords() async {
-    return _isar.habitCheckInRecords.where().findAll();
-  }
+  Future<List<HabitCheckInRecord>> getAllRecords() async =>
+      _isar.habitCheckInRecords.where().findAll();
 }

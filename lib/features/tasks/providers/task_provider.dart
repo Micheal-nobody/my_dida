@@ -261,11 +261,6 @@ class TaskProvider with ChangeNotifier {
     }
 
     _currentTasksSubscription = stream.listen((tasks) {
-      if (kDebugMode) {
-        print(
-          'DEBUG: Stream emitted tasks: $tasks, type: ${tasks.runtimeType}',
-        );
-      }
       _currentTasks = tasks;
       notifyListeners();
     });

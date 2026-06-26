@@ -23,9 +23,11 @@ import 'package:my_dida/features/settings/models/sidebar_config.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
+import 'package:my_dida/features/tasks/services/active_reminder_manager.dart';
+import 'package:my_dida/features/tasks/services/active_reminder_message_service.dart';
+import 'package:my_dida/features/tasks/services/attachment_service.dart';
 import 'package:my_dida/features/tasks/services/flutter_local_task_reminder_scheduler.dart';
 import 'package:my_dida/features/tasks/services/notification_service.dart';
-import 'package:my_dida/features/tasks/services/attachment_service.dart';
 import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
 import 'package:my_dida/features/tasks/services/task_notification_navigation_service.dart';
 import 'package:my_dida/features/tasks/services/task_operation_reverter.dart';
@@ -83,6 +85,14 @@ Future<void> setupLocator(AppConfig config) async {
     ..registerSingleton<TaskReminderService>(
       TaskReminderService(scheduler: getIt<TaskReminderSchedulerPort>()),
     )
+    ..registerSingleton<ActiveReminderManager>(
+      ActiveReminderManager(taskRepository: getIt<TaskRepository>()),
+    )
+    ..registerSingleton<ActiveReminderMessageService>(
+      ActiveReminderMessageService(
+        reminderManager: getIt<ActiveReminderManager>(),
+      ),
+    )
     ..registerSingleton<TaskCalendarProjectionService>(
       TaskCalendarProjectionService(),
     )
@@ -109,6 +119,7 @@ Future<void> setupLocator(AppConfig config) async {
     );
 
   logger.i('初始化 Isar 完成！');
+  getIt<ActiveReminderMessageService>().initialize();
 }
 
 Future<void> ensureDefaultChecklist(Isar isar) async {

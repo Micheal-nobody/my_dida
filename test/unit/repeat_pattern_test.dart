@@ -23,7 +23,7 @@ void main() {
         'RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE,FR',
       );
 
-      const monthly = RepeatPattern.monthly(15, 1);
+      const monthly = RepeatPattern.monthly(15);
       expect(monthly.type, RepeatType.monthly);
       expect(monthly.dayOfMonth, 15);
       expect(
@@ -31,7 +31,7 @@ void main() {
         'RRULE:FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=15',
       );
 
-      const yearly = RepeatPattern.yearly(10, 20, 1);
+      const yearly = RepeatPattern.yearly(10, 20);
       expect(yearly.type, RepeatType.yearly);
       expect(yearly.month, 10);
       expect(yearly.dayOfMonth, 20);
@@ -89,37 +89,37 @@ void main() {
         '艾宾浩斯记忆法',
       );
       expect(const RepeatPattern.workday().toReadableString(null), '法定工作日');
-      expect(const RepeatPattern.daily(1).toReadableString(null), '每天');
+      expect(const RepeatPattern.daily().toReadableString(null), '每天');
       expect(const RepeatPattern.daily(5).toReadableString(null), '每 5 天');
 
       expect(
-        const RepeatPattern.weekly([1, 2, 3, 4, 5], 1).toReadableString(null),
+        const RepeatPattern.weekly([1, 2, 3, 4, 5]).toReadableString(null),
         '每周工作日 (周一至周五)',
       );
       expect(
-        const RepeatPattern.weekly([1, 3], 1).toReadableString(null),
+        const RepeatPattern.weekly([1, 3]).toReadableString(null),
         '每周（周一、周三）',
       );
 
       final baseDate = DateTime(2026, 6, 21); // Sunday (7)
       expect(
-        const RepeatPattern.weekly([], 1).toReadableString(baseDate),
+        const RepeatPattern.weekly([]).toReadableString(baseDate),
         '每周 (周日)',
       );
       expect(
-        const RepeatPattern.monthly(null, 1).toReadableString(baseDate),
+        const RepeatPattern.monthly(null).toReadableString(baseDate),
         '每月（21 日）',
       );
       expect(
-        const RepeatPattern.yearly(null, null, 1).toReadableString(baseDate),
+        const RepeatPattern.yearly(null, null).toReadableString(baseDate),
         '每年（6 月 21 日）',
       );
     });
 
     test('Equality and HashCode', () {
-      expect(const RepeatPattern.daily(1), const RepeatPattern.daily(1));
+      expect(const RepeatPattern.daily(), const RepeatPattern.daily());
       expect(
-        const RepeatPattern.daily(1) == const RepeatPattern.daily(2),
+        const RepeatPattern.daily() == const RepeatPattern.daily(2),
         isFalse,
       );
       expect(
@@ -138,51 +138,51 @@ void main() {
     });
 
     test('nextOccurrenceAfter for Ebbinghaus', () {
-      final start = DateTime(2026, 6, 20, 9, 0); // Saturday
+      final start = DateTime(2026, 6, 20, 9); // Saturday
       const ebbinghaus = RepeatPattern.ebbinghaus();
 
       // Check occurrences strictly after the start (anchor = start)
       // Ebbinghaus offsets: 1, 2, 4, 7, 15, 30 days
       expect(
         ebbinghaus.nextOccurrenceAfter(start, start),
-        DateTime(2026, 6, 21, 9, 0), // +1 day
+        DateTime(2026, 6, 21, 9), // +1 day
       );
 
       expect(
-        ebbinghaus.nextOccurrenceAfter(start, DateTime(2026, 6, 21, 10, 0)),
-        DateTime(2026, 6, 22, 9, 0), // +2 days
+        ebbinghaus.nextOccurrenceAfter(start, DateTime(2026, 6, 21, 10)),
+        DateTime(2026, 6, 22, 9), // +2 days
       );
 
       expect(
-        ebbinghaus.nextOccurrenceAfter(start, DateTime(2026, 6, 23, 9, 0)),
-        DateTime(2026, 6, 24, 9, 0), // +4 days
+        ebbinghaus.nextOccurrenceAfter(start, DateTime(2026, 6, 23, 9)),
+        DateTime(2026, 6, 24, 9), // +4 days
       );
 
       expect(
-        ebbinghaus.nextOccurrenceAfter(start, DateTime(2026, 7, 10, 9, 0)),
-        DateTime(2026, 7, 20, 9, 0), // +30 days
+        ebbinghaus.nextOccurrenceAfter(start, DateTime(2026, 7, 10, 9)),
+        DateTime(2026, 7, 20, 9), // +30 days
       );
 
       expect(
-        ebbinghaus.nextOccurrenceAfter(start, DateTime(2026, 7, 21, 9, 0)),
+        ebbinghaus.nextOccurrenceAfter(start, DateTime(2026, 7, 21, 9)),
         isNull,
       );
     });
 
     test('nextOccurrenceAfter for Workday', () {
-      final start = DateTime(2026, 6, 19, 9, 0); // Friday
+      final start = DateTime(2026, 6, 19, 9); // Friday
       const workday = RepeatPattern.workday();
 
       // Next occurrence after Friday should skip Sat (20th), Sun (21st) and fall on Mon (22nd)
       expect(
         workday.nextOccurrenceAfter(start, start),
-        DateTime(2026, 6, 22, 9, 0),
+        DateTime(2026, 6, 22, 9),
       );
 
       // Next occurrence after Monday (22nd) should fall on Tuesday (23rd)
       expect(
-        workday.nextOccurrenceAfter(start, DateTime(2026, 6, 22, 9, 0)),
-        DateTime(2026, 6, 23, 9, 0),
+        workday.nextOccurrenceAfter(start, DateTime(2026, 6, 22, 9)),
+        DateTime(2026, 6, 23, 9),
       );
     });
   });

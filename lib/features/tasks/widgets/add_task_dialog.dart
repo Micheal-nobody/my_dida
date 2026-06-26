@@ -148,6 +148,13 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     if (result != null) {
       setState(() {
         _dateTimePickerValue = result;
+        if (result.startTime != null && !result.isAllDay) {
+          _notificationEnabled = true;
+          _reminderOffsetMinutes ??= 0;
+        } else if (result.startTime == null || result.isAllDay) {
+          _notificationEnabled = false;
+          _reminderOffsetMinutes = null;
+        }
       });
     }
   }
@@ -741,6 +748,17 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                             ),
                             onPressed: _editTags,
                           ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.notifications_active_outlined,
+                              size: 20,
+                              color: _notificationEnabled
+                                  ? Colors.orange
+                                  : Colors.grey[600],
+                            ),
+                            onPressed: () => _showReminderRepeatDialog(context),
+                            tooltip: '设置提醒与重复',
+                          ),
                           if (parentTask == null)
                             Consumer<ChecklistProvider>(
                               builder: (context, provider, child) {
@@ -1271,16 +1289,18 @@ class __TagSelectorBottomSheetState extends State<_TagSelectorBottomSheet> {
             Wrap(
               spacing: 8,
               runSpacing: 4,
-              children: _selectedTags.map((tag) {
-                return InputChip(
-                  label: Text(tag),
-                  onDeleted: () {
-                    setState(() {
-                      _selectedTags.remove(tag);
-                    });
-                  },
-                );
-              }).toList(),
+              children: _selectedTags
+                  .map(
+                    (tag) => InputChip(
+                      label: Text(tag),
+                      onDeleted: () {
+                        setState(() {
+                          _selectedTags.remove(tag);
+                        });
+                      },
+                    ),
+                  )
+                  .toList(),
             ),
             const SizedBox(height: 16),
           ],
@@ -1310,12 +1330,14 @@ class __TagSelectorBottomSheetState extends State<_TagSelectorBottomSheet> {
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 4,
-                  children: recommendedTags.map((tag) {
-                    return ActionChip(
-                      label: Text(tag),
-                      onPressed: () => _addTag(tag),
-                    );
-                  }).toList(),
+                  children: recommendedTags
+                      .map(
+                        (tag) => ActionChip(
+                          label: Text(tag),
+                          onPressed: () => _addTag(tag),
+                        ),
+                      )
+                      .toList(),
                 ),
               ),
             ),

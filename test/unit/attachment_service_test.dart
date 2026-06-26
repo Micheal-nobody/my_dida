@@ -47,7 +47,7 @@ void main() {
 
   group('AttachmentService Tests', () {
     test('resolvePath should parse attachments:// correctly', () async {
-      final ref = 'attachments://100/my_photo.png';
+      const ref = 'attachments://100/my_photo.png';
       final resolved = await service.resolvePath(ref);
       expect(
         resolved,
@@ -110,7 +110,7 @@ void main() {
       const taskId = 400;
 
       // 构造 50MB + 1 字节的数据
-      final oversize = kMaxSingleAttachmentBytes + 1;
+      const oversize = kMaxSingleAttachmentBytes + 1;
       final fakeBytes = Uint8List(oversize);
 
       expect(
@@ -137,13 +137,13 @@ void main() {
       await taskDir.create(recursive: true);
 
       // 模拟当前已经占用了 490MB
-      final currentSize = 490 * 1024 * 1024;
+      const currentSize = 490 * 1024 * 1024;
       await File(p.join(taskDir.path, 'large.bin')).writeAsBytes(
         Uint8List(10), // 我们不需要真的写 490MB 撑爆内存，直接在 totalSizeOfTask 上 mock 或规避。
       );
       // 为了精确测试总量限制又不耗尽内存，我们直接通过分次写入 20MB 文件来累计触发：
       // 例如：分 26 次写入 20MB 文件，最后一次会超 500MB。
-      final chunk = 20 * 1024 * 1024;
+      const chunk = 20 * 1024 * 1024;
       final chunkBytes = Uint8List(chunk);
 
       // 连续写入，直到报错总量超限

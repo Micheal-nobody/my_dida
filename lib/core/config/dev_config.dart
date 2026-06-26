@@ -1,4 +1,4 @@
-import 'app_config.dart';
+import 'package:my_dida/core/config/app_config.dart';
 
 class DevConfig implements AppConfig {
   @override

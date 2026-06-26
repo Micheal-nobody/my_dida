@@ -68,13 +68,12 @@ class _CalendarAllDayTaskSectionState extends State<CalendarAllDayTaskSection> {
   double _getDateColumnWidth(double availableWidth) =>
       availableWidth / widget.visibleDates.length;
 
-  List<Widget> _renderCrossDayTasks(double availableWidth) {
-    return widget.crossDayTasks.asMap().entries.map((entry) {
-      final taskIndex = entry.key;
-      final task = entry.value;
-      return _buildCrossDayTask(task, taskIndex, availableWidth);
-    }).toList();
-  }
+  List<Widget> _renderCrossDayTasks(double availableWidth) =>
+      widget.crossDayTasks.asMap().entries.map((entry) {
+        final taskIndex = entry.key;
+        final task = entry.value;
+        return _buildCrossDayTask(task, taskIndex, availableWidth);
+      }).toList();
 
   Widget _buildCrossDayTask(Task task, int taskIndex, double availableWidth) {
     final startTime = task.startTime!;

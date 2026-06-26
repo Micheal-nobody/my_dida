@@ -13,16 +13,15 @@ import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:provider/provider.dart';
 
 class OperationDetailDialog extends StatelessWidget {
-  final Operation operation;
-  final Function(String message) showSuccess;
-  final Function(String message) showError;
-
   const OperationDetailDialog({
-    super.key,
     required this.operation,
     required this.showSuccess,
     required this.showError,
+    super.key,
   });
+  final Operation operation;
+  final Function(String message) showSuccess;
+  final Function(String message) showError;
 
   Color _getOperationColor(OperationType type) {
     switch (type) {
@@ -250,163 +249,155 @@ class OperationDetailDialog extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 标题栏
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    _getOperationColor(operation.type).withValues(alpha: 0.1),
-                    _getOperationColor(operation.type).withValues(alpha: 0.05),
-                  ],
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
+  Widget build(BuildContext context) => Dialog(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    child: Container(
+      constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 标题栏
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  _getOperationColor(operation.type).withValues(alpha: 0.1),
+                  _getOperationColor(operation.type).withValues(alpha: 0.05),
+                ],
               ),
-              child: Row(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: _getOperationColor(operation.type),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    _getOperationIcon(operation.type),
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        operation.description,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${_getOperationTypeLabel(operation.type)} · ${_getOperationTargetLabel(operation.target)}',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 内容区域
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: _getOperationColor(operation.type),
-                      borderRadius: BorderRadius.circular(10),
+                  // 操作信息
+                  _buildInfoRow('操作时间', _formatTimestamp(operation.timestamp)),
+                  _buildInfoRow('目标ID', operation.targetId.toString()),
+
+                  const SizedBox(height: 20),
+
+                  // 操作前数据
+                  if (operation.previousData != null) ...[
+                    const Text(
+                      '操作前数据',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
                     ),
-                    child: Icon(
-                      _getOperationIcon(operation.type),
-                      color: Colors.white,
-                      size: 20,
+                    const SizedBox(height: 8),
+                    _buildDataRenderer(
+                      operation.previousData!,
+                      operation.target,
+                      true,
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          operation.description,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${_getOperationTypeLabel(operation.type)} · ${_getOperationTargetLabel(operation.target)}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 16),
+                  ],
+
+                  // 操作后数据
+                  if (operation.newData != null) ...[
+                    const Text(
+                      '操作后数据',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    _buildDataRenderer(
+                      operation.newData!,
+                      operation.target,
+                      false,
+                    ),
+                  ],
                 ],
               ),
             ),
-            // 内容区域
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 操作信息
-                    _buildInfoRow(
-                      '操作时间',
-                      _formatTimestamp(operation.timestamp),
-                    ),
-                    _buildInfoRow('目标ID', operation.targetId.toString()),
-
-                    const SizedBox(height: 20),
-
-                    // 操作前数据
-                    if (operation.previousData != null) ...[
-                      const Text(
-                        '操作前数据',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildDataRenderer(
-                        operation.previousData!,
-                        operation.target,
-                        true,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-
-                    // 操作后数据
-                    if (operation.newData != null) ...[
-                      const Text(
-                        '操作后数据',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildDataRenderer(
-                        operation.newData!,
-                        operation.target,
-                        false,
-                      ),
-                    ],
-                  ],
-                ),
+          ),
+          // 底部按钮
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
             ),
-            // 底部按钮
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('关闭'),
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('关闭'),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () => _undoSpecificOperation(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () => _undoSpecificOperation(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text('撤回操作'),
                   ),
-                ],
-              ),
+                  child: const Text('撤回操作'),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }

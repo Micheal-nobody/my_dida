@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/models/task_reminder_plan.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dart';
@@ -46,9 +46,7 @@ void main() {
       );
 
       final parent =
-          await provider.execute(
-                AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
-              )
+          await provider.execute(AddTask(Task(name: 'Parent', isAllDay: false)))
               as Task;
       await Future.delayed(const Duration(milliseconds: 50));
 
@@ -57,12 +55,7 @@ void main() {
       final child =
           await provider.execute(
                 AddTask(
-                  Task(
-                    name: 'Child',
-                    isAllDay: false,
-                    parentTaskId: parent.id,
-                    checklistId: 1,
-                  ),
+                  Task(name: 'Child', isAllDay: false, parentTaskId: parent.id),
                 ),
               )
               as Task;
@@ -82,7 +75,6 @@ void main() {
                   Task(
                     name: 'Reminder',
                     isAllDay: false,
-                    checklistId: 1,
                     startTime: startTime,
                     notificationEnabled: true,
                     reminderOffsetMinutes: 30,
@@ -105,19 +97,12 @@ void main() {
       final provider = harness.createProvider();
 
       final parent =
-          await provider.execute(
-                AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
-              )
+          await provider.execute(AddTask(Task(name: 'Parent', isAllDay: false)))
               as Task;
       final child =
           await provider.execute(
                 AddTask(
-                  Task(
-                    name: 'Child',
-                    isAllDay: false,
-                    parentTaskId: parent.id,
-                    checklistId: 1,
-                  ),
+                  Task(name: 'Child', isAllDay: false, parentTaskId: parent.id),
                 ),
               )
               as Task;
@@ -135,19 +120,10 @@ void main() {
       final provider = harness.createProvider();
 
       final parent =
-          await provider.execute(
-                AddTask(Task(name: 'Parent', isAllDay: false, checklistId: 1)),
-              )
+          await provider.execute(AddTask(Task(name: 'Parent', isAllDay: false)))
               as Task;
       await provider.execute(
-        AddTask(
-          Task(
-            name: 'Child',
-            isAllDay: false,
-            parentTaskId: parent.id,
-            checklistId: 1,
-          ),
-        ),
+        AddTask(Task(name: 'Child', isAllDay: false, parentTaskId: parent.id)),
       );
 
       await provider.execute(CopyTask(parent));
@@ -176,7 +152,6 @@ void main() {
                     Task(
                       name: 'Reminder',
                       isAllDay: false,
-                      checklistId: 1,
                       startTime: startTime,
                       notificationEnabled: true,
                       reminderOffsetMinutes: 15,
@@ -206,7 +181,6 @@ void main() {
                     Task(
                       name: 'Scheduled',
                       isAllDay: false,
-                      checklistId: 1,
                       startTime: startTime,
                       notificationEnabled: true,
                       reminderOffsetMinutes: 20,
@@ -238,7 +212,6 @@ void main() {
                     Task(
                       name: 'Recurring',
                       isAllDay: false,
-                      checklistId: 1,
                       startTime: startTime,
                       notificationEnabled: true,
                       reminderOffsetMinutes: 10,

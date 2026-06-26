@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
 
 class OperationStatsCard extends StatelessWidget {
+  const OperationStatsCard({required this.operationStack, super.key});
   final OperationStackProvider operationStack;
-
-  const OperationStatsCard({super.key, required this.operationStack});
 
   @override
   Widget build(BuildContext context) {
@@ -77,9 +75,9 @@ class OperationStatsCard extends StatelessWidget {
                       child: _buildStatItem(
                         context,
                         '任务',
-                        ((stats['task_add'] ?? 0) +
+                        (stats['task_add'] ?? 0) +
                             (stats['task_update'] ?? 0) +
-                            (stats['task_delete'] ?? 0)),
+                            (stats['task_delete'] ?? 0),
                         Icons.task,
                         Colors.orange,
                       ),
@@ -89,9 +87,9 @@ class OperationStatsCard extends StatelessWidget {
                       child: _buildStatItem(
                         context,
                         '习惯',
-                        ((stats['habit_add'] ?? 0) +
+                        (stats['habit_add'] ?? 0) +
                             (stats['habit_update'] ?? 0) +
-                            (stats['habit_delete'] ?? 0)),
+                            (stats['habit_delete'] ?? 0),
                         Icons.psychology,
                         Colors.purple,
                       ),
@@ -101,9 +99,9 @@ class OperationStatsCard extends StatelessWidget {
                       child: _buildStatItem(
                         context,
                         '清单',
-                        ((stats['checklist_add'] ?? 0) +
+                        (stats['checklist_add'] ?? 0) +
                             (stats['checklist_update'] ?? 0) +
-                            (stats['checklist_delete'] ?? 0)),
+                            (stats['checklist_delete'] ?? 0),
                         Icons.list,
                         Colors.teal,
                       ),

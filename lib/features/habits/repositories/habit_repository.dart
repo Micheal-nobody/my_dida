@@ -28,9 +28,7 @@ class HabitRepository extends BaseRepository<Habit> {
   Future<List<Habit>> getAllHabits() async => _isar.habits.where().findAll();
 
   // Get active habits (not completed today)
-  Future<List<Habit>> getActiveHabits() async {
-    return _isar.habits.where().findAll();
-  }
+  Future<List<Habit>> getActiveHabits() async => _isar.habits.where().findAll();
 
   // Get habits with pagination for large datasets
   Future<List<Habit>> getHabitsPaginated(int page, int limit) async {

@@ -171,12 +171,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
       ),
       decoration: const BoxDecoration(
         color: AppColors.background,
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.border,
-            width: Dimensions.borderThin,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [

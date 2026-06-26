@@ -151,7 +151,6 @@ class TomatoProvider with ChangeNotifier {
         startTime: event.startTime,
         endTime: event.endTime,
         durationMinutes: event.durationMinutes,
-        isCompleted: true,
       );
       await _tomatoRecordRepository.insert(record);
 
@@ -205,7 +204,7 @@ class TomatoProvider with ChangeNotifier {
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _ticker.tick(1);
+      _ticker.tick();
     });
   }
 
@@ -387,10 +386,10 @@ class TomatoProvider with ChangeNotifier {
   }
 
   Future<List<TomatoRecord>> getMonthlyRecords(DateTime date) async {
-    final start = DateTime(date.year, date.month, 1);
+    final start = DateTime(date.year, date.month);
     final nextMonth = date.month == 12
-        ? DateTime(date.year + 1, 1, 1)
-        : DateTime(date.year, date.month + 1, 1);
+        ? DateTime(date.year + 1)
+        : DateTime(date.year, date.month + 1);
     final end = nextMonth.subtract(const Duration(seconds: 1));
     return _tomatoRecordRepository.getRecordsInPeriod(start, end);
   }

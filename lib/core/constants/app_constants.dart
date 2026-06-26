@@ -9,9 +9,15 @@ class AppConstants {
   // Special IDs
   static const ChecklistVO todayCheckList = ChecklistVO(id: -1, name: '今天');
   static const ChecklistVO tomorrowCheckList = ChecklistVO(id: -2, name: '明天');
-  static const ChecklistVO nextSevenDaysCheckList = ChecklistVO(id: -3, name: '最近七天');
+  static const ChecklistVO nextSevenDaysCheckList = ChecklistVO(
+    id: -3,
+    name: '最近七天',
+  );
   static const ChecklistVO allCheckList = ChecklistVO(id: -4, name: '所有');
-  static const ChecklistVO completedCheckList = ChecklistVO(id: -5, name: '已完成');
+  static const ChecklistVO completedCheckList = ChecklistVO(
+    id: -5,
+    name: '已完成',
+  );
   static const ChecklistVO trashCheckList = ChecklistVO(id: -6, name: '垃圾桶');
   static const ChecklistVO defaultCheckList = ChecklistVO(id: 1, name: '收集箱');
 

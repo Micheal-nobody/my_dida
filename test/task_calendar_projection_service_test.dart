@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/features/calendar/services/task_calendar_projection_service.dart';
+import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
+import 'package:my_dida/features/tasks/models/task.dart';
 
 void main() {
   group('TaskCalendarProjectionService', () {
@@ -18,7 +18,6 @@ void main() {
           name: 'Recurring $index',
           isAllDay: false,
           startTime: baseDate.add(Duration(minutes: index)),
-          checklistId: 1,
           rrule: RepeatPattern.parse('FREQ=DAILY'),
         )..id = index + 1;
         return task;

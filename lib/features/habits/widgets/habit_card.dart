@@ -6,10 +6,10 @@ class HabitCard extends StatelessWidget {
     required this.habit,
     required this.progress,
     required this.isCompleted,
-    this.isSkipped = false,
     required this.onTap,
     required this.onSkip,
     required this.onEdit,
+    this.isSkipped = false,
     super.key,
   });
 

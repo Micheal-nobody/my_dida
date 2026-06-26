@@ -47,11 +47,9 @@ class TimeFormatter {
     }
   }
 
-  static String formatFullDate(DateTime date) {
-    return '${date.year}年${date.month}月${date.day}日';
-  }
+  static String formatFullDate(DateTime date) =>
+      '${date.year}年${date.month}月${date.day}日';
 
-  static String formatTimeOnly(DateTime date) {
-    return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-  }
+  static String formatTimeOnly(DateTime date) =>
+      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 }

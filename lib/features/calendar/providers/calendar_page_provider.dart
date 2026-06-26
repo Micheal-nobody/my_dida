@@ -4,14 +4,13 @@ import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/features/calendar/models/calendar_page_config.dart';
 
 class CalendarPageProvider extends ChangeNotifier {
+  CalendarPageProvider() {
+    _loadConfig();
+  }
   final Isar _isar = getIt<Isar>();
   CalendarPageConfig _config = CalendarPageConfig();
 
   CalendarPageConfig get config => _config;
-
-  CalendarPageProvider() {
-    _loadConfig();
-  }
 
   Future<void> _loadConfig() async {
     final existing = await _isar.calendarPageConfigs.where().findFirst();
@@ -32,11 +31,13 @@ class CalendarPageProvider extends ChangeNotifier {
     String? viewMode,
     bool? isTimeFolded,
   }) async {
-    if (showCompletedTasks != null)
+    if (showCompletedTasks != null) {
       _config.showCompletedTasks = showCompletedTasks;
+    }
     if (visibleMode != null) _config.visibleMode = visibleMode;
-    if (visibleChecklistIds != null)
+    if (visibleChecklistIds != null) {
       _config.visibleChecklistIds = visibleChecklistIds;
+    }
     if (viewMode != null) _config.viewMode = viewMode;
     if (isTimeFolded != null) _config.isTimeFolded = isTimeFolded;
 

@@ -54,7 +54,7 @@ class CalendarTaskListBottom extends StatelessWidget {
     final allChecklists = checklistProvider.allCheckLists;
 
     final dateStr =
-        "${selectedDate.year}年${selectedDate.month}月${selectedDate.day}日 星期${_getWeekdayName(selectedDate.weekday)}";
+        '${selectedDate.year}年${selectedDate.month}月${selectedDate.day}日 星期${_getWeekdayName(selectedDate.weekday)}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

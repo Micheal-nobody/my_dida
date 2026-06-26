@@ -103,7 +103,6 @@ class _CalendarVisibleRangeDialogState
     return BaseBottomSheetLayout(
       title: '显示范围',
       expandChild: true,
-      confirmButtonColor: Colors.orange,
       onConfirm: () async {
         final calendarProvider = Provider.of<CalendarPageProvider>(
           context,

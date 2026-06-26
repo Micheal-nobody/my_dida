@@ -263,7 +263,9 @@ class FourQuadrantsPage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         itemBuilder: (context, index) {
                           final task = tasks[index];
-                          final priorityColor = _getPriorityColor(task.priority);
+                          final priorityColor = _getPriorityColor(
+                            task.priority,
+                          );
                           final cardWidget = Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
@@ -306,7 +308,8 @@ class FourQuadrantsPage extends StatelessWidget {
                                 Expanded(
                                   child: GestureDetector(
                                     key: ValueKey('task_name_${task.name}'),
-                                    onTap: () => TaskDetailPage.show(context, task),
+                                    onTap: () =>
+                                        TaskDetailPage.show(context, task),
                                     child: Text(
                                       task.name,
                                       maxLines: 1,

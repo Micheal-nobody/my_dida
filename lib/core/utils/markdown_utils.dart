@@ -55,10 +55,9 @@ class MarkdownUtils {
   /// 判断某段 Markdown 文本是否"看起来是空的"——空白或仅由标记/附件组成。
   ///
   /// 用于详情页决定显示只读卡还是直接进编辑态。
-  static bool isEffectivelyEmpty(String markdown) {
-    return stripMarkdown(markdown).trim().isEmpty &&
-        extractAttachmentRefs(markdown).isEmpty;
-  }
+  static bool isEffectivelyEmpty(String markdown) =>
+      stripMarkdown(markdown).trim().isEmpty &&
+      extractAttachmentRefs(markdown).isEmpty;
 
   /// 轻量剥离 Markdown 标记，返回接近纯文本的结果。
   ///

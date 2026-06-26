@@ -58,9 +58,8 @@ class _VirtualizedCalendarTimeAreaState
     super.dispose();
   }
 
-  double _getDateColumnWidth(double availableWidth) {
-    return availableWidth / widget.visibleDates.length;
-  }
+  double _getDateColumnWidth(double availableWidth) =>
+      availableWidth / widget.visibleDates.length;
 
   DateTime _calculateTimeFromPosition(
     Offset globalPosition,

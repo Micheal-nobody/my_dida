@@ -147,7 +147,7 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
                       onPressed: () {
                         double val =
                             double.tryParse(_inputController.text) ?? 0.0;
-                        double step = habit.habitType == 'duration'
+                        final double step = habit.habitType == 'duration'
                             ? 15.0
                             : (habit.unit == '毫升'
                                   ? 250.0
@@ -175,7 +175,7 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
                       onPressed: () {
                         double val =
                             double.tryParse(_inputController.text) ?? 0.0;
-                        double step = habit.habitType == 'duration'
+                        final double step = habit.habitType == 'duration'
                             ? 15.0
                             : (habit.unit == '毫升'
                                   ? 250.0

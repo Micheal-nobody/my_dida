@@ -254,23 +254,21 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: Dimensions.paddingL,
-        top: Dimensions.paddingM,
-        bottom: Dimensions.paddingS,
+  Widget _buildSectionHeader(String title) => Padding(
+    padding: const EdgeInsets.only(
+      left: Dimensions.paddingL,
+      top: Dimensions.paddingM,
+      bottom: Dimensions.paddingS,
+    ),
+    child: Text(
+      title,
+      style: const TextStyle(
+        color: AppColors.textSecondary,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
       ),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
+    ),
+  );
 
   void _showThemeDialog(BuildContext context, SidebarConfigProvider provider) {
     showDialog(

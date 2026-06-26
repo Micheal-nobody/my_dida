@@ -262,9 +262,9 @@ class OperationStackProvider with ChangeNotifier {
   /// 删除指定 ID 的操作
   Future<bool> deleteOperationById(int id) async {
     try {
-      final success = await _isar.writeTxn(() async {
-        return await _isar.operations.delete(id);
-      });
+      final success = await _isar.writeTxn(
+        () async => _isar.operations.delete(id),
+      );
       if (success) {
         _operations.removeWhere((op) => op.id == id);
         notifyListeners();

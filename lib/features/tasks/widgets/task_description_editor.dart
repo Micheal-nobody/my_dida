@@ -300,7 +300,6 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
         ),
         child: MarkdownBody(
           data: widget.value,
-          selectable: false,
           imageBuilder: (uri, title, alt) {
             final ref = uri.toString();
             return FutureBuilder<String>(
@@ -362,39 +361,32 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
     required IconData icon,
     required String tooltip,
     required VoidCallback onPressed,
-  }) {
-    return SizedBox(
-      width: 36,
-      height: 36,
-      child: IconButton(
-        icon: Icon(icon, size: 20, color: Colors.black54),
-        tooltip: tooltip,
-        padding: EdgeInsets.zero,
-        onPressed: onPressed,
-      ),
-    );
-  }
+  }) => SizedBox(
+    width: 36,
+    height: 36,
+    child: IconButton(
+      icon: Icon(icon, size: 20, color: Colors.black54),
+      tooltip: tooltip,
+      padding: EdgeInsets.zero,
+      onPressed: onPressed,
+    ),
+  );
 
-  Widget _buildFileLostWidget(String message) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.red[100]!),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.broken_image, size: 16, color: Colors.red),
-          const SizedBox(width: 6),
-          Text(
-            message,
-            style: const TextStyle(color: Colors.red, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildFileLostWidget(String message) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    margin: const EdgeInsets.symmetric(vertical: 4),
+    decoration: BoxDecoration(
+      color: Colors.red[50],
+      borderRadius: BorderRadius.circular(6),
+      border: Border.all(color: Colors.red[100]!),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.broken_image, size: 16, color: Colors.red),
+        const SizedBox(width: 6),
+        Text(message, style: const TextStyle(color: Colors.red, fontSize: 12)),
+      ],
+    ),
+  );
 }

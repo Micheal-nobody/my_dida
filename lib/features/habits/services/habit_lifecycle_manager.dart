@@ -194,12 +194,15 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
         // 删除最后一条打卡记录
         final records = await _recordRepository.getRecordsByHabitId(habit.id);
         final today = DateTime.now();
-        final todayRecords = records.where((r) {
-          return !r.isSkip &&
-              r.checkInTime.year == today.year &&
-              r.checkInTime.month == today.month &&
-              r.checkInTime.day == today.day;
-        }).toList();
+        final todayRecords = records
+            .where(
+              (r) =>
+                  !r.isSkip &&
+                  r.checkInTime.year == today.year &&
+                  r.checkInTime.month == today.month &&
+                  r.checkInTime.day == today.day,
+            )
+            .toList();
 
         double subtractedValue = 1.0;
         if (todayRecords.isNotEmpty) {
@@ -239,12 +242,15 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
       // 删除今天所有的非Skip打卡记录
       final records = await _recordRepository.getRecordsByHabitId(habit.id);
       final today = DateTime.now();
-      final todayRecords = records.where((r) {
-        return !r.isSkip &&
-            r.checkInTime.year == today.year &&
-            r.checkInTime.month == today.month &&
-            r.checkInTime.day == today.day;
-      }).toList();
+      final todayRecords = records
+          .where(
+            (r) =>
+                !r.isSkip &&
+                r.checkInTime.year == today.year &&
+                r.checkInTime.month == today.month &&
+                r.checkInTime.day == today.day,
+          )
+          .toList();
       for (final r in todayRecords) {
         await _recordRepository.deleteRecord(r.id);
       }

@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -194,10 +193,7 @@ class AttachmentServiceImpl implements AttachmentService {
       final dir = await _taskDir(taskId);
       if (!await dir.exists()) return 0;
       var total = 0;
-      await for (final entity in dir.list(
-        recursive: false,
-        followLinks: false,
-      )) {
+      await for (final entity in dir.list(followLinks: false)) {
         if (entity is File) {
           total += await entity.length();
         }
@@ -229,10 +225,7 @@ class AttachmentServiceImpl implements AttachmentService {
       if (!await baseDir.exists()) return;
 
       final valid = validTaskIds.toSet();
-      await for (final entity in baseDir.list(
-        recursive: false,
-        followLinks: false,
-      )) {
+      await for (final entity in baseDir.list(followLinks: false)) {
         if (entity is! Directory) continue;
         final name = p.basename(entity.path);
         final id = int.tryParse(name);

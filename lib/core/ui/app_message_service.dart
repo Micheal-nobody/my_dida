@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/core/constants/colors_constants.dart';
 
-import 'app_message_type.dart';
+import 'package:my_dida/core/ui/app_message_type.dart';
 
 class AppMessageService {
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =

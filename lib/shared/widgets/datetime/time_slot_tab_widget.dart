@@ -2,12 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 
-import 'custom_repeat_picker.dart';
-import 'repeat_picker_utils.dart';
+import 'package:my_dida/shared/widgets/datetime/custom_repeat_picker.dart';
+import 'package:my_dida/shared/widgets/datetime/repeat_picker_utils.dart';
 
 class TimeSlotTabValue {
-  static const Object _sentinel = Object();
-
   const TimeSlotTabValue({
     required this.selectedDate,
     required this.startTime,
@@ -17,6 +15,7 @@ class TimeSlotTabValue {
     required this.isAllDay,
     required this.rrule,
   });
+  static const Object _sentinel = Object();
 
   final DateTime? selectedDate;
   final TimeOfDay? startTime;

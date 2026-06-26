@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_dida/features/calendar/widgets/calendar_visible_range_dialog.dart';
 import 'package:my_dida/features/calendar/models/calendar_page_config.dart';
-import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/calendar/providers/calendar_page_provider.dart';
+import 'package:my_dida/features/calendar/widgets/calendar_visible_range_dialog.dart';
+import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:provider/provider.dart';
 
 class FakeCalendarPageProvider extends ChangeNotifier
     implements CalendarPageProvider {
+  FakeCalendarPageProvider(this.config);
   @override
   CalendarPageConfig config;
-
-  FakeCalendarPageProvider(this.config);
 
   @override
   Future<void> updateConfig({
@@ -22,11 +21,13 @@ class FakeCalendarPageProvider extends ChangeNotifier
     String? viewMode,
     bool? isTimeFolded,
   }) async {
-    if (showCompletedTasks != null)
+    if (showCompletedTasks != null) {
       config.showCompletedTasks = showCompletedTasks;
+    }
     if (visibleMode != null) config.visibleMode = visibleMode;
-    if (visibleChecklistIds != null)
+    if (visibleChecklistIds != null) {
       config.visibleChecklistIds = visibleChecklistIds;
+    }
     if (viewMode != null) config.viewMode = viewMode;
     if (isTimeFolded != null) config.isTimeFolded = isTimeFolded;
     notifyListeners();
@@ -35,13 +36,12 @@ class FakeCalendarPageProvider extends ChangeNotifier
 
 class FakeChecklistProvider extends ChangeNotifier
     implements ChecklistProvider {
+  FakeChecklistProvider(this.allCheckLists, this.currentCheckList);
   @override
   List<ChecklistVO> allCheckLists;
 
   @override
   ChecklistVO currentCheckList;
-
-  FakeChecklistProvider(this.allCheckLists, this.currentCheckList);
 
   @override
   void updateCurChecklist(ChecklistVO checklist) {
@@ -56,11 +56,11 @@ class FakeChecklistProvider extends ChangeNotifier
 void main() {
   testWidgets(
     'CalendarVisibleRangeDialog cascade logic test with Fake Providers',
-    (WidgetTester tester) async {
+    (tester) async {
       final checklists = [
-        ChecklistVO(id: 1, name: '收集箱', color: Colors.orange),
-        ChecklistVO(id: 2, name: '工作', color: Colors.blue),
-        ChecklistVO(id: 3, name: '生活', color: Colors.green),
+        const ChecklistVO(id: 1, name: '收集箱', color: Colors.orange),
+        const ChecklistVO(id: 2, name: '工作', color: Colors.blue),
+        const ChecklistVO(id: 3, name: '生活', color: Colors.green),
       ];
 
       final fakeChecklistProvider = FakeChecklistProvider(
@@ -68,7 +68,7 @@ void main() {
         checklists.first,
       );
       final fakeCalendarProvider = FakeCalendarPageProvider(
-        CalendarPageConfig(visibleMode: 'all', visibleChecklistIds: [1, 2, 3]),
+        CalendarPageConfig(visibleChecklistIds: [1, 2, 3]),
       );
 
       await tester.pumpWidget(

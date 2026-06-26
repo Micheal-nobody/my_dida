@@ -1,15 +1,16 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
+import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
+import 'package:my_dida/features/checklist/services/checklist_lifecycle_manager.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
-import 'package:my_dida/features/checklist/services/checklist_lifecycle_manager.dart';
 
 class FakeAppMessageService extends AppMessageService {
   final List<String> successMessages = [];

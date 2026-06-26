@@ -69,7 +69,7 @@ class PerformanceMonitor {
     String operationName,
     Future<T> Function() operation,
   ) async {
-    if (!_enabled) return await operation();
+    if (!_enabled) return operation();
     startTimer(operationName);
     try {
       return await operation();

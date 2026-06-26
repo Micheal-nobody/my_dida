@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/core/constants/colors_constants.dart';
 
 class SearchHistorySection extends StatelessWidget {
-  final List<String> history;
-  final Function(String item) onHistoryItemTapped;
-  final Function(String item) onHistoryItemRemoved;
-  final VoidCallback onClearHistoryTapped;
-
   const SearchHistorySection({
-    super.key,
     required this.history,
     required this.onHistoryItemTapped,
     required this.onHistoryItemRemoved,
     required this.onClearHistoryTapped,
+    super.key,
   });
+  final List<String> history;
+  final Function(String item) onHistoryItemTapped;
+  final Function(String item) onHistoryItemRemoved;
+  final VoidCallback onClearHistoryTapped;
 
   @override
   Widget build(BuildContext context) {

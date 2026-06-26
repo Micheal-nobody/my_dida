@@ -304,7 +304,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
         task: task,
         mutate: (draft) {
           final updated = List<CheckPoint>.from(draft.checkpoints)
-            ..add(CheckPoint(name: ''));
+            ..add(CheckPoint());
           draft.checkpoints = updated;
         },
         description: '添加了任务"${task.name}"的检查点',
@@ -338,7 +338,6 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   }) async {
     final task = await _createTask(
       name: name,
-      isAllDay: false,
       parentTaskId: parent.id,
       checklistId: parent.checklistId,
     );
@@ -404,10 +403,17 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
     try {
       TaskValidator.validateTaskTimeRange(newStartTime, newEndTime);
       final nextIsAllDay = isAllDay ?? task.isAllDay;
+
+      // If we are setting a new start time (moving from null to non-null), and it's not all day,
+      // and notification is not already enabled, we default to enabling notification at task start time (0 minutes offset).
+      final bool defaultEnabled =
+          task.startTime == null && newStartTime != null && !nextIsAllDay;
       final nextNotificationEnabled =
-          task.notificationEnabled && newStartTime != null && !nextIsAllDay;
+          (task.notificationEnabled || defaultEnabled) &&
+          newStartTime != null &&
+          !nextIsAllDay;
       final nextReminderOffsetMinutes = nextNotificationEnabled
-          ? task.reminderOffsetMinutes
+          ? (task.reminderOffsetMinutes ?? 0)
           : null;
       _taskReminderService.validateTaskReminderConfiguration(
         notificationEnabled: nextNotificationEnabled,

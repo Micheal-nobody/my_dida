@@ -269,9 +269,8 @@ class RRuleUtil {
     return '自定义（频率与间隔）';
   }
 
-  static String humanize(String rrule) {
-    return RepeatPattern.parse(rrule).toReadableString(null);
-  }
+  static String humanize(String rrule) =>
+      RepeatPattern.parse(rrule).toReadableString(null);
 
   static String _weekdayCodeToCN(String code) {
     const map = {

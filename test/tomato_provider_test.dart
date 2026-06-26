@@ -1,22 +1,23 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
 import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/settings/models/sidebar_config.dart';
-import 'package:my_dida/features/tomato/models/custom_tomato.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/tasks/repositories/task_repository.dart';
+import 'package:my_dida/features/tasks/services/notification_service.dart';
+import 'package:my_dida/features/tasks/services/task_notification_navigation_service.dart';
+import 'package:my_dida/features/tomato/models/custom_tomato.dart';
 import 'package:my_dida/features/tomato/models/tomato_record.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
 import 'package:my_dida/features/tomato/repositories/custom_tomato_repository.dart';
-import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/tomato/repositories/tomato_record_repository.dart';
-import 'package:my_dida/features/tasks/services/notification_service.dart';
-import 'package:my_dida/features/tasks/services/task_notification_navigation_service.dart';
-import 'package:my_dida/core/ui/app_message_service.dart';
 
 void main() {
   late Isar isar;
@@ -186,11 +187,9 @@ void main() {
           DateTime.now().month,
           DateTime.now().day,
           12,
-          0,
         ),
         endTime: DateTime.now(),
         durationMinutes: 40,
-        isCompleted: true,
       );
       await tomatoRepository.insert(record);
 
