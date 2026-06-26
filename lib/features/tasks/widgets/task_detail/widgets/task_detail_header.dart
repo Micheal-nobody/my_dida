@@ -9,11 +9,7 @@ import 'package:my_dida/features/tasks/widgets/task_date_time_picker.dart';
 import 'package:provider/provider.dart';
 
 class TaskDetailHeader extends StatelessWidget {
-  const TaskDetailHeader({
-    required this.task,
-    this.onDelete,
-    super.key,
-  });
+  const TaskDetailHeader({required this.task, this.onDelete, super.key});
 
   final Task task;
   final VoidCallback? onDelete;
@@ -47,7 +43,9 @@ class TaskDetailHeader extends StatelessWidget {
                   // 返回键
                   IconButton(
                     icon: Icon(
-                      Navigator.of(context).canPop() ? Icons.arrow_back : Icons.close,
+                      Navigator.of(context).canPop()
+                          ? Icons.arrow_back
+                          : Icons.close,
                       color: Colors.orange,
                     ),
                     onPressed: () => Navigator.of(context).maybePop(),
@@ -71,10 +69,15 @@ class TaskDetailHeader extends StatelessWidget {
                         initialValue: updatedTask.checklistId,
                         tooltip: '选择清单',
                         onSelected: (val) async {
-                          await taskProvider.execute(UpdateChecklist(updatedTask, val));
+                          await taskProvider.execute(
+                            UpdateChecklist(updatedTask, val),
+                          );
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey[300]!),
                             borderRadius: BorderRadius.circular(16),
@@ -82,14 +85,25 @@ class TaskDetailHeader extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.folder_open, color: currentChecklist.color, size: 16),
+                              Icon(
+                                Icons.folder_open,
+                                color: currentChecklist.color,
+                                size: 16,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 currentChecklist.name,
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                               const SizedBox(width: 2),
-                              const Icon(Icons.arrow_drop_down, color: Colors.grey, size: 16),
+                              const Icon(
+                                Icons.arrow_drop_down,
+                                color: Colors.grey,
+                                size: 16,
+                              ),
                             ],
                           ),
                         ),
@@ -99,7 +113,11 @@ class TaskDetailHeader extends StatelessWidget {
                               value: box.id,
                               child: Row(
                                 children: [
-                                  Icon(Icons.folder, color: box.color, size: 18),
+                                  Icon(
+                                    Icons.folder,
+                                    color: box.color,
+                                    size: 18,
+                                  ),
                                   const SizedBox(width: 8),
                                   Text(box.name),
                                 ],
@@ -117,10 +135,15 @@ class TaskDetailHeader extends StatelessWidget {
                     initialValue: updatedTask.priority,
                     tooltip: '选择优先级',
                     onSelected: (val) async {
-                      await taskProvider.execute(UpdatePriority(updatedTask, val));
+                      await taskProvider.execute(
+                        UpdatePriority(updatedTask, val),
+                      );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey[300]!),
                         borderRadius: BorderRadius.circular(16),
@@ -151,7 +174,11 @@ class TaskDetailHeader extends StatelessWidget {
                             style: const TextStyle(fontSize: 13),
                           ),
                           const SizedBox(width: 2),
-                          const Icon(Icons.arrow_drop_down, color: Colors.grey, size: 16),
+                          const Icon(
+                            Icons.arrow_drop_down,
+                            color: Colors.grey,
+                            size: 16,
+                          ),
                         ],
                       ),
                     ),
@@ -293,10 +320,7 @@ class TaskDetailHeader extends StatelessWidget {
                         final DateTime? end = updatedTask.endTime;
 
                         final String dateText =
-                            TimeFormatter.formatTaskDateTimeRange(
-                              start,
-                              end,
-                            );
+                            TimeFormatter.formatTaskDateTimeRange(start, end);
 
                         return GestureDetector(
                           onTap: () async {

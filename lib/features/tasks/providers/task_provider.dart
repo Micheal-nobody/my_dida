@@ -104,7 +104,9 @@ class TaskProvider with ChangeNotifier {
   Future<void> updateTags(Task task, List<String> newTags) async {
     await _taskLifecycleManager.updateTags(task, newTags);
     if (_cachedGlobalTags != null) {
-      final uniqueNewTags = newTags.where((t) => !_cachedGlobalTags!.contains(t)).toList();
+      final uniqueNewTags = newTags
+          .where((t) => !_cachedGlobalTags!.contains(t))
+          .toList();
       if (uniqueNewTags.isNotEmpty) {
         _cachedGlobalTags!.addAll(uniqueNewTags);
         _cachedGlobalTags!.sort();

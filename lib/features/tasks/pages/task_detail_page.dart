@@ -189,7 +189,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                           builder: (context, snapshot) {
                             if (snapshot.hasData && snapshot.data != null) {
                               return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 child: Row(
                                   children: [
                                     TextButton.icon(
@@ -275,32 +277,51 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                       // tags 显示区域（可包含多个 tag）
                       if (task.tags.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           child: Wrap(
                             spacing: 8,
                             runSpacing: 4,
-                            children: task.tags.map((tag) => ActionChip(
-                                label: Text(
-                                  tag,
-                                  style: const TextStyle(color: Colors.orange, fontSize: 13),
-                                ),
-                                backgroundColor: Colors.orange.withValues(alpha: 0.1),
-                                side: BorderSide.none,
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                onPressed: () async {
-                                  final allTags = await _taskProvider.getGlobalTags();
-                                  if (context.mounted) {
-                                    final newTags = await TagPickerDialog.show(
-                                      context,
-                                      initialTags: task.tags,
-                                      allTags: allTags,
-                                    );
-                                    if (newTags != null) {
-                                      await _taskProvider.execute(UpdateTags(task, newTags));
-                                    }
-                                  }
-                                },
-                              )).toList(),
+                            children: task.tags
+                                .map(
+                                  (tag) => ActionChip(
+                                    label: Text(
+                                      tag,
+                                      style: const TextStyle(
+                                        color: Colors.orange,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    backgroundColor: Colors.orange.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    side: BorderSide.none,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    onPressed: () async {
+                                      final allTags = await _taskProvider
+                                          .getGlobalTags();
+                                      if (context.mounted) {
+                                        final newTags =
+                                            await TagPickerDialog.show(
+                                              context,
+                                              initialTags: task.tags,
+                                              allTags: allTags,
+                                            );
+                                        if (newTags != null) {
+                                          await _taskProvider.execute(
+                                            UpdateTags(task, newTags),
+                                          );
+                                        }
+                                      }
+                                    },
+                                  ),
+                                )
+                                .toList(),
                           ),
                         ),
 

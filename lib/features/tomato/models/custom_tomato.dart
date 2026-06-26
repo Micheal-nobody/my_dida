@@ -15,4 +15,21 @@ class CustomTomato extends BaseEntity {
   @override
   String toString() =>
       'CustomTomato{id: $id, name: $name, focusMinutes: $focusMinutes}';
+
+  factory CustomTomato.fromJson(Map<String, dynamic> json) {
+    final tomato = CustomTomato(
+      name: json['name'] as String,
+      focusMinutes: json['focusMinutes'] as int,
+    );
+    if (json['id'] != null) {
+      tomato.id = json['id'] as int;
+    }
+    return tomato;
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id == Isar.autoIncrement ? null : id,
+    'name': name,
+    'focusMinutes': focusMinutes,
+  };
 }

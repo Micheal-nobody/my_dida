@@ -46,7 +46,9 @@ class TaskDetailBottomBar extends StatelessWidget {
                       allTags: allTags,
                     );
                     if (newTags != null) {
-                      await taskProvider.execute(UpdateTags(updatedTask, newTags));
+                      await taskProvider.execute(
+                        UpdateTags(updatedTask, newTags),
+                      );
                     }
                   }
                 },

@@ -1,9 +1,16 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
+import 'package:my_dida/core/constants/app_constants.dart';
+import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/services/data_transfer_service.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
+import 'package:my_dida/features/tasks/providers/task_provider.dart';
+import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
 import 'package:provider/provider.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -203,23 +210,33 @@ class SettingsPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(Dimensions.radiusL),
               side: const BorderSide(color: AppColors.border),
             ),
+
+            //TODO: 将以下 Column 的内容修改为：导入数据、导出数据、删除数据 三个功能模块
+            //TODO: 导出数据时弹出二次确认弹窗，提供到处路径预览以及修改功能
             child: Column(
               children: [
-                SwitchListTile(
-                  secondary: const Icon(Icons.sync),
-                  title: const Text('自动同步'),
-                  value: true,
-                  onChanged: (value) {},
+                ListTile(
+                  leading: const Icon(Icons.file_download_outlined),
+                  title: const Text('导入数据'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showImportDialog(context, checklistProvider),
                 ),
                 const Divider(height: 1, indent: 50, color: AppColors.border),
                 ListTile(
-                  leading: const Icon(Icons.refresh),
-                  title: const Text('立即同步'),
-                  onTap: () {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(const SnackBar(content: Text('正在同步数据...')));
-                  },
+                  leading: const Icon(Icons.file_upload_outlined),
+                  title: const Text('导出数据'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showExportDialog(context),
+                ),
+                const Divider(height: 1, indent: 50, color: AppColors.border),
+                ListTile(
+                  leading: const Icon(Icons.delete_outline, color: Colors.red),
+                  title: const Text(
+                    '删除数据',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  trailing: const Icon(Icons.chevron_right, color: Colors.red),
+                  onTap: () => _showDeleteDialog(context, checklistProvider),
                 ),
               ],
             ),
@@ -376,6 +393,291 @@ class SettingsPage extends StatelessWidget {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  void _showExportDialog(BuildContext context) async {
+    final transferService = getIt<DataTransferService>();
+    final defaultPath = await transferService.getDefaultExportPath();
+    final controller = TextEditingController(text: defaultPath);
+
+    if (!context.mounted) return;
+
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('导出数据'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('即将导出所有核心数据（任务、清单、习惯、打卡记录、番茄记录等）为本地备份文件。'),
+            const SizedBox(height: Dimensions.paddingM),
+            const Text(
+              '导出路径：',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            const SizedBox(height: Dimensions.paddingXS),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: '请输入导出文件绝对路径',
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: Dimensions.paddingS,
+                        vertical: Dimensions.paddingXS,
+                      ),
+                    ),
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ),
+                const SizedBox(width: Dimensions.paddingS),
+                IconButton(
+                  icon: const Icon(Icons.folder_open),
+                  onPressed: () async {
+                    try {
+                      final String? result = await FilePicker.platform.saveFile(
+                        dialogTitle: '选择备份文件保存位置',
+                        fileName: 'dida_backup.json',
+                        type: FileType.custom,
+                        allowedExtensions: ['json'],
+                      );
+                      if (result != null) {
+                        controller.text = result;
+                      }
+                    } on Object catch (_) {
+                      final String? directoryPath = await FilePicker.platform
+                          .getDirectoryPath();
+                      if (directoryPath != null) {
+                        controller.text =
+                            '$directoryPath${Platform.pathSeparator}dida_backup.json';
+                      }
+                    }
+                  },
+                  tooltip: '选择保存位置',
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final path = controller.text.trim();
+              if (path.isEmpty) {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(content: Text('路径不能为空')),
+                );
+                return;
+              }
+              Navigator.pop(dialogContext);
+              try {
+                await transferService.exportData(path);
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(content: Text('数据已成功导出至：$path')),
+                );
+              } on Object catch (e) {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(content: Text('数据导出失败：$e')),
+                );
+              }
+            },
+            child: const Text('确认导出'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showImportDialog(
+    BuildContext context,
+    ChecklistProvider checklistProvider,
+  ) async {
+    final transferService = getIt<DataTransferService>();
+    final defaultPath = await transferService.getDefaultExportPath();
+    final controller = TextEditingController(text: defaultPath);
+
+    if (!context.mounted) return;
+
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('导入数据'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '警告：导入备份数据将会清空当前应用中所有的核心业务数据！此操作无法撤销。',
+              style: TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: Dimensions.paddingM),
+            const Text(
+              '备份文件路径：',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            const SizedBox(height: Dimensions.paddingXS),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: '请输入备份文件绝对路径',
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: Dimensions.paddingS,
+                        vertical: Dimensions.paddingXS,
+                      ),
+                    ),
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ),
+                const SizedBox(width: Dimensions.paddingS),
+                IconButton(
+                  icon: const Icon(Icons.folder_open),
+                  onPressed: () async {
+                    final result = await FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['json'],
+                    );
+                    if (result != null && result.files.single.path != null) {
+                      controller.text = result.files.single.path!;
+                    }
+                  },
+                  tooltip: '选择备份文件',
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              final path = controller.text.trim();
+              if (path.isEmpty) {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(content: Text('路径不能为空')),
+                );
+                return;
+              }
+
+              final taskProvider = Provider.of<TaskProvider>(
+                context,
+                listen: false,
+              );
+              final tomatoProvider = Provider.of<TomatoProvider>(
+                context,
+                listen: false,
+              );
+
+              Navigator.pop(dialogContext);
+              try {
+                await transferService.importData(path);
+                await checklistProvider.loadAllChecklistes();
+                checklistProvider.updateCurChecklist(
+                  AppConstants.todayCheckList,
+                );
+                await taskProvider.updateCurrentTasks(
+                  AppConstants.todayCheckList,
+                );
+                await tomatoProvider.loadCustomTomatoes();
+
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(content: Text('数据导入成功，界面已更新')),
+                );
+              } on Object catch (e) {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(content: Text('数据导入失败：$e')),
+                );
+              }
+            },
+            child: const Text('确认导入并覆写'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteDialog(
+    BuildContext context,
+    ChecklistProvider checklistProvider,
+  ) async {
+    final transferService = getIt<DataTransferService>();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('删除所有数据'),
+        content: const Text(
+          '警告：该操作将永久删除您的所有任务、清单、习惯、打卡记录、番茄记录！此操作是不可逆的，确认要继续吗？',
+          style: TextStyle(color: Colors.red),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              final taskProvider = Provider.of<TaskProvider>(
+                context,
+                listen: false,
+              );
+              final tomatoProvider = Provider.of<TomatoProvider>(
+                context,
+                listen: false,
+              );
+
+              Navigator.pop(dialogContext);
+              try {
+                await transferService.clearData();
+                await checklistProvider.loadAllChecklistes();
+                checklistProvider.updateCurChecklist(
+                  AppConstants.todayCheckList,
+                );
+                await taskProvider.updateCurrentTasks(
+                  AppConstants.todayCheckList,
+                );
+                await tomatoProvider.loadCustomTomatoes();
+
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(content: Text('所有业务实体数据已成功清除')),
+                );
+              } on Object catch (e) {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(content: Text('删除数据失败：$e')),
+                );
+              }
+            },
+            child: const Text('确认删除'),
+          ),
+        ],
       ),
     );
   }

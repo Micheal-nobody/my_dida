@@ -20,10 +20,8 @@ class TagPickerDialog extends StatefulWidget {
   }) {
     return showDialog<List<String>>(
       context: context,
-      builder: (context) => TagPickerDialog(
-        initialTags: initialTags,
-        allTags: allTags,
-      ),
+      builder: (context) =>
+          TagPickerDialog(initialTags: initialTags, allTags: allTags),
     );
   }
 }
@@ -81,8 +79,11 @@ class _TagPickerDialogState extends State<TagPickerDialog> {
     }).toList();
 
     // Check if the exact search query exists in the list
-    final exactMatchExists = _allTags.any((tag) => tag.toLowerCase() == _searchQuery.trim().toLowerCase());
-    final showCreateOption = _searchQuery.trim().isNotEmpty && !exactMatchExists;
+    final exactMatchExists = _allTags.any(
+      (tag) => tag.toLowerCase() == _searchQuery.trim().toLowerCase(),
+    );
+    final showCreateOption =
+        _searchQuery.trim().isNotEmpty && !exactMatchExists;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -104,7 +105,10 @@ class _TagPickerDialogState extends State<TagPickerDialog> {
                   const Expanded(
                     child: Text(
                       '选择标签',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -127,7 +131,11 @@ class _TagPickerDialogState extends State<TagPickerDialog> {
                   prefixIcon: const Icon(Icons.search, color: Colors.grey),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
+                          icon: const Icon(
+                            Icons.clear,
+                            color: Colors.grey,
+                            size: 20,
+                          ),
                           onPressed: () {
                             setState(() {
                               _searchController.clear();
@@ -136,7 +144,10 @@ class _TagPickerDialogState extends State<TagPickerDialog> {
                           },
                         )
                       : null,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey.shade300),
@@ -168,14 +179,20 @@ class _TagPickerDialogState extends State<TagPickerDialog> {
                       leading: const Icon(Icons.add, color: Colors.orange),
                       title: Text(
                         '创建新标签 "${_searchQuery.trim()}"',
-                        style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          color: Colors.orange,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       onTap: () => _createAndSelectTag(_searchQuery),
                     ),
                   ...filteredTags.map((tag) {
                     final isSelected = _selectedTags.contains(tag);
                     return ListTile(
-                      leading: const Icon(Icons.label_outline, color: Colors.grey),
+                      leading: const Icon(
+                        Icons.label_outline,
+                        color: Colors.grey,
+                      ),
                       title: Text(tag),
                       trailing: Checkbox(
                         value: isSelected,

@@ -33,6 +33,7 @@ import 'package:my_dida/features/tasks/services/task_notification_navigation_ser
 import 'package:my_dida/features/tasks/services/task_operation_reverter.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_service.dart';
+import 'package:my_dida/core/services/data_transfer_service.dart';
 import 'package:my_dida/features/tomato/models/custom_tomato.dart';
 import 'package:my_dida/features/tomato/models/tomato_record.dart';
 import 'package:my_dida/features/tomato/repositories/custom_tomato_repository.dart';
@@ -116,7 +117,8 @@ Future<void> setupLocator(AppConfig config) async {
         operationStack: getIt<OperationStackProvider>(),
         messageService: getIt<AppMessageService>(),
       ),
-    );
+    )
+    ..registerSingleton<DataTransferService>(DataTransferService());
 
   logger.i('初始化 Isar 完成！');
   getIt<ActiveReminderMessageService>().initialize();

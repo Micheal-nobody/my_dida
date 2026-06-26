@@ -185,8 +185,16 @@ void main() {
       await Future.delayed(Duration.zero);
 
       // Create some tasks with tags
-      final task1 = Task(name: 'Task 1', isAllDay: false, tags: ['Work', 'Coding']);
-      final task2 = Task(name: 'Task 2', isAllDay: false, tags: ['Life', 'Coding']);
+      final task1 = Task(
+        name: 'Task 1',
+        isAllDay: false,
+        tags: ['Work', 'Coding'],
+      );
+      final task2 = Task(
+        name: 'Task 2',
+        isAllDay: false,
+        tags: ['Life', 'Coding'],
+      );
       await provider.execute(AddTask(task1));
       await provider.execute(AddTask(task2));
 
@@ -207,7 +215,11 @@ void main() {
       await provider.execute(DeleteTask(t2));
 
       final tags3 = await provider.getGlobalTags();
-      expect(tags3, ['Coding', 'Urgent', 'Work']); // Life is gone since Task 2 is deleted
+      expect(tags3, [
+        'Coding',
+        'Urgent',
+        'Work',
+      ]); // Life is gone since Task 2 is deleted
     });
   });
 }
