@@ -13,6 +13,8 @@ class CalendarWidgetValue {
     required this.selectedTime,
     required this.rrule,
     required this.isTimeOnlyDate,
+    this.reminderOffsets = const [],
+    this.notificationEnabled = false,
   });
 
   static const Object _sentinel = Object();
@@ -21,12 +23,16 @@ class CalendarWidgetValue {
   final TimeOfDay? selectedTime;
   final RepeatPattern rrule;
   final bool isTimeOnlyDate;
+  final List<int> reminderOffsets;
+  final bool notificationEnabled;
 
   CalendarWidgetValue copyWith({
     Object? selectedDate = _sentinel,
     Object? selectedTime = _sentinel,
     Object? rrule = _sentinel,
     bool? isTimeOnlyDate,
+    List<int>? reminderOffsets,
+    bool? notificationEnabled,
   }) => CalendarWidgetValue(
     selectedDate: identical(selectedDate, _sentinel)
         ? this.selectedDate
@@ -36,6 +42,8 @@ class CalendarWidgetValue {
         : selectedTime as TimeOfDay?,
     rrule: identical(rrule, _sentinel) ? this.rrule : rrule as RepeatPattern,
     isTimeOnlyDate: isTimeOnlyDate ?? this.isTimeOnlyDate,
+    reminderOffsets: reminderOffsets ?? this.reminderOffsets,
+    notificationEnabled: notificationEnabled ?? this.notificationEnabled,
   );
 }
 
@@ -80,11 +88,91 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     widget.onChanged(newValue);
   }
 
+  String _getReminderOptionLabel(int offset) {
+    if (offset == 0) return '任务开始时';
+    if (offset == 5) return '提前 5 分钟';
+    if (offset == 15) return '提前 15 分钟';
+    if (offset == 30) return '提前 30 分钟';
+    if (offset == 60) return '提前 1 小时';
+    if (offset == 120) return '提前 2 小时';
+    if (offset == 1440) return '提前 1 天';
+    return '提前 $offset 分钟';
+  }
+
+  Future<List<int>?> _showMultiReminderDialog(
+    BuildContext context,
+    List<int> currentOffsets,
+  ) async {
+    final List<Map<String, dynamic>> options = [
+      {'label': '任务开始时', 'value': 0},
+      {'label': '提前 5 分钟', 'value': 5},
+      {'label': '提前 15 分钟', 'value': 15},
+      {'label': '提前 30 分钟', 'value': 30},
+      {'label': '提前 1 小时', 'value': 60},
+      {'label': '提前 2 小时', 'value': 120},
+      {'label': '提前 1 天', 'value': 1440},
+    ];
+
+    final List<int> tempSelected = List.from(currentOffsets);
+
+    return showDialog<List<int>>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('提醒时间'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: options.map((opt) {
+                final int val = opt['value'];
+                final bool isChecked = tempSelected.contains(val);
+                return CheckboxListTile(
+                  title: Text(opt['label']),
+                  value: isChecked,
+                  activeColor: Colors.orange,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  onChanged: (checked) {
+                    setDialogState(() {
+                      if (checked == true) {
+                        if (!tempSelected.contains(val)) {
+                          tempSelected.add(val);
+                        }
+                      } else {
+                        tempSelected.remove(val);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消', style: TextStyle(color: Colors.orange)),
+            ),
+            TextButton(
+              onPressed: () {
+                tempSelected.sort();
+                Navigator.pop(context, tempSelected);
+              },
+              child: const Text('确定', style: TextStyle(color: Colors.orange)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final RepeatPattern displayRRule = _selectedRepeat != '无'
         ? mapSelectionToRepeatPattern(_selectedRepeat, _value.selectedDate)
         : const RepeatPattern.none();
+
+    final bool isTimeSelected = _value.selectedTime != null && !_value.isTimeOnlyDate;
+    final bool isRepeatSelected = !displayRRule.isNone;
+    final bool isReminderSelected = _value.notificationEnabled && _value.reminderOffsets.isNotEmpty;
 
     return SingleChildScrollView(
       child: Column(
@@ -101,12 +189,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           SelectionRow(
             icon: Icons.access_time,
             label: '时间',
-            value: _value.selectedTime != null && !_value.isTimeOnlyDate
+            value: isTimeSelected
                 ? '${_value.selectedTime!.hour.toString().padLeft(2, '0')}:${_value.selectedTime!.minute.toString().padLeft(2, '0')}'
                 : '无',
-            valueColor: _value.selectedTime != null && !_value.isTimeOnlyDate
-                ? Colors.orange
-                : null,
+            valueColor: isTimeSelected ? Colors.orange : null,
+            isSelected: isTimeSelected,
             onTap: () async {
               final pickedTime = await CustomTimePicker.show(
                 context: context,
@@ -117,13 +204,39 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               if (pickedTime == null) {
                 return;
               }
+              final newReminderOffsets = _value.reminderOffsets.isNotEmpty
+                  ? _value.reminderOffsets
+                  : [0];
               _updateValue(
                 _value.copyWith(
                   selectedTime: pickedTime,
                   rrule: _value.rrule,
                   isTimeOnlyDate: false,
+                  reminderOffsets: newReminderOffsets,
+                  notificationEnabled: true,
                 ),
               );
+            },
+          ),
+          const SizedBox(height: 16),
+          SelectionRow(
+            icon: Icons.notifications_active_outlined,
+            label: '提醒',
+            value: isReminderSelected
+                ? _value.reminderOffsets.map(_getReminderOptionLabel).join(', ')
+                : '无',
+            valueColor: isReminderSelected ? Colors.orange : null,
+            isSelected: isReminderSelected,
+            onTap: () async {
+              final selected = await _showMultiReminderDialog(context, _value.reminderOffsets);
+              if (selected != null) {
+                _updateValue(
+                  _value.copyWith(
+                    reminderOffsets: selected,
+                    notificationEnabled: selected.isNotEmpty,
+                  ),
+                );
+              }
             },
           ),
           const SizedBox(height: 16),
@@ -131,7 +244,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             icon: Icons.repeat,
             label: '重复',
             value: displayRRule.toReadableString(_value.selectedDate),
-            valueColor: !displayRRule.isNone ? Colors.orange : null,
+            valueColor: isRepeatSelected ? Colors.orange : null,
+            isSelected: isRepeatSelected,
             onTap: () async {
               final repeat = await CustomRepeatPicker.show(
                 context: context,

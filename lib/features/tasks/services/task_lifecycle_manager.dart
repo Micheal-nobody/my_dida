@@ -67,6 +67,7 @@ abstract class TaskLifecycleManager {
     Task task, {
     required bool enabled,
     int? offsetMinutes,
+    List<int>? reminderOffsets,
   });
 
   Future<void> deleteTask(Task task);
@@ -198,6 +199,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
       rrule: newTask.rrule,
       notificationEnabled: newTask.notificationEnabled,
       reminderOffsetMinutes: newTask.reminderOffsetMinutes,
+      reminderOffsets: newTask.reminderOffsets,
       priority: newTask.priority,
       tags: newTask.tags,
       checkpoints: newTask.checkpoints,
@@ -415,6 +417,9 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
       final nextReminderOffsetMinutes = nextNotificationEnabled
           ? (task.reminderOffsetMinutes ?? 0)
           : null;
+      final nextReminderOffsets = nextNotificationEnabled
+          ? (task.reminderOffsets.isNotEmpty ? task.reminderOffsets : [nextReminderOffsetMinutes ?? 0])
+          : <int>[];
       _taskReminderService.validateTaskReminderConfiguration(
         notificationEnabled: nextNotificationEnabled,
         reminderOffsetMinutes: nextReminderOffsetMinutes,
@@ -432,7 +437,8 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
           }
           draft
             ..notificationEnabled = nextNotificationEnabled
-            ..reminderOffsetMinutes = nextReminderOffsetMinutes;
+            ..reminderOffsetMinutes = nextReminderOffsetMinutes
+            ..reminderOffsets = nextReminderOffsets;
         },
         description:
             '${UIStrings.modifiedTimeRange}"${task.name}"${UIStrings.timeRangeSuffix}',
@@ -454,7 +460,8 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
             ..endTime = null
             ..rrule = const RepeatPattern.none()
             ..notificationEnabled = false
-            ..reminderOffsetMinutes = null;
+            ..reminderOffsetMinutes = null
+            ..reminderOffsets = [];
         },
         description: '清除了任务"${task.name}"的日程安排',
         syncReminder: true,
@@ -484,12 +491,18 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
     Task task, {
     required bool enabled,
     int? offsetMinutes,
+    List<int>? reminderOffsets,
   }) async {
     try {
-      final reminderOffsetMinutes = enabled ? offsetMinutes : null;
+      final nextReminderOffsetMinutes = enabled
+          ? (offsetMinutes ?? (reminderOffsets != null && reminderOffsets.isNotEmpty ? reminderOffsets.first : null))
+          : null;
+      final nextReminderOffsets = enabled
+          ? (reminderOffsets ?? (offsetMinutes != null ? [offsetMinutes] : <int>[]))
+          : <int>[];
       _taskReminderService.validateTaskReminderConfiguration(
         notificationEnabled: enabled,
-        reminderOffsetMinutes: reminderOffsetMinutes,
+        reminderOffsetMinutes: nextReminderOffsetMinutes,
         startTime: task.startTime,
         isAllDay: task.isAllDay,
       );
@@ -498,7 +511,8 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
         mutate: (draft) {
           draft
             ..notificationEnabled = enabled
-            ..reminderOffsetMinutes = reminderOffsetMinutes;
+            ..reminderOffsetMinutes = nextReminderOffsetMinutes
+            ..reminderOffsets = nextReminderOffsets;
         },
         description: '修改了任务"${task.name}"的提醒设置',
         syncReminder: true,
@@ -594,6 +608,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
     RepeatPattern? rrule,
     bool notificationEnabled = false,
     int? reminderOffsetMinutes,
+    List<int> reminderOffsets = const [],
     TaskPriority priority = TaskPriority.none,
     List<String> tags = const [],
     List<CheckPoint> checkpoints = const [],
@@ -622,6 +637,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
         rrule: rrule,
         notificationEnabled: notificationEnabled,
         reminderOffsetMinutes: reminderOffsetMinutes,
+        reminderOffsets: reminderOffsets,
         priority: priority,
         tags: tags,
         checkpoints: checkpoints,
@@ -712,6 +728,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
       rrule: task.rrule,
       notificationEnabled: task.notificationEnabled,
       reminderOffsetMinutes: task.reminderOffsetMinutes,
+      reminderOffsets: List.from(task.reminderOffsets),
     );
 
     await _taskRepository.addTask(newRecurring);
@@ -758,6 +775,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
       rrule: originalTask.rrule,
       notificationEnabled: originalTask.notificationEnabled,
       reminderOffsetMinutes: originalTask.reminderOffsetMinutes,
+      reminderOffsets: List.from(originalTask.reminderOffsets),
     );
 
     await _taskRepository.addTask(copiedTask);

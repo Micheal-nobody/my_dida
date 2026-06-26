@@ -15,11 +15,17 @@ class CustomDateTimePickerValue {
     this.isAllDay = false,
     this.rrule = const RepeatPattern.none(),
     this.isTimeOnlyDate = false,
+    this.reminderOffsets = const [],
+    this.notificationEnabled = false,
   });
 
   factory CustomDateTimePickerValue.cleared() {
     final now = DateTime.now().toBeijingTime().dateOnly;
-    return CustomDateTimePickerValue(selectedDate: now);
+    return CustomDateTimePickerValue(
+      selectedDate: now,
+      reminderOffsets: const [],
+      notificationEnabled: false,
+    );
   }
 
   static const Object _sentinel = Object();
@@ -32,6 +38,8 @@ class CustomDateTimePickerValue {
   final bool isAllDay;
   final RepeatPattern rrule;
   final bool isTimeOnlyDate;
+  final List<int> reminderOffsets;
+  final bool notificationEnabled;
 
   CustomDateTimePickerValue copyWith({
     Object? selectedDate = _sentinel,
@@ -42,6 +50,8 @@ class CustomDateTimePickerValue {
     bool? isAllDay,
     Object? rrule = _sentinel,
     bool? isTimeOnlyDate,
+    List<int>? reminderOffsets,
+    bool? notificationEnabled,
   }) => CustomDateTimePickerValue(
     selectedDate: identical(selectedDate, _sentinel)
         ? this.selectedDate
@@ -61,6 +71,8 @@ class CustomDateTimePickerValue {
     isAllDay: isAllDay ?? this.isAllDay,
     rrule: identical(rrule, _sentinel) ? this.rrule : rrule as RepeatPattern,
     isTimeOnlyDate: isTimeOnlyDate ?? this.isTimeOnlyDate,
+    reminderOffsets: reminderOffsets ?? this.reminderOffsets,
+    notificationEnabled: notificationEnabled ?? this.notificationEnabled,
   );
 }
 
@@ -178,6 +190,8 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
           ? (_value.startTime == null)
           : _value.isAllDay,
       rrule: _value.rrule,
+      reminderOffsets: _value.reminderOffsets,
+      notificationEnabled: _value.notificationEnabled,
     );
   }
 
@@ -231,6 +245,8 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
                     selectedTime: _value.startTime,
                     rrule: _value.rrule,
                     isTimeOnlyDate: _value.isTimeOnlyDate,
+                    reminderOffsets: _value.reminderOffsets,
+                    notificationEnabled: _value.notificationEnabled,
                   ),
                   onChanged: (calendarValue) {
                     setState(() {
@@ -243,6 +259,8 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
                         endDate: _value.endDate ?? calendarValue.selectedDate,
                         rrule: calendarValue.rrule,
                         isTimeOnlyDate: calendarValue.isTimeOnlyDate,
+                        reminderOffsets: calendarValue.reminderOffsets,
+                        notificationEnabled: calendarValue.notificationEnabled,
                       );
                     });
                   },

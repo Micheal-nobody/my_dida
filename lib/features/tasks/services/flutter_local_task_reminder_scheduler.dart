@@ -19,7 +19,7 @@ class FlutterLocalTaskReminderScheduler implements TaskReminderSchedulerPort {
 
     final scheduleMode = await _notificationService.resolveScheduleMode();
     await _notificationService.plugin.zonedSchedule(
-      plan.taskId,
+      plan.notificationId ?? plan.taskId,
       plan.title,
       plan.body,
       _notificationService.toTzDateTime(plan.triggerAt),
@@ -30,6 +30,10 @@ class FlutterLocalTaskReminderScheduler implements TaskReminderSchedulerPort {
   }
 
   @override
-  Future<void> cancelByTaskId(int taskId) =>
-      _notificationService.plugin.cancel(taskId);
+  Future<void> cancelByTaskId(int taskId) async {
+    await _notificationService.plugin.cancel(taskId);
+    for (int i = 0; i < 10; i++) {
+      await _notificationService.plugin.cancel(taskId * 10 + i);
+    }
+  }
 }

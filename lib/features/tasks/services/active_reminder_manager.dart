@@ -46,14 +46,17 @@ class ActiveReminderManager {
     try {
       final tasks = await _taskRepository.getActiveReminderTasks();
       for (final task in tasks) {
-        if (task.startTime != null &&
-            task.reminderOffsetMinutes != null &&
-            !task.isAllDay) {
-          final triggerAt = task.startTime!
-              .subtract(Duration(minutes: task.reminderOffsetMinutes!))
-              .toLocal();
-          if (triggerAt.isBefore(now)) {
-            _remindedKeys.add('${task.id}_${triggerAt.toIso8601String()}');
+        if (task.startTime != null && !task.isAllDay) {
+          final offsets = task.reminderOffsets.isNotEmpty
+              ? task.reminderOffsets
+              : (task.reminderOffsetMinutes != null ? [task.reminderOffsetMinutes!] : <int>[]);
+          for (final offset in offsets) {
+            final triggerAt = task.startTime!
+                .subtract(Duration(minutes: offset))
+                .toLocal();
+            if (triggerAt.isBefore(now)) {
+              _remindedKeys.add('${task.id}_${triggerAt.toIso8601String()}');
+            }
           }
         }
       }
@@ -69,18 +72,22 @@ class ActiveReminderManager {
 
       // Check normal reminders
       for (final task in tasks) {
-        if (task.startTime != null &&
-            task.reminderOffsetMinutes != null &&
-            !task.isAllDay) {
-          final triggerAt = task.startTime!
-              .subtract(Duration(minutes: task.reminderOffsetMinutes!))
-              .toLocal();
-          final key = '${task.id}_${triggerAt.toIso8601String()}';
-          final alreadyReminded = _remindedKeys.contains(key);
-          if ((now.isAfter(triggerAt) || now.isAtSameMomentAs(triggerAt)) &&
-              !alreadyReminded) {
-            _remindedKeys.add(key);
-            _activeTriggerController.add(task);
+        if (task.startTime != null && !task.isAllDay) {
+          final offsets = task.reminderOffsets.isNotEmpty
+              ? task.reminderOffsets
+              : (task.reminderOffsetMinutes != null ? [task.reminderOffsetMinutes!] : <int>[]);
+          
+          for (final offset in offsets) {
+            final triggerAt = task.startTime!
+                .subtract(Duration(minutes: offset))
+                .toLocal();
+            final key = '${task.id}_${triggerAt.toIso8601String()}';
+            final alreadyReminded = _remindedKeys.contains(key);
+            if ((now.isAfter(triggerAt) || now.isAtSameMomentAs(triggerAt)) &&
+                !alreadyReminded) {
+              _remindedKeys.add(key);
+              _activeTriggerController.add(task);
+            }
           }
         }
       }

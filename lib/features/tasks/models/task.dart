@@ -39,11 +39,15 @@ class Task extends RevertibleEntity {
     RepeatPattern? rrule,
     this.notificationEnabled = false,
     this.reminderOffsetMinutes,
+    this.reminderOffsets = const [],
     this.priority = TaskPriority.none,
     this.tags = const [],
   }) {
     if (rrule != null) {
       this.rrule = rrule;
+    }
+    if (reminderOffsetMinutes == null && reminderOffsets.isNotEmpty) {
+      reminderOffsetMinutes = reminderOffsets.first;
     }
   }
 
@@ -89,6 +93,9 @@ class Task extends RevertibleEntity {
       ),
       notificationEnabled: json['notificationEnabled'] == true,
       reminderOffsetMinutes: json['reminderOffsetMinutes'] as int?,
+      reminderOffsets: json['reminderOffsets'] != null
+          ? List<int>.from(json['reminderOffsets'] as List)
+          : const [],
       priority: json['priority'] != null
           ? TaskPriority.values[json['priority'] as int? ?? 0]
           : TaskPriority.none,
@@ -147,6 +154,9 @@ class Task extends RevertibleEntity {
   /// 距离开始时间提前多少分钟提醒
   int? reminderOffsetMinutes;
 
+  /// 多个提醒偏移时间（分钟）
+  List<int> reminderOffsets = [];
+
   /// 优先级：none-无, low-低, medium-中, high-高
   @Index()
   @enumerated
@@ -175,6 +185,7 @@ class Task extends RevertibleEntity {
     RepeatPattern? rrule,
     bool? notificationEnabled,
     int? reminderOffsetMinutes,
+    List<int>? reminderOffsets,
     TaskPriority? priority,
     List<String>? tags,
   }) {
@@ -197,6 +208,7 @@ class Task extends RevertibleEntity {
       notificationEnabled: notificationEnabled ?? this.notificationEnabled,
       reminderOffsetMinutes:
           reminderOffsetMinutes ?? this.reminderOffsetMinutes,
+      reminderOffsets: reminderOffsets ?? List<int>.from(this.reminderOffsets),
       priority: priority ?? this.priority,
       tags: tags ?? List<String>.from(this.tags),
     )..id = id;
@@ -219,6 +231,7 @@ class Task extends RevertibleEntity {
     'rrule': rruleString,
     'notificationEnabled': notificationEnabled,
     'reminderOffsetMinutes': reminderOffsetMinutes,
+    'reminderOffsets': reminderOffsets,
     'priority': priority.index,
     'tags': tags,
     'checkpoints': checkpoints

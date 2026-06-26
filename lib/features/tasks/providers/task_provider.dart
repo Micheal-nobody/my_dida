@@ -456,11 +456,13 @@ class TaskProvider with ChangeNotifier {
     Task task, {
     required bool enabled,
     int? offsetMinutes,
+    List<int>? reminderOffsets,
   }) async {
     await _taskLifecycleManager.updateTaskReminder(
       task,
       enabled: enabled,
       offsetMinutes: offsetMinutes,
+      reminderOffsets: reminderOffsets,
     );
   }
 
@@ -639,6 +641,7 @@ class TaskProvider with ChangeNotifier {
         op.task,
         enabled: op.enabled,
         offsetMinutes: op.offsetMinutes,
+        reminderOffsets: op.reminderOffsets,
       );
     } else if (op is DeleteTask) {
       await deleteTask(op.task);

@@ -105,9 +105,15 @@ class UpdateRRule extends TaskOperation {
 }
 
 class UpdateTaskReminder extends TaskOperation {
-  UpdateTaskReminder(super.task, {required this.enabled, this.offsetMinutes});
+  UpdateTaskReminder(
+    super.task, {
+    required this.enabled,
+    this.offsetMinutes,
+    this.reminderOffsets,
+  });
   final bool enabled;
   final int? offsetMinutes;
+  final List<int>? reminderOffsets;
 }
 
 class DeleteTask extends TaskOperation {

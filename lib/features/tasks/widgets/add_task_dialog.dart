@@ -10,8 +10,6 @@ import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/shared/widgets/datetime/custom_date_time_picker.dart';
-import 'package:my_dida/shared/widgets/datetime/custom_repeat_picker.dart';
-import 'package:my_dida/shared/widgets/datetime/repeat_picker_utils.dart';
 import 'package:provider/provider.dart';
 
 class AddTaskDialog extends StatefulWidget {
@@ -37,7 +35,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
 
   late CustomDateTimePickerValue _dateTimePickerValue;
   bool _notificationEnabled = false;
-  int? _reminderOffsetMinutes;
+  List<int> _reminderOffsets = [];
   TaskPriority _priority = TaskPriority.none;
   List<String> _tags = [];
   List<CheckPoint> _checkpoints = [];
@@ -70,6 +68,12 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       final taskStart = widget.presetTask!.startTime;
       final taskEnd = widget.presetTask!.endTime;
 
+      _notificationEnabled = widget.presetTask!.notificationEnabled;
+      _reminderOffsets = List.from(widget.presetTask!.reminderOffsets);
+      if (_reminderOffsets.isEmpty && widget.presetTask!.reminderOffsetMinutes != null) {
+        _reminderOffsets.add(widget.presetTask!.reminderOffsetMinutes!);
+      }
+
       _dateTimePickerValue = CustomDateTimePickerValue(
         selectedDate: taskStart?.dateOnly ?? now.toBeijingTime().dateOnly,
         startTime: taskStart != null && !taskStart.justDate()
@@ -82,9 +86,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         endDate: taskEnd?.dateOnly,
         isAllDay: widget.presetTask!.isAllDay,
         rrule: widget.presetTask!.rrule,
+        reminderOffsets: _reminderOffsets,
+        notificationEnabled: _notificationEnabled,
       );
-      _notificationEnabled = widget.presetTask!.notificationEnabled;
-      _reminderOffsetMinutes = widget.presetTask!.reminderOffsetMinutes;
 
       if (widget.presetTask!.checklistId != null) {
         _selectedChecklist = ChecklistVO(
@@ -97,6 +101,8 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       _dateTimePickerValue = CustomDateTimePickerValue(
         selectedDate: now.toBeijingTime().dateOnly,
         isAllDay: true,
+        reminderOffsets: const [],
+        notificationEnabled: false,
       );
     }
 
@@ -149,119 +155,14 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       setState(() {
         _dateTimePickerValue = result;
         if (result.startTime != null && !result.isAllDay) {
-          _notificationEnabled = true;
-          _reminderOffsetMinutes ??= 0;
+          _notificationEnabled = result.notificationEnabled;
+          _reminderOffsets = result.reminderOffsets;
         } else if (result.startTime == null || result.isAllDay) {
           _notificationEnabled = false;
-          _reminderOffsetMinutes = null;
+          _reminderOffsets = [];
         }
       });
     }
-  }
-
-  void _showReminderRepeatDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        String tempRepeat = rruleToSelection(_dateTimePickerValue.rrule);
-        int? tempOffset = _reminderOffsetMinutes;
-        bool tempNotify = _notificationEnabled;
-
-        return StatefulBuilder(
-          builder: (context, setDialogState) => AlertDialog(
-            title: const Text('提醒与重复'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  title: const Text('重复'),
-                  subtitle: Text(tempRepeat),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    final selected = await CustomRepeatPicker.show(
-                      context: context,
-                      selectedRepeat: tempRepeat,
-                      baseDate: _dateTimePickerValue.selectedDate,
-                    );
-                    if (selected != null) {
-                      setDialogState(() {
-                        tempRepeat = selected;
-                      });
-                    }
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  title: const Text('提醒时间'),
-                  subtitle: Text(
-                    tempNotify ? _getReminderDisplayText(tempOffset) : '无提醒',
-                  ),
-                  trailing: PopupMenuButton<int?>(
-                    initialValue: tempNotify ? tempOffset : null,
-                    onSelected: (val) {
-                      setDialogState(() {
-                        if (val == -1) {
-                          tempNotify = false;
-                          tempOffset = null;
-                        } else {
-                          tempNotify = true;
-                          tempOffset = val;
-                        }
-                      });
-                    },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(value: -1, child: Text('无提醒')),
-                      const PopupMenuItem(value: 0, child: Text('任务开始时')),
-                      const PopupMenuItem(value: 5, child: Text('提前 5 分钟')),
-                      const PopupMenuItem(value: 15, child: Text('提前 15 分钟')),
-                      const PopupMenuItem(value: 30, child: Text('提前 30 分钟')),
-                      const PopupMenuItem(value: 60, child: Text('提前 1 小时')),
-                      const PopupMenuItem(value: 120, child: Text('提前 2 小时')),
-                      const PopupMenuItem(value: 1440, child: Text('提前 1 天')),
-                    ],
-                    child: const Icon(Icons.arrow_drop_down),
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('取消', style: TextStyle(color: Colors.orange)),
-              ),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _dateTimePickerValue = _dateTimePickerValue.copyWith(
-                      rrule: mapSelectionToRepeatPattern(
-                        tempRepeat,
-                        _dateTimePickerValue.selectedDate,
-                      ),
-                    );
-                    _reminderOffsetMinutes = tempOffset;
-                    _notificationEnabled = tempNotify;
-                  });
-                  Navigator.pop(context);
-                },
-                child: const Text('确定', style: TextStyle(color: Colors.orange)),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  String _getReminderDisplayText(int? offset) {
-    if (offset == null) return '无提醒';
-    if (offset == 0) return '任务开始时';
-    if (offset == 5) return '提前 5 分钟';
-    if (offset == 15) return '提前 15 分钟';
-    if (offset == 30) return '提前 30 分钟';
-    if (offset == 60) return '提前 1 小时';
-    if (offset == 120) return '提前 2 小时';
-    if (offset == 1440) return '提前 1 天';
-    return '提前 $offset 分钟';
   }
 
   Future<void> _editTags() async {
@@ -430,7 +331,8 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       ..endTime = finalEnd
       ..rrule = _dateTimePickerValue.rrule
       ..notificationEnabled = _notificationEnabled
-      ..reminderOffsetMinutes = _reminderOffsetMinutes;
+      ..reminderOffsets = _reminderOffsets
+      ..reminderOffsetMinutes = _reminderOffsets.isNotEmpty ? _reminderOffsets.first : null;
 
     if (parentTask != null) {
       newTask
@@ -586,11 +488,11 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.48,
         ),
-        padding: EdgeInsets.only(
+        padding: const EdgeInsets.only(
           left: 16,
           right: 16,
           top: 16,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          bottom: 16,
         ),
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -604,9 +506,45 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    '添加任务',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  PopupMenuButton<TaskPriority>(
+                    initialValue: _priority,
+                    onSelected: (val) {
+                      setState(() {
+                        _priority = val;
+                      });
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(
+                        value: TaskPriority.high,
+                        child: Text('🔴 高优先级'),
+                      ),
+                      PopupMenuItem(
+                        value: TaskPriority.medium,
+                        child: Text('🟠 中优先级'),
+                      ),
+                      PopupMenuItem(
+                        value: TaskPriority.low,
+                        child: Text('🔵 低优先级'),
+                      ),
+                      PopupMenuItem(
+                        value: TaskPriority.none,
+                        child: Text('⚪ 无优先级'),
+                      ),
+                    ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.flag,
+                        size: 20,
+                        color: _priority == TaskPriority.high
+                            ? Colors.red
+                            : _priority == TaskPriority.medium
+                            ? Colors.orange
+                            : _priority == TaskPriority.low
+                            ? Colors.blue
+                            : Colors.grey[600],
+                      ),
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(
@@ -647,7 +585,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 maxLines: null,
                 style: TextStyle(fontSize: 14, color: Colors.grey[800]),
                 decoration: const InputDecoration(
-                  hintText: '添加描述或备注...',
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 4),
                 ),
@@ -698,46 +635,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                             onPressed: () => _showDateTimePicker(context),
                           ),
                           const SizedBox(width: 4),
-                          PopupMenuButton<TaskPriority>(
-                            initialValue: _priority,
-                            onSelected: (val) {
-                              setState(() {
-                                _priority = val;
-                              });
-                            },
-                            itemBuilder: (context) => const [
-                              PopupMenuItem(
-                                value: TaskPriority.high,
-                                child: Text('🔴 高优先级'),
-                              ),
-                              PopupMenuItem(
-                                value: TaskPriority.medium,
-                                child: Text('🟠 中优先级'),
-                              ),
-                              PopupMenuItem(
-                                value: TaskPriority.low,
-                                child: Text('🔵 低优先级'),
-                              ),
-                              PopupMenuItem(
-                                value: TaskPriority.none,
-                                child: Text('⚪ 无优先级'),
-                              ),
-                            ],
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Icon(
-                                Icons.flag,
-                                size: 20,
-                                color: _priority == TaskPriority.high
-                                    ? Colors.red
-                                    : _priority == TaskPriority.medium
-                                    ? Colors.orange
-                                    : _priority == TaskPriority.low
-                                    ? Colors.blue
-                                    : Colors.grey[600],
-                              ),
-                            ),
-                          ),
                           IconButton(
                             icon: Icon(
                               Icons.label_outline,
@@ -748,17 +645,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                             ),
                             onPressed: _editTags,
                           ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.notifications_active_outlined,
-                              size: 20,
-                              color: _notificationEnabled
-                                  ? Colors.orange
-                                  : Colors.grey[600],
-                            ),
-                            onPressed: () => _showReminderRepeatDialog(context),
-                            tooltip: '设置提醒与重复',
-                          ),
+
                           if (parentTask == null)
                             Consumer<ChecklistProvider>(
                               builder: (context, provider, child) {
@@ -828,18 +715,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.mic,
-                          color: Colors.grey[600],
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('语音录入功能暂未集成')),
-                          );
-                        },
-                      ),
                       IconButton(
                         icon: const Icon(
                           Icons.send,
@@ -1146,17 +1021,6 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
           icon: const Icon(Icons.check, color: Colors.orange),
           onPressed: () => _addTask(context),
           tooltip: '保存任务',
-        ),
-        PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
-          onSelected: (val) {
-            if (val == 'reminder') {
-              _showReminderRepeatDialog(context);
-            }
-          },
-          itemBuilder: (context) => const [
-            PopupMenuItem(value: 'reminder', child: Text('提醒与重复')),
-          ],
         ),
       ],
     ),

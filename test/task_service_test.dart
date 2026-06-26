@@ -170,6 +170,43 @@ void main() {
     );
 
     test(
+      'updateTaskReminder supports multiple reminders',
+      () async {
+        final provider = harness.createProvider();
+        final startTime = DateTime.now().add(const Duration(days: 2));
+
+        final task =
+            await provider.execute(
+                  AddTask(
+                    Task(
+                      name: 'Multi-Reminder Task',
+                      isAllDay: false,
+                      startTime: startTime,
+                      notificationEnabled: true,
+                      reminderOffsets: [0, 5, 15],
+                    ),
+                  ),
+                )
+                as Task;
+
+        expect(task.notificationEnabled, isTrue);
+        expect(task.reminderOffsets, [0, 5, 15]);
+        expect(scheduler.scheduledPlans, hasLength(3));
+        expect(scheduler.scheduledPlans[0].notificationId, task.id * 10 + 0);
+        expect(scheduler.scheduledPlans[1].notificationId, task.id * 10 + 1);
+        expect(scheduler.scheduledPlans[2].notificationId, task.id * 10 + 2);
+
+        // Update task reminder with new list of offsets
+        await provider.execute(UpdateTaskReminder(task, enabled: true, reminderOffsets: [30, 60]));
+
+        final reloaded = await harness.taskRepository.selectById(task.id);
+        expect(reloaded?.notificationEnabled, isTrue);
+        expect(reloaded?.reminderOffsets, [30, 60]);
+        expect(scheduler.canceledTaskIds, contains(task.id));
+      },
+    );
+
+    test(
       'clearTaskSchedule clears reminder config and cancels reminder',
       () async {
         final provider = harness.createProvider();

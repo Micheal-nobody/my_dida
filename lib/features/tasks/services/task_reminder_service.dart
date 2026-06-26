@@ -28,10 +28,13 @@ class TaskReminderService {
 
   /// 核心命令式高杠杆 API：同步任务的本地提醒状态
   Future<void> syncReminder(Task task, {DateTime? now}) async {
-    final plan = _buildPlan(task, now: now);
-    if (plan == null) {
-      await _scheduler.cancelByTaskId(task.id);
-    } else {
+    await _scheduler.cancelByTaskId(task.id);
+    if (!task.notificationEnabled || task.isDone || task.isAllDay || task.startTime == null) {
+      return;
+    }
+
+    final plans = _buildPlans(task, now: now);
+    for (final plan in plans) {
       await _scheduler.schedule(plan);
     }
   }
@@ -41,44 +44,44 @@ class TaskReminderService {
     await _scheduler.cancelByTaskId(taskId);
   }
 
-  TaskReminderPlan? _buildPlan(Task task, {DateTime? now}) {
-    if (!_hasSchedulableReminder(task)) {
-      return null;
-    }
-
-    try {
-      validateTaskReminderConfiguration(
-        notificationEnabled: task.notificationEnabled,
-        reminderOffsetMinutes: task.reminderOffsetMinutes,
-        startTime: task.startTime,
-        isAllDay: task.isAllDay,
-      );
-    } on ValidationException {
-      return null;
-    }
-
-    final triggerAt = task.startTime!.subtract(
-      Duration(minutes: task.reminderOffsetMinutes!),
-    );
+  List<TaskReminderPlan> _buildPlans(Task task, {DateTime? now}) {
+    final List<TaskReminderPlan> plans = [];
     final comparisonTime = now ?? DateTime.now();
-    if (!triggerAt.isAfter(comparisonTime)) {
-      return null;
+
+    final offsets = task.reminderOffsets.isNotEmpty
+        ? task.reminderOffsets
+        : (task.reminderOffsetMinutes != null ? [task.reminderOffsetMinutes!] : <int>[]);
+
+    for (int i = 0; i < offsets.length; i++) {
+      final offset = offsets[i];
+      try {
+        validateTaskReminderConfiguration(
+          notificationEnabled: task.notificationEnabled,
+          reminderOffsetMinutes: offset,
+          startTime: task.startTime,
+          isAllDay: task.isAllDay,
+        );
+      } on ValidationException {
+        continue;
+      }
+
+      final triggerAt = task.startTime!.subtract(
+        Duration(minutes: offset),
+      );
+      if (!triggerAt.isAfter(comparisonTime)) {
+        continue;
+      }
+
+      // 通知栏无法渲染 Markdown，剥离标记后降级展示纯文本
+      final plainBody = MarkdownUtils.stripMarkdown(task.description).trim();
+      plans.add(TaskReminderPlan(
+        taskId: task.id,
+        triggerAt: triggerAt,
+        title: task.name,
+        body: plainBody.isEmpty ? null : plainBody,
+        notificationId: task.id * 10 + i,
+      ));
     }
-
-    // 通知栏无法渲染 Markdown，剥离标记后降级展示纯文本
-    final plainBody = MarkdownUtils.stripMarkdown(task.description).trim();
-    return TaskReminderPlan(
-      taskId: task.id,
-      triggerAt: triggerAt,
-      title: task.name,
-      body: plainBody.isEmpty ? null : plainBody,
-    );
+    return plans;
   }
-
-  bool _hasSchedulableReminder(Task task) =>
-      task.notificationEnabled &&
-      !task.isDone &&
-      !task.isAllDay &&
-      task.startTime != null &&
-      task.reminderOffsetMinutes != null;
 }
