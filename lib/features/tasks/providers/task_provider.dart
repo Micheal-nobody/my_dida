@@ -47,6 +47,7 @@ class TaskProvider with ChangeNotifier {
   List<Task> _tasks = [];
   List<Task> _currentTasks = [];
   StreamSubscription<List<Task>>? _currentTasksSubscription;
+  List<String>? _cachedGlobalTags;
 
   List<Task> get tasks => _tasks;
 
@@ -102,6 +103,13 @@ class TaskProvider with ChangeNotifier {
 
   Future<void> updateTags(Task task, List<String> newTags) async {
     await _taskLifecycleManager.updateTags(task, newTags);
+    if (_cachedGlobalTags != null) {
+      final uniqueNewTags = newTags.where((t) => !_cachedGlobalTags!.contains(t)).toList();
+      if (uniqueNewTags.isNotEmpty) {
+        _cachedGlobalTags!.addAll(uniqueNewTags);
+        _cachedGlobalTags!.sort();
+      }
+    }
   }
 
   Map<String, List<Task>> getGroupedCurrentTasks(
@@ -293,6 +301,16 @@ class TaskProvider with ChangeNotifier {
     super.dispose();
   }
 
+  Future<List<String>> getGlobalTags() async {
+    if (_cachedGlobalTags != null) {
+      return _cachedGlobalTags!;
+    }
+    final allTasks = await _taskRepository.selectAll();
+    final tags = allTasks.expand((t) => t.tags).toSet().toList()..sort();
+    _cachedGlobalTags = tags;
+    return tags;
+  }
+
   Future<Task?> getTaskById(int id) => _taskRepository.selectById(id);
 
   Future<List<Task>> getTasksByIds(List<int> ids) async {
@@ -340,8 +358,10 @@ class TaskProvider with ChangeNotifier {
   // 写入方法 (完全委派给 TaskService 处理，随后刷新本地状态与缓存)
   // ==================================================================
 
-  Future<Task> addTask(Task newTask) async =>
-      _taskLifecycleManager.addTask(newTask);
+  Future<Task> addTask(Task newTask) async {
+    _cachedGlobalTags = null;
+    return _taskLifecycleManager.addTask(newTask);
+  }
 
   Future<void> updateTaskIsDone(Task task, bool value) async {
     await _taskLifecycleManager.updateTaskIsDone(task, value);
@@ -513,6 +533,7 @@ class TaskProvider with ChangeNotifier {
 
   Future<void> deleteTask(Task task) async {
     try {
+      _cachedGlobalTags = null;
       if (currentChecklist != null && currentChecklist!.isTrash) {
         await _taskLifecycleManager.deletePermanently(task);
         return;
@@ -524,6 +545,7 @@ class TaskProvider with ChangeNotifier {
   }
 
   Future<void> restoreTask(Task task) async {
+    _cachedGlobalTags = null;
     await _taskLifecycleManager.restoreTask(task);
   }
 

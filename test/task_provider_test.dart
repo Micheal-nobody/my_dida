@@ -180,5 +180,34 @@ void main() {
       expect(counts3[-2], 0); // Tomorrow now has 0
       expect(counts3[-6], 1); // Trash has 1 task (deleted task operation)
     });
+
+    test('getGlobalTags retrieves and caches all unique tags', () async {
+      await Future.delayed(Duration.zero);
+
+      // Create some tasks with tags
+      final task1 = Task(name: 'Task 1', isAllDay: false, tags: ['Work', 'Coding']);
+      final task2 = Task(name: 'Task 2', isAllDay: false, tags: ['Life', 'Coding']);
+      await provider.execute(AddTask(task1));
+      await provider.execute(AddTask(task2));
+
+      // Fetch global tags - should be sorted alphabetically
+      final tags = await provider.getGlobalTags();
+      expect(tags, ['Coding', 'Life', 'Work']);
+
+      // updateTags should incrementally update cache
+      final tasks = await harness.taskRepository.getAllData();
+      final t1 = tasks.firstWhere((t) => t.name == 'Task 1');
+      await provider.execute(UpdateTags(t1, ['Work', 'Coding', 'Urgent']));
+
+      final tags2 = await provider.getGlobalTags();
+      expect(tags2, ['Coding', 'Life', 'Urgent', 'Work']);
+
+      // deleteTask should clear the cache and trigger a reload
+      final t2 = tasks.firstWhere((t) => t.name == 'Task 2');
+      await provider.execute(DeleteTask(t2));
+
+      final tags3 = await provider.getGlobalTags();
+      expect(tags3, ['Coding', 'Urgent', 'Work']); // Life is gone since Task 2 is deleted
+    });
   });
 }
