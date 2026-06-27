@@ -12,8 +12,8 @@ import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/shared/widgets/datetime/custom_date_time_picker.dart';
 import 'package:provider/provider.dart';
 
-class AddTaskDialog extends StatefulWidget {
-  const AddTaskDialog({
+class AddTaskBottomSheet extends StatefulWidget {
+  const AddTaskBottomSheet({
     super.key,
     this.parentTask,
     this.presetTask,
@@ -25,10 +25,10 @@ class AddTaskDialog extends StatefulWidget {
   final bool initialIsFullScreen;
 
   @override
-  State<AddTaskDialog> createState() => _AddTaskDialogState();
+  State<AddTaskBottomSheet> createState() => _AddTaskBottomSheetState();
 }
 
-class _AddTaskDialogState extends State<AddTaskDialog> {
+class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   late final Task? parentTask;
@@ -954,7 +954,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom,
                 ),
-                child: AddTaskDialog(
+                child: AddTaskBottomSheet(
                   presetTask: _buildTaskFromForm(
                     taskName: _textController.text.trim(),
                     checklistProvider: context.read<ChecklistProvider>(),

@@ -205,8 +205,8 @@ final Map<String, String> pathMappings = {
       'package:my_dida/features/tasks/widgets/task_drawer.dart',
   'package:my_dida/features/cards/task_card.dart':
       'package:my_dida/features/tasks/widgets/task_card.dart',
-  'package:my_dida/features/dialogs/add_task_dialog.dart':
-      'package:my_dida/features/tasks/widgets/add_task_dialog.dart',
+  'package:my_dida/features/dialogs/add_task_bottom_sheet.dart':
+      'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart',
   'package:my_dida/features/dialogs/associate_main_task_dialog.dart':
       'package:my_dida/features/tasks/widgets/associate_main_task_dialog.dart',
   'package:my_dida/features/task_detail/task_detail_page.dart':

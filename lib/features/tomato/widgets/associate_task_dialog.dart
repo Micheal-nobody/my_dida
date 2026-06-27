@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
-import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
+import 'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -127,7 +127,7 @@ class _AssociateTaskDialogState extends State<AssociateTaskDialog> {
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: const AddTaskDialog(),
+        child: const AddTaskBottomSheet(),
       ),
     ).then((_) {
       // 任务创建后刷新任务列表，在UI上触发重新渲染

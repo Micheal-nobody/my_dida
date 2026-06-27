@@ -3,7 +3,7 @@ import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
-import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
+import 'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart';
 import 'package:my_dida/features/tasks/widgets/task_card.dart';
 import 'package:provider/provider.dart';
 
@@ -239,7 +239,7 @@ class BoardView extends StatelessWidget {
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: AddTaskDialog(presetTask: presetTask),
+        child: AddTaskBottomSheet(presetTask: presetTask),
       ),
     );
   }

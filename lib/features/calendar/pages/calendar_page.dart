@@ -19,7 +19,7 @@ import 'package:my_dida/features/habits/widgets/habit_check_in_dialog.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
-import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
+import 'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart';
 import 'package:my_dida/shared/widgets/datetime/calendar_grid.dart';
 import 'package:my_dida/shared/widgets/datetime/custom_date_picker_dialog.dart';
 import 'package:my_dida/shared/widgets/datetime/time_axis_column.dart';
@@ -899,7 +899,7 @@ class _CalendarPageState extends State<CalendarPage> {
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
-              child: AddTaskDialog(
+              child: AddTaskBottomSheet(
                 presetTask: Task(
                   name: '',
                   isAllDay: true,

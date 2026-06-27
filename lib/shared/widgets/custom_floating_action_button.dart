@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/features/tasks/widgets/add_task_dialog.dart';
+import 'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart';
 
 class CustomFloatingActionButton extends StatelessWidget {
   const CustomFloatingActionButton({super.key});
@@ -17,7 +17,7 @@ class CustomFloatingActionButton extends StatelessWidget {
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          child: const AddTaskDialog(),
+          child: const AddTaskBottomSheet(),
         ),
       );
     },
