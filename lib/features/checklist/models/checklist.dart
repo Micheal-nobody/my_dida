@@ -19,6 +19,10 @@ class Checklist extends RevertibleEntity {
   String name;
   int colorValue; // 任务列表的颜色
 
+  @ignore
+  @override
+  String get displayName => name;
+
   @override
   Map<String, dynamic> toJson() => {
     'id': id,

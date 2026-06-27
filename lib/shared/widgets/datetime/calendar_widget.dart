@@ -170,9 +170,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         ? mapSelectionToRepeatPattern(_selectedRepeat, _value.selectedDate)
         : const RepeatPattern.none();
 
-    final bool isTimeSelected = _value.selectedTime != null && !_value.isTimeOnlyDate;
+    final bool isTimeSelected =
+        _value.selectedTime != null && !_value.isTimeOnlyDate;
     final bool isRepeatSelected = !displayRRule.isNone;
-    final bool isReminderSelected = _value.notificationEnabled && _value.reminderOffsets.isNotEmpty;
+    final bool isReminderSelected =
+        _value.notificationEnabled && _value.reminderOffsets.isNotEmpty;
 
     return SingleChildScrollView(
       child: Column(
@@ -186,7 +188,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             },
             dayBuilder: (context, dayDate, isSelected) {
               final now = DateTime.now().toBeijingTime();
-              final isToday = dayDate.year == now.year &&
+              final isToday =
+                  dayDate.year == now.year &&
                   dayDate.month == now.month &&
                   dayDate.day == now.day;
               return Container(
@@ -202,7 +205,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   child: Text(
                     dayDate.day.toString(),
                     style: TextStyle(
-                      color: (isSelected || isToday) ? Colors.white : Colors.black,
+                      color: (isSelected || isToday)
+                          ? Colors.white
+                          : Colors.black,
                       fontWeight: (isSelected || isToday)
                           ? FontWeight.bold
                           : FontWeight.normal,
@@ -253,7 +258,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             valueColor: isReminderSelected ? Colors.orange : null,
             isSelected: isReminderSelected,
             onTap: () async {
-              final selected = await _showMultiReminderDialog(context, _value.reminderOffsets);
+              final selected = await _showMultiReminderDialog(
+                context,
+                _value.reminderOffsets,
+              );
               if (selected != null) {
                 _updateValue(
                   _value.copyWith(

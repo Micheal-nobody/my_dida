@@ -1,6 +1,46 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
+import 'package:my_dida/features/operation_undo/services/operation_data_renderer.dart';
+
+/// 习惯数据渲染器实现
+class HabitOperationDataRenderer implements OperationDataRenderer {
+  @override
+  Widget render(
+    BuildContext context,
+    String jsonData, {
+    required bool isPreviousData,
+  }) {
+    try {
+      final decoded = jsonDecode(jsonData);
+      // 处理删除习惯操作中的嵌套 habit 数据，或者普通的 habit 数据
+      final habitMap =
+          decoded is Map<String, dynamic> && decoded.containsKey('habit')
+          ? decoded['habit'] as Map<String, dynamic>
+          : decoded as Map<String, dynamic>;
+
+      final habit = Habit.fromJson(habitMap);
+      return OperationHabitRenderer(
+        habit: habit,
+        isPreviousData: isPreviousData,
+      );
+    } catch (e) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Text(
+          jsonData,
+          style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+        ),
+      );
+    }
+  }
+}
 
 /// 用于在操作详情中渲染Habit的组件
 class OperationHabitRenderer extends StatelessWidget {

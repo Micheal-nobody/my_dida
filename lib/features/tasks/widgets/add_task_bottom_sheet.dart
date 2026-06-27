@@ -70,7 +70,8 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
 
       _notificationEnabled = widget.presetTask!.notificationEnabled;
       _reminderOffsets = List.from(widget.presetTask!.reminderOffsets);
-      if (_reminderOffsets.isEmpty && widget.presetTask!.reminderOffsetMinutes != null) {
+      if (_reminderOffsets.isEmpty &&
+          widget.presetTask!.reminderOffsetMinutes != null) {
         _reminderOffsets.add(widget.presetTask!.reminderOffsetMinutes!);
       }
 
@@ -332,7 +333,9 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
       ..rrule = _dateTimePickerValue.rrule
       ..notificationEnabled = _notificationEnabled
       ..reminderOffsets = _reminderOffsets
-      ..reminderOffsetMinutes = _reminderOffsets.isNotEmpty ? _reminderOffsets.first : null;
+      ..reminderOffsetMinutes = _reminderOffsets.isNotEmpty
+          ? _reminderOffsets.first
+          : null;
 
     if (parentTask != null) {
       newTask

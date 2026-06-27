@@ -116,12 +116,34 @@ class HabitLifecycleManagerImpl implements HabitLifecycleManager {
     }
   }
 
+  static Operation _createCheckInOperation(Habit habit) => Operation(
+    type: OperationType.update,
+    target: OperationTarget.habit,
+    timestamp: DateTime.now(),
+    description: '完成了习惯"${habit.name}"的打卡',
+    targetId: habit.id,
+    previousData: jsonEncode(habit.toJson()),
+    newData: jsonEncode(
+      (Habit(
+        name: habit.name,
+        icon: habit.icon,
+        remindTime: habit.remindTime,
+        checkInCount: habit.checkInCount,
+        currentCheckInCount: habit.currentCheckInCount + 1,
+        startDate: habit.startDate,
+        totalCheckInCount: habit.totalCheckInCount + 1,
+        longestContinuousCheckInDays: habit.longestContinuousCheckInDays,
+        rrule: habit.rrule,
+      )..id = habit.id).toJson(),
+    ),
+  );
+
   @override
   Future<void> checkIn(Habit habit, {double? value}) async {
     try {
       final double increment = value ?? 1.0;
       // 记录打卡操作
-      final operation = Operation.createCheckInOperation(habit);
+      final operation = _createCheckInOperation(habit);
       await _operationStack.addOperation(operation);
 
       // 领域逻辑：修改实体字段后持久化

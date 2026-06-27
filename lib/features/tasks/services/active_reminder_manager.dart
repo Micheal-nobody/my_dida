@@ -49,7 +49,9 @@ class ActiveReminderManager {
         if (task.startTime != null && !task.isAllDay) {
           final offsets = task.reminderOffsets.isNotEmpty
               ? task.reminderOffsets
-              : (task.reminderOffsetMinutes != null ? [task.reminderOffsetMinutes!] : <int>[]);
+              : (task.reminderOffsetMinutes != null
+                    ? [task.reminderOffsetMinutes!]
+                    : <int>[]);
           for (final offset in offsets) {
             final triggerAt = task.startTime!
                 .subtract(Duration(minutes: offset))
@@ -75,8 +77,10 @@ class ActiveReminderManager {
         if (task.startTime != null && !task.isAllDay) {
           final offsets = task.reminderOffsets.isNotEmpty
               ? task.reminderOffsets
-              : (task.reminderOffsetMinutes != null ? [task.reminderOffsetMinutes!] : <int>[]);
-          
+              : (task.reminderOffsetMinutes != null
+                    ? [task.reminderOffsetMinutes!]
+                    : <int>[]);
+
           for (final offset in offsets) {
             final triggerAt = task.startTime!
                 .subtract(Duration(minutes: offset))

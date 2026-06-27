@@ -20,6 +20,10 @@ import 'package:my_dida/features/habits/services/habit_operation_reverter.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
 import 'package:my_dida/features/operation_undo/services/operation_reverter.dart';
+import 'package:my_dida/features/operation_undo/services/operation_data_renderer.dart';
+import 'package:my_dida/features/tasks/widgets/operation_task_renderer.dart';
+import 'package:my_dida/features/habits/widgets/operation_habit_renderer.dart';
+import 'package:my_dida/features/checklist/widgets/operation_checklist_renderer.dart';
 import 'package:my_dida/features/settings/models/sidebar_config.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
@@ -80,6 +84,13 @@ Future<void> setupLocator(AppConfig config) async {
         ..register(OperationTarget.task, TaskOperationReverter())
         ..register(OperationTarget.habit, HabitOperationReverter())
         ..register(OperationTarget.checklist, ChecklistOperationReverter()),
+    )
+    // 注册并配置多态数据渲染器注册表
+    ..registerSingleton<OperationRendererRegistry>(
+      OperationRendererRegistry()
+        ..register(OperationTarget.task, TaskOperationDataRenderer())
+        ..register(OperationTarget.habit, HabitOperationDataRenderer())
+        ..register(OperationTarget.checklist, ChecklistOperationDataRenderer()),
     )
     // 注册泛化撤销实例适配器（取代原本两个 instanceName 子类）
     ..registerSingleton<OperationReverter>(GenericOperationReverter())

@@ -1,8 +1,39 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/operation_undo/services/operation_data_renderer.dart';
 import 'package:provider/provider.dart';
+
+/// 任务数据渲染器实现
+class TaskOperationDataRenderer implements OperationDataRenderer {
+  @override
+  Widget render(
+    BuildContext context,
+    String jsonData, {
+    required bool isPreviousData,
+  }) {
+    try {
+      final data = jsonDecode(jsonData);
+      final task = Task.fromJson(data);
+      return OperationTaskRenderer(task: task, isPreviousData: isPreviousData);
+    } catch (e) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Text(
+          jsonData,
+          style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+        ),
+      );
+    }
+  }
+}
 
 /// 用于在操作详情中渲染Task的组件
 class OperationTaskRenderer extends StatelessWidget {

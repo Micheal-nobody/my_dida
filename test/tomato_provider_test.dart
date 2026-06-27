@@ -71,9 +71,7 @@ void main() {
 
   group('TomatoProvider 计时状态测试', () {
     test('初始状态应该为空闲，计时为25分钟', () {
-      final provider = TomatoProvider(
-        tomatoRecordRepository: tomatoRepository,
-      );
+      final provider = TomatoProvider(tomatoRecordRepository: tomatoRepository);
 
       expect(provider.status, TomatoStatus.idle);
       expect(provider.duration, 25 * 60);
@@ -82,9 +80,7 @@ void main() {
     });
 
     test('选择不同快捷时间应该改变计时时长', () {
-      final provider = TomatoProvider(
-        tomatoRecordRepository: tomatoRepository,
-      );
+      final provider = TomatoProvider(tomatoRecordRepository: tomatoRepository);
 
       provider.selectShortBreak();
       expect(provider.status, TomatoStatus.shortBreak);
@@ -100,9 +96,7 @@ void main() {
     });
 
     test('关联任务应该更新 associatedTask 属性', () {
-      final provider = TomatoProvider(
-        tomatoRecordRepository: tomatoRepository,
-      );
+      final provider = TomatoProvider(tomatoRecordRepository: tomatoRepository);
 
       final task = Task(name: '测试专注任务', isAllDay: true);
       provider.setAssociatedTask(task);
@@ -114,9 +108,7 @@ void main() {
     });
 
     test('开始计时应该切换状态为专注中并启动运行', () {
-      final provider = TomatoProvider(
-        tomatoRecordRepository: tomatoRepository,
-      );
+      final provider = TomatoProvider(tomatoRecordRepository: tomatoRepository);
 
       provider.start();
       expect(provider.status, TomatoStatus.focus);
@@ -135,9 +127,7 @@ void main() {
     });
 
     test('在未开始专注前放弃番茄钟不应该记录在数据库', () async {
-      final provider = TomatoProvider(
-        tomatoRecordRepository: tomatoRepository,
-      );
+      final provider = TomatoProvider(tomatoRecordRepository: tomatoRepository);
 
       await provider.abandon();
       final records = await tomatoRepository.selectAll();

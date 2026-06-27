@@ -1,5 +1,45 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
+import 'package:my_dida/features/operation_undo/services/operation_data_renderer.dart';
+
+/// 清单数据渲染器实现
+class ChecklistOperationDataRenderer implements OperationDataRenderer {
+  @override
+  Widget render(
+    BuildContext context,
+    String jsonData, {
+    required bool isPreviousData,
+  }) {
+    try {
+      final decoded = jsonDecode(jsonData);
+      // 处理删除清单操作中的嵌套 checklist 数据，或者普通的 checklist 数据
+      final checklistMap =
+          decoded is Map<String, dynamic> && decoded.containsKey('checklist')
+          ? decoded['checklist'] as Map<String, dynamic>
+          : decoded as Map<String, dynamic>;
+
+      final checklist = Checklist.fromJson(checklistMap);
+      return OperationChecklistRenderer(
+        checklist: checklist,
+        isPreviousData: isPreviousData,
+      );
+    } catch (e) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Text(
+          jsonData,
+          style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+        ),
+      );
+    }
+  }
+}
 
 /// 用于在操作详情中渲染 Checklist 的组件
 class OperationChecklistRenderer extends StatelessWidget {

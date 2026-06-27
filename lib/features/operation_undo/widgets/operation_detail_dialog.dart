@@ -1,15 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:my_dida/features/checklist/models/checklist.dart';
-import 'package:my_dida/features/habits/models/habit.dart';
+import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
-import 'package:my_dida/features/operation_undo/widgets/operation_checklist_renderer.dart';
-import 'package:my_dida/features/operation_undo/widgets/operation_habit_renderer.dart';
-import 'package:my_dida/features/operation_undo/widgets/operation_task_renderer.dart';
-import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
+import 'package:my_dida/features/operation_undo/services/operation_data_renderer.dart';
 import 'package:provider/provider.dart';
 
 class OperationDetailDialog extends StatelessWidget {
@@ -122,51 +115,14 @@ class OperationDetailDialog extends StatelessWidget {
   );
 
   Widget _buildDataRenderer(
+    BuildContext context,
     String jsonData,
     OperationTarget target,
     bool isPreviousData,
   ) {
-    try {
-      final data = jsonDecode(jsonData);
-
-      if (target == OperationTarget.task) {
-        final task = _createTaskFromJson(data);
-        if (task != null) {
-          return OperationTaskRenderer(
-            task: task,
-            isPreviousData: isPreviousData,
-          );
-        }
-      } else if (target == OperationTarget.habit) {
-        final habit = _createHabitFromJson(data);
-        if (habit != null) {
-          return OperationHabitRenderer(
-            habit: habit,
-            isPreviousData: isPreviousData,
-          );
-        }
-      } else if (target == OperationTarget.checklist) {
-        final checklist = _createChecklistFromJson(data);
-        if (checklist != null) {
-          return OperationChecklistRenderer(
-            checklist: checklist,
-            isPreviousData: isPreviousData,
-          );
-        }
-      }
-    } catch (e) {
-      return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
-        ),
-        child: Text(
-          jsonData,
-          style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-        ),
-      );
+    final renderer = getIt<OperationRendererRegistry>().getRenderer(target);
+    if (renderer != null) {
+      return renderer.render(context, jsonData, isPreviousData: isPreviousData);
     }
 
     return Container(
@@ -181,71 +137,6 @@ class OperationDetailDialog extends StatelessWidget {
         style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
       ),
     );
-  }
-
-  Task? _createTaskFromJson(Map<String, dynamic> data) {
-    try {
-      return Task(
-        name: data['name']?.toString() ?? '',
-        description: data['description']?.toString() ?? '',
-        isDone: data['isDone'] == true,
-        rrule: RepeatPattern.parse(
-          data['rrule']?.toString().isEmpty == true
-              ? null
-              : data['rrule']?.toString(),
-        ),
-        startTime: data['startTime'] != null
-            ? DateTime.parse(data['startTime'])
-            : null,
-        endTime: data['endTime'] != null
-            ? DateTime.parse(data['endTime'])
-            : null,
-        checklistId: data['checklistId'] == 0 ? null : data['checklistId'],
-        isAllDay: data['isAllDay'] == true,
-      )..id = data['id'] ?? 0;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  Habit? _createHabitFromJson(Map<String, dynamic> data) {
-    try {
-      return Habit(
-        name: data['name']?.toString() ?? '',
-        icon: data['icon']?.toString() ?? '',
-        remindTime: data['remindTime'] != null
-            ? DateTime.parse(data['remindTime'])
-            : DateTime.now(),
-        checkInCount: data['checkInCount'] ?? 1,
-        currentCheckInCount: data['currentCheckInCount'] ?? 0,
-        startDate: data['startDate'] != null
-            ? DateTime.parse(data['startDate'])
-            : DateTime.now(),
-        totalCheckInCount: data['totalCheckInCount'] ?? 0,
-        longestContinuousCheckInDays: data['longestContinuousCheckInDays'] ?? 0,
-        rrule: RepeatPattern.parse(
-          data['rrule']?.toString().isEmpty == true
-              ? null
-              : data['rrule']?.toString(),
-        ),
-      )..id = data['id'] ?? 0;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  Checklist? _createChecklistFromJson(Map<String, dynamic> data) {
-    try {
-      final checklistData = data.containsKey('checklist')
-          ? data['checklist'] as Map<String, dynamic>
-          : data;
-      return Checklist(
-        name: checklistData['name']?.toString() ?? '',
-        colorValue: checklistData['colorValue'] ?? 0xFFFF9800,
-      )..id = checklistData['id'] ?? 0;
-    } catch (e) {
-      return null;
-    }
   }
 
   @override
@@ -336,6 +227,7 @@ class OperationDetailDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     _buildDataRenderer(
+                      context,
                       operation.previousData!,
                       operation.target,
                       true,
@@ -355,6 +247,7 @@ class OperationDetailDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     _buildDataRenderer(
+                      context,
                       operation.newData!,
                       operation.target,
                       false,

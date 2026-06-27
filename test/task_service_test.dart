@@ -170,42 +170,41 @@ void main() {
       },
     );
 
-    test(
-      'updateTaskReminder supports multiple reminders',
-      () async {
-        final provider = harness.createProvider();
-        final startTime = DateTime.now().add(const Duration(days: 2));
+    test('updateTaskReminder supports multiple reminders', () async {
+      final provider = harness.createProvider();
+      final startTime = DateTime.now().add(const Duration(days: 2));
 
-        final task =
-            await provider.execute(
-                  AddTask(
-                    Task(
-                      name: 'Multi-Reminder Task',
-                      isAllDay: false,
-                      startTime: startTime,
-                      notificationEnabled: true,
-                      reminderOffsets: [0, 5, 15],
-                    ),
+      final task =
+          await provider.execute(
+                AddTask(
+                  Task(
+                    name: 'Multi-Reminder Task',
+                    isAllDay: false,
+                    startTime: startTime,
+                    notificationEnabled: true,
+                    reminderOffsets: [0, 5, 15],
                   ),
-                )
-                as Task;
+                ),
+              )
+              as Task;
 
-        expect(task.notificationEnabled, isTrue);
-        expect(task.reminderOffsets, [0, 5, 15]);
-        expect(scheduler.scheduledPlans, hasLength(3));
-        expect(scheduler.scheduledPlans[0].notificationId, task.id * 10 + 0);
-        expect(scheduler.scheduledPlans[1].notificationId, task.id * 10 + 1);
-        expect(scheduler.scheduledPlans[2].notificationId, task.id * 10 + 2);
+      expect(task.notificationEnabled, isTrue);
+      expect(task.reminderOffsets, [0, 5, 15]);
+      expect(scheduler.scheduledPlans, hasLength(3));
+      expect(scheduler.scheduledPlans[0].notificationId, task.id * 10 + 0);
+      expect(scheduler.scheduledPlans[1].notificationId, task.id * 10 + 1);
+      expect(scheduler.scheduledPlans[2].notificationId, task.id * 10 + 2);
 
-        // Update task reminder with new list of offsets
-        await provider.execute(UpdateTaskReminder(task, enabled: true, reminderOffsets: [30, 60]));
+      // Update task reminder with new list of offsets
+      await provider.execute(
+        UpdateTaskReminder(task, enabled: true, reminderOffsets: [30, 60]),
+      );
 
-        final reloaded = await harness.taskRepository.selectById(task.id);
-        expect(reloaded?.notificationEnabled, isTrue);
-        expect(reloaded?.reminderOffsets, [30, 60]);
-        expect(scheduler.canceledTaskIds, contains(task.id));
-      },
-    );
+      final reloaded = await harness.taskRepository.selectById(task.id);
+      expect(reloaded?.notificationEnabled, isTrue);
+      expect(reloaded?.reminderOffsets, [30, 60]);
+      expect(scheduler.canceledTaskIds, contains(task.id));
+    });
 
     test(
       'clearTaskSchedule clears reminder config and cancels reminder',
@@ -287,17 +286,19 @@ void main() {
         final provider = harness.createProvider();
         final startTime = DateTime.now().add(const Duration(days: 2));
 
-        final task = await provider.execute(
-          AddTask(
-            Task(
-              name: 'Test Picker Reminder',
-              isAllDay: false,
-              startTime: startTime,
-              notificationEnabled: false,
-              reminderOffsets: const [],
-            ),
-          ),
-        ) as Task;
+        final task =
+            await provider.execute(
+                  AddTask(
+                    Task(
+                      name: 'Test Picker Reminder',
+                      isAllDay: false,
+                      startTime: startTime,
+                      notificationEnabled: false,
+                      reminderOffsets: const [],
+                    ),
+                  ),
+                )
+                as Task;
 
         // Simulate picker workflow by constructing a TaskTimeInfo with notification enabled
         final timeInfo = TaskTimeInfo.fromTask(task);
@@ -308,7 +309,12 @@ void main() {
         // but since showForTask has context dependencies, we test the operations it invokes:
         // UpdateTimeRange, UpdateTaskReminder, and UpdateRRule.
         await provider.execute(
-          UpdateTimeRange(task, timeInfo.getFinalStartTime(), timeInfo.getFinalEndTime(), isAllDay: timeInfo.isAllDay),
+          UpdateTimeRange(
+            task,
+            timeInfo.getFinalStartTime(),
+            timeInfo.getFinalEndTime(),
+            isAllDay: timeInfo.isAllDay,
+          ),
         );
         await provider.execute(
           UpdateTaskReminder(

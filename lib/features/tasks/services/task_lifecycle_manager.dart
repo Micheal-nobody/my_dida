@@ -419,7 +419,9 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
           ? (task.reminderOffsetMinutes ?? 0)
           : null;
       final nextReminderOffsets = nextNotificationEnabled
-          ? (task.reminderOffsets.isNotEmpty ? task.reminderOffsets : [nextReminderOffsetMinutes ?? 0])
+          ? (task.reminderOffsets.isNotEmpty
+                ? task.reminderOffsets
+                : [nextReminderOffsetMinutes ?? 0])
           : <int>[];
       _taskReminderService.validateTaskReminderConfiguration(
         notificationEnabled: nextNotificationEnabled,
@@ -496,10 +498,14 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   }) async {
     try {
       final nextReminderOffsetMinutes = enabled
-          ? (offsetMinutes ?? (reminderOffsets != null && reminderOffsets.isNotEmpty ? reminderOffsets.first : null))
+          ? (offsetMinutes ??
+                (reminderOffsets != null && reminderOffsets.isNotEmpty
+                    ? reminderOffsets.first
+                    : null))
           : null;
       final nextReminderOffsets = enabled
-          ? (reminderOffsets ?? (offsetMinutes != null ? [offsetMinutes] : <int>[]))
+          ? (reminderOffsets ??
+                (offsetMinutes != null ? [offsetMinutes] : <int>[]))
           : <int>[];
       _taskReminderService.validateTaskReminderConfiguration(
         notificationEnabled: enabled,

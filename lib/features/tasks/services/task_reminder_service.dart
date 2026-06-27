@@ -29,7 +29,10 @@ class TaskReminderService {
   /// 核心命令式高杠杆 API：同步任务的本地提醒状态
   Future<void> syncReminder(Task task, {DateTime? now}) async {
     await _scheduler.cancelByTaskId(task.id);
-    if (!task.notificationEnabled || task.isDone || task.isAllDay || task.startTime == null) {
+    if (!task.notificationEnabled ||
+        task.isDone ||
+        task.isAllDay ||
+        task.startTime == null) {
       return;
     }
 
@@ -50,7 +53,9 @@ class TaskReminderService {
 
     final offsets = task.reminderOffsets.isNotEmpty
         ? task.reminderOffsets
-        : (task.reminderOffsetMinutes != null ? [task.reminderOffsetMinutes!] : <int>[]);
+        : (task.reminderOffsetMinutes != null
+              ? [task.reminderOffsetMinutes!]
+              : <int>[]);
 
     for (int i = 0; i < offsets.length; i++) {
       final offset = offsets[i];
@@ -65,22 +70,22 @@ class TaskReminderService {
         continue;
       }
 
-      final triggerAt = task.startTime!.subtract(
-        Duration(minutes: offset),
-      );
+      final triggerAt = task.startTime!.subtract(Duration(minutes: offset));
       if (!triggerAt.isAfter(comparisonTime)) {
         continue;
       }
 
       // 通知栏无法渲染 Markdown，剥离标记后降级展示纯文本
       final plainBody = MarkdownUtils.stripMarkdown(task.description).trim();
-      plans.add(TaskReminderPlan(
-        taskId: task.id,
-        triggerAt: triggerAt,
-        title: task.name,
-        body: plainBody.isEmpty ? null : plainBody,
-        notificationId: task.id * 10 + i,
-      ));
+      plans.add(
+        TaskReminderPlan(
+          taskId: task.id,
+          triggerAt: triggerAt,
+          title: task.name,
+          body: plainBody.isEmpty ? null : plainBody,
+          notificationId: task.id * 10 + i,
+        ),
+      );
     }
     return plans;
   }

@@ -215,6 +215,10 @@ class Task extends RevertibleEntity {
     return copy;
   }
 
+  @ignore
+  @override
+  String get displayName => name;
+
   /// 转换为标准 JSON Map
   @override
   Map<String, dynamic> toJson() => {

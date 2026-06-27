@@ -7,11 +7,9 @@ import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/tomato/events/tomato_events.dart';
 
 class TaskEventListener {
-  TaskEventListener({
-    EventBus? eventBus,
-    TaskRepository? taskRepository,
-  }) : _eventBus = eventBus ?? getIt<EventBus>(),
-       _taskRepository = taskRepository ?? getIt<TaskRepository>() {
+  TaskEventListener({EventBus? eventBus, TaskRepository? taskRepository})
+    : _eventBus = eventBus ?? getIt<EventBus>(),
+      _taskRepository = taskRepository ?? getIt<TaskRepository>() {
     _initSubscriptions();
   }
 

@@ -29,10 +29,9 @@ class ChecklistOperationReverter implements DomainOperationReverter {
       await _checklistRepo.insert(checklist);
 
       final List<dynamic>? affectedTaskIds = decoded['affectedTaskIds'];
-      final List<int> taskIds =
-          affectedTaskIds != null
-              ? affectedTaskIds.cast<int>().toList()
-              : [];
+      final List<int> taskIds = affectedTaskIds != null
+          ? affectedTaskIds.cast<int>().toList()
+          : [];
 
       // 触发领域事件，让任务模块还原任务的清单绑定
       _eventBus.fire(

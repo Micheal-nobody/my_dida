@@ -1,9 +1,6 @@
 import 'dart:convert';
 
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/features/checklist/models/checklist.dart';
-import 'package:my_dida/features/habits/models/habit.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/shared/models/revertible_entity.dart';
 
 part 'operation.g.dart';
@@ -179,70 +176,13 @@ class Operation {
     newData: _entityToJson(newEntity),
   );
 
-  /// 创建打卡操作
-  static Operation createCheckInOperation(Habit habit) => Operation(
-    type: OperationType.update,
-    target: OperationTarget.habit,
-    timestamp: DateTime.now(),
-    description: '完成了习惯"${habit.name}"的打卡',
-    targetId: habit.id,
-    previousData: _entityToJson(habit),
-    newData: _entityToJson(
-      Habit(
-        name: habit.name,
-        icon: habit.icon,
-        remindTime: habit.remindTime,
-        checkInCount: habit.checkInCount,
-        currentCheckInCount: habit.currentCheckInCount + 1,
-        startDate: habit.startDate,
-        totalCheckInCount: habit.totalCheckInCount + 1,
-        longestContinuousCheckInDays: habit.longestContinuousCheckInDays,
-        rrule: habit.rrule,
-      )..id = habit.id,
-    ),
-  );
-
-  /// 创建撤回打卡操作
-  static Operation createUndoCheckInOperation(Habit habit) => Operation(
-    type: OperationType.update,
-    target: OperationTarget.habit,
-    timestamp: DateTime.now(),
-    description: '撤回了习惯"${habit.name}"的打卡',
-    targetId: habit.id,
-    previousData: _entityToJson(habit),
-    newData: _entityToJson(
-      Habit(
-        name: habit.name,
-        icon: habit.icon,
-        remindTime: habit.remindTime,
-        checkInCount: habit.checkInCount,
-        currentCheckInCount: habit.currentCheckInCount - 1,
-        startDate: habit.startDate,
-        totalCheckInCount: habit.totalCheckInCount > 0
-            ? habit.totalCheckInCount - 1
-            : 0,
-        longestContinuousCheckInDays: habit.longestContinuousCheckInDays,
-        rrule: habit.rrule,
-      )..id = habit.id,
-    ),
-  );
-
   /// 统一的基于 RevertibleEntity 的 JSON 序列化
   static String _entityToJson(RevertibleEntity entity) =>
       jsonEncode(entity.toJson());
 
-  /// 构建通用描述（因为 RevertibleEntity 未声明 getter name，需要更通用的方式）
+  /// 构建通用描述（因为 RevertibleEntity 声明了 displayName getter，可以更通用的方式）
   static String _buildDescription(String action, RevertibleEntity entity) {
-    // 对已知实体提取 name 字段；无法取得时回退
-    final name = _tryGetEntityName(entity) ?? '未知';
-    return '$action了"$name"';
-  }
-
-  static String? _tryGetEntityName(RevertibleEntity entity) {
-    if (entity is Task) return entity.name;
-    if (entity is Habit) return entity.name;
-    if (entity is Checklist) return entity.name;
-    return null;
+    return '$action了"${entity.displayName}"';
   }
 
   @override

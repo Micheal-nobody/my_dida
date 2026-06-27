@@ -98,6 +98,10 @@ class Habit extends RevertibleEntity {
   /// 今日是否跳过
   bool isTodaySkipped;
 
+  @ignore
+  @override
+  String get displayName => name;
+
   /// 转换为标准 JSON Map
   @override
   Map<String, dynamic> toJson() => {

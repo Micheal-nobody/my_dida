@@ -104,7 +104,10 @@ class ChecklistLifecycleManagerImpl implements ChecklistLifecycleManager {
 
       // 触发领域事件，让任务模块自行重置任务的清单 ID
       _eventBus.fire(
-        ChecklistDeletedEvent(checklistId: id, affectedTaskIds: affectedTaskIds),
+        ChecklistDeletedEvent(
+          checklistId: id,
+          affectedTaskIds: affectedTaskIds,
+        ),
       );
 
       // Delete the checklist itself
