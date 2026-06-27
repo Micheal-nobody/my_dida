@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/config/app_config.dart';
 import 'package:my_dida/core/constants/app_constants.dart';
+import 'package:my_dida/core/events/event_bus.dart';
 import 'package:my_dida/core/logger/logger.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/calendar/models/calendar_page_config.dart';
@@ -28,6 +29,7 @@ import 'package:my_dida/features/tasks/services/active_reminder_message_service.
 import 'package:my_dida/features/tasks/services/attachment_service.dart';
 import 'package:my_dida/features/tasks/services/flutter_local_task_reminder_scheduler.dart';
 import 'package:my_dida/features/tasks/services/notification_service.dart';
+import 'package:my_dida/features/tasks/services/task_event_listener.dart';
 import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
 import 'package:my_dida/features/tasks/services/task_notification_navigation_service.dart';
 import 'package:my_dida/features/tasks/services/task_operation_reverter.dart';
@@ -45,6 +47,9 @@ final GetIt getIt = GetIt.instance;
 Future<void> setupLocator(AppConfig config) async {
   // 注册全局环境配置
   getIt.registerSingleton<AppConfig>(config);
+
+  // 注册事件总线
+  getIt.registerSingleton<EventBus>(EventBus());
 
   /// 初始化并注册 Isar 实例
   final isar = await initializeIsar(config);
@@ -119,6 +124,9 @@ Future<void> setupLocator(AppConfig config) async {
       ),
     )
     ..registerSingleton<DataTransferService>(DataTransferService());
+
+  // 注册并立即拉起任务事件协同监听器
+  getIt.registerSingleton<TaskEventListener>(TaskEventListener());
 
   logger.i('初始化 Isar 完成！');
   getIt<ActiveReminderMessageService>().initialize();

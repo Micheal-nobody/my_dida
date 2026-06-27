@@ -3,10 +3,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/events/event_bus.dart';
 import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/tasks/services/notification_service.dart';
+import 'package:my_dida/features/tomato/events/tomato_events.dart';
 import 'package:my_dida/features/tomato/models/custom_tomato.dart';
 import 'package:my_dida/features/tomato/models/tomato_record.dart';
 import 'package:my_dida/features/tomato/models/tomato_ticker.dart';
@@ -27,7 +28,7 @@ class TomatoProvider with ChangeNotifier {
   TomatoProvider({
     TomatoRecordRepository? tomatoRecordRepository,
     CustomTomatoRepository? customTomatoRepository,
-    TaskRepository? taskRepository,
+    EventBus? eventBus,
     NotificationService? notificationService,
     ChecklistRepository? checklistRepository,
     TomatoTicker? ticker,
@@ -35,7 +36,7 @@ class TomatoProvider with ChangeNotifier {
            tomatoRecordRepository ?? getIt<TomatoRecordRepository>(),
        _customTomatoRepository =
            customTomatoRepository ?? getIt<CustomTomatoRepository>(),
-       _taskRepository = taskRepository ?? getIt<TaskRepository>(),
+       _eventBus = eventBus ?? getIt<EventBus>(),
        _notificationService =
            notificationService ?? getIt<NotificationService>(),
        _checklistRepository =
@@ -47,7 +48,7 @@ class TomatoProvider with ChangeNotifier {
 
   final TomatoRecordRepository _tomatoRecordRepository;
   final CustomTomatoRepository _customTomatoRepository;
-  final TaskRepository _taskRepository;
+  final EventBus _eventBus;
   final NotificationService _notificationService;
   final ChecklistRepository _checklistRepository;
 
@@ -156,7 +157,7 @@ class TomatoProvider with ChangeNotifier {
 
       // 副作用：自动完成关联任务
       if (autoCompletedTask && _associatedTask != null) {
-        await _taskRepository.updateTaskIsDone(_associatedTask!, true);
+        _eventBus.fire(TomatoTaskCompletedEvent(taskId: _associatedTask!.id));
         _associatedTask = null;
       }
 

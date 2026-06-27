@@ -190,7 +190,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   dayDate.month == now.month &&
                   dayDate.day == now.day;
               return Container(
-                height: 40,
+                height: 30,
                 margin: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -244,7 +244,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               );
             },
           ),
-          const SizedBox(height: 12),
           SelectionRow(
             icon: Icons.notifications_active_outlined,
             label: '提醒',
@@ -265,7 +264,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               }
             },
           ),
-          const SizedBox(height: 12),
           SelectionRow(
             icon: Icons.repeat,
             label: '重复',

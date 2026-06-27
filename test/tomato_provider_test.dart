@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/events/event_bus.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
 import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
@@ -23,7 +24,6 @@ void main() {
   late Isar isar;
   late Directory tempDir;
   late TomatoRecordRepository tomatoRepository;
-  late TaskRepository taskRepository;
 
   setUp(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +47,7 @@ void main() {
     getIt
       ..registerSingleton<Isar>(isar)
       ..registerSingleton<AppMessageService>(AppMessageService())
+      ..registerSingleton<EventBus>(EventBus())
       ..registerSingleton<TaskNotificationNavigationService>(
         TaskNotificationNavigationService(),
       )
@@ -58,7 +59,6 @@ void main() {
       ..registerSingleton<NotificationService>(NotificationService());
 
     tomatoRepository = getIt<TomatoRecordRepository>();
-    taskRepository = getIt<TaskRepository>();
   });
 
   tearDown(() async {
@@ -73,7 +73,6 @@ void main() {
     test('初始状态应该为空闲，计时为25分钟', () {
       final provider = TomatoProvider(
         tomatoRecordRepository: tomatoRepository,
-        taskRepository: taskRepository,
       );
 
       expect(provider.status, TomatoStatus.idle);
@@ -85,7 +84,6 @@ void main() {
     test('选择不同快捷时间应该改变计时时长', () {
       final provider = TomatoProvider(
         tomatoRecordRepository: tomatoRepository,
-        taskRepository: taskRepository,
       );
 
       provider.selectShortBreak();
@@ -104,7 +102,6 @@ void main() {
     test('关联任务应该更新 associatedTask 属性', () {
       final provider = TomatoProvider(
         tomatoRecordRepository: tomatoRepository,
-        taskRepository: taskRepository,
       );
 
       final task = Task(name: '测试专注任务', isAllDay: true);
@@ -119,7 +116,6 @@ void main() {
     test('开始计时应该切换状态为专注中并启动运行', () {
       final provider = TomatoProvider(
         tomatoRecordRepository: tomatoRepository,
-        taskRepository: taskRepository,
       );
 
       provider.start();
@@ -141,7 +137,6 @@ void main() {
     test('在未开始专注前放弃番茄钟不应该记录在数据库', () async {
       final provider = TomatoProvider(
         tomatoRecordRepository: tomatoRepository,
-        taskRepository: taskRepository,
       );
 
       await provider.abandon();
@@ -154,7 +149,6 @@ void main() {
       final provider = TomatoProvider(
         tomatoRecordRepository: tomatoRepository,
         customTomatoRepository: customRepo,
-        taskRepository: taskRepository,
       );
 
       await provider.loadCustomTomatoes();

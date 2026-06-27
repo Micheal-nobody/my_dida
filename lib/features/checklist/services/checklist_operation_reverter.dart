@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
 import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
+import 'package:my_dida/core/events/event_bus.dart';
+import 'package:my_dida/features/checklist/events/checklist_events.dart';
 import 'package:my_dida/features/operation_undo/services/operation_reverter.dart';
-import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 
 class ChecklistOperationReverter implements DomainOperationReverter {
   final ChecklistRepository _checklistRepo = getIt<ChecklistRepository>();
-  final TaskRepository _taskRepo = getIt<TaskRepository>();
+  final EventBus _eventBus = getIt<EventBus>();
 
   @override
   Future<bool> revertAdd(int id) async {
@@ -29,15 +29,18 @@ class ChecklistOperationReverter implements DomainOperationReverter {
       await _checklistRepo.insert(checklist);
 
       final List<dynamic>? affectedTaskIds = decoded['affectedTaskIds'];
-      if (affectedTaskIds != null && affectedTaskIds.isNotEmpty) {
-        final List<int> taskIds = affectedTaskIds.cast<int>().toList();
-        final tasks = await _taskRepo.collection.getAll(taskIds);
-        final validTasks = tasks.whereType<Task>().toList();
-        for (final task in validTasks) {
-          task.checklistId = checklist.id;
-        }
-        await _taskRepo.insertAll(validTasks);
-      }
+      final List<int> taskIds =
+          affectedTaskIds != null
+              ? affectedTaskIds.cast<int>().toList()
+              : [];
+
+      // 触发领域事件，让任务模块还原任务的清单绑定
+      _eventBus.fire(
+        ChecklistRestoredEvent(
+          checklistId: checklist.id,
+          affectedTaskIds: taskIds,
+        ),
+      );
       return true;
     }
     return false;

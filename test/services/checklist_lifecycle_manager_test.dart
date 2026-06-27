@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/events/event_bus.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
 import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
@@ -11,6 +12,7 @@ import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
+import 'package:my_dida/features/tasks/services/task_event_listener.dart';
 
 class FakeAppMessageService extends AppMessageService {
   final List<String> successMessages = [];
@@ -33,6 +35,8 @@ void main() {
   late ChecklistRepository checklistRepository;
   late FakeAppMessageService messageService;
   late ChecklistLifecycleManager lifecycleManager;
+  late EventBus eventBus;
+  late TaskEventListener taskEventListener;
 
   setUp(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -45,21 +49,33 @@ void main() {
       name: 'checklist_test_${DateTime.now().microsecondsSinceEpoch}',
     );
 
+    eventBus = EventBus();
     messageService = FakeAppMessageService();
     getIt.registerSingleton<Isar>(isar);
     getIt.registerSingleton<AppMessageService>(messageService);
+    getIt.registerSingleton<EventBus>(eventBus);
 
     checklistRepository = ChecklistRepository();
     getIt.registerSingleton<ChecklistRepository>(checklistRepository);
-    getIt.registerSingleton<TaskRepository>(TaskRepository());
+    final taskRepo = TaskRepository();
+    getIt.registerSingleton<TaskRepository>(taskRepo);
+
+    taskEventListener = TaskEventListener(
+      eventBus: eventBus,
+      taskRepository: taskRepo,
+    );
+    getIt.registerSingleton<TaskEventListener>(taskEventListener);
 
     lifecycleManager = ChecklistLifecycleManagerImpl(
       checklistRepository: checklistRepository,
       messageService: messageService,
+      eventBus: eventBus,
     );
   });
 
   tearDown(() async {
+    taskEventListener.dispose();
+    eventBus.dispose();
     await getIt.reset();
     await isar.close(deleteFromDisk: true);
     if (tempDir.existsSync()) {
@@ -161,6 +177,9 @@ void main() {
 
         // Delete the checklist
         await lifecycleManager.deleteChecklist(deleteId, name: 'To Delete');
+
+        // Wait for EventBus to handle task reassignment asynchronously
+        await Future.delayed(const Duration(milliseconds: 100));
 
         // Verify the checklist is gone
         final checklists = await checklistRepository.getAllData();

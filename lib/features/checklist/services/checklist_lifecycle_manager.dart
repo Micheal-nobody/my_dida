@@ -1,6 +1,8 @@
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/errors/exceptions.dart';
+import 'package:my_dida/core/events/event_bus.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
+import 'package:my_dida/features/checklist/events/checklist_events.dart';
 import 'package:my_dida/features/checklist/models/checklist.dart';
 import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
@@ -21,6 +23,7 @@ class ChecklistLifecycleManagerImpl implements ChecklistLifecycleManager {
     TaskRepository? taskRepository,
     OperationStackProvider? operationStack,
     AppMessageService? messageService,
+    EventBus? eventBus,
   }) : _checklistRepository =
            checklistRepository ?? getIt<ChecklistRepository>(),
        _taskRepository = taskRepository ?? getIt<TaskRepository>(),
@@ -29,12 +32,14 @@ class ChecklistLifecycleManagerImpl implements ChecklistLifecycleManager {
            (getIt.isRegistered<OperationStackProvider>()
                ? getIt<OperationStackProvider>()
                : null),
-       _messageService = messageService ?? getIt<AppMessageService>();
+       _messageService = messageService ?? getIt<AppMessageService>(),
+       _eventBus = eventBus ?? getIt<EventBus>();
 
   final ChecklistRepository _checklistRepository;
   final TaskRepository _taskRepository;
   final OperationStackProvider? _operationStack;
   final AppMessageService _messageService;
+  final EventBus _eventBus;
 
   @override
   Future<void> createChecklist(String name, int colorValue) async {
@@ -97,11 +102,10 @@ class ChecklistLifecycleManagerImpl implements ChecklistLifecycleManager {
       final affectedTasks = await _taskRepository.getTasksByChecklistId(id);
       final affectedTaskIds = affectedTasks.map((t) => t.id).toList();
 
-      // Reassign affected tasks to Inbox (ID = 1)
-      for (final task in affectedTasks) {
-        task.checklistId = 1;
-      }
-      await _taskRepository.insertAll(affectedTasks);
+      // 触发领域事件，让任务模块自行重置任务的清单 ID
+      _eventBus.fire(
+        ChecklistDeletedEvent(checklistId: id, affectedTaskIds: affectedTaskIds),
+      );
 
       // Delete the checklist itself
       await _checklistRepository.deleteById(id);
