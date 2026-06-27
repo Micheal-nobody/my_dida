@@ -1,5 +1,27 @@
 import 'package:flutter/material.dart';
 
+Widget _defaultDayBuilder(
+  BuildContext context,
+  DateTime dayDate,
+  bool isSelected,
+) => Container(
+    height: 40,
+    margin: const EdgeInsets.all(2),
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: isSelected ? Colors.red : Colors.transparent,
+    ),
+    child: Center(
+      child: Text(
+        dayDate.day.toString(),
+        style: TextStyle(
+          color: isSelected ? Colors.white : Colors.black,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+    ),
+  );
+
 class CalendarGrid extends StatefulWidget {
   const CalendarGrid({
     required this.onDateSelected,
@@ -93,7 +115,8 @@ class _CalendarGridState extends State<CalendarGrid> {
         Row(
           children: ['一', '二', '三', '四', '五', '六', '日']
               .map(
-                (day) => Expanded(
+                (day) =>
+                Expanded(
                   child: Center(
                     child: Text(
                       day,
@@ -101,68 +124,52 @@ class _CalendarGridState extends State<CalendarGrid> {
                     ),
                   ),
                 ),
-              )
+          )
               .toList(),
         ),
         const SizedBox(height: 8),
         ...List.generate(
           6,
-          (weekIndex) => Row(
-            children: List.generate(7, (dayIndex) {
-              final dayNumber = weekIndex * 7 + dayIndex - firstDayWeekday + 2;
+              (weekIndex) =>
+              Row(
+                children: List.generate(7, (dayIndex) {
+                  final dayNumber = weekIndex * 7 + dayIndex - firstDayWeekday +
+                      2;
 
-              if (dayNumber < 1 || dayNumber > daysInMonth) {
-                return const Expanded(child: SizedBox(height: 40));
-              }
+                  if (dayNumber < 1 || dayNumber > daysInMonth) {
+                    return const Expanded(child: SizedBox(height: 40));
+                  }
 
-              final dayDate = DateTime(
-                _currentMonth.year,
-                _currentMonth.month,
-                dayNumber,
-              );
-              final isSelected =
-                  widget.selectedDate != null &&
-                  widget.selectedDate!.year == dayDate.year &&
-                  widget.selectedDate!.month == dayDate.month &&
-                  widget.selectedDate!.day == dayDate.day;
+                  final dayDate = DateTime(
+                    _currentMonth.year,
+                    _currentMonth.month,
+                    dayNumber,
+                  );
+                  final isSelected =
+                      widget.selectedDate != null &&
+                          widget.selectedDate!.year == dayDate.year &&
+                          widget.selectedDate!.month == dayDate.month &&
+                          widget.selectedDate!.day == dayDate.day;
 
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    widget.onDateSelected(dayDate);
-                  },
-                  child: widget.dayBuilder != null
-                      ? SizedBox(
+                  final builder = widget.dayBuilder ?? _defaultDayBuilder;
+
+                  return Expanded(
+                    child: GestureDetector(
+                        onTap: () {
+                          widget.onDateSelected(dayDate);
+                        },
+                        child: SizedBox(
                           height: 48,
-                          child: widget.dayBuilder!(
+                          child: builder(
                             context,
                             dayDate,
                             isSelected,
                           ),
                         )
-                      : Container(
-                          height: 40,
-                          margin: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isSelected ? Colors.red : Colors.transparent,
-                          ),
-                          child: Center(
-                            child: Text(
-                              dayNumber.toString(),
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                          ),
-                        ),
-                ),
-              );
-            }),
-          ),
+                    ),
+                  );
+                }),
+              ),
         ),
       ],
     );

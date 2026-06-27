@@ -184,8 +184,34 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 _value.copyWith(selectedDate: date, rrule: _value.rrule),
               );
             },
+            dayBuilder: (context, dayDate, isSelected) {
+              final now = DateTime.now().toBeijingTime();
+              final isToday = dayDate.year == now.year &&
+                  dayDate.month == now.month &&
+                  dayDate.day == now.day;
+              return Container(
+                height: 40,
+                margin: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected
+                      ? Colors.red
+                      : (isToday ? Colors.orange : Colors.transparent),
+                ),
+                child: Center(
+                  child: Text(
+                    dayDate.day.toString(),
+                    style: TextStyle(
+                      color: (isSelected || isToday) ? Colors.white : Colors.black,
+                      fontWeight: (isSelected || isToday)
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
-          const SizedBox(height: 24),
           SelectionRow(
             icon: Icons.access_time,
             label: '时间',
@@ -218,7 +244,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               );
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           SelectionRow(
             icon: Icons.notifications_active_outlined,
             label: '提醒',
@@ -239,7 +265,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               }
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           SelectionRow(
             icon: Icons.repeat,
             label: '重复',
