@@ -12,15 +12,15 @@ import 'package:my_dida/features/operation_undo/services/operation_reverter.dart
 import 'package:my_dida/features/settings/models/sidebar_config.dart';
 import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/models/task_operation.dart';
+import 'package:my_dida/features/tasks/models/task_command.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/tasks/services/attachment_service.dart';
-import 'package:my_dida/features/tasks/services/noop_task_reminder_scheduler.dart';
-import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
-import 'package:my_dida/features/tasks/services/task_operation_reverter.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_service.dart';
+import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
+import 'package:my_dida/features/tasks/services/task_operation_reverter.dart';
+import '../test_support/noop_task_reminder_scheduler.dart';
 
 void main() {
   late Isar isar;

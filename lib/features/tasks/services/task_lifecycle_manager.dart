@@ -9,14 +9,14 @@ import 'package:my_dida/features/operation_undo/providers/operation_stack_provid
 import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/models/task_operation.dart';
+import 'package:my_dida/features/tasks/models/task_command.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/tasks/services/attachment_service.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_service.dart';
 import 'package:my_dida/features/tasks/validators/task_validator.dart';
 
 abstract class TaskLifecycleManager {
-  Future<dynamic> execute(TaskOperation op);
+  Future<dynamic> execute(TaskCommand op);
 
   Future<Task> addTask(Task newTask);
 
@@ -99,7 +99,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
   final AttachmentService _attachmentService;
 
   @override
-  Future<dynamic> execute(TaskOperation op) async {
+  Future<dynamic> execute(TaskCommand op) async {
     if (op is AddTask) {
       return addTask(op.task);
     } else if (op is UpdateTaskIsDone) {

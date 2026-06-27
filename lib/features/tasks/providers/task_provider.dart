@@ -10,11 +10,11 @@ import 'package:my_dida/features/calendar/services/task_calendar_projection_serv
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/models/task_operation.dart';
+import 'package:my_dida/features/tasks/models/task_command.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
 
-export 'package:my_dida/features/tasks/models/task_operation.dart';
+export 'package:my_dida/features/tasks/models/task_command.dart';
 
 enum TaskViewMode { list, board }
 
@@ -594,7 +594,7 @@ class TaskProvider with ChangeNotifier {
   // 刷新与重载辅助方法
   // ==================================================================
 
-  Future<dynamic> execute(TaskOperation op) async {
+  Future<dynamic> execute(TaskCommand op) async {
     if (op is AddTask) {
       return addTask(op.task);
     } else if (op is UpdateTaskIsDone) {
