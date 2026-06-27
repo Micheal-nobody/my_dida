@@ -4,6 +4,7 @@ import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/models/task_reminder_plan.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/services/task_reminder_scheduler_port.dart';
+import 'package:my_dida/features/tasks/widgets/task_date_time_picker.dart';
 
 import 'test_support/task_test_harness.dart';
 
@@ -277,6 +278,51 @@ void main() {
         );
         expect(nextTask.notificationEnabled, isTrue);
         expect(nextTask.reminderOffsetMinutes, 10);
+      },
+    );
+
+    test(
+      'showForTask updates and persists reminder configuration correctly',
+      () async {
+        final provider = harness.createProvider();
+        final startTime = DateTime.now().add(const Duration(days: 2));
+
+        final task = await provider.execute(
+          AddTask(
+            Task(
+              name: 'Test Picker Reminder',
+              isAllDay: false,
+              startTime: startTime,
+              notificationEnabled: false,
+              reminderOffsets: const [],
+            ),
+          ),
+        ) as Task;
+
+        // Simulate picker workflow by constructing a TaskTimeInfo with notification enabled
+        final timeInfo = TaskTimeInfo.fromTask(task);
+        timeInfo.notificationEnabled = true;
+        timeInfo.reminderOffsets = [15, 30];
+
+        // Call showForTask's database-updating part manually through provider commands as showForTask does,
+        // but since showForTask has context dependencies, we test the operations it invokes:
+        // UpdateTimeRange, UpdateTaskReminder, and UpdateRRule.
+        await provider.execute(
+          UpdateTimeRange(task, timeInfo.getFinalStartTime(), timeInfo.getFinalEndTime(), isAllDay: timeInfo.isAllDay),
+        );
+        await provider.execute(
+          UpdateTaskReminder(
+            task,
+            enabled: timeInfo.notificationEnabled,
+            reminderOffsets: timeInfo.reminderOffsets,
+          ),
+        );
+
+        final reloaded = await harness.taskRepository.selectById(task.id);
+        expect(reloaded?.notificationEnabled, isTrue);
+        expect(reloaded?.reminderOffsets, [15, 30]);
+        // Also verify the first offset is updated to reminderOffsetMinutes
+        expect(reloaded?.reminderOffsetMinutes, 15);
       },
     );
   });

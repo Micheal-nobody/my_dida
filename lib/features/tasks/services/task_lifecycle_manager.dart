@@ -146,6 +146,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
         op.task,
         enabled: op.enabled,
         offsetMinutes: op.offsetMinutes,
+        reminderOffsets: op.reminderOffsets,
       );
     } else if (op is DeleteTask) {
       await deleteTask(op.task);

@@ -35,6 +35,13 @@ class TaskDateTimePicker {
     await taskProvider.execute(
       UpdateTimeRange(task, startTime, endTime, isAllDay: timeInfo.isAllDay),
     );
+    await taskProvider.execute(
+      UpdateTaskReminder(
+        task,
+        enabled: timeInfo.notificationEnabled,
+        reminderOffsets: timeInfo.reminderOffsets,
+      ),
+    );
     onUpdated?.call();
   }
 
@@ -86,6 +93,8 @@ class TaskDateTimePicker {
         isAllDay: timeInfo.isAllDay,
         rrule: timeInfo.rrule,
         isTimeOnlyDate: timeInfo.isTimeOnlyDate,
+        notificationEnabled: timeInfo.notificationEnabled,
+        reminderOffsets: timeInfo.reminderOffsets,
       );
 
   static TaskTimeInfo _toTaskTimeInfo(
@@ -125,6 +134,8 @@ class TaskDateTimePicker {
       rrule: value.rrule,
       startDate: value.startDate ?? fallback.startDate,
       endDate: value.endDate ?? fallback.endDate,
+      notificationEnabled: value.notificationEnabled,
+      reminderOffsets: value.reminderOffsets,
     );
   }
 }
@@ -143,6 +154,8 @@ class TaskTimeInfo {
     RepeatPattern? rrule,
     this.startDate,
     this.endDate,
+    this.notificationEnabled = false,
+    this.reminderOffsets = const [],
   }) : rrule = rrule ?? const RepeatPattern.none();
 
   /// 从 Task 对象创建 TaskTimeInfo
@@ -196,6 +209,8 @@ class TaskTimeInfo {
       endDate: task.endTime != null
           ? DateTime(task.endTime!.year, task.endTime!.month, task.endTime!.day)
           : null,
+      notificationEnabled: task.notificationEnabled,
+      reminderOffsets: List<int>.from(task.reminderOffsets),
     );
   }
 
@@ -206,6 +221,8 @@ class TaskTimeInfo {
   DateTime? endDateTime;
   bool isAllDay;
   RepeatPattern rrule;
+  bool notificationEnabled;
+  List<int> reminderOffsets;
 
   // 独立的开始和结束日期（用于时间段模式）
   DateTime? startDate;
@@ -228,6 +245,8 @@ class TaskTimeInfo {
     rrule = const RepeatPattern.none();
     startDate = null;
     endDate = null;
+    notificationEnabled = false;
+    reminderOffsets = [];
   }
 
   /// 获取最终的开始时间
