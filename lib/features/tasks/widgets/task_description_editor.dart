@@ -53,8 +53,13 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
     );
 
     _focusNode.addListener(() {
+      if (!mounted) return;
       if (!_focusNode.hasFocus && _isEditing) {
         _commit();
+      } else if (_focusNode.hasFocus && !_isEditing) {
+        setState(() {
+          _isEditing = true;
+        });
       }
     });
   }
@@ -202,8 +207,60 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // 当 _isEditing 时，才在 description (输入框) 上方显示 Markdown 工具栏
+          if (_isEditing)
+            Container(
+              color: Colors.grey[100],
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                children: [
+                  _buildToolbarButton(
+                    icon: Icons.format_bold,
+                    tooltip: '加粗',
+                    onPressed: () => _mepToolbar.action('**', '**'),
+                  ),
+                  _buildToolbarButton(
+                    icon: Icons.format_italic,
+                    tooltip: '斜体',
+                    onPressed: () => _mepToolbar.action('_', '_'),
+                  ),
+                  _buildToolbarButton(
+                    icon: Icons.format_strikethrough,
+                    tooltip: '中划线',
+                    onPressed: () => _mepToolbar.action('~~', '~~'),
+                  ),
+                  _buildToolbarButton(
+                    icon: Icons.format_list_bulleted,
+                    tooltip: '列表',
+                    onPressed: () => _mepToolbar.action('\n- ', ''),
+                  ),
+                  _buildToolbarButton(
+                    icon: Icons.add_task,
+                    tooltip: '任务列表',
+                    onPressed: () => _mepToolbar.action('\n- [ ] ', ''),
+                  ),
+                  const VerticalDivider(width: 8, thickness: 1),
+                  _buildToolbarButton(
+                    icon: Icons.image,
+                    tooltip: '插入图片',
+                    onPressed: () => _showImagePickerSourceDialog(context),
+                  ),
+                  _buildToolbarButton(
+                    icon: Icons.insert_drive_file,
+                    tooltip: '插入文件',
+                    onPressed: () => _pickFile(context),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.check, color: Colors.orange),
+                    tooltip: '保存',
+                    onPressed: _commit,
+                  ),
+                ],
+              ),
+            ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: MarkdownField(
               controller: _controller,
               focusNode: _focusNode,
@@ -222,57 +279,6 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
                   });
                 }
               },
-            ),
-          ),
-          // 自研紧凑的 Markdown 工具栏
-          Container(
-            color: Colors.grey[100],
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                _buildToolbarButton(
-                  icon: Icons.format_bold,
-                  tooltip: '加粗',
-                  onPressed: () => _mepToolbar.action('**', '**'),
-                ),
-                _buildToolbarButton(
-                  icon: Icons.format_italic,
-                  tooltip: '斜体',
-                  onPressed: () => _mepToolbar.action('_', '_'),
-                ),
-                _buildToolbarButton(
-                  icon: Icons.format_strikethrough,
-                  tooltip: '中划线',
-                  onPressed: () => _mepToolbar.action('~~', '~~'),
-                ),
-                _buildToolbarButton(
-                  icon: Icons.format_list_bulleted,
-                  tooltip: '列表',
-                  onPressed: () => _mepToolbar.action('\n- ', ''),
-                ),
-                _buildToolbarButton(
-                  icon: Icons.add_task,
-                  tooltip: '任务列表',
-                  onPressed: () => _mepToolbar.action('\n- [ ] ', ''),
-                ),
-                const VerticalDivider(width: 8, thickness: 1),
-                _buildToolbarButton(
-                  icon: Icons.image,
-                  tooltip: '插入图片',
-                  onPressed: () => _showImagePickerSourceDialog(context),
-                ),
-                _buildToolbarButton(
-                  icon: Icons.insert_drive_file,
-                  tooltip: '插入文件',
-                  onPressed: () => _pickFile(context),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.check, color: Colors.orange),
-                  tooltip: '保存',
-                  onPressed: _commit,
-                ),
-              ],
             ),
           ),
         ],

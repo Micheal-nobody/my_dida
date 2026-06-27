@@ -218,10 +218,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                           );
                         },
                         style: const TextStyle(
-                          fontSize: 22,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.orange,
-                          decoration: TextDecoration.underline,
                         ),
                       ),
                       const SizedBox(height: 8),
