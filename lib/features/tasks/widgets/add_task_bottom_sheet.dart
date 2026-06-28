@@ -34,20 +34,20 @@ class AddTaskBottomSheet extends StatefulWidget {
     Task? initTask,
     bool initialIsFullScreen = false,
   }) => showModalBottomSheet<T>(
-      context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: AddTaskBottomSheet(
-          parentTask: parentTask,
-          initTask: initTask,
-          initialIsFullScreen: initialIsFullScreen,
-        ),
+    context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    builder: (context) => Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-    );
+      child: AddTaskBottomSheet(
+        parentTask: parentTask,
+        initTask: initTask,
+        initialIsFullScreen: initialIsFullScreen,
+      ),
+    ),
+  );
 }
 
 class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
@@ -512,7 +512,9 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                       child: Icon(
                         Icons.flag,
                         size: 20,
-                        color: _priority == TaskPriority.none ? Colors.grey[600] : _priority.color,
+                        color: _priority == TaskPriority.none
+                            ? Colors.grey[600]
+                            : _priority.color,
                       ),
                     ),
                   ),
@@ -958,7 +960,9 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
           initialValue: _priority,
           icon: Icon(
             Icons.flag,
-            color: _priority == TaskPriority.none ? Colors.grey[600] : _priority.color,
+            color: _priority == TaskPriority.none
+                ? Colors.grey[600]
+                : _priority.color,
           ),
           onSelected: (val) {
             setState(() {

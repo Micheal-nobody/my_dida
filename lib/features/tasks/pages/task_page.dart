@@ -33,7 +33,6 @@ class TodoPage extends StatefulWidget {
 class _TodoPageState extends State<TodoPage> {
   final AppMessageService _messageService = getIt<AppMessageService>();
 
-
   @override
   Widget build(BuildContext context) {
     final checklistProvider = Provider.of<ChecklistProvider>(context);
@@ -155,7 +154,6 @@ class _TodoPageState extends State<TodoPage> {
 
       body: Consumer3<TaskProvider, HabitProvider, ChecklistProvider>(
         builder: (context, taskProvider, habitProvider, _, _) {
-
           final colorTheme = context.theme;
 
           final isTodayTasks =

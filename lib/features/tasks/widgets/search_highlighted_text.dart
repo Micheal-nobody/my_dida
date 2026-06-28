@@ -61,9 +61,7 @@ class SearchHighlightedText extends StatelessWidget {
 
     return RichText(
       text: TextSpan(
-        style:
-            style ??
-            TextStyle(color: colorTheme.textPrimary, fontSize: 16),
+        style: style ?? TextStyle(color: colorTheme.textPrimary, fontSize: 16),
         children: spans,
       ),
     );

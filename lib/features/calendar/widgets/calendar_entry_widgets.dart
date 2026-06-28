@@ -96,17 +96,17 @@ class CalendarTimedHabitEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        width: columnWidth,
-        child: CalendarEntryCard(
-          text: habit.name,
-          backgroundColor: context.theme.primary.withValues(alpha: 0.8),
-          onPressed: () {
-            HabitCheckInDialog.show(context: context, habit: habit);
-          },
-          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        ),
-      );
+    width: columnWidth,
+    child: CalendarEntryCard(
+      text: habit.name,
+      backgroundColor: context.theme.primary.withValues(alpha: 0.8),
+      onPressed: () {
+        HabitCheckInDialog.show(context: context, habit: habit);
+      },
+      margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+    ),
+  );
 }
 
 class CalendarAllDayTaskEntry extends StatelessWidget {

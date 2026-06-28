@@ -83,19 +83,21 @@ class OperationHabitRenderer extends StatelessWidget {
         Row(
           children: [
             // 习惯图标
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: IconConstants.getIconColorByName(habit.icon).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  IconConstants.getIconByName(habit.icon) ?? Icons.star,
-                  color: IconConstants.getIconColorByName(habit.icon),
-                  size: 20,
-                ),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: IconConstants.getIconColorByName(
+                  habit.icon,
+                ).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
+              child: Icon(
+                IconConstants.getIconByName(habit.icon) ?? Icons.star,
+                color: IconConstants.getIconColorByName(habit.icon),
+                size: 20,
+              ),
+            ),
             const SizedBox(width: 12),
             // 习惯名称
             Expanded(

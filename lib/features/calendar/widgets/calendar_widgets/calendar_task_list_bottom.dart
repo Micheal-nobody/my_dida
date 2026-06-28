@@ -37,7 +37,6 @@ class CalendarTaskListBottom extends StatelessWidget {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final taskProvider = Provider.of<TaskProvider>(context);

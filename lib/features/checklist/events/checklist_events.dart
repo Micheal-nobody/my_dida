@@ -1,5 +1,4 @@
 class ChecklistDeletedEvent {
-
   ChecklistDeletedEvent({
     required this.checklistId,
     required this.affectedTaskIds,
@@ -9,7 +8,6 @@ class ChecklistDeletedEvent {
 }
 
 class ChecklistRestoredEvent {
-
   ChecklistRestoredEvent({
     required this.checklistId,
     required this.affectedTaskIds,

@@ -146,7 +146,8 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
     );
   }
 
-  String _formatDate(DateTime date) => TimeFormatter.formatRelativeDate(date, includeDayAfterTomorrow: true);
+  String _formatDate(DateTime date) =>
+      TimeFormatter.formatRelativeDate(date, includeDayAfterTomorrow: true);
 
   String _formatTime(DateTime time) => TimeFormatter.formatTimeOnly(time);
 }

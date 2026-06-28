@@ -133,12 +133,10 @@ class _SearchPageState extends State<SearchPage> {
     _performSearch(_searchController.text);
   }
 
-
   String _getDateString(DateTime? dateTime) {
     if (dateTime == null) return '';
     return TimeFormatter.formatRelativeDate(dateTime);
   }
-
 
   String _getNotesSnippet(String notes, String query) {
     if (notes.isEmpty || query.isEmpty) return '';
@@ -194,11 +192,7 @@ class _SearchPageState extends State<SearchPage> {
           padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingS),
           child: Row(
             children: [
-              Icon(
-                Icons.search,
-                color: colorTheme.textSecondary,
-                size: 20,
-              ),
+              Icon(Icons.search, color: colorTheme.textSecondary, size: 20),
               const SizedBox(width: Dimensions.paddingS),
               Expanded(
                 child: TextField(
@@ -284,7 +278,6 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildSearchResultsSection(BuildContext context) {
-
     final colorTheme = context.theme;
 
     if (_isSearching) {
@@ -363,10 +356,11 @@ class _SearchPageState extends State<SearchPage> {
                                   value: task.isDone,
                                   onChanged: (value) async {
                                     if (value != null) {
-                                      final taskProvider = Provider.of<TaskProvider>(
-                                        context,
-                                        listen: false,
-                                      );
+                                      final taskProvider =
+                                          Provider.of<TaskProvider>(
+                                            context,
+                                            listen: false,
+                                          );
                                       await taskProvider.execute(
                                         UpdateTaskIsDone(task, value),
                                       );
@@ -374,7 +368,10 @@ class _SearchPageState extends State<SearchPage> {
                                     }
                                   },
                                   activeColor: Colors.blue,
-                                  side: BorderSide(color: priorityColor, width: 2),
+                                  side: BorderSide(
+                                    color: priorityColor,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: Dimensions.paddingS),
@@ -397,7 +394,7 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                             ],
                           ),
-        
+
                           // 备注片段展示
                           if (notesSnippet.isNotEmpty) ...[
                             const SizedBox(height: Dimensions.paddingXS),
@@ -426,13 +423,16 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                             ),
                           ],
-        
+
                           // 子任务匹配项展示
                           if (matchedCheckpoints.isNotEmpty) ...[
                             const SizedBox(height: Dimensions.paddingXS),
                             ...matchedCheckpoints.map(
                               (cp) => Padding(
-                                padding: const EdgeInsets.only(left: 32, top: 4),
+                                padding: const EdgeInsets.only(
+                                  left: 32,
+                                  top: 4,
+                                ),
                                 child: Row(
                                   children: [
                                     Icon(
@@ -461,7 +461,7 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                             ),
                           ],
-        
+
                           // 元数据（清单和截止日期）
                           const SizedBox(height: Dimensions.paddingS),
                           Padding(

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/features/settings/models/sidebar_config.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
@@ -124,16 +125,16 @@ void main() {
       getIt.registerSingleton<SidebarConfigProvider>(SidebarConfigProvider());
       final configProvider = getIt<SidebarConfigProvider>();
 
-      expect(configProvider.config.theme, 'system');
+      expect(configProvider.config.theme, AppTheme.system);
       expect(configProvider.config.showProfile, true);
 
-      await configProvider.updateTheme('dark');
+      await configProvider.updateTheme(AppTheme.dark);
       await configProvider.updateModuleVisibility(
         showProfile: false,
         showSearch: false,
       );
 
-      expect(configProvider.config.theme, 'dark');
+      expect(configProvider.config.theme, AppTheme.dark);
       expect(configProvider.config.showProfile, false);
       expect(configProvider.config.showSearch, false);
     });

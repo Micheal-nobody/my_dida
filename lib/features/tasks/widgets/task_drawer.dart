@@ -10,6 +10,7 @@ import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/checklist/widgets/add_checklist_dialog.dart';
+import 'package:my_dida/features/settings/models/sidebar_config.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:provider/provider.dart';
@@ -288,10 +289,10 @@ class _TodoDrawerState extends State<TodoDrawer> {
     );
   }
 
-  bool _shouldShowSmartList(int id, int option, int count) {
-    if (option == 0) return false; // Hide
-    if (option == 1) return true; // Show
-    if (option == 2) return count > 0; // Auto
+  bool _shouldShowSmartList(int id, SmartListShowOption option, int count) {
+    if (option == SmartListShowOption.hide) return false; // Hide
+    if (option == SmartListShowOption.show) return true; // Show
+    if (option == SmartListShowOption.auto) return count > 0; // Auto
     return false;
   }
 

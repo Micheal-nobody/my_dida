@@ -38,7 +38,9 @@ class HabitArchivedPage extends StatelessWidget {
                   decoration: TextDecoration.lineThrough,
                 ),
               ),
-              subtitle: Text('开始日期：${DateTimeUtils.formatDate(habit.startDate)}'),
+              subtitle: Text(
+                '开始日期：${DateTimeUtils.formatDate(habit.startDate)}',
+              ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

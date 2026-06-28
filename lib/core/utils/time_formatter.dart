@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/core/utils/time_utils.dart';
 
 class TimeFormatter {
-  static String formatRelativeDate(DateTime dateTime, {DateTime? now, bool includeDayAfterTomorrow = false}) {
+  static String formatRelativeDate(
+    DateTime dateTime, {
+    DateTime? now,
+    bool includeDayAfterTomorrow = false,
+  }) {
     final currentTime = now ?? DateTime.now();
     final today = DateTime(
       currentTime.year,
@@ -18,7 +22,8 @@ class TimeFormatter {
       return '今天';
     } else if (dateOnly.isAtSameMomentAs(tomorrow)) {
       return '明天';
-    } else if (includeDayAfterTomorrow && dateOnly.isAtSameMomentAs(dayAfterTomorrow)) {
+    } else if (includeDayAfterTomorrow &&
+        dateOnly.isAtSameMomentAs(dayAfterTomorrow)) {
       return '后天';
     } else {
       return '${dateTime.month}月${dateTime.day}日';
@@ -48,9 +53,11 @@ class TimeFormatter {
     final relativeStr = formatRelativeDate(date, now: now);
 
     if (!isAllDay && startTime != null) {
-      final startStr = '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
+      final startStr =
+          '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
       if (endTime != null) {
-        final endStr = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+        final endStr =
+            '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
         return '$relativeStr $startStr-$endStr';
       }
       return '$relativeStr $startStr';
@@ -67,7 +74,11 @@ class TimeFormatter {
   }) {
     if (date == null) return '';
     final currentTime = now ?? DateTime.now();
-    final today = DateTime(currentTime.year, currentTime.month, currentTime.day);
+    final today = DateTime(
+      currentTime.year,
+      currentTime.month,
+      currentTime.day,
+    );
     final tomorrow = today.add(const Duration(days: 1));
 
     final dateOnly = DateTime(date.year, date.month, date.day);
@@ -82,9 +93,11 @@ class TimeFormatter {
     String timeStr = '';
 
     if (!isAllDay && startTime != null) {
-      final startStr = '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
+      final startStr =
+          '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
       if (endTime != null) {
-        final endStr = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+        final endStr =
+            '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
         timeStr = ' $startStr-$endStr';
       } else {
         timeStr = ' $startStr';

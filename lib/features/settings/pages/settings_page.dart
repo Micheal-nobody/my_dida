@@ -10,6 +10,7 @@ import 'package:my_dida/core/services/data_transfer_service.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
+import 'package:my_dida/features/settings/models/sidebar_config.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
 import 'package:provider/provider.dart';
@@ -88,9 +89,9 @@ class SettingsPage extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        config.theme == 'light'
+                        config.theme == AppTheme.light
                             ? '浅色'
-                            : config.theme == 'dark'
+                            : config.theme == AppTheme.dark
                             ? '深色'
                             : '自动',
                         style: TextStyle(color: colorTheme.textSecondary),
@@ -126,7 +127,7 @@ class SettingsPage extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        config.language == 'zh' ? '简体中文' : 'English',
+                        config.language == AppLanguage.zh ? '简体中文' : 'English',
                         style: TextStyle(color: colorTheme.textSecondary),
                       ),
                       const Icon(Icons.chevron_right),
@@ -282,27 +283,27 @@ class SettingsPage extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            RadioListTile<String>(
+            RadioListTile<AppTheme>(
               title: const Text('自动'),
-              value: 'system',
+              value: AppTheme.system,
               groupValue: provider.config.theme,
               onChanged: (val) {
                 if (val != null) provider.updateTheme(val);
                 context.pop();
               },
             ),
-            RadioListTile<String>(
+            RadioListTile<AppTheme>(
               title: const Text('浅色'),
-              value: 'light',
+              value: AppTheme.light,
               groupValue: provider.config.theme,
               onChanged: (val) {
                 if (val != null) provider.updateTheme(val);
                 context.pop();
               },
             ),
-            RadioListTile<String>(
+            RadioListTile<AppTheme>(
               title: const Text('深色'),
-              value: 'dark',
+              value: AppTheme.dark,
               groupValue: provider.config.theme,
               onChanged: (val) {
                 if (val != null) provider.updateTheme(val);
@@ -326,18 +327,18 @@ class SettingsPage extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            RadioListTile<String>(
+            RadioListTile<AppLanguage>(
               title: const Text('简体中文'),
-              value: 'zh',
+              value: AppLanguage.zh,
               groupValue: provider.config.language,
               onChanged: (val) {
                 if (val != null) provider.updateLanguage(val);
                 context.pop();
               },
             ),
-            RadioListTile<String>(
+            RadioListTile<AppLanguage>(
               title: const Text('English'),
-              value: 'en',
+              value: AppLanguage.en,
               groupValue: provider.config.language,
               onChanged: (val) {
                 if (val != null) provider.updateLanguage(val);

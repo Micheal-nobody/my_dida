@@ -28,7 +28,6 @@ class Checklist extends RevertibleEntity {
   @ignore
   Color get color => Color(colorValue);
 
-
   @override
   Map<String, dynamic> toJson() => {
     'id': id,

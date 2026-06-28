@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
-extension ColorUtil on Color{
+extension ColorUtil on Color {
   Color get lighter => withValues(alpha: 1.5);
 
   Color get darker => withValues(alpha: 0.6);
 }
 
 class ColorUtils {
-
   /// 获取颜色的十六进制字符串表示
   static String colorToHex(Color color) =>
       '#${color.value.toRadixString(16).padLeft(8, '0').substring(2)}';

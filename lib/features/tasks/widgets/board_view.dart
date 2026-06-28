@@ -135,8 +135,12 @@ class BoardView extends StatelessWidget {
                               width: 284,
                               child: TaskCard(
                                 task: task,
-                                checklistName: task.getChecklistName(allChecklists),
-                                checklistColor: task.getChecklist(allChecklists).color,
+                                checklistName: task.getChecklistName(
+                                  allChecklists,
+                                ),
+                                checklistColor: task
+                                    .getChecklist(allChecklists)
+                                    .color,
                               ),
                             ),
                           ),
@@ -144,14 +148,20 @@ class BoardView extends StatelessWidget {
                             opacity: 0.3,
                             child: TaskCard(
                               task: task,
-                              checklistName: task.getChecklistName(allChecklists),
-                              checklistColor: task.getChecklist(allChecklists).color,
+                              checklistName: task.getChecklistName(
+                                allChecklists,
+                              ),
+                              checklistColor: task
+                                  .getChecklist(allChecklists)
+                                  .color,
                             ),
                           ),
                           child: TaskCard(
                             task: task,
                             checklistName: task.getChecklistName(allChecklists),
-                            checklistColor: task.getChecklist(allChecklists).color,
+                            checklistColor: task
+                                .getChecklist(allChecklists)
+                                .color,
                             onToggleDone: (value) {
                               taskProvider.execute(
                                 UpdateTaskIsDone(task, value!),
@@ -174,7 +184,6 @@ class BoardView extends StatelessWidget {
     );
   }
 
-
   void _showAddTaskDialogForColumn(
     BuildContext context,
     String columnTitle,
@@ -186,14 +195,12 @@ class BoardView extends StatelessWidget {
     if (groupBy == TaskGroupBy.priority) {
       final TaskPriority priority = TaskPriority.fromLabel(columnTitle);
       presetTask = Task(name: '', isAllDay: true, priority: priority);
-
     } else if (groupBy == TaskGroupBy.checklist) {
       final cl = allChecklists.firstWhere(
         (c) => c.name == columnTitle,
         orElse: () => allChecklists.first,
       );
       presetTask = Task(name: '', isAllDay: true, checklistId: cl.id);
-
     } else if (groupBy == TaskGroupBy.tag) {
       if (columnTitle != '无标签') {
         presetTask = Task(name: '', isAllDay: true, tags: [columnTitle]);
@@ -219,10 +226,7 @@ class BoardView extends StatelessWidget {
       }
     }
 
-    AddTaskBottomSheet.show(
-      context: context,
-      initTask: presetTask,
-    );
+    AddTaskBottomSheet.show(context: context, initTask: presetTask);
   }
 
   void _handleTaskDropped(

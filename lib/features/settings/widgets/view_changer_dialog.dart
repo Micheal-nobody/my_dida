@@ -34,7 +34,7 @@ class ViewChangerDialog extends StatelessWidget {
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.list, color: Colors.orange),
-            title:  Text(TaskViewMode.list.label),
+            title: Text(TaskViewMode.list.label),
             trailing: currentMode == TaskViewMode.list
                 ? const Icon(Icons.check, color: Colors.orange)
                 : null,

@@ -9,9 +9,7 @@ class CustomFloatingActionButton extends StatelessWidget {
     backgroundColor: Colors.orange,
     child: const Icon(Icons.add, color: Colors.white),
     onPressed: () {
-      AddTaskBottomSheet.show(
-        context: context,
-      );
+      AddTaskBottomSheet.show(context: context);
     },
   );
 }

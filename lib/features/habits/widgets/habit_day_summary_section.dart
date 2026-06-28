@@ -151,7 +151,9 @@ class HabitDaySummarySection extends StatelessWidget {
                     )
                     .name;
 
-                final timeStr = TimeFormatter.formatTimeOnly(record.checkInTime);
+                final timeStr = TimeFormatter.formatTimeOnly(
+                  record.checkInTime,
+                );
                 return ListTile(
                   leading: Icon(
                     record.isSkip ? Icons.skip_next : Icons.check,

@@ -159,7 +159,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 tempSelected.sort();
                 Navigator.pop(context, tempSelected);
               },
-              child: Text('确定', style: TextStyle(color: colorTheme.dialogConfirm)),
+              child: Text(
+                '确定',
+                style: TextStyle(color: colorTheme.dialogConfirm),
+              ),
             ),
           ],
         ),
@@ -204,7 +207,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   shape: BoxShape.circle,
                   color: isSelected
                       ? colorTheme.selectedColor
-                      : (isToday ? colorTheme.selectedColor.withValues(alpha: 0.6) : Colors.transparent),
+                      : (isToday
+                            ? colorTheme.selectedColor.withValues(alpha: 0.6)
+                            : Colors.transparent),
                 ),
                 child: Center(
                   child: Text(

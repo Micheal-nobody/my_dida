@@ -34,12 +34,12 @@ class SidebarConfigProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateTheme(String theme) async {
+  Future<void> updateTheme(AppTheme theme) async {
     _config.theme = theme;
     await updateConfig(_config);
   }
 
-  Future<void> updateLanguage(String language) async {
+  Future<void> updateLanguage(AppLanguage language) async {
     _config.language = language;
     await updateConfig(_config);
   }
@@ -62,13 +62,13 @@ class SidebarConfigProvider with ChangeNotifier {
   }
 
   Future<void> updateSmartListShowOption({
-    int? todayShowOption,
-    int? tomorrowShowOption,
-    int? nextSevenDaysShowOption,
-    int? inboxShowOption,
-    int? allShowOption,
-    int? completedShowOption,
-    int? trashShowOption,
+    SmartListShowOption? todayShowOption,
+    SmartListShowOption? tomorrowShowOption,
+    SmartListShowOption? nextSevenDaysShowOption,
+    SmartListShowOption? inboxShowOption,
+    SmartListShowOption? allShowOption,
+    SmartListShowOption? completedShowOption,
+    SmartListShowOption? trashShowOption,
   }) async {
     if (todayShowOption != null) _config.todayShowOption = todayShowOption;
     if (tomorrowShowOption != null) {

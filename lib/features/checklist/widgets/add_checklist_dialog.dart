@@ -18,7 +18,6 @@ class AddChecklistDialog extends BaseFormDialog {
   State<AddChecklistDialog> createState() => _AddChecklistDialogState();
 }
 
-
 /// 预定义的选择器颜色列表（用于清单、标签等）
 const List<Color> selectorColors = [
   Colors.red,

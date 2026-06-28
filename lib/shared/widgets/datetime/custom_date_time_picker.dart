@@ -22,9 +22,7 @@ class CustomDateTimePickerValue {
 
   factory CustomDateTimePickerValue.cleared() {
     final now = DateTime.now().toBeijingTime().dateOnly;
-    return CustomDateTimePickerValue(
-      selectedDate: now,
-    );
+    return CustomDateTimePickerValue(selectedDate: now);
   }
 
   static const Object _sentinel = Object();
@@ -196,14 +194,10 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
 
   @override
   Widget build(BuildContext context) {
-
     final colorTheme = context.theme;
 
     return Container(
-      height: MediaQuery
-          .of(context)
-          .size
-          .height * 0.8,
+      height: MediaQuery.of(context).size.height * 0.8,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -261,13 +255,13 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
                           startTime: calendarValue.selectedTime,
                           endTime: _value.endTime,
                           startDate:
-                          calendarValue.selectedDate ?? _value.startDate,
+                              calendarValue.selectedDate ?? _value.startDate,
                           endDate: _value.endDate ?? calendarValue.selectedDate,
                           rrule: calendarValue.rrule,
                           isTimeOnlyDate: calendarValue.isTimeOnlyDate,
                           reminderOffsets: calendarValue.reminderOffsets,
-                          notificationEnabled: calendarValue
-                              .notificationEnabled,
+                          notificationEnabled:
+                              calendarValue.notificationEnabled,
                         );
                       });
                     },

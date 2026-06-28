@@ -51,7 +51,8 @@ void mainCommon(AppConfig config) async {
           create: (context) => ThemeProvider(DefaultColorTheme()),
         ),
         ProxyProvider<ThemeProvider, ColorTheme>(
-          update: (context, themeProvider, previousTheme) => themeProvider.theme,
+          update: (context, themeProvider, previousTheme) =>
+              themeProvider.theme,
         ),
         ChangeNotifierProvider(create: (context) => ChecklistProvider()),
         ChangeNotifierProvider(create: (context) => CalendarPageProvider()),

@@ -46,17 +46,10 @@ class SearchHistorySection extends StatelessWidget {
             leading: Icon(Icons.history, color: colorTheme.textDisabled),
             title: Text(
               item,
-              style: TextStyle(
-                color: colorTheme.textPrimary,
-                fontSize: 15,
-              ),
+              style: TextStyle(color: colorTheme.textPrimary, fontSize: 15),
             ),
             trailing: IconButton(
-              icon: Icon(
-                Icons.close,
-                color: colorTheme.textDisabled,
-                size: 18,
-              ),
+              icon: Icon(Icons.close, color: colorTheme.textDisabled, size: 18),
               onPressed: () => onHistoryItemRemoved(item),
             ),
             onTap: () => onHistoryItemTapped(item),

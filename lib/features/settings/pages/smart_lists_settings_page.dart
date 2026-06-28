@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/themes/color_constants.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
+import 'package:my_dida/features/settings/models/sidebar_config.dart';
 import 'package:provider/provider.dart';
 
 class SmartListsSettingsPage extends StatelessWidget {
@@ -95,12 +96,12 @@ class SmartListsSettingsPage extends StatelessWidget {
   Widget _buildListTile({
     required BuildContext context,
     required String title,
-    required int currentValue,
-    required ValueChanged<int> onChanged,
+    required SmartListShowOption currentValue,
+    required ValueChanged<SmartListShowOption> onChanged,
   }) {
     String stateText = '显示';
-    if (currentValue == 0) stateText = '隐藏';
-    if (currentValue == 2) stateText = '自动';
+    if (currentValue == SmartListShowOption.hide) stateText = '隐藏';
+    if (currentValue == SmartListShowOption.auto) stateText = '自动';
 
     final colorTheme = context.theme;
 
@@ -116,10 +117,7 @@ class SmartListsSettingsPage extends StatelessWidget {
             children: [
               Text(
                 stateText,
-                style: TextStyle(
-                  color: colorTheme.textSecondary,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: colorTheme.textSecondary, fontSize: 16),
               ),
               Icon(Icons.chevron_right, color: colorTheme.textDisabled),
             ],
@@ -135,8 +133,8 @@ class SmartListsSettingsPage extends StatelessWidget {
   void _showOptionPicker(
     BuildContext context,
     String title,
-    int currentValue,
-    ValueChanged<int> onChanged,
+    SmartListShowOption currentValue,
+    ValueChanged<SmartListShowOption> onChanged,
   ) {
     showDialog(
       context: context,
@@ -145,27 +143,27 @@ class SmartListsSettingsPage extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            RadioListTile<int>(
+            RadioListTile<SmartListShowOption>(
               title: const Text('显示'),
-              value: 1,
+              value: SmartListShowOption.show,
               groupValue: currentValue,
               onChanged: (val) {
                 if (val != null) onChanged(val);
                 context.pop();
               },
             ),
-            RadioListTile<int>(
+            RadioListTile<SmartListShowOption>(
               title: const Text('隐藏'),
-              value: 0,
+              value: SmartListShowOption.hide,
               groupValue: currentValue,
               onChanged: (val) {
                 if (val != null) onChanged(val);
                 context.pop();
               },
             ),
-            RadioListTile<int>(
+            RadioListTile<SmartListShowOption>(
               title: const Text('自动 (有任务时显示)'),
-              value: 2,
+              value: SmartListShowOption.auto,
               groupValue: currentValue,
               onChanged: (val) {
                 if (val != null) onChanged(val);

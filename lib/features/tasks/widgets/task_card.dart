@@ -33,10 +33,7 @@ class TaskCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (checklistColor != null)
-              Container(
-                width: 4,
-                color: checklistColor,
-              ),
+              Container(width: 4, color: checklistColor),
             Expanded(
               child: ListTile(
                 // 任务完成状态，复选框边框颜色与优先级一致
@@ -79,7 +76,10 @@ class TaskCard extends StatelessWidget {
                           ),
                           child: Text(
                             tag,
-                            style: TextStyle(fontSize: 10, color: colorTheme.cardTagLabel),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: colorTheme.cardTagLabel,
+                            ),
                           ),
                         ),
                       ),
@@ -93,7 +93,10 @@ class TaskCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         TimeFormatter.formatTaskDate(task.startTime, now: now),
-                        style:  TextStyle(color: colorTheme.primary, fontSize: 12),
+                        style: TextStyle(
+                          color: colorTheme.primary,
+                          fontSize: 12,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -101,7 +104,10 @@ class TaskCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         checklistName,
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.end,
                       ),

@@ -110,7 +110,9 @@ class _CalendarVisibleRangeDialogState
           listen: false,
         );
         await calendarProvider.updateConfig(
-          visibleMode: _isAllSelected ? CalendarVisibleMode.all : CalendarVisibleMode.custom,
+          visibleMode: _isAllSelected
+              ? CalendarVisibleMode.all
+              : CalendarVisibleMode.custom,
           visibleChecklistIds: _tempSelectedIds,
         );
         if (context.mounted) {

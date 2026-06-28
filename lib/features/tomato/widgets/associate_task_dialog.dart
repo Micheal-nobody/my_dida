@@ -44,11 +44,10 @@ class _AssociateTaskDialogState extends State<AssociateTaskDialog> {
             icon: const Icon(Icons.add, color: Colors.blue),
             tooltip: '新建任务',
             onPressed: () => {
-              AddTaskBottomSheet.show(context: context)
-                  .then((_) {
+              AddTaskBottomSheet.show(context: context).then((_) {
                 // 任务创建后刷新任务列表，在UI上触发重新渲染
                 setState(() {});
-              })
+              }),
             },
           ),
         ],

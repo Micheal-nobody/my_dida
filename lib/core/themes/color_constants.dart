@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-mixin LightTheme{
+mixin LightTheme {
   // Background colors
   Color get background => Colors.white;
   Color get surface => const Color(0xFFF5F5F5);
@@ -24,10 +24,8 @@ mixin PriorityTheme {
   Color get nonePriority => Colors.grey;
 }
 
-
 /// ColorTheme interface/base class with default values
-abstract class ColorTheme with LightTheme{
-
+abstract class ColorTheme with LightTheme {
   // Primary colors
   Color get primary => Colors.orange;
 
@@ -56,10 +54,10 @@ abstract class ColorTheme with LightTheme{
 
   // Gradient colors
   LinearGradient get primaryGradient => LinearGradient(
-        colors: [Colors.blue.shade50, Colors.blue.shade100],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
+    colors: [Colors.blue.shade50, Colors.blue.shade100],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }
 
 /// Default theme implementation

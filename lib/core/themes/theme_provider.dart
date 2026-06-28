@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 /// ThemeProvider to handle dynamic theme changes and notifications
 class ThemeProvider extends ChangeNotifier {
-
   ThemeProvider(this._theme);
   ColorTheme _theme;
 

@@ -7,7 +7,6 @@ import 'package:my_dida/shared/models/revertible_entity.dart';
 
 part 'task.g.dart';
 
-
 enum TaskPriority {
   none, // 无优先级 -> 对应第四象限
   low, // 低优先级 -> 对应第三象限
@@ -38,7 +37,7 @@ enum TaskPriority {
     }
   }
 
-  String get label{
+  String get label {
     switch (this) {
       case TaskPriority.high:
         return '高优先级';

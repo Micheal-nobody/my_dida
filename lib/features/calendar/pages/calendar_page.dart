@@ -324,10 +324,7 @@ class _CalendarPageState extends State<CalendarPage> {
     BuildContext context, {
     required Habit habit,
     required double columnWidth,
-  }) => CalendarTimedHabitEntry(
-    habit: habit,
-    columnWidth: columnWidth,
-  );
+  }) => CalendarTimedHabitEntry(habit: habit, columnWidth: columnWidth);
 
   Widget _buildAllDayTaskEntry(
     BuildContext context, {
@@ -490,7 +487,9 @@ class _CalendarPageState extends State<CalendarPage> {
                             ? Icon(Icons.check, color: colorTheme.primary)
                             : null,
                         onTap: () {
-                          calendarPageProvider.updateConfig(viewMode: CalendarViewMode.month);
+                          calendarPageProvider.updateConfig(
+                            viewMode: CalendarViewMode.month,
+                          );
                           Navigator.pop(context);
                         },
                       ),
@@ -504,7 +503,9 @@ class _CalendarPageState extends State<CalendarPage> {
                             ? Icon(Icons.check, color: colorTheme.primary)
                             : null,
                         onTap: () {
-                          calendarPageProvider.updateConfig(viewMode: CalendarViewMode.week);
+                          calendarPageProvider.updateConfig(
+                            viewMode: CalendarViewMode.week,
+                          );
                           Navigator.pop(context);
                         },
                       ),
@@ -518,7 +519,9 @@ class _CalendarPageState extends State<CalendarPage> {
                             ? Icon(Icons.check, color: colorTheme.primary)
                             : null,
                         onTap: () {
-                          calendarPageProvider.updateConfig(viewMode: CalendarViewMode.threeDay);
+                          calendarPageProvider.updateConfig(
+                            viewMode: CalendarViewMode.threeDay,
+                          );
                           Navigator.pop(context);
                         },
                       ),
@@ -675,11 +678,7 @@ class _CalendarPageState extends State<CalendarPage> {
         onPressed: () {
           AddTaskBottomSheet.show(
             context: context,
-            initTask: Task(
-              name: '',
-              isAllDay: true,
-              startTime: _selectedDate,
-            ),
+            initTask: Task(name: '', isAllDay: true, startTime: _selectedDate),
           );
         },
       ),
