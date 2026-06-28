@@ -77,6 +77,7 @@ class CalendarTaskListBottom extends StatelessWidget {
                     return TaskCard(
                       task: task,
                       checklistName: task.getChecklistName(allChecklists),
+                      checklistColor: task.getChecklist(allChecklists).color,
                       onToggleDone: (value) {
                         taskProvider.execute(UpdateTaskIsDone(task, value!));
                       },

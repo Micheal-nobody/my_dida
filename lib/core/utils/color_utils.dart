@@ -7,28 +7,6 @@ extension ColorUtil on Color{
 }
 
 class ColorUtils {
-  /// 预定义的选择器颜色列表（用于清单、标签等）
-  static const List<Color> selectorColors = [
-    Colors.red,
-    Colors.pink,
-    Colors.purple,
-    Colors.deepPurple,
-    Colors.indigo,
-    Colors.blue,
-    Colors.lightBlue,
-    Colors.cyan,
-    Colors.teal,
-    Colors.green,
-    Colors.lightGreen,
-    Colors.lime,
-    Colors.yellow,
-    Colors.amber,
-    Colors.orange,
-    Colors.deepOrange,
-    Colors.brown,
-    Colors.grey,
-    Colors.blueGrey,
-  ];
 
   /// 获取颜色的十六进制字符串表示
   static String colorToHex(Color color) =>

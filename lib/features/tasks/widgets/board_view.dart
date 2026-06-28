@@ -136,6 +136,7 @@ class BoardView extends StatelessWidget {
                               child: TaskCard(
                                 task: task,
                                 checklistName: task.getChecklistName(allChecklists),
+                                checklistColor: task.getChecklist(allChecklists).color,
                               ),
                             ),
                           ),
@@ -144,11 +145,13 @@ class BoardView extends StatelessWidget {
                             child: TaskCard(
                               task: task,
                               checklistName: task.getChecklistName(allChecklists),
+                              checklistColor: task.getChecklist(allChecklists).color,
                             ),
                           ),
                           child: TaskCard(
                             task: task,
                             checklistName: task.getChecklistName(allChecklists),
+                            checklistColor: task.getChecklist(allChecklists).color,
                             onToggleDone: (value) {
                               taskProvider.execute(
                                 UpdateTaskIsDone(task, value!),

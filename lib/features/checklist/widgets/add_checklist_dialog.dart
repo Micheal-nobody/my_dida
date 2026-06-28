@@ -18,6 +18,30 @@ class AddChecklistDialog extends BaseFormDialog {
   State<AddChecklistDialog> createState() => _AddChecklistDialogState();
 }
 
+
+/// 预定义的选择器颜色列表（用于清单、标签等）
+const List<Color> selectorColors = [
+  Colors.red,
+  Colors.pink,
+  Colors.purple,
+  Colors.deepPurple,
+  Colors.indigo,
+  Colors.blue,
+  Colors.lightBlue,
+  Colors.cyan,
+  Colors.teal,
+  Colors.green,
+  Colors.lightGreen,
+  Colors.lime,
+  Colors.yellow,
+  Colors.amber,
+  Colors.orange,
+  Colors.deepOrange,
+  Colors.brown,
+  Colors.grey,
+  Colors.blueGrey,
+];
+
 class _AddChecklistDialogState extends BaseFormDialogState<AddChecklistDialog> {
   final _nameController = TextEditingController();
   late final ChecklistVO? checklist;
@@ -55,7 +79,7 @@ class _AddChecklistDialogState extends BaseFormDialogState<AddChecklistDialog> {
       const Text('选择颜色:', style: TextStyle(fontSize: 16)),
       CommonWidgets.buildSpacing(height: 10),
       CommonWidgets.buildColorSelector(
-        colors: ColorUtils.selectorColors,
+        colors: selectorColors,
         selectedColor: _selectedColor,
         onColorSelected: (color) {
           setState(() {

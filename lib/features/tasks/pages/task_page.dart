@@ -304,6 +304,7 @@ class _TodoPageState extends State<TodoPage> {
                       child: TaskCard(
                         task: task,
                         checklistName: task.getChecklistName(allChecklists),
+                        checklistColor: task.getChecklist(allChecklists).color,
                         onToggleDone: (value) {
                           if (isTrashList) {
                             taskProvider.execute(RestoreTask(task));

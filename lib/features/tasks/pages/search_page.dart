@@ -330,157 +330,171 @@ class _SearchPageState extends State<SearchPage> {
 
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: InkWell(
-            onTap: () async {
-              await _addSearchHistory(query);
-              if (context.mounted) {
-                await context.push('/tasks/${task.id}');
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(Dimensions.paddingM),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 复选框
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Checkbox(
-                          value: task.isDone,
-                          onChanged: (value) async {
-                            if (value != null) {
-                              final taskProvider = Provider.of<TaskProvider>(
-                                context,
-                                listen: false,
-                              );
-                              await taskProvider.execute(
-                                UpdateTaskIsDone(task, value),
-                              );
-                              await _performSearch(query);
-                            }
-                          },
-                          activeColor: Colors.blue,
-                          side: BorderSide(color: priorityColor, width: 2),
-                        ),
-                      ),
-                      const SizedBox(width: Dimensions.paddingS),
-                      // 任务标题与高亮
-                      Expanded(
-                        child: SearchHighlightedText(
-                          text: task.name,
-                          highlight: query,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            decoration: task.isDone
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
-                            color: task.isDone
-                                ? colorTheme.textSecondary
-                                : colorTheme.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // 备注片段展示
-                  if (notesSnippet.isNotEmpty) ...[
-                    const SizedBox(height: Dimensions.paddingXS),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 32),
-                      child: Row(
+          clipBehavior: Clip.antiAlias,
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  width: 4,
+                  color: task.getChecklist(allChecklists).color,
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () async {
+                      await _addSearchHistory(query);
+                      if (context.mounted) {
+                        await context.push('/tasks/${task.id}');
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(Dimensions.paddingM),
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.notes,
-                            size: 14,
-                            color: colorTheme.textDisabled,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: SearchHighlightedText(
-                              text: notesSnippet,
-                              highlight: query,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: colorTheme.textSecondary,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 复选框
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Checkbox(
+                                  value: task.isDone,
+                                  onChanged: (value) async {
+                                    if (value != null) {
+                                      final taskProvider = Provider.of<TaskProvider>(
+                                        context,
+                                        listen: false,
+                                      );
+                                      await taskProvider.execute(
+                                        UpdateTaskIsDone(task, value),
+                                      );
+                                      await _performSearch(query);
+                                    }
+                                  },
+                                  activeColor: Colors.blue,
+                                  side: BorderSide(color: priorityColor, width: 2),
+                                ),
                               ),
+                              const SizedBox(width: Dimensions.paddingS),
+                              // 任务标题与高亮
+                              Expanded(
+                                child: SearchHighlightedText(
+                                  text: task.name,
+                                  highlight: query,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    decoration: task.isDone
+                                        ? TextDecoration.lineThrough
+                                        : TextDecoration.none,
+                                    color: task.isDone
+                                        ? colorTheme.textSecondary
+                                        : colorTheme.textPrimary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+        
+                          // 备注片段展示
+                          if (notesSnippet.isNotEmpty) ...[
+                            const SizedBox(height: Dimensions.paddingXS),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 32),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.notes,
+                                    size: 14,
+                                    color: colorTheme.textDisabled,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: SearchHighlightedText(
+                                      text: notesSnippet,
+                                      highlight: query,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: colorTheme.textSecondary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+        
+                          // 子任务匹配项展示
+                          if (matchedCheckpoints.isNotEmpty) ...[
+                            const SizedBox(height: Dimensions.paddingXS),
+                            ...matchedCheckpoints.map(
+                              (cp) => Padding(
+                                padding: const EdgeInsets.only(left: 32, top: 4),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      cp.isDone
+                                          ? Icons.check_box
+                                          : Icons.check_box_outline_blank,
+                                      size: 14,
+                                      color: colorTheme.textDisabled,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: SearchHighlightedText(
+                                        text: cp.name,
+                                        highlight: query,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: colorTheme.textSecondary,
+                                          decoration: cp.isDone
+                                              ? TextDecoration.lineThrough
+                                              : TextDecoration.none,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+        
+                          // 元数据（清单和截止日期）
+                          const SizedBox(height: Dimensions.paddingS),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 32),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                if (dateStr.isNotEmpty)
+                                  Text(
+                                    dateStr,
+                                    style: const TextStyle(
+                                      color: Colors.orange,
+                                      fontSize: 12,
+                                    ),
+                                  )
+                                else
+                                  const SizedBox(),
+                                Text(
+                                  task.getChecklistName(allChecklists),
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-
-                  // 子任务匹配项展示
-                  if (matchedCheckpoints.isNotEmpty) ...[
-                    const SizedBox(height: Dimensions.paddingXS),
-                    ...matchedCheckpoints.map(
-                      (cp) => Padding(
-                        padding: const EdgeInsets.only(left: 32, top: 4),
-                        child: Row(
-                          children: [
-                            Icon(
-                              cp.isDone
-                                  ? Icons.check_box
-                                  : Icons.check_box_outline_blank,
-                              size: 14,
-                              color: colorTheme.textDisabled,
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: SearchHighlightedText(
-                                text: cp.name,
-                                highlight: query,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: colorTheme.textSecondary,
-                                  decoration: cp.isDone
-                                      ? TextDecoration.lineThrough
-                                      : TextDecoration.none,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  // 元数据（清单和截止日期）
-                  const SizedBox(height: Dimensions.paddingS),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 32),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (dateStr.isNotEmpty)
-                          Text(
-                            dateStr,
-                            style: const TextStyle(
-                              color: Colors.orange,
-                              fontSize: 12,
-                            ),
-                          )
-                        else
-                          const SizedBox(),
-                        Text(
-                          task.getChecklistName(allChecklists),
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );
