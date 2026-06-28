@@ -87,7 +87,7 @@ class HabitCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              habit.habitType == 'yesNo'
+              habit.habitType == HabitType.yesNo
                   ? '${habit.currentCheckInCount}/${habit.checkInCount}'
                   : '${habit.currentValue.toStringAsFixed(0)}/${habit.targetValue?.toStringAsFixed(0) ?? 0} ${habit.unit ?? ""}',
               style: const TextStyle(fontSize: 12),

@@ -4,6 +4,21 @@ import 'package:my_dida/shared/models/revertible_entity.dart';
 
 part 'habit.g.dart';
 
+enum HabitType {
+  yesNo,
+  count,
+  duration;
+
+  static HabitType fromString(String value) {
+    for (final type in HabitType.values) {
+      if (type.name == value) {
+        return type;
+      }
+    }
+    return HabitType.yesNo;
+  }
+}
+
 // 习惯，习惯是每天都要做的，比如刷牙、洗脸、吃饭等
 @Collection()
 class Habit extends RevertibleEntity {
@@ -52,7 +67,7 @@ class Habit extends RevertibleEntity {
             sortOrder: json['sortOrder'] as int? ?? 0,
             isTodaySkipped: json['isTodaySkipped'] as bool? ?? false,
           )
-          ..habitType = json['habitType']?.toString() ?? 'yesNo'
+          ..habitType = HabitType.fromString(json['habitType'])
           ..unit = json['unit']?.toString()
           ..targetValue = (json['targetValue'] as num?)?.toDouble()
           ..currentValue = (json['currentValue'] as num?)?.toDouble() ?? 0.0;
@@ -68,7 +83,8 @@ class Habit extends RevertibleEntity {
   int checkInCount; // 所需打卡次数
   int currentCheckInCount; // 当前打卡次数
 
-  String habitType = 'yesNo'; // 'yesNo', 'count', 'duration'
+  @Enumerated(EnumType.name)
+  HabitType habitType = HabitType.yesNo;
   String? unit;
   double? targetValue;
   double currentValue = 0.0;
@@ -118,7 +134,7 @@ class Habit extends RevertibleEntity {
     'isArchived': isArchived,
     'sortOrder': sortOrder,
     'isTodaySkipped': isTodaySkipped,
-    'habitType': habitType,
+    'habitType': habitType.name,
     'unit': unit,
     'targetValue': targetValue,
     'currentValue': currentValue,

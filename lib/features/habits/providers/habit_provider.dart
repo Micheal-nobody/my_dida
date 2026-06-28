@@ -153,7 +153,7 @@ class HabitProvider with ChangeNotifier {
 
   // 检查今日是否完成打卡
   bool isTodayCompleted(Habit habit) {
-    if (habit.habitType == 'yesNo') {
+    if (habit.habitType == HabitType.yesNo) {
       return habit.currentCheckInCount >= habit.checkInCount;
     } else {
       return habit.currentValue >= (habit.targetValue ?? 1.0);
@@ -162,7 +162,7 @@ class HabitProvider with ChangeNotifier {
 
   // 获取今日打卡进度
   double getTodayProgress(Habit habit) {
-    if (habit.habitType == 'yesNo') {
+    if (habit.habitType == HabitType.yesNo) {
       if (habit.checkInCount == 0) return 0.0;
       return habit.currentCheckInCount / habit.checkInCount;
     } else {

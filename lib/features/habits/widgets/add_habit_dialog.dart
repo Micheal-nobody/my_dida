@@ -28,7 +28,7 @@ class _AddHabitDialogState extends BaseFormDialogState<AddHabitDialog> {
   String _selectedIcon = 'star';
   late TimeOfDay _selectedTime;
   int _checkInCount = 1;
-  String _habitType = 'yesNo'; // 'yesNo', 'count', 'duration'
+  HabitType _habitType = HabitType.yesNo; // yesNo, count, duration
   String? _unit;
   double _targetValue = 1.0;
   RepeatPattern _rrule = const RepeatPattern.daily();
@@ -80,22 +80,22 @@ class _AddHabitDialogState extends BaseFormDialogState<AddHabitDialog> {
       CommonWidgets.buildSpacing(),
 
       // 习惯类型
-      DropdownButtonFormField<String>(
-        initialValue: _habitType,
+      DropdownButtonFormField<HabitType>(
+        value: _habitType,
         decoration: const InputDecoration(labelText: '习惯类型'),
         items: const [
-          DropdownMenuItem(value: 'yesNo', child: Text('是/否打卡')),
-          DropdownMenuItem(value: 'count', child: Text('数值打卡')),
-          DropdownMenuItem(value: 'duration', child: Text('时长打卡')),
+          DropdownMenuItem(value: HabitType.yesNo, child: Text('是/否打卡')),
+          DropdownMenuItem(value: HabitType.count, child: Text('数值打卡')),
+          DropdownMenuItem(value: HabitType.duration, child: Text('时长打卡')),
         ],
         onChanged: (val) {
           if (val == null) return;
           setState(() {
             _habitType = val;
-            if (_habitType == 'duration') {
+            if (_habitType == HabitType.duration) {
               _unit = '分钟';
               _targetValue = 60.0;
-            } else if (_habitType == 'yesNo') {
+            } else if (_habitType == HabitType.yesNo) {
               _unit = null;
               _targetValue = 1.0;
             } else {
@@ -107,7 +107,7 @@ class _AddHabitDialogState extends BaseFormDialogState<AddHabitDialog> {
       ),
       CommonWidgets.buildSpacing(),
 
-      if (_habitType == 'count') ...[
+      if (_habitType == HabitType.count) ...[
         Row(
           children: [
             Expanded(
@@ -139,7 +139,7 @@ class _AddHabitDialogState extends BaseFormDialogState<AddHabitDialog> {
         CommonWidgets.buildSpacing(),
       ],
 
-      if (_habitType == 'duration') ...[
+      if (_habitType == HabitType.duration) ...[
         TextFormField(
           initialValue: _targetValue.toStringAsFixed(0),
           decoration: const InputDecoration(labelText: '目标时长 (分钟)'),
@@ -183,7 +183,7 @@ class _AddHabitDialogState extends BaseFormDialogState<AddHabitDialog> {
       CommonWidgets.buildSpacing(),
 
       // 打卡次数
-      if (_habitType == 'yesNo')
+      if (_habitType == HabitType.yesNo)
         CommonWidgets.buildNumberSlider(
           label: '每日打卡次数',
           value: _checkInCount,
@@ -221,7 +221,7 @@ class _AddHabitDialogState extends BaseFormDialogState<AddHabitDialog> {
             name: _nameController.text.trim(),
             icon: _selectedIcon,
             remindTime: DateTimeUtils.createDateTime(now, _selectedTime),
-            checkInCount: _habitType == 'yesNo' ? _checkInCount : 1,
+            checkInCount: _habitType == HabitType.yesNo ? _checkInCount : 1,
             currentCheckInCount: 0,
             startDate: now,
             totalCheckInCount: 0,
