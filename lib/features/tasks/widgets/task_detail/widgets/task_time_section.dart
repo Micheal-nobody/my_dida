@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
+import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/shared/widgets/datetime/custom_date_time_picker.dart';
@@ -89,7 +90,7 @@ class TaskTimeSection extends StatelessWidget {
   }
 
   String _formatDateTime(DateTime dateTime) =>
-      "${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
+      TimeFormatter.formatTaskDateTime(dateTime);
 
   Future<void> _showDatePicker(
     BuildContext context,

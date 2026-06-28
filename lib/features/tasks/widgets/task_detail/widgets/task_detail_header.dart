@@ -30,9 +30,7 @@ class TaskDetailHeader extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           decoration: BoxDecoration(
             color: Theme.of(context).canvasColor,
-            border: Border(
-              bottom: BorderSide(color: Colors.grey[200]!, width: 1),
-            ),
+            border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -139,6 +137,7 @@ class TaskDetailHeader extends StatelessWidget {
                         UpdatePriority(updatedTask, val),
                       );
                     },
+
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -153,24 +152,12 @@ class TaskDetailHeader extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.flag,
-                            color: updatedTask.priority == TaskPriority.high
-                                ? Colors.red
-                                : updatedTask.priority == TaskPriority.medium
-                                ? Colors.orange
-                                : updatedTask.priority == TaskPriority.low
-                                ? Colors.blue
-                                : Colors.grey,
+                            color: updatedTask.priority.color,
                             size: 16,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            updatedTask.priority == TaskPriority.high
-                                ? '高'
-                                : updatedTask.priority == TaskPriority.medium
-                                ? '中'
-                                : updatedTask.priority == TaskPriority.low
-                                ? '低'
-                                : '无',
+                            updatedTask.priority.label,
                             style: const TextStyle(fontSize: 13),
                           ),
                           const SizedBox(width: 2),
@@ -182,46 +169,23 @@ class TaskDetailHeader extends StatelessWidget {
                         ],
                       ),
                     ),
+
                     itemBuilder: (context) => const [
                       PopupMenuItem(
                         value: TaskPriority.high,
-                        child: Row(
-                          children: [
-                            Icon(Icons.flag, color: Colors.red, size: 18),
-                            SizedBox(width: 8),
-                            Text('🔴 高优先级'),
-                          ],
-                        ),
+                        child: Text('🔴 高优先级'),
                       ),
                       PopupMenuItem(
                         value: TaskPriority.medium,
-                        child: Row(
-                          children: [
-                            Icon(Icons.flag, color: Colors.orange, size: 18),
-                            SizedBox(width: 8),
-                            Text('🟠 中优先级'),
-                          ],
-                        ),
+                        child: Text('🟠 中优先级'),
                       ),
                       PopupMenuItem(
                         value: TaskPriority.low,
-                        child: Row(
-                          children: [
-                            Icon(Icons.flag, color: Colors.blue, size: 18),
-                            SizedBox(width: 8),
-                            Text('🔵 低优先级'),
-                          ],
-                        ),
+                        child: Text('🔵 低优先级'),
                       ),
                       PopupMenuItem(
                         value: TaskPriority.none,
-                        child: Row(
-                          children: [
-                            Icon(Icons.flag, color: Colors.grey, size: 18),
-                            SizedBox(width: 8),
-                            Text('⚪ 无优先级'),
-                          ],
-                        ),
+                        child: Text('⚪ 无优先级'),
                       ),
                     ],
                   ),

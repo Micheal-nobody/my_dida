@@ -45,21 +45,8 @@ class SortAndGroupDialog extends StatelessWidget {
             Wrap(
               spacing: 8,
               children: [
-                _buildGroupChip(context, taskProvider, TaskGroupBy.date, '按日期'),
-                _buildGroupChip(
-                  context,
-                  taskProvider,
-                  TaskGroupBy.checklist,
-                  '按清单',
-                ),
-                _buildGroupChip(
-                  context,
-                  taskProvider,
-                  TaskGroupBy.priority,
-                  '按优先级',
-                ),
-                _buildGroupChip(context, taskProvider, TaskGroupBy.tag, '按标签'),
-                _buildGroupChip(context, taskProvider, TaskGroupBy.none, '无分组'),
+                for (final item in TaskGroupBy.values)
+                  _buildGroupChip(context, taskProvider, item, item.label),
               ],
             ),
             const SizedBox(height: 16),
@@ -75,25 +62,8 @@ class SortAndGroupDialog extends StatelessWidget {
             Wrap(
               spacing: 8,
               children: [
-                _buildSortChip(
-                  context,
-                  taskProvider,
-                  TaskSortBy.dueDate,
-                  '按日期',
-                ),
-                _buildSortChip(
-                  context,
-                  taskProvider,
-                  TaskSortBy.priority,
-                  '按优先级',
-                ),
-                _buildSortChip(context, taskProvider, TaskSortBy.title, '按标题'),
-                _buildSortChip(
-                  context,
-                  taskProvider,
-                  TaskSortBy.createTime,
-                  '按创建时间',
-                ),
+                for (final item in TaskSortBy.values)
+                  _buildSortChip(context, taskProvider, item, item.label),
               ],
             ),
             const SizedBox(height: 16),

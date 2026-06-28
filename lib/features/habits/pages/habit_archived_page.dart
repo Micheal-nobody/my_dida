@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/utils/time_utils.dart';
 import 'package:my_dida/features/habits/providers/habit_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -37,7 +38,7 @@ class HabitArchivedPage extends StatelessWidget {
                   decoration: TextDecoration.lineThrough,
                 ),
               ),
-              subtitle: Text('开始日期：${_formatDate(habit.startDate)}'),
+              subtitle: Text('开始日期：${DateTimeUtils.formatDate(habit.startDate)}'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -75,9 +76,6 @@ class HabitArchivedPage extends StatelessWidget {
       },
     ),
   );
-
-  String _formatDate(DateTime date) =>
-      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
   Future<bool?> _showConfirmDialog(
     BuildContext context,

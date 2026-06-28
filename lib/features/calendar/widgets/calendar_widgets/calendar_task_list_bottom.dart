@@ -38,14 +38,6 @@ class CalendarTaskListBottom extends StatelessWidget {
     }
   }
 
-  String _getChecklistName(int? id, List<ChecklistVO> allChecklists) {
-    if (id == null) return '';
-    final cl = allChecklists.firstWhere(
-      (c) => c.id == id,
-      orElse: () => allChecklists.first,
-    );
-    return cl.name;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,10 +77,7 @@ class CalendarTaskListBottom extends StatelessWidget {
                     final task = tasks[index];
                     return TaskCard(
                       task: task,
-                      checklistName: _getChecklistName(
-                        task.checklistId,
-                        allChecklists,
-                      ),
+                      checklistName: task.getChecklistName(allChecklists),
                       onToggleDone: (value) {
                         taskProvider.execute(UpdateTaskIsDone(task, value!));
                       },

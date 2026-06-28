@@ -9,8 +9,7 @@ class AssociateMainTaskDialog extends StatefulWidget {
   final Task currentTask;
 
   @override
-  State<AssociateMainTaskDialog> createState() =>
-      _AssociateMainTaskDialogState();
+  State<AssociateMainTaskDialog> createState() => _AssociateMainTaskDialogState();
 
   static void show(BuildContext context, Task task) {
     showDialog(

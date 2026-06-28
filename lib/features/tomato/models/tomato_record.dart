@@ -1,10 +1,11 @@
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/shared/models/base_entity.dart';
+import 'package:my_dida/shared/models/revertible_entity.dart';
 
 part 'tomato_record.g.dart';
 
 @Collection()
-class TomatoRecord extends BaseEntity {
+class TomatoRecord extends RevertibleEntity {
   TomatoRecord({
     required this.startTime,
     required this.endTime,
@@ -56,6 +57,7 @@ class TomatoRecord extends BaseEntity {
     return record;
   }
 
+  @override
   Map<String, dynamic> toJson() => {
     'id': id == Isar.autoIncrement ? null : id,
     'taskId': taskId,
@@ -67,4 +69,7 @@ class TomatoRecord extends BaseEntity {
     'durationMinutes': durationMinutes,
     'isCompleted': isCompleted,
   };
+
+  @override
+  String get displayName => '';
 }

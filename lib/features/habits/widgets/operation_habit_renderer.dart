@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/constants/icon_constants.dart';
 import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/operation_undo/services/operation_data_renderer.dart';
@@ -82,15 +83,19 @@ class OperationHabitRenderer extends StatelessWidget {
         Row(
           children: [
             // 习惯图标
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: _getIconColor().withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: IconConstants.getIconColorByName(habit.icon).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  IconConstants.getIconByName(habit.icon) ?? Icons.star,
+                  color: IconConstants.getIconColorByName(habit.icon),
+                  size: 20,
+                ),
               ),
-              child: Icon(_getIconData(), color: _getIconColor(), size: 20),
-            ),
             const SizedBox(width: 12),
             // 习惯名称
             Expanded(
@@ -143,7 +148,9 @@ class OperationHabitRenderer extends StatelessWidget {
               ? habit.currentCheckInCount / habit.checkInCount
               : 0,
           backgroundColor: Colors.grey[300],
-          valueColor: AlwaysStoppedAnimation<Color>(_getIconColor()),
+          valueColor: AlwaysStoppedAnimation<Color>(
+            IconConstants.getIconColorByName(habit.icon),
+          ),
         ),
 
         const SizedBox(height: 12),
@@ -224,36 +231,6 @@ class OperationHabitRenderer extends StatelessWidget {
       Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
     ],
   );
-
-  IconData _getIconData() {
-    const iconMap = {
-      'brush': Icons.brush,
-      'fitness': Icons.fitness_center,
-      'book': Icons.book,
-      'water': Icons.water_drop,
-      'sleep': Icons.bedtime,
-      'food': Icons.restaurant,
-      'meditation': Icons.self_improvement,
-      'walk': Icons.directions_walk,
-      'music': Icons.music_note,
-    };
-    return iconMap[habit.icon] ?? Icons.star;
-  }
-
-  Color _getIconColor() {
-    const colorMap = {
-      'brush': Colors.blue,
-      'fitness': Colors.orange,
-      'book': Colors.green,
-      'water': Colors.cyan,
-      'sleep': Colors.purple,
-      'food': Colors.red,
-      'meditation': Colors.indigo,
-      'walk': Colors.teal,
-      'music': Colors.pink,
-    };
-    return colorMap[habit.icon] ?? Colors.amber;
-  }
 
   Color _getStatusColor() {
     final progress = habit.checkInCount > 0

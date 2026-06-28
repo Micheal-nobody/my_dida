@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/constants/icon_constants.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/habits/providers/habit_provider.dart';
 import 'package:provider/provider.dart';
@@ -87,7 +88,7 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
         title: Row(
           children: [
             Icon(
-              _getIconData(habit.icon),
+              IconConstants.getIconByName(habit.icon) ?? Icons.star,
               color: isCompleted ? Colors.green : widget.accentColor,
             ),
             const SizedBox(width: 8),
@@ -352,23 +353,4 @@ class _HabitCheckInDialogState extends State<HabitCheckInDialog>
       ],
     ),
   );
-
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'brush':
-        return Icons.brush;
-      case 'fitness':
-        return Icons.fitness_center;
-      case 'book':
-        return Icons.book;
-      case 'water':
-        return Icons.water_drop;
-      case 'sleep':
-        return Icons.bedtime;
-      case 'food':
-        return Icons.restaurant;
-      default:
-        return Icons.star;
-    }
-  }
 }

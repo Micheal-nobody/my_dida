@@ -7,7 +7,6 @@ import 'package:my_dida/core/constants/ui_constants.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/router/shell_scaffold_key.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
-import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/checklist/widgets/add_checklist_dialog.dart';
 import 'package:my_dida/features/habits/providers/habit_provider.dart';
@@ -34,14 +33,7 @@ class TodoPage extends StatefulWidget {
 class _TodoPageState extends State<TodoPage> {
   final AppMessageService _messageService = getIt<AppMessageService>();
 
-  String _getChecklistName(int? id, List<ChecklistVO> allChecklists) {
-    if (id == null) return '';
-    final cl = allChecklists.firstWhere(
-      (c) => c.id == id,
-      orElse: () => allChecklists.first,
-    );
-    return cl.name;
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -309,10 +301,7 @@ class _TodoPageState extends State<TodoPage> {
                       },
                       child: TaskCard(
                         task: task,
-                        checklistName: _getChecklistName(
-                          task.checklistId,
-                          allChecklists,
-                        ),
+                        checklistName: task.getChecklistName(allChecklists),
                         onToggleDone: (value) {
                           if (isTrashList) {
                             taskProvider.execute(RestoreTask(task));

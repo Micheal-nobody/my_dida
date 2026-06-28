@@ -34,7 +34,7 @@ class ViewChangerDialog extends StatelessWidget {
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.list, color: Colors.orange),
-            title: const Text('列表视图'),
+            title:  Text(TaskViewMode.list.label),
             trailing: currentMode == TaskViewMode.list
                 ? const Icon(Icons.check, color: Colors.orange)
                 : null,
@@ -45,7 +45,7 @@ class ViewChangerDialog extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.dashboard, color: Colors.orange),
-            title: const Text('看板视图'),
+            title: Text(TaskViewMode.board.label),
             trailing: currentMode == TaskViewMode.board
                 ? const Icon(Icons.check, color: Colors.orange)
                 : null,
@@ -54,7 +54,6 @@ class ViewChangerDialog extends StatelessWidget {
               Navigator.pop(context);
             },
           ),
-          const SizedBox(height: 8),
         ],
       ),
     );

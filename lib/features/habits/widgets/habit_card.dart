@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/constants/icon_constants.dart';
+import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 
 class HabitCard extends StatelessWidget {
@@ -54,7 +56,7 @@ class HabitCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              _iconMap[habit.icon] ?? Icons.star,
+              IconConstants.getIconByName(habit.icon) ?? Icons.star,
               size: 24,
               color: isCompleted ? Colors.green : Colors.grey,
             ),
@@ -94,7 +96,7 @@ class HabitCard extends StatelessWidget {
         ),
 
         trailing: Text(
-          _formatTime(habit.remindTime),
+          TimeFormatter.formatTimeOnly(habit.remindTime),
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
 
@@ -102,19 +104,4 @@ class HabitCard extends StatelessWidget {
       ),
     ),
   );
-
-  static const _iconMap = {
-    'brush': Icons.brush,
-    'fitness': Icons.fitness_center,
-    'book': Icons.book,
-    'water': Icons.water_drop,
-    'sleep': Icons.bedtime,
-    'food': Icons.restaurant,
-    'meditation': Icons.self_improvement,
-    'walk': Icons.directions_walk,
-    'music': Icons.music_note,
-  };
-
-  String _formatTime(DateTime time) =>
-      '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 }

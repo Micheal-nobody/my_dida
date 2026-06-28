@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:isar_community/isar.dart';
+import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/shared/models/revertible_entity.dart';
@@ -9,7 +11,44 @@ enum TaskPriority {
   none, // 无优先级 -> 对应第四象限
   low, // 低优先级 -> 对应第三象限
   medium, // 中优先级 -> 对应第二象限
-  high, // 高优先级 -> 对应第一象限
+  high; // 高优先级 -> 对应第一象限
+
+  // 静态 fromLabel：根据中文label反向匹配枚举
+  static TaskPriority fromLabel(String label) {
+    for (final item in values) {
+      if (item.label == label) {
+        return item;
+      }
+    }
+
+    return none; // 找不到返回 none
+  }
+
+  Color get color {
+    switch (this) {
+      case TaskPriority.high:
+        return Colors.red;
+      case TaskPriority.medium:
+        return Colors.orange;
+      case TaskPriority.low:
+        return Colors.blue;
+      case TaskPriority.none:
+        return Colors.grey;
+    }
+  }
+
+  String get label{
+    switch (this) {
+      case TaskPriority.high:
+        return '高优先级';
+      case TaskPriority.medium:
+        return '中优先级';
+      case TaskPriority.low:
+        return '低优先级';
+      case TaskPriority.none:
+        return '无优先级';
+    }
+  }
 }
 
 @Collection()
@@ -50,6 +89,15 @@ class Task extends RevertibleEntity {
       reminderOffsetMinutes = reminderOffsets.first;
     }
   }
+
+  ChecklistVO getChecklist(List<ChecklistVO> allChecklists) =>
+      allChecklists.firstWhere(
+        (list) => list.id == checklistId,
+        orElse: () => allChecklists.first,
+      );
+
+  String getChecklistName(List<ChecklistVO> allChecklists) =>
+      getChecklist(allChecklists).name;
 
   /// 从标准 JSON Map 反序列化生成 Task
   factory Task.fromJson(Map<String, dynamic> json) {

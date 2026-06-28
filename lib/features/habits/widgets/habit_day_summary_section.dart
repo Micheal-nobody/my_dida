@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/habits/models/habit_check_in_record.dart';
 import 'package:my_dida/features/habits/providers/habit_provider.dart';
@@ -150,8 +151,7 @@ class HabitDaySummarySection extends StatelessWidget {
                     )
                     .name;
 
-                final timeStr =
-                    '${record.checkInTime.hour.toString().padLeft(2, '0')}:${record.checkInTime.minute.toString().padLeft(2, '0')}';
+                final timeStr = TimeFormatter.formatTimeOnly(record.checkInTime);
                 return ListTile(
                   leading: Icon(
                     record.isSkip ? Icons.skip_next : Icons.check,

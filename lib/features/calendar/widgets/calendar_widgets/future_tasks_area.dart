@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/core/constants/app_constants.dart';
+import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
@@ -76,10 +76,7 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
 
   Widget _buildFutureTask(Task task, ChecklistProvider checklistProvider) {
     // 获取任务颜色
-    final checklist = checklistProvider.allCheckLists.firstWhere(
-      (box) => box.id == task.checklistId,
-      orElse: () => AppConstants.defaultCheckList,
-    );
+    final checklist = task.getChecklist(checklistProvider.allCheckLists);
     final taskColor = checklist.color;
 
     return Container(
@@ -149,23 +146,7 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final tomorrow = today.add(const Duration(days: 1));
-    final dayAfterTomorrow = today.add(const Duration(days: 2));
+  String _formatDate(DateTime date) => TimeFormatter.formatRelativeDate(date, includeDayAfterTomorrow: true);
 
-    if (date.isAtSameMomentAs(today)) {
-      return '今天';
-    } else if (date.isAtSameMomentAs(tomorrow)) {
-      return '明天';
-    } else if (date.isAtSameMomentAs(dayAfterTomorrow)) {
-      return '后天';
-    } else {
-      return '${date.month}月${date.day}日';
-    }
-  }
-
-  String _formatTime(DateTime time) =>
-      '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  String _formatTime(DateTime time) => TimeFormatter.formatTimeOnly(time);
 }

@@ -16,24 +16,9 @@ class TaskCard extends StatelessWidget {
   final void Function(bool?)? onToggleDone;
   final VoidCallback? onTap;
 
-  // 辅助方法：获取优先级颜色
-  static Color _getPriorityColor(TaskPriority priority) {
-    switch (priority) {
-      case TaskPriority.high:
-        return Colors.red;
-      case TaskPriority.medium:
-        return Colors.orange;
-      case TaskPriority.low:
-        return Colors.blue;
-      case TaskPriority.none:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final priorityColor = _getPriorityColor(task.priority);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -46,7 +31,7 @@ class TaskCard extends StatelessWidget {
             value: task.isDone,
             onChanged: onToggleDone,
             activeColor: Colors.blue,
-            side: BorderSide(color: priorityColor, width: 2),
+            side: BorderSide(color: task.priority.color, width: 2),
           ),
         ),
 

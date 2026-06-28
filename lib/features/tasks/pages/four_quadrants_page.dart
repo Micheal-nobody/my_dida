@@ -131,19 +131,6 @@ class FourQuadrantsPage extends StatelessWidget {
     );
   }
 
-  Color _getPriorityColor(TaskPriority priority) {
-    switch (priority) {
-      case TaskPriority.high:
-        return Colors.red;
-      case TaskPriority.medium:
-        return Colors.orange;
-      case TaskPriority.low:
-        return Colors.blue;
-      case TaskPriority.none:
-        return Colors.grey;
-    }
-  }
-
   Widget _buildQuadrantCard({
     required BuildContext context,
     required String title,
@@ -263,9 +250,7 @@ class FourQuadrantsPage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         itemBuilder: (context, index) {
                           final task = tasks[index];
-                          final priorityColor = _getPriorityColor(
-                            task.priority,
-                          );
+                          final priorityColor = task.priority.color;
                           final cardWidget = Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,

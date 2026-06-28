@@ -1,10 +1,10 @@
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/shared/models/base_entity.dart';
+import 'package:my_dida/shared/models/revertible_entity.dart';
 
 part 'custom_tomato.g.dart';
 
 @Collection()
-class CustomTomato extends BaseEntity {
+class CustomTomato extends RevertibleEntity {
   CustomTomato({required this.name, required this.focusMinutes});
 
   @Index(unique: true)
@@ -27,9 +27,13 @@ class CustomTomato extends BaseEntity {
     return tomato;
   }
 
+  @override
   Map<String, dynamic> toJson() => {
     'id': id == Isar.autoIncrement ? null : id,
     'name': name,
     'focusMinutes': focusMinutes,
   };
+
+  @override
+  String get displayName => name;
 }

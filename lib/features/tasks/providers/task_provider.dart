@@ -16,11 +16,65 @@ import 'package:my_dida/features/tasks/services/task_lifecycle_manager.dart';
 
 export 'package:my_dida/features/tasks/models/task_command.dart';
 
-enum TaskViewMode { list, board }
+enum TaskViewMode {
+  list,
+  board;
 
-enum TaskGroupBy { date, checklist, priority, tag, none }
+  String get label {
+    switch (this) {
+      case TaskViewMode.list:
+        return '列表视图';
+      case TaskViewMode.board:
+        return '看板视图';
+    }
+  }
+}
 
-enum TaskSortBy { dueDate, priority, title, createTime, custom }
+enum TaskGroupBy {
+  date,
+  checklist,
+  priority,
+  tag,
+  none;
+
+  String get label {
+    switch (this) {
+      case TaskGroupBy.date:
+        return '按日期';
+      case TaskGroupBy.checklist:
+        return '按清单';
+      case TaskGroupBy.priority:
+        return '按优先级';
+      case TaskGroupBy.tag:
+        return '按标签';
+      case TaskGroupBy.none:
+        return '无分组';
+    }
+  }
+}
+
+enum TaskSortBy {
+  dueDate,
+  priority,
+  title,
+  createTime,
+  custom;
+
+  String get label {
+    switch (this) {
+      case TaskSortBy.dueDate:
+        return '按日期';
+      case TaskSortBy.priority:
+        return '按优先级';
+      case TaskSortBy.title:
+        return '按标题';
+      case TaskSortBy.createTime:
+        return '按创建时间';
+      case TaskSortBy.custom:
+        return '自定义';
+    }
+  }
+}
 
 enum TaskVisibleRange { all, undone, done }
 

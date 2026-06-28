@@ -6,7 +6,7 @@ import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
-import 'package:my_dida/features/checklist/models/checklist_vo.dart';
+import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
@@ -132,43 +132,12 @@ class _SearchPageState extends State<SearchPage> {
     _performSearch(_searchController.text);
   }
 
-  Color _getPriorityColor(TaskPriority priority) {
-    switch (priority) {
-      case TaskPriority.high:
-        return Colors.red;
-      case TaskPriority.medium:
-        return Colors.orange;
-      case TaskPriority.low:
-        return Colors.blue;
-      case TaskPriority.none:
-        return Colors.grey;
-    }
-  }
 
   String _getDateString(DateTime? dateTime) {
     if (dateTime == null) return '';
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final tomorrow = today.add(const Duration(days: 1));
-
-    final date = DateTime(dateTime.year, dateTime.month, dateTime.day);
-    if (date.isAtSameMomentAs(today)) {
-      return '今天';
-    } else if (date.isAtSameMomentAs(tomorrow)) {
-      return '明天';
-    } else {
-      return '${dateTime.month}月${dateTime.day}日';
-    }
+    return TimeFormatter.formatRelativeDate(dateTime);
   }
 
-  String _getChecklistName(int? id, List<ChecklistVO> allChecklists) {
-    if (id == null) return '';
-    final cl = allChecklists.firstWhere(
-      (c) => c.id == id,
-      orElse: () => allChecklists.first,
-    );
-    return cl.name;
-  }
 
   String _getNotesSnippet(String notes, String query) {
     if (notes.isEmpty || query.isEmpty) return '';
@@ -341,11 +310,7 @@ class _SearchPageState extends State<SearchPage> {
       itemCount: _searchResults.length,
       itemBuilder: (context, index) {
         final task = _searchResults[index];
-        final priorityColor = _getPriorityColor(task.priority);
-        final checklistName = _getChecklistName(
-          task.checklistId,
-          allChecklists,
-        );
+        final priorityColor = task.priority.color;
         final dateStr = _getDateString(task.startTime);
 
         // 匹配特化：备注和子任务
@@ -497,7 +462,7 @@ class _SearchPageState extends State<SearchPage> {
                         else
                           const SizedBox(),
                         Text(
-                          checklistName,
+                          task.getChecklistName(allChecklists),
                           style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 12,

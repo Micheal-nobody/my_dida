@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/core/constants/app_constants.dart';
 import 'package:my_dida/core/logger/logger.dart';
+import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/core/utils/time_utils.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
@@ -187,72 +188,25 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
   String _getDateDisplayText() {
     final date = _dateTimePickerValue.selectedDate;
     if (date == null) return '设置日期';
-    final now = DateTime.now().toBeijingTime();
-    String dateStr = '';
-    if (date.year == now.year &&
-        date.month == now.month &&
-        date.day == now.day) {
-      dateStr = '今天';
-    } else {
-      final tomorrow = now.add(const Duration(days: 1));
-      if (date.year == tomorrow.year &&
-          date.month == tomorrow.month &&
-          date.day == tomorrow.day) {
-        dateStr = '明天';
-      } else {
-        dateStr = '${date.month}月${date.day}日';
-      }
-    }
-
-    if (!_dateTimePickerValue.isAllDay &&
-        _dateTimePickerValue.startTime != null) {
-      final startStr =
-          '${_dateTimePickerValue.startTime!.hour.toString().padLeft(2, '0')}:${_dateTimePickerValue.startTime!.minute.toString().padLeft(2, '0')}';
-      if (_dateTimePickerValue.endTime != null) {
-        final endStr =
-            '${_dateTimePickerValue.endTime!.hour.toString().padLeft(2, '0')}:${_dateTimePickerValue.endTime!.minute.toString().padLeft(2, '0')}';
-        return '$dateStr $startStr-$endStr';
-      }
-      return '$dateStr $startStr';
-    }
-    return dateStr;
+    return TimeFormatter.formatDateTimeRange(
+      date,
+      isAllDay: _dateTimePickerValue.isAllDay,
+      startTime: _dateTimePickerValue.startTime,
+      endTime: _dateTimePickerValue.endTime,
+      now: DateTime.now().toBeijingTime(),
+    );
   }
 
   String _getFullDateDisplayText() {
     final date = _dateTimePickerValue.selectedDate;
     if (date == null) return '设置日期与时间';
-    final now = DateTime.now().toBeijingTime();
-    String relativeStr = '';
-    if (date.year == now.year &&
-        date.month == now.month &&
-        date.day == now.day) {
-      relativeStr = '今天, ';
-    } else {
-      final tomorrow = now.add(const Duration(days: 1));
-      if (date.year == tomorrow.year &&
-          date.month == tomorrow.month &&
-          date.day == tomorrow.day) {
-        relativeStr = '明天, ';
-      }
-    }
-
-    final String dateStr = '${date.month}月${date.day}日';
-    String timeStr = '';
-
-    if (!_dateTimePickerValue.isAllDay &&
-        _dateTimePickerValue.startTime != null) {
-      final startStr =
-          '${_dateTimePickerValue.startTime!.hour.toString().padLeft(2, '0')}:${_dateTimePickerValue.startTime!.minute.toString().padLeft(2, '0')}';
-      if (_dateTimePickerValue.endTime != null) {
-        final endStr =
-            '${_dateTimePickerValue.endTime!.hour.toString().padLeft(2, '0')}:${_dateTimePickerValue.endTime!.minute.toString().padLeft(2, '0')}';
-        timeStr = ' $startStr-$endStr';
-      } else {
-        timeStr = ' $startStr';
-      }
-    }
-
-    return '$relativeStr$dateStr$timeStr';
+    return TimeFormatter.formatFullDateTimeRange(
+      date,
+      isAllDay: _dateTimePickerValue.isAllDay,
+      startTime: _dateTimePickerValue.startTime,
+      endTime: _dateTimePickerValue.endTime,
+      now: DateTime.now().toBeijingTime(),
+    );
   }
 
   void _ensureSelectedChecklist(ChecklistProvider provider) {
@@ -539,13 +493,7 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
                       child: Icon(
                         Icons.flag,
                         size: 20,
-                        color: _priority == TaskPriority.high
-                            ? Colors.red
-                            : _priority == TaskPriority.medium
-                            ? Colors.orange
-                            : _priority == TaskPriority.low
-                            ? Colors.blue
-                            : Colors.grey[600],
+                        color: _priority == TaskPriority.none ? Colors.grey[600] : _priority.color,
                       ),
                     ),
                   ),
@@ -1000,13 +948,7 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
           initialValue: _priority,
           icon: Icon(
             Icons.flag,
-            color: _priority == TaskPriority.high
-                ? Colors.red
-                : _priority == TaskPriority.medium
-                ? Colors.orange
-                : _priority == TaskPriority.low
-                ? Colors.blue
-                : Colors.grey[600],
+            color: _priority == TaskPriority.none ? Colors.grey[600] : _priority.color,
           ),
           onSelected: (val) {
             setState(() {
