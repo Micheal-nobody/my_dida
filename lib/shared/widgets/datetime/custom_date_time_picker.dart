@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/utils/time_utils.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 
@@ -194,118 +195,127 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
   }
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: MediaQuery.of(context).size.height * 0.8,
-    decoration: const BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    child: Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-              Expanded(
-                child: TabBar(
-                  controller: _tabController,
-                  tabs: const [
-                    Tab(text: '日期'),
-                    Tab(text: '时间段'),
-                  ],
-                  labelColor: Colors.orange,
-                  unselectedLabelColor: Colors.grey,
-                  indicatorColor: Colors.orange,
+  Widget build(BuildContext context) {
+
+    final colorTheme = context.theme;
+
+    return Container(
+      height: MediaQuery
+          .of(context)
+          .size
+          .height * 0.8,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.check, color: Colors.orange),
-                onPressed: () {
-                  Navigator.pop(context, _normalizeValue());
-                },
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: CalendarWidget(
-                  initialValue: CalendarWidgetValue(
-                    selectedDate: _value.selectedDate,
-                    selectedTime: _value.startTime,
-                    rrule: _value.rrule,
-                    isTimeOnlyDate: _value.isTimeOnlyDate,
-                    reminderOffsets: _value.reminderOffsets,
-                    notificationEnabled: _value.notificationEnabled,
+                Expanded(
+                  child: TabBar(
+                    controller: _tabController,
+                    tabs: const [
+                      Tab(text: '日期'),
+                      Tab(text: '时间段'),
+                    ],
+                    labelColor: colorTheme.selectedColor,
+                    unselectedLabelColor: Colors.grey,
+                    indicatorColor: colorTheme.selectedColor,
                   ),
-                  onChanged: (calendarValue) {
-                    setState(() {
-                      _value = _value.copyWith(
-                        selectedDate: calendarValue.selectedDate,
-                        startTime: calendarValue.selectedTime,
-                        endTime: _value.endTime,
-                        startDate:
-                            calendarValue.selectedDate ?? _value.startDate,
-                        endDate: _value.endDate ?? calendarValue.selectedDate,
-                        rrule: calendarValue.rrule,
-                        isTimeOnlyDate: calendarValue.isTimeOnlyDate,
-                        reminderOffsets: calendarValue.reminderOffsets,
-                        notificationEnabled: calendarValue.notificationEnabled,
-                      );
-                    });
+                ),
+                IconButton(
+                  icon: Icon(Icons.check, color: colorTheme.iconColor),
+                  onPressed: () {
+                    Navigator.pop(context, _normalizeValue());
                   },
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TimeSlotTabWidget(
-                  initialValue: TimeSlotTabValue(
-                    selectedDate: _value.selectedDate,
-                    startTime: _value.startTime,
-                    endTime: _value.endTime,
-                    startDate: _value.startDate ?? _value.selectedDate,
-                    endDate: _value.endDate ?? _value.selectedDate,
-                    isAllDay: _value.isAllDay,
-                    rrule: _value.rrule,
-                  ),
-                  onChanged: (timeSlotValue) {
-                    setState(() {
-                      _value = _value.copyWith(
-                        selectedDate: timeSlotValue.selectedDate,
-                        startTime: timeSlotValue.startTime,
-                        endTime: timeSlotValue.endTime,
-                        startDate: timeSlotValue.startDate,
-                        endDate: timeSlotValue.endDate,
-                        isAllDay: timeSlotValue.isAllDay,
-                        rrule: timeSlotValue.rrule,
-                      );
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.all(16),
-          child: Center(
-            child: TextButton(
-              onPressed: () {
-                Navigator.pop(context, CustomDateTimePickerValue.cleared());
-              },
-              child: const Text('清除', style: TextStyle(color: Colors.red)),
+              ],
             ),
           ),
-        ),
-      ],
-    ),
-  );
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: CalendarWidget(
+                    initialValue: CalendarWidgetValue(
+                      selectedDate: _value.selectedDate,
+                      selectedTime: _value.startTime,
+                      rrule: _value.rrule,
+                      isTimeOnlyDate: _value.isTimeOnlyDate,
+                      reminderOffsets: _value.reminderOffsets,
+                      notificationEnabled: _value.notificationEnabled,
+                    ),
+                    onChanged: (calendarValue) {
+                      setState(() {
+                        _value = _value.copyWith(
+                          selectedDate: calendarValue.selectedDate,
+                          startTime: calendarValue.selectedTime,
+                          endTime: _value.endTime,
+                          startDate:
+                          calendarValue.selectedDate ?? _value.startDate,
+                          endDate: _value.endDate ?? calendarValue.selectedDate,
+                          rrule: calendarValue.rrule,
+                          isTimeOnlyDate: calendarValue.isTimeOnlyDate,
+                          reminderOffsets: calendarValue.reminderOffsets,
+                          notificationEnabled: calendarValue
+                              .notificationEnabled,
+                        );
+                      });
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: TimeSlotTabWidget(
+                    initialValue: TimeSlotTabValue(
+                      selectedDate: _value.selectedDate,
+                      startTime: _value.startTime,
+                      endTime: _value.endTime,
+                      startDate: _value.startDate ?? _value.selectedDate,
+                      endDate: _value.endDate ?? _value.selectedDate,
+                      isAllDay: _value.isAllDay,
+                      rrule: _value.rrule,
+                    ),
+                    onChanged: (timeSlotValue) {
+                      setState(() {
+                        _value = _value.copyWith(
+                          selectedDate: timeSlotValue.selectedDate,
+                          startTime: timeSlotValue.startTime,
+                          endTime: timeSlotValue.endTime,
+                          startDate: timeSlotValue.startDate,
+                          endDate: timeSlotValue.endDate,
+                          isAllDay: timeSlotValue.isAllDay,
+                          rrule: timeSlotValue.rrule,
+                        );
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pop(context, CustomDateTimePickerValue.cleared());
+                },
+                child: const Text('清除', style: TextStyle(color: Colors.red)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

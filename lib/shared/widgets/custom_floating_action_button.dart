@@ -9,16 +9,8 @@ class CustomFloatingActionButton extends StatelessWidget {
     backgroundColor: Colors.orange,
     child: const Icon(Icons.add, color: Colors.white),
     onPressed: () {
-      showModalBottomSheet(
+      AddTaskBottomSheet.show(
         context: context,
-        useRootNavigator: true,
-        isScrollControlled: true,
-        builder: (context) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: const AddTaskBottomSheet(),
-        ),
       );
     },
   );

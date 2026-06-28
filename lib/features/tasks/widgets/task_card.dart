@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 
@@ -20,6 +21,8 @@ class TaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
 
+    final colorTheme = context.theme;
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: ListTile(
@@ -30,7 +33,7 @@ class TaskCard extends StatelessWidget {
           child: Checkbox(
             value: task.isDone,
             onChanged: onToggleDone,
-            activeColor: Colors.blue,
+            activeColor: colorTheme.selectedColor,
             side: BorderSide(color: task.priority.color, width: 2),
           ),
         ),
@@ -58,12 +61,12 @@ class TaskCard extends StatelessWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: colorTheme.cardTagBackground,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     tag,
-                    style: const TextStyle(fontSize: 10, color: Colors.grey),
+                    style: TextStyle(fontSize: 10, color: colorTheme.cardTagLabel),
                   ),
                 ),
               ),
@@ -77,7 +80,7 @@ class TaskCard extends StatelessWidget {
             Expanded(
               child: Text(
                 TimeFormatter.formatTaskDate(task.startTime, now: now),
-                style: const TextStyle(color: Colors.orange, fontSize: 12),
+                style:  TextStyle(color: colorTheme.primary, fontSize: 12),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -92,7 +95,6 @@ class TaskCard extends StatelessWidget {
             ),
           ],
         ),
-
         onTap: onTap,
       ),
     );

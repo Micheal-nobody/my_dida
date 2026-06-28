@@ -51,15 +51,15 @@ class HabitProvider with ChangeNotifier {
 
   // 获取所有进行中的习惯（未归档），并按 sortOrder 排序
   List<Habit> get activeHabits {
-    final list = _habits.where((h) => !h.isArchived).toList();
-    list.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final list = _habits.where((h) => !h.isArchived).toList()
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     return list;
   }
 
   // 获取所有已归档的习惯，按 sortOrder 排序
   List<Habit> get archivedHabits {
-    final list = _habits.where((h) => h.isArchived).toList();
-    list.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final list = _habits.where((h) => h.isArchived).toList()
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     return list;
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/utils/time_utils.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 import 'package:my_dida/shared/widgets/datetime/calendar_grid.dart';
@@ -115,6 +116,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
     final List<int> tempSelected = List.from(currentOffsets);
 
+    final colorTheme = context.theme;
+
     return showDialog<List<int>>(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -129,7 +132,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 return CheckboxListTile(
                   title: Text(opt['label']),
                   value: isChecked,
-                  activeColor: Colors.orange,
+                  activeColor: colorTheme.primary,
                   controlAffinity: ListTileControlAffinity.leading,
                   onChanged: (checked) {
                     setDialogState(() {
@@ -149,14 +152,14 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('取消', style: TextStyle(color: Colors.orange)),
+              child: const Text('取消'),
             ),
             TextButton(
               onPressed: () {
                 tempSelected.sort();
                 Navigator.pop(context, tempSelected);
               },
-              child: const Text('确定', style: TextStyle(color: Colors.orange)),
+              child: Text('确定', style: TextStyle(color: colorTheme.dialogConfirm)),
             ),
           ],
         ),
@@ -175,6 +178,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     final bool isRepeatSelected = !displayRRule.isNone;
     final bool isReminderSelected =
         _value.notificationEnabled && _value.reminderOffsets.isNotEmpty;
+
+    final colorTheme = context.theme;
 
     return SingleChildScrollView(
       child: Column(
@@ -198,8 +203,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isSelected
-                      ? Colors.red
-                      : (isToday ? Colors.orange : Colors.transparent),
+                      ? colorTheme.selectedColor
+                      : (isToday ? colorTheme.selectedColor.withValues(alpha: 0.6) : Colors.transparent),
                 ),
                 child: Center(
                   child: Text(
@@ -223,7 +228,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             value: isTimeSelected
                 ? '${_value.selectedTime!.hour.toString().padLeft(2, '0')}:${_value.selectedTime!.minute.toString().padLeft(2, '0')}'
                 : '无',
-            valueColor: isTimeSelected ? Colors.orange : null,
+            valueColor: isTimeSelected ? colorTheme.selectedColor : null,
             isSelected: isTimeSelected,
             onTap: () async {
               final pickedTime = await CustomTimePicker.show(
@@ -255,7 +260,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             value: isReminderSelected
                 ? _value.reminderOffsets.map(_getReminderOptionLabel).join(', ')
                 : '无',
-            valueColor: isReminderSelected ? Colors.orange : null,
+            valueColor: isReminderSelected ? colorTheme.selectedColor : null,
             isSelected: isReminderSelected,
             onTap: () async {
               final selected = await _showMultiReminderDialog(
@@ -276,7 +281,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             icon: Icons.repeat,
             label: '重复',
             value: displayRRule.toReadableString(_value.selectedDate),
-            valueColor: isRepeatSelected ? Colors.orange : null,
+            valueColor: isRepeatSelected ? colorTheme.selectedColor : null,
             isSelected: isRepeatSelected,
             onTap: () async {
               final repeat = await CustomRepeatPicker.show(

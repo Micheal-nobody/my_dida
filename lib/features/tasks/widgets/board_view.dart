@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
@@ -37,6 +38,8 @@ class BoardView extends StatelessWidget {
       itemBuilder: (context, index) {
         final columnTitle = columns[index];
         final tasks = groupedTasks[columnTitle] ?? [];
+
+        final colorTheme = context.theme;
 
         return Container(
           width: 300,
@@ -84,7 +87,7 @@ class BoardView extends StatelessWidget {
                       ],
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add, color: Colors.orange),
+                      icon: Icon(Icons.add, color: colorTheme.iconColor),
                       onPressed: () {
                         // 点击新增任务
                         _showAddTaskDialogForColumn(
@@ -213,16 +216,9 @@ class BoardView extends StatelessWidget {
       }
     }
 
-    showModalBottomSheet(
+    AddTaskBottomSheet.show(
       context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: AddTaskBottomSheet(presetTask: presetTask),
-      ),
+      initTask: presetTask,
     );
   }
 

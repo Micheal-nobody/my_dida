@@ -17,16 +17,37 @@ class AddTaskBottomSheet extends StatefulWidget {
   const AddTaskBottomSheet({
     super.key,
     this.parentTask,
-    this.presetTask,
+    this.initTask,
     this.initialIsFullScreen = false,
   });
 
   final Task? parentTask;
-  final Task? presetTask;
+  final Task? initTask;
   final bool initialIsFullScreen;
 
   @override
   State<AddTaskBottomSheet> createState() => _AddTaskBottomSheetState();
+
+  static Future<T?> show<T>({
+    required BuildContext context,
+    Task? parentTask,
+    Task? initTask,
+    bool initialIsFullScreen = false,
+  }) => showModalBottomSheet<T>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: AddTaskBottomSheet(
+          parentTask: parentTask,
+          initTask: initTask,
+          initialIsFullScreen: initialIsFullScreen,
+        ),
+      ),
+    );
 }
 
 class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
@@ -56,24 +77,24 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
     _isFullScreen = widget.initialIsFullScreen;
     final now = DateTime.now();
 
-    if (widget.presetTask != null) {
+    if (widget.initTask != null) {
       _hasInitPreset = true;
-      _textController.text = widget.presetTask!.name;
-      _descController.text = widget.presetTask!.description;
-      _priority = widget.presetTask!.priority;
-      _tags = List.from(widget.presetTask!.tags);
-      _checkpoints = widget.presetTask!.checkpoints
+      _textController.text = widget.initTask!.name;
+      _descController.text = widget.initTask!.description;
+      _priority = widget.initTask!.priority;
+      _tags = List.from(widget.initTask!.tags);
+      _checkpoints = widget.initTask!.checkpoints
           .map((cp) => CheckPoint(name: cp.name, isDone: cp.isDone))
           .toList();
 
-      final taskStart = widget.presetTask!.startTime;
-      final taskEnd = widget.presetTask!.endTime;
+      final taskStart = widget.initTask!.startTime;
+      final taskEnd = widget.initTask!.endTime;
 
-      _notificationEnabled = widget.presetTask!.notificationEnabled;
-      _reminderOffsets = List.from(widget.presetTask!.reminderOffsets);
+      _notificationEnabled = widget.initTask!.notificationEnabled;
+      _reminderOffsets = List.from(widget.initTask!.reminderOffsets);
       if (_reminderOffsets.isEmpty &&
-          widget.presetTask!.reminderOffsetMinutes != null) {
-        _reminderOffsets.add(widget.presetTask!.reminderOffsetMinutes!);
+          widget.initTask!.reminderOffsetMinutes != null) {
+        _reminderOffsets.add(widget.initTask!.reminderOffsetMinutes!);
       }
 
       _dateTimePickerValue = CustomDateTimePickerValue(
@@ -86,15 +107,15 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
             : null,
         startDate: taskStart?.dateOnly,
         endDate: taskEnd?.dateOnly,
-        isAllDay: widget.presetTask!.isAllDay,
-        rrule: widget.presetTask!.rrule,
+        isAllDay: widget.initTask!.isAllDay,
+        rrule: widget.initTask!.rrule,
         reminderOffsets: _reminderOffsets,
         notificationEnabled: _notificationEnabled,
       );
 
-      if (widget.presetTask!.checklistId != null) {
+      if (widget.initTask!.checklistId != null) {
         _selectedChecklist = ChecklistVO(
-          id: widget.presetTask!.checklistId!,
+          id: widget.initTask!.checklistId!,
           name: '',
           color: Colors.grey,
         );
@@ -895,22 +916,13 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
           icon: Icon(Icons.fullscreen_exit, color: Colors.grey[600]),
           onPressed: () {
             Navigator.pop(context);
-            showModalBottomSheet(
+            AddTaskBottomSheet.show(
               context: context,
-              useRootNavigator: true,
-              isScrollControlled: true,
-              builder: (context) => Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                child: AddTaskBottomSheet(
-                  presetTask: _buildTaskFromForm(
-                    taskName: _textController.text.trim(),
-                    checklistProvider: context.read<ChecklistProvider>(),
-                  ),
-                  parentTask: parentTask,
-                ),
+              initTask: _buildTaskFromForm(
+                taskName: _textController.text.trim(),
+                checklistProvider: context.read<ChecklistProvider>(),
               ),
+              parentTask: parentTask,
             );
           },
           tooltip: '取消任务展开',

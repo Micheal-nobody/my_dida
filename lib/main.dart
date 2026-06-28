@@ -153,7 +153,7 @@ class _MyAppState extends State<MyApp> {
     // 主题
     theme: ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.yellow),
     ),
 
     // 本地化：强制中文并提供所需 delegate（含 Cupertino）

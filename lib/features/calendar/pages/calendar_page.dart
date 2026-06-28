@@ -891,21 +891,12 @@ class _CalendarPageState extends State<CalendarPage> {
         backgroundColor: Colors.orange,
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () {
-          showModalBottomSheet(
+          AddTaskBottomSheet.show(
             context: context,
-            useRootNavigator: true,
-            isScrollControlled: true,
-            builder: (context) => Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: AddTaskBottomSheet(
-                presetTask: Task(
-                  name: '',
-                  isAllDay: true,
-                  startTime: _selectedDate,
-                ),
-              ),
+            initTask: Task(
+              name: '',
+              isAllDay: true,
+              startTime: _selectedDate,
             ),
           );
         },

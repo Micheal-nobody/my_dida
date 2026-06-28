@@ -25,6 +25,7 @@ class Checklist extends RevertibleEntity {
   @override
   String get displayName => name;
 
+  @ignore
   Color get color => Color(colorValue);
 
 

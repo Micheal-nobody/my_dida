@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
 import 'package:my_dida/core/logger/logger.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
+import 'package:my_dida/core/utils/task_filter.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
@@ -23,10 +24,7 @@ class FourQuadrantsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: colorTheme.background,
       appBar: AppBar(
-        title: const Text(
-          '时间管理四象限',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text('四象限', style: TextStyle(fontWeight: FontWeight.bold)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -51,23 +49,9 @@ class FourQuadrantsPage extends StatelessWidget {
           final allTasks = snapshot.data ?? [];
 
           // 过滤已完成任务
-          final filteredTasks = config.quadrantHideCompleted
-              ? allTasks.where((t) => !t.isDone).toList()
-              : allTasks;
-
-          // 按照优先级进行分类
-          final highTasks = filteredTasks
-              .where((t) => t.priority == TaskPriority.high)
-              .toList();
-          final mediumTasks = filteredTasks
-              .where((t) => t.priority == TaskPriority.medium)
-              .toList();
-          final lowTasks = filteredTasks
-              .where((t) => t.priority == TaskPriority.low)
-              .toList();
-          final noneTasks = filteredTasks
-              .where((t) => t.priority == TaskPriority.none)
-              .toList();
+          final filteredTasks = allTasks.filterByIsDone(
+            config.quadrantHideCompleted,
+          );
 
           return LayoutBuilder(
             builder: (context, constraints) => Column(
@@ -78,9 +62,10 @@ class FourQuadrantsPage extends StatelessWidget {
                       Expanded(
                         child: _buildQuadrantCard(
                           context: context,
-                          title: config.quadrantName1,
-                          color: Color(config.quadrantColor1),
-                          tasks: highTasks,
+                          title: '重要且紧急',
+                          tasks: filteredTasks.filterByPriority(
+                            TaskPriority.high,
+                          ),
                           priority: TaskPriority.high,
                           taskProvider: taskProvider,
                         ),
@@ -88,9 +73,10 @@ class FourQuadrantsPage extends StatelessWidget {
                       Expanded(
                         child: _buildQuadrantCard(
                           context: context,
-                          title: config.quadrantName2,
-                          color: Color(config.quadrantColor2),
-                          tasks: mediumTasks,
+                          title: '重要不紧急',
+                          tasks: filteredTasks.filterByPriority(
+                            TaskPriority.medium,
+                          ),
                           priority: TaskPriority.medium,
                           taskProvider: taskProvider,
                         ),
@@ -104,9 +90,11 @@ class FourQuadrantsPage extends StatelessWidget {
                       Expanded(
                         child: _buildQuadrantCard(
                           context: context,
-                          title: config.quadrantName3,
-                          color: Color(config.quadrantColor3),
-                          tasks: lowTasks,
+                          title: '紧急不重要',
+                          tasks: filteredTasks.filterByPriority(
+                            TaskPriority.low,
+                          ),
+
                           priority: TaskPriority.low,
                           taskProvider: taskProvider,
                         ),
@@ -114,9 +102,10 @@ class FourQuadrantsPage extends StatelessWidget {
                       Expanded(
                         child: _buildQuadrantCard(
                           context: context,
-                          title: config.quadrantName4,
-                          color: Color(config.quadrantColor4),
-                          tasks: noneTasks,
+                          title: '不重要不紧急',
+                          tasks: filteredTasks.filterByPriority(
+                            TaskPriority.none,
+                          ),
                           priority: TaskPriority.none,
                           taskProvider: taskProvider,
                         ),
@@ -135,12 +124,12 @@ class FourQuadrantsPage extends StatelessWidget {
   Widget _buildQuadrantCard({
     required BuildContext context,
     required String title,
-    required Color color,
     required List<Task> tasks,
     required TaskPriority priority,
     required TaskProvider taskProvider,
   }) {
     final activeCount = tasks.where((t) => !t.isDone).length;
+    final color = priority.color;
 
     return DragTarget<Task>(
       onWillAcceptWithDetails: (details) => details.data.priority != priority,
@@ -201,7 +190,6 @@ class FourQuadrantsPage extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,
@@ -227,12 +215,19 @@ class FourQuadrantsPage extends StatelessWidget {
                       icon: Icon(Icons.add, color: color, size: 20),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      onPressed: () => _addNewTask(context, priority),
+                      onPressed: () => AddTaskBottomSheet.show(
+                        context: context,
+                        initTask: Task(
+                          name: '',
+                          isAllDay: true,
+                          priority: priority,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-              const Divider(height: 1, thickness: 0.5),
+              const Divider(height: 0.5),
 
               // 任务列表
               Expanded(
@@ -344,21 +339,6 @@ class FourQuadrantsPage extends StatelessWidget {
     );
   }
 
-  void _addNewTask(BuildContext context, TaskPriority priority) {
-    final presetTask = Task(name: '', isAllDay: true, priority: priority);
-    showModalBottomSheet(
-      context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: AddTaskBottomSheet(presetTask: presetTask),
-      ),
-    );
-  }
-
   void _showSettingsBottomSheet(
     BuildContext context,
     SidebarConfigProvider provider,
@@ -387,48 +367,12 @@ class _FourQuadrantsSettingsSheet extends StatefulWidget {
 class _FourQuadrantsSettingsSheetState
     extends State<_FourQuadrantsSettingsSheet> {
   late bool _hideCompleted;
-  late TextEditingController _name1Controller;
-  late TextEditingController _name2Controller;
-  late TextEditingController _name3Controller;
-  late TextEditingController _name4Controller;
-
-  late int _color1;
-  late int _color2;
-  late int _color3;
-  late int _color4;
-
-  final List<int> _presetColors = [
-    0xFFE57373, // 红色
-    0xFFFFB74D, // 橙色/黄色
-    0xFF64B5F6, // 蓝色
-    0xFF81C784, // 绿色
-    0xFFBA68C8, // 紫色
-    0xFF90A4AE, // 灰蓝色
-  ];
 
   @override
   void initState() {
     super.initState();
     final config = widget.provider.config;
     _hideCompleted = config.quadrantHideCompleted;
-    _name1Controller = TextEditingController(text: config.quadrantName1);
-    _name2Controller = TextEditingController(text: config.quadrantName2);
-    _name3Controller = TextEditingController(text: config.quadrantName3);
-    _name4Controller = TextEditingController(text: config.quadrantName4);
-
-    _color1 = config.quadrantColor1;
-    _color2 = config.quadrantColor2;
-    _color3 = config.quadrantColor3;
-    _color4 = config.quadrantColor4;
-  }
-
-  @override
-  void dispose() {
-    _name1Controller.dispose();
-    _name2Controller.dispose();
-    _name3Controller.dispose();
-    _name4Controller.dispose();
-    super.dispose();
   }
 
   @override
@@ -471,147 +415,6 @@ class _FourQuadrantsSettingsSheetState
               });
               widget.provider.updateQuadrantHideCompleted(val);
             },
-          ),
-          const Divider(),
-          const SizedBox(height: 8),
-          const Text(
-            '自定义象限名称与颜色',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-          ),
-          const SizedBox(height: 12),
-          _buildQuadrantEditor(
-            1,
-            _name1Controller,
-            _color1,
-            (color) {
-              setState(() => _color1 = color);
-              widget.provider.updateQuadrantColors(color1: color);
-            },
-            (text) {
-              widget.provider.updateQuadrantNames(name1: text);
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildQuadrantEditor(
-            2,
-            _name2Controller,
-            _color2,
-            (color) {
-              setState(() => _color2 = color);
-              widget.provider.updateQuadrantColors(color2: color);
-            },
-            (text) {
-              widget.provider.updateQuadrantNames(name2: text);
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildQuadrantEditor(
-            3,
-            _name3Controller,
-            _color3,
-            (color) {
-              setState(() => _color3 = color);
-              widget.provider.updateQuadrantColors(color3: color);
-            },
-            (text) {
-              widget.provider.updateQuadrantNames(name3: text);
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildQuadrantEditor(
-            4,
-            _name4Controller,
-            _color4,
-            (color) {
-              setState(() => _color4 = color);
-              widget.provider.updateQuadrantColors(color4: color);
-            },
-            (text) {
-              widget.provider.updateQuadrantNames(name4: text);
-            },
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    ),
-  );
-
-  Widget _buildQuadrantEditor(
-    int index,
-    TextEditingController controller,
-    int selectedColor,
-    ValueChanged<int> onColorChanged,
-    ValueChanged<String> onNameSubmitted,
-  ) => Card(
-    elevation: 0,
-    color: Colors.grey[50],
-    shape: RoundedRectangleBorder(
-      side: BorderSide(color: Colors.grey[200]!),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(radius: 6, backgroundColor: Color(selectedColor)),
-              const SizedBox(width: 8),
-              Text(
-                '第 $index 象限',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Colors.black54,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    border: OutlineInputBorder(),
-                    hintText: '请输入象限名称',
-                  ),
-                  style: const TextStyle(fontSize: 14),
-                  onChanged: onNameSubmitted,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _presetColors.map((hexColor) {
-                final isSelected = selectedColor == hexColor;
-                return GestureDetector(
-                  onTap: () => onColorChanged(hexColor),
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: Color(hexColor),
-                      shape: BoxShape.circle,
-                      border: isSelected
-                          ? Border.all(color: Colors.black87, width: 2)
-                          : null,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
           ),
         ],
       ),

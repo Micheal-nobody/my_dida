@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+extension ColorUtil on Color{
+  Color get lighter => withValues(alpha: 1.5);
+
+  Color get darker => withValues(alpha: 0.6);
+}
+
 class ColorUtils {
   /// 预定义的选择器颜色列表（用于清单、标签等）
   static const List<Color> selectorColors = [

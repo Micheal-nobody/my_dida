@@ -70,16 +70,9 @@ class TaskDetailBottomBar extends StatelessWidget {
               // 新建子任务
               IconButton(
                 onPressed: () {
-                  showModalBottomSheet(
+                  AddTaskBottomSheet.show(
                     context: context,
-                    useRootNavigator: true,
-                    isScrollControlled: true,
-                    builder: (context) => Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom,
-                      ),
-                      child: AddTaskBottomSheet(parentTask: updatedTask),
-                    ),
+                    parentTask: updatedTask,
                   );
                 },
                 icon: const Icon(

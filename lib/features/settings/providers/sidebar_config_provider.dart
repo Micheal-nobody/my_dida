@@ -91,32 +91,6 @@ class SidebarConfigProvider with ChangeNotifier {
     await updateConfig(_config);
   }
 
-  Future<void> updateQuadrantNames({
-    String? name1,
-    String? name2,
-    String? name3,
-    String? name4,
-  }) async {
-    if (name1 != null) _config.quadrantName1 = name1;
-    if (name2 != null) _config.quadrantName2 = name2;
-    if (name3 != null) _config.quadrantName3 = name3;
-    if (name4 != null) _config.quadrantName4 = name4;
-    await updateConfig(_config);
-  }
-
-  Future<void> updateQuadrantColors({
-    int? color1,
-    int? color2,
-    int? color3,
-    int? color4,
-  }) async {
-    if (color1 != null) _config.quadrantColor1 = color1;
-    if (color2 != null) _config.quadrantColor2 = color2;
-    if (color3 != null) _config.quadrantColor3 = color3;
-    if (color4 != null) _config.quadrantColor4 = color4;
-    await updateConfig(_config);
-  }
-
   Future<void> updateQuadrantHideCompleted(bool hide) async {
     _config.quadrantHideCompleted = hide;
     await updateConfig(_config);

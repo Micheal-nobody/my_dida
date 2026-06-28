@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:my_dida/core/themes/color_constants.dart';
 import 'package:my_dida/features/settings/models/sidebar_config.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
@@ -37,34 +38,6 @@ class FakeSidebarConfigProvider extends ChangeNotifier
   }
 
   @override
-  Future<void> updateQuadrantColors({
-    int? color1,
-    int? color2,
-    int? color3,
-    int? color4,
-  }) async {
-    if (color1 != null) config.quadrantColor1 = color1;
-    if (color2 != null) config.quadrantColor2 = color2;
-    if (color3 != null) config.quadrantColor3 = color3;
-    if (color4 != null) config.quadrantColor4 = color4;
-    notifyListeners();
-  }
-
-  @override
-  Future<void> updateQuadrantNames({
-    String? name1,
-    String? name2,
-    String? name3,
-    String? name4,
-  }) async {
-    if (name1 != null) config.quadrantName1 = name1;
-    if (name2 != null) config.quadrantName2 = name2;
-    if (name3 != null) config.quadrantName3 = name3;
-    if (name4 != null) config.quadrantName4 = name4;
-    notifyListeners();
-  }
-
-  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
@@ -85,6 +58,7 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
+          Provider<ColorTheme>.value(value: DefaultColorTheme()),
           ChangeNotifierProvider<TaskProvider>.value(value: fakeTaskProvider),
           ChangeNotifierProvider<SidebarConfigProvider>.value(
             value: fakeSidebarProvider,
