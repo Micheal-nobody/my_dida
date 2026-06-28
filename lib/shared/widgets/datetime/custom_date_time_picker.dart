@@ -23,8 +23,6 @@ class CustomDateTimePickerValue {
     final now = DateTime.now().toBeijingTime().dateOnly;
     return CustomDateTimePickerValue(
       selectedDate: now,
-      reminderOffsets: const [],
-      notificationEnabled: false,
     );
   }
 

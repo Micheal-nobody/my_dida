@@ -103,8 +103,6 @@ class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
       _dateTimePickerValue = CustomDateTimePickerValue(
         selectedDate: now.toBeijingTime().dateOnly,
         isAllDay: true,
-        reminderOffsets: const [],
-        notificationEnabled: false,
       );
     }
 

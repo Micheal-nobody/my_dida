@@ -1,5 +1,5 @@
 class TomatoTaskCompletedEvent {
-  final int taskId;
 
   TomatoTaskCompletedEvent({required this.taskId});
+  final int taskId;
 }

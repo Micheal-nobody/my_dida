@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/core/constants/colors_constants.dart';
+import 'package:my_dida/core/utils/color_utils.dart';
 import 'package:my_dida/core/validators/form_validators.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
@@ -55,7 +55,7 @@ class _AddChecklistDialogState extends BaseFormDialogState<AddChecklistDialog> {
       const Text('选择颜色:', style: TextStyle(fontSize: 16)),
       CommonWidgets.buildSpacing(height: 10),
       CommonWidgets.buildColorSelector(
-        colors: AppColors.selectorColors,
+        colors: ColorUtils.selectorColors,
         selectedColor: _selectedColor,
         onColorSelected: (color) {
           setState(() {

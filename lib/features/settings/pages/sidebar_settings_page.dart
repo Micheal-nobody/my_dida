@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
+import 'package:my_dida/core/themes/color_constants.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -12,6 +13,7 @@ class SidebarSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<SidebarConfigProvider>(context);
     final config = provider.config;
+    final colorTheme = context.theme;
 
     return Scaffold(
       appBar: AppBar(
@@ -21,7 +23,7 @@ class SidebarSettingsPage extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      backgroundColor: AppColors.background,
+      backgroundColor: colorTheme.background,
       body: ListView(
         children: [
           Padding(
@@ -37,7 +39,7 @@ class SidebarSettingsPage extends StatelessWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              side: const BorderSide(color: AppColors.border),
+              side: BorderSide(color: colorTheme.border),
             ),
             child: Column(
               children: [
@@ -48,7 +50,7 @@ class SidebarSettingsPage extends StatelessWidget {
                   onChanged: (val) =>
                       provider.updateModuleVisibility(showProfile: val),
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 SwitchListTile(
                   secondary: const Icon(Icons.search),
                   title: const Text('搜索'),
@@ -56,7 +58,7 @@ class SidebarSettingsPage extends StatelessWidget {
                   onChanged: (val) =>
                       provider.updateModuleVisibility(showSearch: val),
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 SwitchListTile(
                   secondary: const Icon(Icons.view_agenda),
                   title: const Text('智能清单'),
@@ -64,7 +66,7 @@ class SidebarSettingsPage extends StatelessWidget {
                   onChanged: (val) =>
                       provider.updateModuleVisibility(showSmartLists: val),
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 SwitchListTile(
                   secondary: const Icon(Icons.folder),
                   title: const Text('清单'),
@@ -72,7 +74,7 @@ class SidebarSettingsPage extends StatelessWidget {
                   onChanged: (val) =>
                       provider.updateModuleVisibility(showCustomLists: val),
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 SwitchListTile(
                   secondary: const Icon(Icons.label),
                   title: const Text('标签'),
@@ -80,7 +82,7 @@ class SidebarSettingsPage extends StatelessWidget {
                   onChanged: (val) =>
                       provider.updateModuleVisibility(showTags: val),
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 SwitchListTile(
                   secondary: const Icon(Icons.filter_alt),
                   title: const Text('过滤器'),

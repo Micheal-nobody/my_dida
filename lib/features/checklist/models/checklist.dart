@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:isar_community/isar.dart';
-import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/shared/models/revertible_entity.dart';
 
 part 'checklist.g.dart';

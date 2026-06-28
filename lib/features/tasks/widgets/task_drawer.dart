@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/constants/app_constants.dart';
-import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
 import 'package:my_dida/core/constants/ui_constants.dart';
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/themes/color_constants.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
@@ -36,9 +37,10 @@ class _TodoDrawerState extends State<TodoDrawer> {
     final userDefinedChecklists = checklistProvider.allCheckLists
         .where((checkList) => checkList.id != AppConstants.defaultCheckList.id)
         .toList();
+    final colorTheme = context.theme;
 
     return Drawer(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorTheme.background,
       child: SafeArea(
         child: Column(
           children: [
@@ -63,6 +65,8 @@ class _TodoDrawerState extends State<TodoDrawer> {
                       customListIds,
                     ),
                     builder: (context, customSnapshot) {
+                      final colorTheme = context.theme;
+
                       final customCounts =
                           customSnapshot.data ?? const <int, int>{};
 
@@ -79,14 +83,14 @@ class _TodoDrawerState extends State<TodoDrawer> {
                               currentChecklist,
                               counts,
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
                                 vertical: Dimensions.paddingM,
                               ),
                               child: Divider(
                                 height: 1,
                                 thickness: Dimensions.borderThin,
-                                color: AppColors.border,
+                                color: colorTheme.border,
                               ),
                             ),
                           ],
@@ -99,44 +103,44 @@ class _TodoDrawerState extends State<TodoDrawer> {
                               customCounts,
                               currentChecklist,
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
                                 vertical: Dimensions.paddingM,
                               ),
                               child: Divider(
                                 height: 1,
                                 thickness: Dimensions.borderThin,
-                                color: AppColors.border,
+                                color: colorTheme.border,
                               ),
                             ),
                           ],
 
                           // 标签模块
                           if (config.showTags) ...[
-                            _buildTagsGroup(),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
+                            _buildTagsGroup(context),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
                                 vertical: Dimensions.paddingM,
                               ),
                               child: Divider(
                                 height: 1,
                                 thickness: Dimensions.borderThin,
-                                color: AppColors.border,
+                                color: colorTheme.border,
                               ),
                             ),
                           ],
 
                           // 过滤器模块
                           if (config.showFilters) ...[
-                            _buildFiltersGroup(),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
+                            _buildFiltersGroup(context),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
                                 vertical: Dimensions.paddingM,
                               ),
                               child: Divider(
                                 height: 1,
                                 thickness: Dimensions.borderThin,
-                                color: AppColors.border,
+                                color: colorTheme.border,
                               ),
                             ),
                           ],
@@ -157,124 +161,132 @@ class _TodoDrawerState extends State<TodoDrawer> {
   }
 
   // Header redesign: Profile Only (No notifications or sync buttons)
-  Widget _buildDrawerHeader(BuildContext context) => InkWell(
-    onTap: () {
-      Navigator.of(context).pop();
-      context.push('/settings');
-    },
-    child: Container(
-      padding: const EdgeInsets.fromLTRB(
-        Dimensions.paddingM,
-        Dimensions.paddingL,
-        Dimensions.paddingM,
-        Dimensions.paddingM,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      child: Row(
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: Dimensions.avatarM,
-                height: Dimensions.avatarM,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                ),
-                child: const Icon(
-                  Icons.account_circle_rounded,
-                  size: Dimensions.iconXL,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              Positioned(
-                top: -4,
-                right: -4,
-                child: Container(
-                  width: 18,
-                  height: 18,
-                  decoration: const BoxDecoration(
-                    color: Colors.amber,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.star,
-                    size: 12,
-                    color: AppColors.textOnPrimary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: Dimensions.paddingM),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+  Widget _buildDrawerHeader(BuildContext context) {
+    final colorTheme = context.theme;
+
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).pop();
+        context.push('/settings');
+      },
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(
+          Dimensions.paddingM,
+          Dimensions.paddingL,
+          Dimensions.paddingM,
+          Dimensions.paddingM,
+        ),
+        decoration: BoxDecoration(
+          color: colorTheme.background,
+          border: Border(bottom: BorderSide(color: colorTheme.border)),
+        ),
+        child: Row(
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
               children: [
-                Text(
-                  'Michel-nobody',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                Container(
+                  width: Dimensions.avatarM,
+                  height: Dimensions.avatarM,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                  ),
+                  child: Icon(
+                    Icons.account_circle_rounded,
+                    size: Dimensions.iconXL,
+                    color: colorTheme.textSecondary,
                   ),
                 ),
-                SizedBox(height: 2),
-                Text(
-                  '2201389816@qq.com',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: Container(
+                    width: 18,
+                    height: 18,
+                    decoration: const BoxDecoration(
+                      color: Colors.amber,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.star,
+                      size: 12,
+                      color: colorTheme.textOnPrimary,
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-          const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-        ],
-      ),
-    ),
-  );
-
-  // Search Section below header
-  Widget _buildSearchSection() => Padding(
-    padding: const EdgeInsets.all(Dimensions.paddingM),
-    child: Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(Dimensions.radiusM),
-        border: Border.all(color: AppColors.border),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingS),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).pop();
-          context.push('/search');
-        },
-        child: const Row(
-          children: [
-            Icon(Icons.search, color: AppColors.textSecondary, size: 20),
-            SizedBox(width: Dimensions.paddingS),
-            Text(
-              '搜索',
-              style: TextStyle(color: AppColors.textDisabled, fontSize: 15),
+            const SizedBox(width: Dimensions.paddingM),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Michel-nobody',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: colorTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '2201389816@qq.com',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
             ),
+            Icon(Icons.chevron_right, color: colorTheme.textSecondary),
           ],
         ),
       ),
-    ),
-  );
+    );
+  }
+
+  // Search Section below header
+  Widget _buildSearchSection() {
+    final colorTheme = context.theme;
+
+    return Padding(
+      padding: const EdgeInsets.all(Dimensions.paddingM),
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(Dimensions.radiusM),
+          border: Border.all(color: colorTheme.border),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingS),
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).pop();
+            context.push('/search');
+          },
+          child: Row(
+            children: [
+              Icon(Icons.search, color: colorTheme.textSecondary, size: 20),
+              const SizedBox(width: Dimensions.paddingS),
+              Text(
+                '搜索',
+                style: TextStyle(color: colorTheme.textDisabled, fontSize: 15),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   bool _shouldShowSmartList(int id, int option, int count) {
     if (option == 0) return false; // Hide
@@ -443,219 +455,224 @@ class _TodoDrawerState extends State<TodoDrawer> {
     List<ChecklistVO> checklists,
     Map<int, int> counts,
     ChecklistVO currentChecklist,
-  ) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Row(
-        children: [
-          IconButton(
-            icon: Icon(
-              _isListsExpanded
-                  ? Icons.keyboard_arrow_down
-                  : Icons.keyboard_arrow_right,
-              color: AppColors.textSecondary,
-              size: 20,
+  ) {
+    final colorTheme = context.theme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            IconButton(
+              icon: Icon(
+                _isListsExpanded
+                    ? Icons.keyboard_arrow_down
+                    : Icons.keyboard_arrow_right,
+                color: colorTheme.textSecondary,
+                size: 20,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isListsExpanded = !_isListsExpanded;
+                });
+              },
             ),
-            onPressed: () {
-              setState(() {
-                _isListsExpanded = !_isListsExpanded;
-              });
-            },
-          ),
-          const Expanded(
-            child: Text(
-              '清单',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+            Expanded(
+              child: Text(
+                '清单',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: colorTheme.textSecondary,
+                ),
               ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.add,
-              color: AppColors.textSecondary,
-              size: 20,
+            IconButton(
+              icon: Icon(Icons.add, color: colorTheme.textSecondary, size: 20),
+              onPressed: _openAddChecklistDialog,
             ),
-            onPressed: _openAddChecklistDialog,
-          ),
+          ],
+        ),
+        if (_isListsExpanded) ...[
+          if (checklists.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: Dimensions.paddingM,
+              ),
+              child: Text(
+                '暂无自定义清单',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: colorTheme.textSecondary, fontSize: 14),
+              ),
+            ),
+          for (final checklist in checklists)
+            _buildCustomChecklistTile(
+              checklist: checklist,
+              count: counts[checklist.id] ?? 0,
+              selected: currentChecklist.id == checklist.id,
+              onTap: () => _switchChecklist(checklist),
+              colorTheme: colorTheme,
+            ),
         ],
-      ),
-      if (_isListsExpanded) ...[
-        if (checklists.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: Dimensions.paddingM),
-            child: Text(
-              '暂无自定义清单',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-            ),
-          ),
-        for (final checklist in checklists)
-          _buildCustomChecklistTile(
-            checklist: checklist,
-            count: counts[checklist.id] ?? 0,
-            selected: currentChecklist.id == checklist.id,
-            onTap: () => _switchChecklist(checklist),
-          ),
       ],
-    ],
-  );
+    );
+  }
 
   // Tags placeholder
-  Widget _buildTagsGroup() => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          IconButton(
-            icon: Icon(
-              _isTagsExpanded
-                  ? Icons.keyboard_arrow_down
-                  : Icons.keyboard_arrow_right,
-              color: AppColors.textSecondary,
-              size: 20,
+  Widget _buildTagsGroup(BuildContext context) {
+    final colorTheme = context.theme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            IconButton(
+              icon: Icon(
+                _isTagsExpanded
+                    ? Icons.keyboard_arrow_down
+                    : Icons.keyboard_arrow_right,
+                color: colorTheme.textSecondary,
+                size: 20,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isTagsExpanded = !_isTagsExpanded;
+                });
+              },
             ),
-            onPressed: () {
-              setState(() {
-                _isTagsExpanded = !_isTagsExpanded;
-              });
-            },
-          ),
-          const Expanded(
-            child: Text(
-              '标签',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+            Expanded(
+              child: Text(
+                '标签',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: colorTheme.textSecondary,
+                ),
               ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.add,
-              color: AppColors.textSecondary,
-              size: 20,
+            IconButton(
+              icon: Icon(Icons.add, color: colorTheme.textSecondary, size: 20),
+              onPressed: () => _showPlaceholderSnackBar('新建标签功能开发中'),
             ),
-            onPressed: () => _showPlaceholderSnackBar('新建标签功能开发中'),
-          ),
-        ],
-      ),
-      if (_isTagsExpanded)
-        const Padding(
-          padding: EdgeInsets.only(left: 45.0, top: 4.0, bottom: 8.0),
-          child: Text(
-            '暂无标签',
-            style: TextStyle(color: AppColors.textDisabled, fontSize: 14),
-          ),
+          ],
         ),
-    ],
-  );
+        if (_isTagsExpanded)
+          Padding(
+            padding: const EdgeInsets.only(left: 45.0, top: 4.0, bottom: 8.0),
+            child: Text(
+              '暂无标签',
+              style: TextStyle(color: colorTheme.textDisabled, fontSize: 14),
+            ),
+          ),
+      ],
+    );
+  }
 
   // Filters placeholder
-  Widget _buildFiltersGroup() => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          IconButton(
-            icon: const Icon(
-              Icons.keyboard_arrow_right,
-              color: AppColors.textSecondary,
-              size: 20,
+  Widget _buildFiltersGroup(BuildContext context) {
+    final colorTheme = context.theme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.keyboard_arrow_right,
+                color: colorTheme.textSecondary,
+                size: 20,
+              ),
+              onPressed: () {},
             ),
-            onPressed: () {},
-          ),
-          const Expanded(
-            child: Text(
-              '过滤器',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+            Expanded(
+              child: Text(
+                '过滤器',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: colorTheme.textSecondary,
+                ),
               ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.add,
-              color: AppColors.textSecondary,
-              size: 20,
+            IconButton(
+              icon: Icon(Icons.add, color: colorTheme.textSecondary, size: 20),
+              onPressed: () => _showPlaceholderSnackBar('过滤器开发中'),
             ),
-            onPressed: () => _showPlaceholderSnackBar('过滤器开发中'),
-          ),
-        ],
-      ),
-    ],
-  );
+          ],
+        ),
+      ],
+    );
+  }
 
   // Footer redesign: Left button "新增自定义清单", Right button settings entrance
-  Widget _buildDrawerFooter(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: Dimensions.paddingM,
-      vertical: Dimensions.paddingS,
-    ),
-    decoration: const BoxDecoration(
-      color: AppColors.background,
-      border: Border(top: BorderSide(color: AppColors.border)),
-    ),
-    child: SafeArea(
-      top: false,
-      child: Row(
-        children: [
-          // Left button: Add custom list
-          Expanded(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(Dimensions.radiusL),
-                onTap: _openAddChecklistDialog,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: Dimensions.paddingS,
-                    vertical: Dimensions.paddingS,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.add, color: AppColors.textPrimary),
-                      SizedBox(width: Dimensions.paddingM),
-                      Text(
-                        '添加清单',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+  Widget _buildDrawerFooter(BuildContext context) {
+    final colorTheme = context.theme;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Dimensions.paddingM,
+        vertical: Dimensions.paddingS,
+      ),
+      decoration: BoxDecoration(
+        color: colorTheme.background,
+        border: Border(top: BorderSide(color: colorTheme.border)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            // Left button: Add custom list
+            Expanded(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(Dimensions.radiusL),
+                  onTap: _openAddChecklistDialog,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Dimensions.paddingS,
+                      vertical: Dimensions.paddingS,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.add, color: colorTheme.textPrimary),
+                        const SizedBox(width: Dimensions.paddingM),
+                        Text(
+                          '添加清单',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: colorTheme.textPrimary,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          // Right button: Settings
-          Material(
-            color: Colors.transparent,
-            child: IconButton(
-              icon: const Icon(
-                Icons.settings_outlined,
-                color: AppColors.textPrimary,
+            // Right button: Settings
+            Material(
+              color: Colors.transparent,
+              child: IconButton(
+                icon: Icon(
+                  Icons.settings_outlined,
+                  color: colorTheme.textPrimary,
+                ),
+                splashRadius: Dimensions.iconL,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  context.push('/settings');
+                },
               ),
-              splashRadius: Dimensions.iconL,
-              onPressed: () {
-                Navigator.of(context).pop();
-                context.push('/settings');
-              },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _buildStaticChecklistTile({
     required IconData icon,
@@ -664,68 +681,73 @@ class _TodoDrawerState extends State<TodoDrawer> {
     required int count,
     required bool selected,
     required VoidCallback onTap,
-  }) => Padding(
-    key: ValueKey('smart_list_$title'),
-    padding: const EdgeInsets.only(top: Dimensions.paddingS),
-    child: Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Dimensions.radiusL),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Dimensions.paddingM,
-            vertical: Dimensions.paddingS,
-          ),
-          decoration: BoxDecoration(
-            color: selected ? iconColor.withValues(alpha: 0.12) : null,
-            borderRadius: BorderRadius.circular(Dimensions.radiusL),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(Dimensions.radiusM),
+  }) {
+    final colorTheme = context.theme;
+
+    return Padding(
+      key: ValueKey('smart_list_$title'),
+      padding: const EdgeInsets.only(top: Dimensions.paddingS),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Dimensions.radiusL),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Dimensions.paddingM,
+              vertical: Dimensions.paddingS,
+            ),
+            decoration: BoxDecoration(
+              color: selected ? iconColor.withValues(alpha: 0.12) : null,
+              borderRadius: BorderRadius.circular(Dimensions.radiusL),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(Dimensions.radiusM),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(icon, size: Dimensions.iconS, color: iconColor),
                 ),
-                alignment: Alignment.center,
-                child: Icon(icon, size: Dimensions.iconS, color: iconColor),
-              ),
-              const SizedBox(width: Dimensions.paddingM),
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: selected ? FontWeight.bold : FontWeight.w500,
-                    color: selected ? iconColor : AppColors.textPrimary,
+                const SizedBox(width: Dimensions.paddingM),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                      color: selected ? iconColor : colorTheme.textPrimary,
+                    ),
                   ),
                 ),
-              ),
-              Text(
-                '$count',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: selected ? iconColor : AppColors.textSecondary,
-                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: selected ? iconColor : colorTheme.textSecondary,
+                    fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _buildCustomChecklistTile({
     required ChecklistVO checklist,
     required int count,
     required bool selected,
     required VoidCallback onTap,
+    required ColorTheme colorTheme,
   }) => Material(
     color: Colors.transparent,
     child: InkWell(
@@ -755,7 +777,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: selected ? FontWeight.bold : FontWeight.w500,
-                  color: selected ? checklist.color : AppColors.textPrimary,
+                  color: selected ? checklist.color : colorTheme.textPrimary,
                 ),
               ),
             ),
@@ -763,7 +785,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
               '$count',
               style: TextStyle(
                 fontSize: 14,
-                color: selected ? checklist.color : AppColors.textSecondary,
+                color: selected ? checklist.color : colorTheme.textSecondary,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -771,9 +793,9 @@ class _TodoDrawerState extends State<TodoDrawer> {
             PopupMenuButton<String>(
               padding: EdgeInsets.zero,
               splashRadius: Dimensions.iconM,
-              icon: const Icon(
+              icon: Icon(
                 Icons.more_horiz_rounded,
-                color: AppColors.textDisabled,
+                color: colorTheme.textDisabled,
               ),
               onSelected: (value) => _handleChecklistAction(value, checklist),
               itemBuilder: (context) => [
@@ -787,19 +809,19 @@ class _TodoDrawerState extends State<TodoDrawer> {
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
                       Icon(
                         Icons.delete,
                         size: Dimensions.iconS,
-                        color: AppColors.error,
+                        color: colorTheme.error,
                       ),
-                      SizedBox(width: Dimensions.paddingS),
+                      const SizedBox(width: Dimensions.paddingS),
                       Text(
                         UIStrings.delete,
-                        style: TextStyle(color: AppColors.error),
+                        style: TextStyle(color: colorTheme.error),
                       ),
                     ],
                   ),
@@ -855,11 +877,13 @@ class _TodoDrawerState extends State<TodoDrawer> {
   }
 
   void _showDeleteChecklistDialog(ChecklistVO checklist) {
+    final colorTheme = context.theme;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text(UIStrings.deleteChecklistTitle),
-        content: Text('Are you sure you want to delete "${checklist.name}"?'),
+        content: Text('你确定要删除 "${checklist.name}" ?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -874,7 +898,7 @@ class _TodoDrawerState extends State<TodoDrawer> {
               );
               await provider.deleteChecklist(checklist);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            style: ElevatedButton.styleFrom(backgroundColor: colorTheme.error),
             child: const Text(UIStrings.delete),
           ),
         ],

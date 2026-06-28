@@ -7,15 +7,6 @@ part 'custom_tomato.g.dart';
 class CustomTomato extends RevertibleEntity {
   CustomTomato({required this.name, required this.focusMinutes});
 
-  @Index(unique: true)
-  String name;
-
-  int focusMinutes;
-
-  @override
-  String toString() =>
-      'CustomTomato{id: $id, name: $name, focusMinutes: $focusMinutes}';
-
   factory CustomTomato.fromJson(Map<String, dynamic> json) {
     final tomato = CustomTomato(
       name: json['name'] as String,
@@ -26,6 +17,15 @@ class CustomTomato extends RevertibleEntity {
     }
     return tomato;
   }
+
+  @Index(unique: true)
+  String name;
+
+  int focusMinutes;
+
+  @override
+  String toString() =>
+      'CustomTomato{id: $id, name: $name, focusMinutes: $focusMinutes}';
 
   @override
   Map<String, dynamic> toJson() => {

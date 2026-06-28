@@ -1,7 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/core/constants/colors_constants.dart';
 
-import 'package:my_dida/core/ui/app_message_type.dart';
+enum AppMessageType {
+  success,
+  error,
+  info,
+  warning;
+
+  Color get color {
+    switch (this) {
+      case AppMessageType.success:
+        return Colors.green;
+      case AppMessageType.error:
+        return Colors.red;
+      case AppMessageType.warning:
+        return Colors.orange;
+      case AppMessageType.info:
+        return Colors.grey;
+    }
+  }
+}
 
 class AppMessageService {
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -24,7 +41,7 @@ class AppMessageService {
           content: Text(message),
           duration: duration,
           behavior: SnackBarBehavior.floating,
-          backgroundColor: _backgroundColor(type),
+          backgroundColor: type.color,
         ),
       );
   }
@@ -59,18 +76,5 @@ class AppMessageService {
       type: AppMessageType.warning,
       duration: duration ?? const Duration(seconds: 2),
     );
-  }
-
-  Color _backgroundColor(AppMessageType type) {
-    switch (type) {
-      case AppMessageType.success:
-        return AppColors.success;
-      case AppMessageType.error:
-        return AppColors.error;
-      case AppMessageType.info:
-        return AppColors.info;
-      case AppMessageType.warning:
-        return AppColors.warning;
-    }
   }
 }

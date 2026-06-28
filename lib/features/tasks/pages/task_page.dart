@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/constants/app_constants.dart';
-import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
 import 'package:my_dida/core/constants/ui_constants.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/router/shell_scaffold_key.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/checklist/widgets/add_checklist_dialog.dart';
@@ -32,7 +32,6 @@ class TodoPage extends StatefulWidget {
 
 class _TodoPageState extends State<TodoPage> {
   final AppMessageService _messageService = getIt<AppMessageService>();
-
 
 
   @override
@@ -156,6 +155,9 @@ class _TodoPageState extends State<TodoPage> {
 
       body: Consumer3<TaskProvider, HabitProvider, ChecklistProvider>(
         builder: (context, taskProvider, habitProvider, _, _) {
+
+          final colorTheme = context.theme;
+
           final isTodayTasks =
               currentChecklist.id == AppConstants.todayCheckList.id;
           final groupedTasks = taskProvider.getGroupedCurrentTasks(
@@ -219,24 +221,24 @@ class _TodoPageState extends State<TodoPage> {
                         padding: const EdgeInsets.only(
                           left: Dimensions.paddingL,
                         ),
-                        color: isTrashList ? Colors.blue : AppColors.success,
+                        color: isTrashList ? Colors.blue : colorTheme.success,
                         child: Icon(
                           isTrashList
                               ? Icons.settings_backup_restore
                               : Icons.check,
-                          color: AppColors.textOnPrimary,
+                          color: colorTheme.textOnPrimary,
                           size: 28,
                         ),
                       ),
                       secondaryBackground: Container(
                         alignment: Alignment.centerRight,
-                        color: AppColors.error,
+                        color: colorTheme.error,
                         padding: const EdgeInsets.only(
                           right: Dimensions.paddingL,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.delete,
-                          color: AppColors.textOnPrimary,
+                          color: colorTheme.textOnPrimary,
                           size: 28,
                         ),
                       ),
@@ -275,7 +277,7 @@ class _TodoPageState extends State<TodoPage> {
                                   onPressed: () =>
                                       Navigator.of(context).pop(true),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.error,
+                                    backgroundColor: colorTheme.error,
                                   ),
                                   child: const Text(UIStrings.delete),
                                 ),

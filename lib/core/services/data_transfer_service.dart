@@ -75,7 +75,7 @@ class DataTransferService {
 
       // 校验版本或基本格式
       if (!backupData.containsKey('version')) {
-        throw FormatException('无效的备份文件格式');
+        throw const FormatException('无效的备份文件格式');
       }
 
       // 1. 解析各实体列表
@@ -166,8 +166,8 @@ class DataTransferService {
 }
 
 class FileNotFoundException implements Exception {
-  final String message;
   FileNotFoundException(this.message);
+  final String message;
 
   @override
   String toString() => 'FileNotFoundException: $message';

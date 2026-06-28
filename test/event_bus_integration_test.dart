@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/di/locator.dart';
@@ -17,12 +18,12 @@ import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 import 'package:my_dida/features/tasks/services/notification_service.dart';
 import 'package:my_dida/features/tasks/services/task_event_listener.dart';
 import 'package:my_dida/features/tasks/services/task_notification_navigation_service.dart';
+import 'package:my_dida/features/tomato/events/tomato_events.dart';
 import 'package:my_dida/features/tomato/models/custom_tomato.dart';
 import 'package:my_dida/features/tomato/models/tomato_record.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
 import 'package:my_dida/features/tomato/repositories/custom_tomato_repository.dart';
 import 'package:my_dida/features/tomato/repositories/tomato_record_repository.dart';
-import 'package:my_dida/features/tomato/events/tomato_events.dart';
 
 void main() {
   late Isar isar;
@@ -169,7 +170,7 @@ void main() {
 
     test('番茄钟勾选自动完成并且关联了任务，番茄钟完成时应该通过 EventBus 异步把任务设为已完成', () async {
       // 1. 创建一个未完成任务
-      final task = Task(name: '番茄钟关联的任务', isDone: false, isAllDay: true);
+      final task = Task(name: '番茄钟关联的任务', isAllDay: true);
       await isar.writeTxn(() async {
         await isar.tasks.put(task);
       });

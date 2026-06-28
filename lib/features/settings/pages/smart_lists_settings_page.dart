@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_dida/core/constants/colors_constants.dart';
+import 'package:my_dida/core/themes/color_constants.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -11,6 +12,7 @@ class SmartListsSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<SidebarConfigProvider>(context);
     final config = provider.config;
+    final colorTheme = context.theme;
 
     return Scaffold(
       appBar: AppBar(
@@ -20,7 +22,7 @@ class SmartListsSettingsPage extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      backgroundColor: AppColors.background,
+      backgroundColor: colorTheme.background,
       body: ListView(
         children: [
           _buildListTile(
@@ -84,7 +86,7 @@ class SmartListsSettingsPage extends StatelessWidget {
               onChanged: provider.updateFourQuadrantsVisibility,
             ),
           ),
-          const Divider(height: 1, indent: 16, color: AppColors.border),
+          Divider(height: 1, indent: 16, color: colorTheme.border),
         ],
       ),
     );
@@ -100,6 +102,8 @@ class SmartListsSettingsPage extends StatelessWidget {
     if (currentValue == 0) stateText = '隐藏';
     if (currentValue == 2) stateText = '自动';
 
+    final colorTheme = context.theme;
+
     return Column(
       children: [
         ListTile(
@@ -112,18 +116,18 @@ class SmartListsSettingsPage extends StatelessWidget {
             children: [
               Text(
                 stateText,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: colorTheme.textSecondary,
                   fontSize: 16,
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppColors.textDisabled),
+              Icon(Icons.chevron_right, color: colorTheme.textDisabled),
             ],
           ),
           onTap: () =>
               _showOptionPicker(context, title, currentValue, onChanged),
         ),
-        const Divider(height: 1, indent: 16, color: AppColors.border),
+        Divider(height: 1, indent: 16, color: colorTheme.border),
       ],
     );
   }

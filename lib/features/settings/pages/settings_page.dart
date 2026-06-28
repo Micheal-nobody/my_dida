@@ -1,12 +1,13 @@
 import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_dida/core/constants/colors_constants.dart';
-import 'package:my_dida/core/constants/dimension_constants.dart';
 import 'package:my_dida/core/constants/app_constants.dart';
+import 'package:my_dida/core/constants/dimension_constants.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/services/data_transfer_service.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
@@ -22,6 +23,8 @@ class SettingsPage extends StatelessWidget {
     final checklistProvider = Provider.of<ChecklistProvider>(context);
     final config = configProvider.config;
 
+    final colorTheme = context.theme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('设置'),
@@ -30,11 +33,11 @@ class SettingsPage extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      backgroundColor: AppColors.background,
+      backgroundColor: colorTheme.background,
       body: ListView(
         children: [
           // 个人中心 Section
-          _buildSectionHeader('个人中心'),
+          SectionHeader('个人中心'),
           Card(
             margin: const EdgeInsets.symmetric(
               horizontal: Dimensions.paddingM,
@@ -44,12 +47,12 @@ class SettingsPage extends StatelessWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              side: const BorderSide(color: AppColors.border),
+              side: BorderSide(color: colorTheme.border),
             ),
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor: Colors.grey.shade200,
-                child: const Icon(Icons.person, color: AppColors.textSecondary),
+                child: Icon(Icons.person, color: colorTheme.textSecondary),
               ),
               title: const Text(
                 'Michel-nobody',
@@ -64,7 +67,7 @@ class SettingsPage extends StatelessWidget {
           ),
 
           // 偏好设置 Section
-          _buildSectionHeader('偏好设置'),
+          SectionHeader('偏好设置'),
           Card(
             margin: const EdgeInsets.symmetric(
               horizontal: Dimensions.paddingM,
@@ -74,7 +77,7 @@ class SettingsPage extends StatelessWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              side: const BorderSide(color: AppColors.border),
+              side: BorderSide(color: colorTheme.border),
             ),
             child: Column(
               children: [
@@ -90,21 +93,21 @@ class SettingsPage extends StatelessWidget {
                             : config.theme == 'dark'
                             ? '深色'
                             : '自动',
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: colorTheme.textSecondary),
                       ),
                       const Icon(Icons.chevron_right),
                     ],
                   ),
                   onTap: () => _showThemeDialog(context, configProvider),
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 ListTile(
                   leading: const Icon(Icons.menu_open),
                   title: const Text('侧边栏'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push('/settings/sidebar'),
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 ListTile(
                   leading: const Icon(Icons.volume_up_outlined),
                   title: const Text('声音与振动'),
@@ -115,7 +118,7 @@ class SettingsPage extends StatelessWidget {
                     ).showSnackBar(const SnackBar(content: Text('声音与振动设置开发中')));
                   },
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 ListTile(
                   leading: const Icon(Icons.language),
                   title: const Text('语言'),
@@ -124,7 +127,7 @@ class SettingsPage extends StatelessWidget {
                     children: [
                       Text(
                         config.language == 'zh' ? '简体中文' : 'English',
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: colorTheme.textSecondary),
                       ),
                       const Icon(Icons.chevron_right),
                     ],
@@ -136,7 +139,7 @@ class SettingsPage extends StatelessWidget {
           ),
 
           // 任务管理 Section
-          _buildSectionHeader('任务管理'),
+          SectionHeader('任务管理'),
           Card(
             margin: const EdgeInsets.symmetric(
               horizontal: Dimensions.paddingM,
@@ -146,7 +149,7 @@ class SettingsPage extends StatelessWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              side: const BorderSide(color: AppColors.border),
+              side: BorderSide(color: colorTheme.border),
             ),
             child: Column(
               children: [
@@ -156,7 +159,7 @@ class SettingsPage extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push('/settings/smart-lists'),
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 ListTile(
                   leading: const Icon(Icons.inbox_outlined),
                   title: const Text('默认清单'),
@@ -171,7 +174,7 @@ class SettingsPage extends StatelessWidget {
                                   checklistProvider.allCheckLists.first,
                             )
                             .name,
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: colorTheme.textSecondary),
                       ),
                       const Icon(Icons.chevron_right),
                     ],
@@ -182,7 +185,7 @@ class SettingsPage extends StatelessWidget {
                     checklistProvider,
                   ),
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 ListTile(
                   leading: const Icon(Icons.access_time),
                   title: const Text('日期与时间'),
@@ -198,7 +201,7 @@ class SettingsPage extends StatelessWidget {
           ),
 
           // 备份与同步 Section
-          _buildSectionHeader('备份与同步'),
+          SectionHeader('备份与同步'),
           Card(
             margin: const EdgeInsets.symmetric(
               horizontal: Dimensions.paddingM,
@@ -208,7 +211,7 @@ class SettingsPage extends StatelessWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              side: const BorderSide(color: AppColors.border),
+              side: BorderSide(color: colorTheme.border),
             ),
 
             //TODO: 将以下 Column 的内容修改为：导入数据、导出数据、删除数据 三个功能模块
@@ -221,14 +224,14 @@ class SettingsPage extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showImportDialog(context, checklistProvider),
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 ListTile(
                   leading: const Icon(Icons.file_upload_outlined),
                   title: const Text('导出数据'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _showExportDialog(context),
                 ),
-                const Divider(height: 1, indent: 50, color: AppColors.border),
+                Divider(height: 1, indent: 50, color: colorTheme.border),
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: Colors.red),
                   title: const Text(
@@ -243,7 +246,7 @@ class SettingsPage extends StatelessWidget {
           ),
 
           // 关于 Section
-          _buildSectionHeader('关于'),
+          SectionHeader('关于'),
           Card(
             margin: const EdgeInsets.symmetric(
               horizontal: Dimensions.paddingM,
@@ -253,7 +256,7 @@ class SettingsPage extends StatelessWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(Dimensions.radiusL),
-              side: const BorderSide(color: AppColors.border),
+              side: BorderSide(color: colorTheme.border),
             ),
             child: const Column(
               children: [
@@ -270,22 +273,6 @@ class SettingsPage extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildSectionHeader(String title) => Padding(
-    padding: const EdgeInsets.only(
-      left: Dimensions.paddingL,
-      top: Dimensions.paddingM,
-      bottom: Dimensions.paddingS,
-    ),
-    child: Text(
-      title,
-      style: const TextStyle(
-        color: AppColors.textSecondary,
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-      ),
-    ),
-  );
 
   void _showThemeDialog(BuildContext context, SidebarConfigProvider provider) {
     showDialog(
@@ -678,6 +665,32 @@ class SettingsPage extends StatelessWidget {
             child: const Text('确认删除'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class SectionHeader extends StatelessWidget {
+  final String title;
+
+  const SectionHeader(this.title, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorTheme = context.theme;
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: Dimensions.paddingL,
+        top: Dimensions.paddingM,
+        bottom: Dimensions.paddingS,
+      ),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: colorTheme.textSecondary,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }

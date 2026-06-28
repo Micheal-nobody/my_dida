@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
 import 'package:my_dida/core/logger/logger.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
@@ -18,9 +18,10 @@ class FourQuadrantsPage extends StatelessWidget {
     final taskProvider = Provider.of<TaskProvider>(context);
     final configProvider = Provider.of<SidebarConfigProvider>(context);
     final config = configProvider.config;
+    final colorTheme = context.theme;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorTheme.background,
       appBar: AppBar(
         title: const Text(
           '时间管理四象限',

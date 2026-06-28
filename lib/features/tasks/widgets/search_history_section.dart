@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/core/constants/colors_constants.dart';
+import 'package:my_dida/core/themes/color_constants.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 
 class SearchHistorySection extends StatelessWidget {
   const SearchHistorySection({
@@ -16,11 +17,13 @@ class SearchHistorySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorTheme = context.theme;
+
     if (history.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           '输入关键字搜索任务',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+          style: TextStyle(color: colorTheme.textSecondary, fontSize: 14),
         ),
       );
     }
@@ -28,30 +31,30 @@ class SearchHistorySection extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
+        Text(
           '历史搜索',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: AppColors.textSecondary,
+            color: colorTheme.textSecondary,
           ),
         ),
         const SizedBox(height: 8),
         ...history.map(
           (item) => ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.history, color: AppColors.textDisabled),
+            leading: Icon(Icons.history, color: colorTheme.textDisabled),
             title: Text(
               item,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: colorTheme.textPrimary,
                 fontSize: 15,
               ),
             ),
             trailing: IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.close,
-                color: AppColors.textDisabled,
+                color: colorTheme.textDisabled,
                 size: 18,
               ),
               onPressed: () => onHistoryItemRemoved(item),

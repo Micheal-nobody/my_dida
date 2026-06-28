@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:my_dida/core/di/locator.dart';
-import 'package:my_dida/features/checklist/models/checklist.dart';
-import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
 import 'package:my_dida/core/events/event_bus.dart';
 import 'package:my_dida/features/checklist/events/checklist_events.dart';
+import 'package:my_dida/features/checklist/models/checklist.dart';
+import 'package:my_dida/features/checklist/repositories/checklist_repository.dart';
 import 'package:my_dida/features/operation_undo/services/operation_reverter.dart';
 
 class ChecklistOperationReverter implements DomainOperationReverter {

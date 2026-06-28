@@ -90,15 +90,6 @@ class Task extends RevertibleEntity {
     }
   }
 
-  ChecklistVO getChecklist(List<ChecklistVO> allChecklists) =>
-      allChecklists.firstWhere(
-        (list) => list.id == checklistId,
-        orElse: () => allChecklists.first,
-      );
-
-  String getChecklistName(List<ChecklistVO> allChecklists) =>
-      getChecklist(allChecklists).name;
-
   /// 从标准 JSON Map 反序列化生成 Task
   factory Task.fromJson(Map<String, dynamic> json) {
     // 处理 checkpoints 列表
@@ -156,6 +147,15 @@ class Task extends RevertibleEntity {
     }
     return task;
   }
+
+  ChecklistVO getChecklist(List<ChecklistVO> allChecklists) =>
+      allChecklists.firstWhere(
+        (list) => list.id == checklistId,
+        orElse: () => allChecklists.first,
+      );
+
+  String getChecklistName(List<ChecklistVO> allChecklists) =>
+      getChecklist(allChecklists).name;
 
   String name;
 

@@ -293,8 +293,6 @@ void main() {
                       name: 'Test Picker Reminder',
                       isAllDay: false,
                       startTime: startTime,
-                      notificationEnabled: false,
-                      reminderOffsets: const [],
                     ),
                   ),
                 )

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';

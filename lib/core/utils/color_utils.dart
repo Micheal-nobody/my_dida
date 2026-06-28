@@ -1,40 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Color constants for consistent theming
-class AppColors {
-  // Primary colors
-  static const Color primary = Colors.blue;
-  static const Color primaryLight = Color(0xFFE3F2FD);
-  static const Color primaryDark = Color(0xFF1976D2);
-
-  // Status colors
-  static const Color success = Colors.green;
-  static const Color error = Colors.red;
-  static const Color warning = Colors.orange;
-  static const Color info = Colors.blue;
-
-  // Background colors
-  static const Color background = Colors.white;
-  static const Color surface = Color(0xFFF5F5F5);
-  static const Color cardBackground = Colors.white;
-
-  // Text colors
-  static const Color textPrimary = Colors.black87;
-  static const Color textSecondary = Colors.black54;
-  static const Color textDisabled = Colors.black38;
-  static const Color textOnPrimary = Colors.white;
-
-  // Border colors
-  static const Color border = Color(0xFFE0E0E0);
-  static const Color divider = Color(0xFFBDBDBD);
-
-  // Gradient colors
-  static final LinearGradient primaryGradient = LinearGradient(
-    colors: [Colors.blue.shade50, Colors.blue.shade100],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
+class ColorUtils {
   /// 预定义的选择器颜色列表（用于清单、标签等）
   static const List<Color> selectorColors = [
     Colors.red,

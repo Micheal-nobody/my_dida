@@ -181,9 +181,7 @@ class Operation {
       jsonEncode(entity.toJson());
 
   /// 构建通用描述（因为 RevertibleEntity 声明了 displayName getter，可以更通用的方式）
-  static String _buildDescription(String action, RevertibleEntity entity) {
-    return '$action了"${entity.displayName}"';
-  }
+  static String _buildDescription(String action, RevertibleEntity entity) => '$action了"${entity.displayName}"';
 
   @override
   String toString() =>

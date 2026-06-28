@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/core/constants/colors_constants.dart';
+import 'package:my_dida/core/themes/color_constants.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 
 class SearchHighlightedText extends StatelessWidget {
   const SearchHighlightedText({
@@ -16,6 +17,7 @@ class SearchHighlightedText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorTheme = context.theme;
     if (highlight.isEmpty ||
         !text.toLowerCase().contains(highlight.toLowerCase())) {
       return Text(text, style: style);
@@ -61,7 +63,7 @@ class SearchHighlightedText extends StatelessWidget {
       text: TextSpan(
         style:
             style ??
-            const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+            TextStyle(color: colorTheme.textPrimary, fontSize: 16),
         children: spans,
       ),
     );

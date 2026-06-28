@@ -17,13 +17,11 @@ class TagPickerDialog extends StatefulWidget {
     BuildContext context, {
     required List<String> initialTags,
     required List<String> allTags,
-  }) {
-    return showDialog<List<String>>(
+  }) => showDialog<List<String>>(
       context: context,
       builder: (context) =>
           TagPickerDialog(initialTags: initialTags, allTags: allTags),
     );
-  }
 }
 
 class _TagPickerDialogState extends State<TagPickerDialog> {
@@ -74,9 +72,7 @@ class _TagPickerDialogState extends State<TagPickerDialog> {
   @override
   Widget build(BuildContext context) {
     // Filter tags based on search query
-    final filteredTags = _allTags.where((tag) {
-      return tag.toLowerCase().contains(_searchQuery.toLowerCase());
-    }).toList();
+    final filteredTags = _allTags.where((tag) => tag.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
 
     // Check if the exact search query exists in the list
     final exactMatchExists = _allTags.any(

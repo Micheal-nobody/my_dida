@@ -5,9 +5,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/config/app_config.dart';
 import 'package:my_dida/core/config/prod_config.dart';
+import 'package:my_dida/core/themes/color_constants.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/logger/logger.dart';
 import 'package:my_dida/core/router/go_router.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/calendar/providers/calendar_page_provider.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
@@ -45,6 +47,12 @@ void mainCommon(AppConfig config) async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(
+          create: (context) => ThemeProvider(DefaultColorTheme()),
+        ),
+        ProxyProvider<ThemeProvider, ColorTheme>(
+          update: (context, themeProvider, previousTheme) => themeProvider.theme,
+        ),
         ChangeNotifierProvider(create: (context) => ChecklistProvider()),
         ChangeNotifierProvider(create: (context) => CalendarPageProvider()),
         ChangeNotifierProvider(create: (context) => HabitProvider()),

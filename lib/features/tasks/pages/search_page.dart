@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_dida/core/constants/colors_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/themes/color_constants.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
@@ -175,8 +176,10 @@ class _SearchPageState extends State<SearchPage> {
     final query = _searchController.text;
     final showHistory = query.isEmpty;
 
+    final colorTheme = context.theme;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorTheme.background,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -191,9 +194,9 @@ class _SearchPageState extends State<SearchPage> {
           padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingS),
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.search,
-                color: AppColors.textSecondary,
+                color: colorTheme.textSecondary,
                 size: 20,
               ),
               const SizedBox(width: Dimensions.paddingS),
@@ -203,15 +206,15 @@ class _SearchPageState extends State<SearchPage> {
                   focusNode: _focusNode,
                   onChanged: _onSearchChanged,
                   onSubmitted: _addSearchHistory,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: '搜索任务、步骤、备注',
                     hintStyle: TextStyle(
-                      color: AppColors.textDisabled,
+                      color: colorTheme.textDisabled,
                       fontSize: 15,
                     ),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
                   ),
                   textInputAction: TextInputAction.search,
                 ),
@@ -223,9 +226,9 @@ class _SearchPageState extends State<SearchPage> {
                     _onSearchChanged('');
                     setState(() {});
                   },
-                  child: const Icon(
+                  child: Icon(
                     Icons.close,
-                    color: AppColors.textSecondary,
+                    color: colorTheme.textSecondary,
                     size: 20,
                   ),
                 ),
@@ -258,7 +261,7 @@ class _SearchPageState extends State<SearchPage> {
               _applyFilter();
             },
           ),
-          const Divider(height: 1, color: AppColors.border),
+          Divider(height: 1, color: colorTheme.border),
 
           // 主体展示区
           Expanded(
@@ -273,28 +276,31 @@ class _SearchPageState extends State<SearchPage> {
                     onHistoryItemRemoved: _removeSearchHistory,
                     onClearHistoryTapped: _clearSearchHistory,
                   )
-                : _buildSearchResultsSection(),
+                : _buildSearchResultsSection(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSearchResultsSection() {
+  Widget _buildSearchResultsSection(BuildContext context) {
+
+    final colorTheme = context.theme;
+
     if (_isSearching) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (_searchResults.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off, size: 64, color: AppColors.textDisabled),
-            SizedBox(height: Dimensions.paddingM),
+            Icon(Icons.search_off, size: 64, color: colorTheme.textDisabled),
+            const SizedBox(height: Dimensions.paddingM),
             Text(
               '未找到相关任务',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+              style: TextStyle(color: colorTheme.textSecondary, fontSize: 16),
             ),
           ],
         ),
@@ -309,6 +315,8 @@ class _SearchPageState extends State<SearchPage> {
       padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingS),
       itemCount: _searchResults.length,
       itemBuilder: (context, index) {
+        final colorTheme = context.theme;
+
         final task = _searchResults[index];
         final priorityColor = task.priority.color;
         final dateStr = _getDateString(task.startTime);
@@ -372,8 +380,8 @@ class _SearchPageState extends State<SearchPage> {
                                 ? TextDecoration.lineThrough
                                 : TextDecoration.none,
                             color: task.isDone
-                                ? AppColors.textSecondary
-                                : AppColors.textPrimary,
+                                ? colorTheme.textSecondary
+                                : colorTheme.textPrimary,
                           ),
                         ),
                       ),
@@ -388,19 +396,19 @@ class _SearchPageState extends State<SearchPage> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.notes,
                             size: 14,
-                            color: AppColors.textDisabled,
+                            color: colorTheme.textDisabled,
                           ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: SearchHighlightedText(
                               text: notesSnippet,
                               highlight: query,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                                color: AppColors.textSecondary,
+                                color: colorTheme.textSecondary,
                               ),
                             ),
                           ),
@@ -422,7 +430,7 @@ class _SearchPageState extends State<SearchPage> {
                                   ? Icons.check_box
                                   : Icons.check_box_outline_blank,
                               size: 14,
-                              color: AppColors.textDisabled,
+                              color: colorTheme.textDisabled,
                             ),
                             const SizedBox(width: 4),
                             Expanded(
@@ -431,7 +439,7 @@ class _SearchPageState extends State<SearchPage> {
                                 highlight: query,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: AppColors.textSecondary,
+                                  color: colorTheme.textSecondary,
                                   decoration: cp.isDone
                                       ? TextDecoration.lineThrough
                                       : TextDecoration.none,
