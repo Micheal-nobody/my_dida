@@ -9,7 +9,9 @@ extension DateOnly on DateTime {
 
   bool isToday({DateTime? now}) {
     final currentTime = now ?? DateTime.now();
-    return dateOnly.isAtSameMomentAs(currentTime.dateOnly);
+    return year == currentTime.year &&
+        month == currentTime.month &&
+        day == currentTime.day;
   }
 
   bool hasTime() => hour != 0 || minute != 0;

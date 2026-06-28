@@ -26,9 +26,9 @@ class CalendarPageProvider extends ChangeNotifier {
 
   Future<void> updateConfig({
     bool? showCompletedTasks,
-    String? visibleMode,
+    CalendarVisibleMode? visibleMode,
     List<int>? visibleChecklistIds,
-    String? viewMode,
+    CalendarViewMode? viewMode,
     bool? isTimeFolded,
   }) async {
     if (showCompletedTasks != null) {

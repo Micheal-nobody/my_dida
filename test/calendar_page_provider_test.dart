@@ -40,9 +40,9 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 100));
 
       expect(provider.config.showCompletedTasks, true);
-      expect(provider.config.visibleMode, 'all');
+      expect(provider.config.visibleMode, CalendarVisibleMode.all);
       expect(provider.config.visibleChecklistIds, isEmpty);
-      expect(provider.config.viewMode, 'month');
+      expect(provider.config.viewMode, CalendarViewMode.month);
       expect(provider.config.isTimeFolded, false);
     });
 
@@ -52,25 +52,25 @@ void main() {
 
       await provider.updateConfig(
         showCompletedTasks: false,
-        visibleMode: 'custom',
+        visibleMode: CalendarVisibleMode.custom,
         visibleChecklistIds: [1, 2, 3],
-        viewMode: 'week',
+        viewMode: CalendarViewMode.week,
         isTimeFolded: true,
       );
 
       expect(provider.config.showCompletedTasks, false);
-      expect(provider.config.visibleMode, 'custom');
+      expect(provider.config.visibleMode, CalendarVisibleMode.custom);
       expect(provider.config.visibleChecklistIds, [1, 2, 3]);
-      expect(provider.config.viewMode, 'week');
+      expect(provider.config.viewMode, CalendarViewMode.week);
       expect(provider.config.isTimeFolded, true);
 
       // Verify it's persisted in the database
       final persisted = await isar.calendarPageConfigs.where().findFirst();
       expect(persisted, isNotNull);
       expect(persisted!.showCompletedTasks, false);
-      expect(persisted.visibleMode, 'custom');
+      expect(persisted.visibleMode, CalendarVisibleMode.custom);
       expect(persisted.visibleChecklistIds, [1, 2, 3]);
-      expect(persisted.viewMode, 'week');
+      expect(persisted.viewMode, CalendarViewMode.week);
       expect(persisted.isTimeFolded, true);
     });
   });

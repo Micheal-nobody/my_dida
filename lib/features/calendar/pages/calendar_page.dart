@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:my_dida/core/constants/app_constants.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/utils/performance_monitor.dart';
 import 'package:my_dida/core/utils/rrule_util.dart';
+import 'package:my_dida/core/utils/task_filter.dart';
 import 'package:my_dida/features/calendar/models/calendar_page_config.dart';
 import 'package:my_dida/features/calendar/models/task_calendar_view_data.dart';
 import 'package:my_dida/features/calendar/providers/calendar_page_provider.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_all_day_task_section.dart';
+import 'package:my_dida/features/calendar/widgets/calendar_entry_widgets.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_time_task_section.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_visible_range_dialog.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_widgets/calendar_date_header.dart';
-import 'package:my_dida/features/calendar/widgets/calendar_widgets/calendar_entry_card.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_widgets/calendar_task_list_bottom.dart';
-import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/habits/models/habit.dart';
 import 'package:my_dida/features/habits/providers/habit_provider.dart';
-import 'package:my_dida/features/habits/widgets/habit_check_in_dialog.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart';
 import 'package:my_dida/shared/widgets/datetime/calendar_grid.dart';
@@ -87,7 +85,7 @@ class _CalendarPageState extends State<CalendarPage> {
     final config = _calendarPageProvider.config;
     final dates = <DateTime>[];
     final startDate = _selectedDate;
-    final range = config.viewMode == 'week' ? 7 : 3;
+    final range = config.viewMode == CalendarViewMode.week ? 7 : 3;
 
     for (var index = 0; index < range; index++) {
       dates.add(startDate.add(Duration(days: index)));
@@ -97,7 +95,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
   List<DateTime> get _loadRangeDates {
     final config = _calendarPageProvider.config;
-    if (config.viewMode == 'month') {
+    if (config.viewMode == CalendarViewMode.month) {
       final firstDay = DateTime(_selectedDate.year, _selectedDate.month);
       final lastDay = DateTime(_selectedDate.year, _selectedDate.month + 1, 0);
       final days = lastDay.difference(firstDay).inDays + 1;
@@ -107,18 +105,12 @@ class _CalendarPageState extends State<CalendarPage> {
     }
   }
 
-  List<Task> _filterTasks(List<Task> tasks, CalendarPageConfig config) =>
-      tasks.where((task) {
-        if (!config.showCompletedTasks && task.isDone) {
-          return false;
-        }
-        if (config.visibleMode == 'custom') {
-          if (!config.visibleChecklistIds.contains(task.checklistId)) {
-            return false;
-          }
-        }
-        return true;
-      }).toList();
+  List<Task> _filterTasks(List<Task> tasks, CalendarPageConfig config) => tasks
+      .filterByIsDone(!config.showCompletedTasks)
+      .filterByChecklistIds(
+        isCustomMode: config.visibleMode == CalendarVisibleMode.custom,
+        visibleChecklistIds: config.visibleChecklistIds,
+      );
 
   Future<void> _loadTasksForVisibleDates() async {
     await PerformanceMonitor.timeAsyncOperation(
@@ -290,70 +282,11 @@ class _CalendarPageState extends State<CalendarPage> {
     bool isSelected,
   ) {
     final normalizedDate = DateTime(date.year, date.month, date.day);
-    final tasks = _tasksForDates[normalizedDate] ?? [];
-    final allDayTasks = _allDayTasksForDates[normalizedDate] ?? [];
-    final totalTasks = [...tasks, ...allDayTasks];
-
-    final colors = <Color>{};
-    for (final task in totalTasks) {
-      colors.add(_getTaskColor(context, task));
-      if (colors.length >= 3) break;
-    }
-
-    final isToday =
-        date.year == DateTime.now().year &&
-        date.month == DateTime.now().month &&
-        date.day == DateTime.now().day;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isSelected
-                  ? Colors.blue
-                  : (isToday
-                        ? Colors.blue.withValues(alpha: 0.1)
-                        : Colors.transparent),
-            ),
-            child: Center(
-              child: Text(
-                date.day.toString(),
-                style: TextStyle(
-                  color: isSelected
-                      ? Colors.white
-                      : (isToday ? Colors.blue : Colors.black),
-                  fontWeight: isSelected || isToday
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: colors
-                .map(
-                  (color) => Container(
-                    width: 4,
-                    height: 4,
-                    margin: const EdgeInsets.symmetric(horizontal: 1),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: color,
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
-      ),
+    return CalendarGridDay(
+      date: date,
+      isSelected: isSelected,
+      tasks: _tasksForDates[normalizedDate] ?? [],
+      allDayTasks: _allDayTasksForDates[normalizedDate] ?? [],
     );
   }
 
@@ -377,85 +310,23 @@ class _CalendarPageState extends State<CalendarPage> {
     });
   }
 
-  Color _getTaskColor(BuildContext context, Task task) {
-    final checklistProvider = Provider.of<ChecklistProvider>(
-      context,
-      listen: false,
-    );
-    final checklist = checklistProvider.allCheckLists.firstWhere(
-      (item) => item.id == task.checklistId,
-      orElse: () => AppConstants.defaultCheckList,
-    );
-    return checklist.color;
-  }
-
   Widget _buildTimedTaskEntry(
     BuildContext context, {
     required Task task,
     required double columnWidth,
-  }) {
-    if (task.startTime == null) {
-      return const SizedBox.shrink();
-    }
-
-    final taskColor = _getTaskColor(context, task);
-
-    Widget buildCard({
-      required Color backgroundColor,
-      required VoidCallback onPressed,
-      Color? borderColor,
-    }) => SizedBox(
-      width: columnWidth,
-      height: _timedEntryHeight,
-      child: CalendarEntryCard(
-        text: task.name,
-        backgroundColor: backgroundColor,
-        borderColor: borderColor,
-        onPressed: onPressed,
-        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        opacity: task.isDone ? 0.4 : 1,
-      ),
-    );
-
-    return Draggable<Task>(
-      data: task,
-      feedback: Material(
-        color: Colors.transparent,
-        child: buildCard(
-          backgroundColor: taskColor.withValues(alpha: 0.9),
-          onPressed: () {},
-        ),
-      ),
-      childWhenDragging: buildCard(
-        backgroundColor: taskColor.withValues(alpha: 0.3),
-        borderColor: taskColor,
-        onPressed: () {},
-      ),
-      child: buildCard(
-        backgroundColor: taskColor.withValues(alpha: 0.8),
-        onPressed: () {
-          TaskDetailPage.show(context, task);
-        },
-      ),
-    );
-  }
+  }) => CalendarTimedTaskEntry(
+    task: task,
+    columnWidth: columnWidth,
+    entryHeight: _timedEntryHeight,
+  );
 
   Widget _buildTimedHabitEntry(
     BuildContext context, {
     required Habit habit,
     required double columnWidth,
-  }) => SizedBox(
-    width: columnWidth,
-    child: CalendarEntryCard(
-      text: habit.name,
-      backgroundColor: Colors.orange.withValues(alpha: 0.8),
-      onPressed: () {
-        HabitCheckInDialog.show(context: context, habit: habit);
-      },
-      margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-    ),
+  }) => CalendarTimedHabitEntry(
+    habit: habit,
+    columnWidth: columnWidth,
   );
 
   Widget _buildAllDayTaskEntry(
@@ -468,87 +339,17 @@ class _CalendarPageState extends State<CalendarPage> {
     required bool isCrossDay,
     double left = 0,
     double? width,
-  }) {
-    final taskColor = _getTaskColor(context, task);
-
-    if (isCrossDay) {
-      return Positioned(
-        left: left,
-        top: stackIndex * _allDayEntryHeight,
-        width: width ?? columnWidth,
-        height: _allDayEntryHeight,
-        child: CalendarEntryCard(
-          text: task.name,
-          backgroundColor: taskColor.withValues(alpha: 0.9),
-          onPressed: () {
-            TaskDetailPage.show(context, task);
-          },
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          borderRadius: 6,
-          alignment: Alignment.centerLeft,
-          textStyle: const TextStyle(
-            fontSize: 12,
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
-          opacity: task.isDone ? 0.4 : 1,
-        ),
-      );
-    }
-
-    final taskCount = displayedCount.clamp(1, 6);
-    const taskSpacing = 1.0;
-    final totalSpacing = (taskCount - 1) * taskSpacing;
-    final taskHeight = (availableHeight - totalSpacing) / taskCount;
-    final topPosition = stackIndex * (taskHeight + taskSpacing);
-
-    Widget buildCard({
-      required Color backgroundColor,
-      required VoidCallback onPressed,
-      Color? borderColor,
-    }) => SizedBox(
-      width: width ?? columnWidth,
-      height: taskHeight,
-      child: CalendarEntryCard(
-        text: task.name,
-        backgroundColor: backgroundColor,
-        borderColor: borderColor,
-        onPressed: onPressed,
-        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-        useFittedBox: true,
-        opacity: task.isDone ? 0.4 : 1,
-      ),
-    );
-
-    return Positioned(
-      top: topPosition,
-      left: left,
-      width: width ?? columnWidth,
-      height: taskHeight,
-      child: Draggable<Task>(
-        data: task,
-        feedback: Material(
-          color: Colors.transparent,
-          child: buildCard(
-            backgroundColor: taskColor.withValues(alpha: 0.9),
-            onPressed: () {},
-          ),
-        ),
-        childWhenDragging: buildCard(
-          backgroundColor: taskColor.withValues(alpha: 0.3),
-          borderColor: taskColor,
-          onPressed: () {},
-        ),
-        child: buildCard(
-          backgroundColor: taskColor.withValues(alpha: 0.8),
-          onPressed: () {
-            TaskDetailPage.show(context, task);
-          },
-        ),
-      ),
-    );
-  }
+  }) => CalendarAllDayTaskEntry(
+    task: task,
+    columnWidth: columnWidth,
+    stackIndex: stackIndex,
+    availableHeight: availableHeight,
+    displayedCount: displayedCount,
+    isCrossDay: isCrossDay,
+    entryHeight: _allDayEntryHeight,
+    left: left,
+    width: width,
+  );
 
   Widget _buildAllDayHabitEntry(
     BuildContext context, {
@@ -557,35 +358,14 @@ class _CalendarPageState extends State<CalendarPage> {
     required int stackIndex,
     required double availableHeight,
     required int displayedCount,
-  }) {
-    final topPosition = stackIndex * _allDayEntryHeight;
-    if (topPosition + _allDayEntryHeight > availableHeight) {
-      return const SizedBox.shrink();
-    }
-
-    return Positioned(
-      left: 0,
-      top: topPosition,
-      width: columnWidth,
-      height: _allDayEntryHeight,
-      child: CalendarEntryCard(
-        text: habit.name,
-        backgroundColor: Colors.orange.withValues(alpha: 0.8),
-        onPressed: () {
-          HabitCheckInDialog.show(context: context, habit: habit);
-        },
-        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-        borderRadius: 6,
-        alignment: Alignment.centerLeft,
-        textStyle: const TextStyle(
-          fontSize: 12,
-          color: Colors.white,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
+  }) => CalendarAllDayHabitEntry(
+    habit: habit,
+    columnWidth: columnWidth,
+    stackIndex: stackIndex,
+    availableHeight: availableHeight,
+    displayedCount: displayedCount,
+    entryHeight: _allDayEntryHeight,
+  );
 
   List<int> _getActiveHours() {
     final config = _calendarPageProvider.config;
@@ -640,6 +420,8 @@ class _CalendarPageState extends State<CalendarPage> {
     final activeHours = _getActiveHours();
     final dynamicTimeAreaHeight = activeHours.length * 60.0;
 
+    final colorTheme = context.theme;
+
     return Scaffold(
       appBar: AppBar(
         title: GestureDetector(
@@ -652,10 +434,10 @@ class _CalendarPageState extends State<CalendarPage> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
+                  color: colorTheme.textPrimary,
                 ),
               ),
-              const Icon(Icons.arrow_drop_down, color: Colors.grey),
+              Icon(Icons.arrow_drop_down, color: colorTheme.textSecondary),
             ],
           ),
         ),
@@ -664,18 +446,18 @@ class _CalendarPageState extends State<CalendarPage> {
         actions: [
           IconButton(
             tooltip: '刷新',
-            icon: Icon(Icons.refresh, color: Colors.grey[600]),
+            icon: Icon(Icons.refresh, color: colorTheme.textSecondary),
             onPressed: _loadTasksForVisibleDates,
           ),
           IconButton(
             tooltip: '视图模式',
             icon: Icon(
-              config.viewMode == 'month'
+              config.viewMode == CalendarViewMode.month
                   ? Icons.view_module
-                  : (config.viewMode == 'week'
+                  : (config.viewMode == CalendarViewMode.week
                         ? Icons.view_week
                         : Icons.view_day),
-              color: Colors.grey[600],
+              color: colorTheme.textSecondary,
             ),
             onPressed: () {
               showModalBottomSheet(
@@ -699,44 +481,44 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                       const Divider(height: 1),
                       ListTile(
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.view_module,
-                          color: Colors.orange,
+                          color: colorTheme.primary,
                         ),
                         title: const Text('月视图'),
-                        trailing: config.viewMode == 'month'
-                            ? const Icon(Icons.check, color: Colors.orange)
+                        trailing: config.viewMode == CalendarViewMode.month
+                            ? Icon(Icons.check, color: colorTheme.primary)
                             : null,
                         onTap: () {
-                          calendarPageProvider.updateConfig(viewMode: 'month');
+                          calendarPageProvider.updateConfig(viewMode: CalendarViewMode.month);
                           Navigator.pop(context);
                         },
                       ),
                       ListTile(
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.view_week,
-                          color: Colors.orange,
+                          color: colorTheme.primary,
                         ),
                         title: const Text('周视图 (7天)'),
-                        trailing: config.viewMode == 'week'
-                            ? const Icon(Icons.check, color: Colors.orange)
+                        trailing: config.viewMode == CalendarViewMode.week
+                            ? Icon(Icons.check, color: colorTheme.primary)
                             : null,
                         onTap: () {
-                          calendarPageProvider.updateConfig(viewMode: 'week');
+                          calendarPageProvider.updateConfig(viewMode: CalendarViewMode.week);
                           Navigator.pop(context);
                         },
                       ),
                       ListTile(
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.view_day,
-                          color: Colors.orange,
+                          color: colorTheme.primary,
                         ),
                         title: const Text('3天视图'),
-                        trailing: config.viewMode == '3day'
-                            ? const Icon(Icons.check, color: Colors.orange)
+                        trailing: config.viewMode == CalendarViewMode.threeDay
+                            ? Icon(Icons.check, color: colorTheme.primary)
                             : null,
                         onTap: () {
-                          calendarPageProvider.updateConfig(viewMode: '3day');
+                          calendarPageProvider.updateConfig(viewMode: CalendarViewMode.threeDay);
                           Navigator.pop(context);
                         },
                       ),
@@ -748,7 +530,7 @@ class _CalendarPageState extends State<CalendarPage> {
             },
           ),
           PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+            icon: Icon(Icons.more_vert, color: colorTheme.textSecondary),
             onSelected: (value) {
               if (value == 'visible_range') {
                 CalendarVisibleRangeDialog.show(context);
@@ -759,13 +541,13 @@ class _CalendarPageState extends State<CalendarPage> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'visible_range',
                 child: Row(
                   children: [
-                    Icon(Icons.filter_list, color: Colors.black54),
-                    SizedBox(width: 8),
-                    Text('显示范围'),
+                    Icon(Icons.filter_list, color: colorTheme.textSecondary),
+                    const SizedBox(width: 8),
+                    const Text('显示范围'),
                   ],
                 ),
               ),
@@ -777,7 +559,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       config.showCompletedTasks
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
-                      color: Colors.black54,
+                      color: colorTheme.textSecondary,
                     ),
                     const SizedBox(width: 8),
                     const Text('显示已完成任务'),
@@ -789,7 +571,7 @@ class _CalendarPageState extends State<CalendarPage> {
           const SizedBox(width: 8),
         ],
       ),
-      body: config.viewMode == 'month'
+      body: config.viewMode == CalendarViewMode.month
           ? Column(
               children: [
                 CalendarGrid(
@@ -807,13 +589,13 @@ class _CalendarPageState extends State<CalendarPage> {
                   child: Container(
                     height: 12,
                     width: double.infinity,
-                    color: Colors.grey[100],
+                    color: colorTheme.surface,
                     child: Center(
                       child: Container(
                         width: 32,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: colorTheme.border,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -832,7 +614,7 @@ class _CalendarPageState extends State<CalendarPage> {
               children: [
                 CalendarDateHeader(
                   selectedDate: _selectedDate,
-                  dateRange: config.viewMode == 'week' ? 7 : 3,
+                  dateRange: config.viewMode == CalendarViewMode.week ? 7 : 3,
                   tasksForDates: _tasksForDates,
                   onDateSelected: _setSelectedDate,
                 ),
@@ -888,8 +670,8 @@ class _CalendarPageState extends State<CalendarPage> {
               ],
             ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.orange,
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: colorTheme.primary,
+        child: Icon(Icons.add, color: colorTheme.textOnPrimary),
         onPressed: () {
           AddTaskBottomSheet.show(
             context: context,

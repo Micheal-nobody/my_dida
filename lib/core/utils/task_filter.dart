@@ -6,4 +6,12 @@ extension TaskFilter on List<Task> {
 
   List<Task> filterByIsDone(bool doFilter) =>
       doFilter ? where((t) => !t.isDone).toList() : this;
+
+  List<Task> filterByChecklistIds({
+    required bool isCustomMode,
+    required List<int> visibleChecklistIds,
+  }) {
+    if (!isCustomMode) return this;
+    return where((t) => visibleChecklistIds.contains(t.checklistId)).toList();
+  }
 }

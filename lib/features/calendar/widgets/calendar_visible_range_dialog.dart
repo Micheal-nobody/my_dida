@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/features/calendar/models/calendar_page_config.dart';
 import 'package:my_dida/features/calendar/providers/calendar_page_provider.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/shared/widgets/base_bottom_sheet_layout.dart';
@@ -40,7 +41,7 @@ class _CalendarVisibleRangeDialogState
     );
     final allIds = checklistProvider.allCheckLists.map((c) => c.id).toList();
 
-    if (calendarProvider.config.visibleMode == 'all') {
+    if (calendarProvider.config.visibleMode == CalendarVisibleMode.all) {
       _isAllSelected = true;
       _tempSelectedIds = List<int>.from(allIds);
     } else {
@@ -109,7 +110,7 @@ class _CalendarVisibleRangeDialogState
           listen: false,
         );
         await calendarProvider.updateConfig(
-          visibleMode: _isAllSelected ? 'all' : 'custom',
+          visibleMode: _isAllSelected ? CalendarVisibleMode.all : CalendarVisibleMode.custom,
           visibleChecklistIds: _tempSelectedIds,
         );
         if (context.mounted) {

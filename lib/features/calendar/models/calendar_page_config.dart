@@ -3,19 +3,25 @@ import 'package:my_dida/shared/models/base_entity.dart';
 
 part 'calendar_page_config.g.dart';
 
+enum CalendarVisibleMode{all , custom}
+
+enum CalendarViewMode { month, week, agenda, threeDay }
+
 @Collection()
 class CalendarPageConfig extends BaseEntity {
   CalendarPageConfig({
     this.showCompletedTasks = true,
-    this.visibleMode = 'all', // 'all' 或 'custom'
+    this.visibleMode = CalendarVisibleMode.all,
     this.visibleChecklistIds = const [],
-    this.viewMode = 'month', // 'month', 'week', 'agenda' 等
+    this.viewMode = CalendarViewMode.month,
     this.isTimeFolded = false,
   });
 
   bool showCompletedTasks;
-  String visibleMode;
+  @Enumerated(EnumType.name)
+  CalendarVisibleMode visibleMode;
   List<int> visibleChecklistIds;
-  String viewMode;
+  @Enumerated(EnumType.name)
+  CalendarViewMode viewMode;
   bool isTimeFolded;
 }

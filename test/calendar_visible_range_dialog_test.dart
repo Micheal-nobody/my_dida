@@ -16,9 +16,9 @@ class FakeCalendarPageProvider extends ChangeNotifier
   @override
   Future<void> updateConfig({
     bool? showCompletedTasks,
-    String? visibleMode,
+    CalendarVisibleMode? visibleMode,
     List<int>? visibleChecklistIds,
-    String? viewMode,
+    CalendarViewMode? viewMode,
     bool? isTimeFolded,
   }) async {
     if (showCompletedTasks != null) {
@@ -149,7 +149,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify calendarProvider config is updated
-      expect(fakeCalendarProvider.config.visibleMode, 'all');
+      expect(fakeCalendarProvider.config.visibleMode, CalendarVisibleMode.all);
     },
   );
 }
