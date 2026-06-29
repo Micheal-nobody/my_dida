@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
 import 'package:my_dida/features/tomato/widgets/associate_task_dialog.dart';
 import 'package:provider/provider.dart';
@@ -45,19 +46,20 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TomatoProvider>();
+    final colorTheme = context.theme;
 
     final isWhiteMode = _currentMode == TimerThemeMode.white;
     final isImmersiveMode = _currentMode == TimerThemeMode.immersive;
 
-    final backgroundColor = isWhiteMode ? Colors.white : Colors.black;
-    final foregroundColor = isWhiteMode ? Colors.black87 : Colors.white;
+    final backgroundColor = isWhiteMode ? colorTheme.background : Colors.black;
+    final foregroundColor = isWhiteMode ? colorTheme.textPrimary : Colors.white;
     final subForegroundColor = isWhiteMode
-        ? Colors.black54
+        ? colorTheme.textSecondary
         : Colors.grey.shade600;
     final buttonBgColor = isWhiteMode
-        ? Colors.grey.shade200
+        ? colorTheme.cardTagBackground
         : Colors.grey.shade900;
-    final buttonTextColor = isWhiteMode ? Colors.black87 : Colors.white;
+    final buttonTextColor = isWhiteMode ? colorTheme.textPrimary : Colors.white;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -526,7 +528,7 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
           const SizedBox(width: 16),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade900,
+              backgroundColor: context.theme.error,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -598,7 +600,7 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: context.theme.deleteButton),
             child: const Text('放弃'),
           ),
         ],

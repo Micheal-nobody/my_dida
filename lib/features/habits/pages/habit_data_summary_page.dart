@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/habits/models/habit_check_in_record.dart';
 import 'package:my_dida/features/habits/providers/habit_provider.dart';
 import 'package:my_dida/features/habits/widgets/habit_day_summary_section.dart';
@@ -42,41 +43,44 @@ class _HabitDataSummaryPageState extends State<HabitDataSummaryPage>
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('打卡数据统计'),
-      backgroundColor: Colors.blue,
-      foregroundColor: Colors.white,
-      bottom: TabBar(
+  Widget build(BuildContext context) {
+    final colorTheme = context.theme;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('打卡数据统计'),
+        backgroundColor: colorTheme.primary,
+        foregroundColor: colorTheme.textOnPrimary,
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: colorTheme.textOnPrimary,
+          unselectedLabelColor: colorTheme.textOnPrimary.withValues(alpha: 0.7),
+          indicatorColor: colorTheme.textOnPrimary,
+          tabs: const [
+            Tab(text: '日汇总'),
+            Tab(text: '周汇总'),
+            Tab(text: '月汇总'),
+          ],
+        ),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : TabBarView(
         controller: _tabController,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.white70,
-        indicatorColor: Colors.white,
-        tabs: const [
-          Tab(text: '日汇总'),
-          Tab(text: '周汇总'),
-          Tab(text: '月汇总'),
+        children: [
+          HabitDaySummarySection(
+            allRecords: _allRecords,
+            provider: context.watch<HabitProvider>(),
+          ),
+          HabitWeekSummarySection(
+            allRecords: _allRecords,
+            provider: context.watch<HabitProvider>(),
+          ),
+          HabitMonthSummarySection(
+            allRecords: _allRecords,
+            provider: context.watch<HabitProvider>(),
+          ),
         ],
       ),
-    ),
-    body: _isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : TabBarView(
-            controller: _tabController,
-            children: [
-              HabitDaySummarySection(
-                allRecords: _allRecords,
-                provider: context.watch<HabitProvider>(),
-              ),
-              HabitWeekSummarySection(
-                allRecords: _allRecords,
-                provider: context.watch<HabitProvider>(),
-              ),
-              HabitMonthSummarySection(
-                allRecords: _allRecords,
-                provider: context.watch<HabitProvider>(),
-              ),
-            ],
-          ),
-  );
+    );
+  }
 }

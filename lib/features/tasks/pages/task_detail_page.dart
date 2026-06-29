@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
@@ -51,7 +52,7 @@ class TaskDetailPage extends StatefulWidget {
           return Material(
             child: Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).canvasColor,
+                color: context.theme.cardBackground,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
@@ -140,6 +141,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorTheme = context.theme;
     final task = _task;
     final sortedCheckpointEntries =
         (task?.checkpoints.asMap().entries.toList() ??
@@ -287,14 +289,13 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                                   (tag) => ActionChip(
                                     label: Text(
                                       tag,
-                                      style: const TextStyle(
-                                        color: Colors.orange,
+                                      style: TextStyle(
+                                        color: colorTheme.primary,
                                         fontSize: 13,
                                       ),
                                     ),
-                                    backgroundColor: Colors.orange.withValues(
-                                      alpha: 0.1,
-                                    ),
+                                    backgroundColor: colorTheme.primary
+                                        .withValues(alpha: 0.1),
                                     side: BorderSide.none,
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 8,

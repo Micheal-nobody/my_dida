@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/habits/providers/habit_provider.dart';
 import 'package:my_dida/features/habits/widgets/add_habit_dialog.dart';
 import 'package:my_dida/features/habits/widgets/edit_habit_dialog.dart';
@@ -17,12 +18,14 @@ class HabitsPage extends StatefulWidget {
 
 class _HabitsPageState extends State<HabitsPage> {
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('习惯'),
-      backgroundColor: Colors.blue,
-      foregroundColor: Colors.white,
-      actions: [
+  Widget build(BuildContext context) {
+    final colorTheme = context.theme;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('习惯'),
+        backgroundColor: colorTheme.primary,
+        foregroundColor: colorTheme.textOnPrimary,
+        actions: [
         IconButton(
           icon: const Icon(Icons.bar_chart),
           onPressed: () => context.push('/habits/summary'),
@@ -43,20 +46,20 @@ class _HabitsPageState extends State<HabitsPage> {
         final habits = habitProvider.habits;
 
         if (habits.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.star_outline, size: 80, color: Colors.grey),
-                SizedBox(height: 16),
+                Icon(Icons.star_outline, size: 80, color: colorTheme.textSecondary),
+                const SizedBox(height: 16),
                 Text(
                   '还没有创建任何习惯',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                  style: TextStyle(fontSize: 18, color: colorTheme.textSecondary),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   '点击右下角的 + 按钮创建第一个习惯吧！',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(fontSize: 14, color: colorTheme.textSecondary),
                 ),
               ],
             ),
@@ -107,8 +110,9 @@ class _HabitsPageState extends State<HabitsPage> {
       onPressed: () {
         AddHabitDialog.show(context);
       },
-      backgroundColor: Colors.blue,
-      child: const Icon(Icons.add, color: Colors.white),
+      backgroundColor: colorTheme.primary,
+      child: Icon(Icons.add, color: colorTheme.textOnPrimary),
     ),
   );
+}
 }

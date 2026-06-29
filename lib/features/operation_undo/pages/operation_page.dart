@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/operation_undo/models/operation.dart';
 import 'package:my_dida/features/operation_undo/providers/operation_stack_provider.dart';
@@ -23,11 +24,15 @@ class _OperationPageState extends State<OperationPage> {
   DateTime? _endDate;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('操作历史'),
-      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      actions: [
+  Widget build(BuildContext context) {
+    final colorTheme = context.theme;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('操作历史'),
+        backgroundColor: colorTheme.primary,
+        foregroundColor: colorTheme.textOnPrimary,
+        iconTheme: IconThemeData(color: colorTheme.textOnPrimary),
+        actions: [
         IconButton(
           icon: const Icon(Icons.undo),
           onPressed: () => _showUndoDialog(context),
@@ -80,24 +85,24 @@ class _OperationPageState extends State<OperationPage> {
                 Container(
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: colorTheme.surface,
                     borderRadius: BorderRadius.circular(50),
                   ),
-                  child: Icon(Icons.history, size: 64, color: Colors.grey[400]),
+                  child: Icon(Icons.history, size: 64, color: colorTheme.textDisabled),
                 ),
                 const SizedBox(height: 24),
                 Text(
                   '暂无操作记录',
                   style: TextStyle(
                     fontSize: 20,
-                    color: Colors.grey[600],
+                    color: colorTheme.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '开始使用应用后，操作记录将显示在这里',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 14, color: colorTheme.textSecondary),
                 ),
               ],
             ),
@@ -124,144 +129,148 @@ class _OperationPageState extends State<OperationPage> {
       },
     ),
   );
+}
 
-  Widget _buildOperationCard(Operation operation, int index) => Container(
-    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-    child: Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => _showOperationDetails(operation),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: index == 0
-                ? LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Theme.of(context).primaryColor.withValues(alpha: 0.05),
-                      Theme.of(context).primaryColor.withValues(alpha: 0.02),
-                    ],
-                  )
-                : null,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 顶部行：图标、标题、最新标签
-              Row(
-                children: [
-                  // 操作图标
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          _getOperationColor(operation.type),
-                          _getOperationColor(
-                            operation.type,
-                          ).withValues(alpha: 0.8),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _getOperationColor(
-                            operation.type,
-                          ).withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
+  Widget _buildOperationCard(Operation operation, int index) {
+    final colorTheme = context.theme;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Card(
+        color: colorTheme.cardBackground,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _showOperationDetails(operation),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: index == 0
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        colorTheme.primary.withValues(alpha: 0.05),
+                        colorTheme.primary.withValues(alpha: 0.02),
                       ],
-                    ),
-                    child: Icon(
-                      _getOperationIcon(operation.type),
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // 标题和描述
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          operation.description,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _formatTimestamp(operation.timestamp),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // 最新标签
-                  if (index == 0)
+                    )
+                  : null,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 顶部行：图标、标题、最新标签
+                Row(
+                  children: [
+                    // 操作图标
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                           colors: [
-                            Theme.of(context).primaryColor,
-                            Theme.of(
-                              context,
-                            ).primaryColor.withValues(alpha: 0.8),
+                            _getOperationColor(operation.type),
+                            _getOperationColor(
+                              operation.type,
+                            ).withValues(alpha: 0.8),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _getOperationColor(
+                              operation.type,
+                            ).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      child: const Text(
-                        '最新',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Icon(
+                        _getOperationIcon(operation.type),
+                        color: Colors.white,
+                        size: 24,
                       ),
                     ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              // 操作类型和目标类型标签
-              Row(
-                children: [
-                  _buildOperationChip(operation.type),
-                  const SizedBox(width: 8),
-                  _buildTargetChip(operation.target),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 16),
+                    // 标题和描述
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            operation.description,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _formatTimestamp(operation.timestamp),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: colorTheme.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 最新标签
+                    if (index == 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              colorTheme.primary,
+                              colorTheme.primary.withValues(alpha: 0.8),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          '最新',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // 操作类型和目标类型标签
+                Row(
+                  children: [
+                    _buildOperationChip(operation.type),
+                    const SizedBox(width: 8),
+                    _buildTargetChip(operation.target),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _buildOperationChip(OperationType type) {
+    final colorTheme = context.theme;
     final colors = {
-      OperationType.add: Colors.green,
-      OperationType.update: Colors.blue,
-      OperationType.delete: Colors.red,
+      OperationType.add: colorTheme.success,
+      OperationType.update: colorTheme.primary,
+      OperationType.delete: colorTheme.error,
     };
 
     final labels = {
@@ -301,8 +310,9 @@ class _OperationPageState extends State<OperationPage> {
   }
 
   Widget _buildTargetChip(OperationTarget target) {
+    final colorTheme = context.theme;
     final colors = {
-      OperationTarget.task: Colors.orange,
+      OperationTarget.task: colorTheme.warning,
       OperationTarget.habit: Colors.purple,
       OperationTarget.checklist: Colors.teal,
     };
@@ -349,13 +359,14 @@ class _OperationPageState extends State<OperationPage> {
   }
 
   Color _getOperationColor(OperationType type) {
+    final colorTheme = context.theme;
     switch (type) {
       case OperationType.add:
-        return Colors.green;
+        return colorTheme.success;
       case OperationType.update:
-        return Colors.blue;
+        return colorTheme.primary;
       case OperationType.delete:
-        return Colors.red;
+        return colorTheme.error;
     }
   }
 

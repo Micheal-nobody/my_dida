@@ -58,7 +58,7 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          Provider<ColorTheme>.value(value: DefaultColorTheme()),
+          Provider<ColorTheme>.value(value: OrangeColorTheme()),
           ChangeNotifierProvider<TaskProvider>.value(value: fakeTaskProvider),
           ChangeNotifierProvider<SidebarConfigProvider>.value(
             value: fakeSidebarProvider,
@@ -72,7 +72,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // 验证页面标题
-    expect(find.text('时间管理四象限'), findsOneWidget);
+    expect(find.text('四象限'), findsOneWidget);
 
     // 验证任务是否正确被渲染
     expect(find.text('高优先级任务'), findsOneWidget);

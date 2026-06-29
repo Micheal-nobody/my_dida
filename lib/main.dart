@@ -48,7 +48,7 @@ void mainCommon(AppConfig config) async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => ThemeProvider(DefaultColorTheme()),
+          create: (context) => ThemeProvider(BlueColorTheme()),
         ),
         ProxyProvider<ThemeProvider, ColorTheme>(
           update: (context, themeProvider, previousTheme) =>
@@ -150,12 +150,6 @@ class _MyAppState extends State<MyApp> {
     /// builder 作用是 在 MaterialApp.router 构建任意子组件时，插入额外的 widget
     /// 只不过这里没有插入而是直接返回了child，原因：Material.router会创建新的context，导致子widget无法通过context获取Provider，所以通过builder传入 MultiProvider 的context，
     builder: (context, child) => child!,
-
-    // 主题
-    theme: ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.yellow),
-    ),
 
     // 本地化：强制中文并提供所需 delegate（含 Cupertino）
     locale: const Locale('zh', 'CN'),

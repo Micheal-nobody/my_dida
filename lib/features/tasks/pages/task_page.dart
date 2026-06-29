@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/constants/app_constants.dart';
-import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/router/shell_scaffold_key.dart';
-import 'package:my_dida/core/ui/app_message_service.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/checklist/widgets/add_checklist_dialog.dart';
 import 'package:my_dida/features/habits/providers/habit_provider.dart';
@@ -11,9 +10,9 @@ import 'package:my_dida/features/settings/widgets/sort_and_group_dialog.dart';
 import 'package:my_dida/features/settings/widgets/view_changer_dialog.dart';
 import 'package:my_dida/features/settings/widgets/visible_range_dialog.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
+import 'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart';
 import 'package:my_dida/features/tasks/widgets/board_view.dart';
 import 'package:my_dida/features/tasks/widgets/task_list_view.dart';
-import 'package:my_dida/shared/widgets/custom_floating_action_button.dart';
 import 'package:provider/provider.dart';
 
 class TodoPage extends StatefulWidget {
@@ -24,14 +23,13 @@ class TodoPage extends StatefulWidget {
 }
 
 class _TodoPageState extends State<TodoPage> {
-  final AppMessageService _messageService = getIt<AppMessageService>();
-
   @override
   Widget build(BuildContext context) {
     final checklistProvider = Provider.of<ChecklistProvider>(context);
     final taskProvider = Provider.of<TaskProvider>(context);
     final currentChecklist = checklistProvider.currentCheckList;
     final allChecklists = checklistProvider.allCheckLists;
+    final colorTheme = context.theme;
 
     return Scaffold(
       drawerEnableOpenDragGesture: false,
@@ -52,7 +50,7 @@ class _TodoPageState extends State<TodoPage> {
               taskProvider.viewMode == TaskViewMode.list
                   ? Icons.list
                   : Icons.dashboard,
-              color: Colors.orange,
+              color: colorTheme.iconColor,
             ),
             onPressed: () => ViewChangerDialog.show(context),
           ),
@@ -84,9 +82,9 @@ class _TodoPageState extends State<TodoPage> {
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(context, true),
-                          child: const Text(
+                          child: Text(
                             '删除',
-                            style: TextStyle(color: Colors.red),
+                            style: TextStyle(color: colorTheme.error),
                           ),
                         ),
                       ],
@@ -103,44 +101,47 @@ class _TodoPageState extends State<TodoPage> {
                   currentChecklist.isToday || currentChecklist.isInbox;
 
               return [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'sort_group',
                   child: Row(
                     children: [
-                      Icon(Icons.sort, color: Colors.grey),
-                      SizedBox(width: 8),
-                      Text('排序与分组'),
+                      Icon(Icons.sort, color: colorTheme.textSecondary),
+                      const SizedBox(width: 8),
+                      const Text('排序与分组'),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'visible_range',
                   child: Row(
                     children: [
-                      Icon(Icons.visibility, color: Colors.grey),
-                      SizedBox(width: 8),
-                      Text('可见范围'),
+                      Icon(Icons.visibility, color: colorTheme.textSecondary),
+                      const SizedBox(width: 8),
+                      const Text('可见范围'),
                     ],
                   ),
                 ),
                 if (!isSystemList) ...[
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'list_settings',
                     child: Row(
                       children: [
-                        Icon(Icons.settings, color: Colors.grey),
-                        SizedBox(width: 8),
-                        Text('清单设置'),
+                        Icon(Icons.settings, color: colorTheme.textSecondary),
+                        const SizedBox(width: 8),
+                        const Text('清单设置'),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete_list',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_forever, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('放入垃圾桶', style: TextStyle(color: Colors.red)),
+                        Icon(Icons.delete_forever, color: colorTheme.error),
+                        const SizedBox(width: 8),
+                        Text(
+                          '放入垃圾桶',
+                          style: TextStyle(color: colorTheme.error),
+                        ),
                       ],
                     ),
                   ),
@@ -177,7 +178,13 @@ class _TodoPageState extends State<TodoPage> {
         },
       ),
 
-      floatingActionButton: const CustomFloatingActionButton(),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: colorTheme.primaryBackground,
+        child: Icon(Icons.add, color: colorTheme.iconOnPrimary),
+        onPressed: () {
+          AddTaskBottomSheet.show(context: context);
+        },
+      ),
     );
   }
 }

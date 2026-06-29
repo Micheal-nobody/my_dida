@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/tomato/models/custom_tomato.dart';
 import 'package:my_dida/features/tomato/pages/tomato_summary_page.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
@@ -11,6 +12,7 @@ class TomatoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TomatoProvider>();
+    final colorTheme = context.theme;
 
     // 格式化今日累计时间显示 (例如 0m, 4h37m, 25m)
     String formatTodayMinutes(int minutes) {
@@ -29,29 +31,29 @@ class TomatoPage extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF0EC), // 暖色调单色背景
+      backgroundColor: colorTheme.primary.withValues(alpha: 0.08), // 暖色调单色背景
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '番茄专注',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+          style: TextStyle(color: colorTheme.textPrimary, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: IconThemeData(color: colorTheme.textPrimary),
         actions: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.add_circle_outline_rounded,
-              color: Colors.black87,
+              color: colorTheme.textPrimary,
               size: 26,
             ),
             tooltip: '新建番茄钟',
             onPressed: () => _showAddTomatoDialog(context, provider),
           ),
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.bar_chart_rounded,
-              color: Colors.black87,
+              color: colorTheme.textPrimary,
               size: 28,
             ),
             tooltip: '专注统计',
@@ -64,9 +66,9 @@ class TomatoPage extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.settings_outlined,
-              color: Colors.black87,
+              color: colorTheme.textPrimary,
               size: 24,
             ),
             tooltip: '番茄设置',
@@ -88,22 +90,22 @@ class TomatoPage extends StatelessWidget {
                           Icon(
                             Icons.hourglass_empty_rounded,
                             size: 64,
-                            color: Colors.grey.shade400,
+                            color: colorTheme.textDisabled,
                           ),
                           const SizedBox(height: 16),
-                          const Text(
+                          Text(
                             '暂无自定义番茄钟',
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.grey,
+                              color: colorTheme.textSecondary,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           const SizedBox(height: 8),
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange.shade700,
-                              foregroundColor: Colors.white,
+                              backgroundColor: colorTheme.primary,
+                              foregroundColor: colorTheme.textOnPrimary,
                             ),
                             onPressed: () =>
                                 _showAddTomatoDialog(context, provider),
@@ -132,7 +134,7 @@ class TomatoPage extends StatelessWidget {
                           onLongPress: () =>
                               _confirmDelete(context, provider, tomato),
                           child: Card(
-                            color: Colors.white,
+                            color: colorTheme.cardBackground,
                             elevation: 0.5,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -150,12 +152,12 @@ class TomatoPage extends StatelessWidget {
                                     width: 44,
                                     height: 44,
                                     decoration: BoxDecoration(
-                                      color: Colors.green.shade50,
+                                      color: colorTheme.success.withValues(alpha: 0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
                                       Icons.sentiment_satisfied_alt_rounded,
-                                      color: Colors.green.shade600,
+                                      color: colorTheme.success,
                                       size: 28,
                                     ),
                                   ),
@@ -168,10 +170,10 @@ class TomatoPage extends StatelessWidget {
                                       children: [
                                         Text(
                                           tomato.name,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
+                                            color: colorTheme.textPrimary,
                                           ),
                                         ),
                                         const SizedBox(height: 4),
@@ -187,7 +189,7 @@ class TomatoPage extends StatelessWidget {
                                               formatTodayMinutes(todayMins),
                                               style: TextStyle(
                                                 fontSize: 13,
-                                                color: Colors.grey.shade600,
+                                                color: colorTheme.textSecondary,
                                               ),
                                             );
                                           },
@@ -226,22 +228,22 @@ class TomatoPage extends StatelessWidget {
                                               strokeWidth: 3,
                                               valueColor:
                                                   AlwaysStoppedAnimation<Color>(
-                                                    Colors.orange.shade700,
+                                                    colorTheme.primary,
                                                   ),
                                               backgroundColor:
-                                                  Colors.orange.shade100,
+                                                  colorTheme.primary.withValues(alpha: 0.2),
                                             ),
                                           )
                                         : Container(
                                             width: 36,
                                             height: 36,
                                             decoration: BoxDecoration(
-                                              color: Colors.orange.shade50,
+                                              color: colorTheme.primary.withValues(alpha: 0.1),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
                                               Icons.play_arrow_rounded,
-                                              color: Colors.orange.shade800,
+                                              color: colorTheme.primary,
                                               size: 22,
                                             ),
                                           ),
@@ -262,10 +264,10 @@ class TomatoPage extends StatelessWidget {
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorTheme.cardBackground,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: colorTheme.textPrimary.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, -4),
                       ),
@@ -282,12 +284,12 @@ class TomatoPage extends StatelessWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: Colors.green.shade50,
+                          color: colorTheme.success.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.sentiment_satisfied_alt_rounded,
-                          color: Colors.green.shade600,
+                          color: colorTheme.success,
                           size: 30,
                         ),
                       ),
@@ -303,10 +305,10 @@ class TomatoPage extends StatelessWidget {
                                   : (provider.associatedTask != null
                                         ? provider.associatedTask!.name
                                         : '普通番茄钟'),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                                color: colorTheme.textPrimary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -316,7 +318,7 @@ class TomatoPage extends StatelessWidget {
                               provider.statusText,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey.shade600,
+                                color: colorTheme.textSecondary,
                               ),
                             ),
                           ],
@@ -325,10 +327,10 @@ class TomatoPage extends StatelessWidget {
                       // 倒计时文字显示
                       Text(
                         formatTime(provider.duration),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: colorTheme.textPrimary,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -350,14 +352,14 @@ class TomatoPage extends StatelessWidget {
                           width: 38,
                           height: 38,
                           decoration: BoxDecoration(
-                            color: Colors.orange.shade50,
+                            color: colorTheme.primary.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             provider.isRunning && !provider.isPaused
                                 ? Icons.pause_rounded
                                 : Icons.play_arrow_rounded,
-                            color: Colors.orange.shade800,
+                            color: colorTheme.primary,
                             size: 24,
                           ),
                         ),
@@ -397,6 +399,7 @@ class TomatoPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 _buildSlider(
+                  context,
                   '专注时间',
                   focusVal,
                   5,
@@ -452,7 +455,7 @@ class TomatoPage extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: context.theme.deleteButton),
             child: const Text('删除'),
           ),
         ],
@@ -482,6 +485,7 @@ class TomatoPage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildSlider(
+                  context,
                   '专注时长',
                   focusVal,
                   5,
@@ -490,6 +494,7 @@ class TomatoPage extends StatelessWidget {
                   '分钟',
                 ),
                 _buildSlider(
+                  context,
                   '短休时长',
                   shortVal,
                   1,
@@ -498,6 +503,7 @@ class TomatoPage extends StatelessWidget {
                   '分钟',
                 ),
                 _buildSlider(
+                  context,
                   '长休时长',
                   longVal,
                   5,
@@ -506,6 +512,7 @@ class TomatoPage extends StatelessWidget {
                   '分钟',
                 ),
                 _buildSlider(
+                  context,
                   '长休间隔',
                   intervalVal,
                   2,
@@ -561,6 +568,7 @@ class TomatoPage extends StatelessWidget {
   }
 
   Widget _buildSlider(
+    BuildContext context,
     String label,
     int currentValue,
     double min,
@@ -581,9 +589,9 @@ class TomatoPage extends StatelessWidget {
             ),
             Text(
               '$currentValue $unit',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Colors.blue,
+                color: context.theme.primary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -591,6 +599,8 @@ class TomatoPage extends StatelessWidget {
         ),
       ),
       Slider(
+        activeColor: context.theme.primary,
+        inactiveColor: context.theme.primary.withValues(alpha: 0.2),
         value: currentValue.toDouble(),
         min: min,
         max: max,

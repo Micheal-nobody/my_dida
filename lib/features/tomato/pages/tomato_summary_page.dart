@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/tomato/models/tomato_record.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
 import 'package:my_dida/features/tomato/widgets/tomato_charts.dart';
@@ -32,22 +33,23 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TomatoProvider>();
+    final colorTheme = context.theme;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: colorTheme.surface,
       appBar: AppBar(
         title: const Text(
           '专注数据统计',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        backgroundColor: colorTheme.background,
+        foregroundColor: colorTheme.textPrimary,
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.redAccent,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Colors.redAccent,
+          labelColor: colorTheme.primary,
+          unselectedLabelColor: colorTheme.textSecondary,
+          indicatorColor: colorTheme.primary,
           tabs: const [
             Tab(text: '本日'),
             Tab(text: '本周'),
@@ -191,6 +193,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
     required List<Widget> children,
   }) {
     final provider = context.read<TomatoProvider>();
+    final colorTheme = context.theme;
     final totalCount = records.length;
     final double completionRate = totalCount == 0
         ? 0.0
@@ -207,7 +210,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
                 '完成番茄',
                 '$completedCount',
                 '个',
-                Colors.redAccent,
+                colorTheme.error,
               ),
             ),
             const SizedBox(width: 12),
@@ -216,7 +219,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
                 '专注时长',
                 '$totalMinutes',
                 '分钟',
-                Colors.orange,
+                colorTheme.warning,
               ),
             ),
             const SizedBox(width: 12),
@@ -225,7 +228,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
                 '番茄完成率',
                 (completionRate * 100).toStringAsFixed(0),
                 '%',
-                Colors.teal,
+                colorTheme.success,
               ),
             ),
           ],
@@ -240,11 +243,11 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
         if (provider.customTomatoes.isNotEmpty) ...[
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorTheme.cardBackground,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: colorTheme.textPrimary.withValues(alpha: 0.04),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -260,7 +263,6 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
                     ),
                   ),
                 ),
@@ -283,7 +285,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
                         return ListTile(
                           leading: Icon(
                             Icons.hourglass_full_rounded,
-                            color: Colors.orange.shade700,
+                            color: colorTheme.primary,
                             size: 20,
                           ),
                           title: Text(
@@ -291,14 +293,13 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87,
                             ),
                           ),
                           subtitle: Text(
                             '单次时长: ${tomato.focusMinutes}分钟',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: Colors.grey,
+                              color: colorTheme.textSecondary,
                             ),
                           ),
                           trailing: Column(
@@ -310,15 +311,14 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 '累计 $minutes分钟',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
-                                  color: Colors.grey,
+                                  color: colorTheme.textSecondary,
                                 ),
                               ),
                             ],
@@ -337,11 +337,11 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
         // 历史明细记录
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorTheme.cardBackground,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
+                color: colorTheme.textPrimary.withValues(alpha: 0.04),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -357,18 +357,17 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
                   ),
                 ),
               ),
               const Divider(height: 1),
               if (records.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
                   child: Center(
                     child: Text(
                       '暂无历史专注记录',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: colorTheme.textSecondary),
                     ),
                   ),
                 )
@@ -398,46 +397,50 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
     String val,
     String unit,
     Color color,
-  ) => Container(
-    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.04),
-          blurRadius: 6,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    ),
-    child: Column(
-      children: [
-        Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              val,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: color,
+  ) {
+    final colorTheme = context.theme;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: colorTheme.cardBackground,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: colorTheme.textPrimary.withValues(alpha: 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(title, style: TextStyle(fontSize: 11, color: colorTheme.textSecondary)),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                val,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
-            ),
-            const SizedBox(width: 2),
-            Text(unit, style: const TextStyle(fontSize: 9, color: Colors.grey)),
-          ],
-        ),
-      ],
-    ),
-  );
+              const SizedBox(width: 2),
+              Text(unit, style: TextStyle(fontSize: 9, color: colorTheme.textSecondary)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   // 历史明细瓦片
   Widget _buildRecordTile(BuildContext context, TomatoRecord record) {
+    final colorTheme = context.theme;
     final dateStr = DateFormat('MM-dd HH:mm').format(record.startTime);
     final taskName = record.taskName ?? '无关联任务';
     final checklistName = record.categoryName ?? '默认收集箱';
@@ -445,7 +448,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
     return ListTile(
       leading: Icon(
         record.isCompleted ? Icons.check_circle : Icons.cancel,
-        color: record.isCompleted ? Colors.green : Colors.grey,
+        color: record.isCompleted ? colorTheme.success : colorTheme.textSecondary,
         size: 20,
       ),
       title: Text(
@@ -453,7 +456,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: record.isCompleted ? Colors.black87 : Colors.grey,
+          color: record.isCompleted ? colorTheme.textPrimary : colorTheme.textSecondary,
           decoration: record.isCompleted ? null : TextDecoration.lineThrough,
         ),
       ),
@@ -463,12 +466,12 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
           children: [
             Text(
               checklistName,
-              style: TextStyle(fontSize: 11, color: Colors.blue.shade600),
+              style: TextStyle(fontSize: 11, color: colorTheme.primary),
             ),
             const SizedBox(width: 8),
             Text(
               dateStr,
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
+              style: TextStyle(fontSize: 11, color: colorTheme.textSecondary),
             ),
           ],
         ),
@@ -481,15 +484,15 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
-              color: record.isCompleted ? Colors.black87 : Colors.grey,
+              color: record.isCompleted ? colorTheme.textPrimary : colorTheme.textSecondary,
             ),
           ),
           const SizedBox(width: 4),
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.delete_outline,
               size: 18,
-              color: Colors.grey,
+              color: colorTheme.textSecondary,
             ),
             onPressed: () => _confirmDelete(context, record),
           ),
@@ -500,6 +503,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
 
   // 确认删除历史记录
   Future<void> _confirmDelete(BuildContext context, TomatoRecord record) async {
+    final colorTheme = context.theme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -512,7 +516,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: colorTheme.deleteButton),
             child: const Text('删除'),
           ),
         ],
