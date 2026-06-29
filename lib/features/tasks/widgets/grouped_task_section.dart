@@ -8,7 +8,7 @@ import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
-import 'package:my_dida/features/tasks/widgets/task_card.dart';
+import 'package:my_dida/features/tasks/widgets/task/task_card.dart';
 import 'package:provider/provider.dart';
 
 class GroupedTaskSection extends StatelessWidget {
@@ -72,10 +72,10 @@ class GroupedTaskSection extends StatelessWidget {
               padding: const EdgeInsets.only(
                 left: Dimensions.paddingL,
               ),
-              color: isTrashList ? Colors.blue : colorTheme.success,
+              color: isTrashList ? colorTheme.iconColor : colorTheme.success,
               child: Icon(
                 isTrashList ? Icons.settings_backup_restore : Icons.check,
-                color: colorTheme.textOnPrimary,
+                color: colorTheme.iconOnPrimary,
                 size: 28,
               ),
             ),
@@ -87,7 +87,7 @@ class GroupedTaskSection extends StatelessWidget {
               ),
               child: Icon(
                 Icons.delete,
-                color: colorTheme.textOnPrimary,
+                color: colorTheme.iconOnPrimary,
                 size: 28,
               ),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:provider/provider.dart';
@@ -132,7 +133,7 @@ class _AssociateMainTaskDialogState extends State<AssociateMainTaskDialog> {
         IconButton(
           icon: Icon(
             Icons.check,
-            color: _selectedTask != null ? Colors.orange : Colors.grey,
+            color: _selectedTask != null ? context.theme.iconColor : Colors.grey,
           ),
           onPressed: _selectedTask != null ? _confirmAssociation : null,
         ),
@@ -157,7 +158,7 @@ class _AssociateMainTaskDialogState extends State<AssociateMainTaskDialog> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.orange),
+          borderSide: BorderSide(color: context.theme.primary),
         ),
       ),
       onChanged: _searchTasks,
@@ -189,7 +190,7 @@ class _AssociateMainTaskDialogState extends State<AssociateMainTaskDialog> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isSelected ? Colors.orange : Colors.grey.shade300,
+              color: isSelected ? context.theme.selectedColor : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -199,7 +200,7 @@ class _AssociateMainTaskDialogState extends State<AssociateMainTaskDialog> {
                 isSelected
                     ? Icons.radio_button_checked
                     : Icons.radio_button_unchecked,
-                color: isSelected ? Colors.orange : Colors.grey,
+                color: isSelected ? context.theme.selectedColor : Colors.grey,
               ),
               onPressed: () => _selectTask(task),
             ),
@@ -207,7 +208,7 @@ class _AssociateMainTaskDialogState extends State<AssociateMainTaskDialog> {
               task.name,
               style: TextStyle(
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? Colors.orange : Colors.black,
+                color: isSelected ? context.theme.selectedColor : Colors.black,
               ),
             ),
             subtitle: task.startTime != null
@@ -215,7 +216,7 @@ class _AssociateMainTaskDialogState extends State<AssociateMainTaskDialog> {
                     _formatDateTime(task.startTime!),
                     style: TextStyle(
                       color: isSelected
-                          ? Colors.orange.shade700
+                          ? context.theme.selectedColor
                           : Colors.grey.shade600,
                     ),
                   )

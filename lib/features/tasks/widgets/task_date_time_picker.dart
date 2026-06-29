@@ -234,20 +234,6 @@ class TaskTimeInfo {
       startDateTime!.hour == 0 &&
       startDateTime!.minute == 0;
 
-  /// 清除所有时间信息
-  void clear() {
-    selectedDate = DateTime.now().toBeijingTime().dateOnly;
-    startTime = null;
-    endTime = null;
-    startDateTime = null;
-    endDateTime = null;
-    isAllDay = false;
-    rrule = const RepeatPattern.none();
-    startDate = null;
-    endDate = null;
-    notificationEnabled = false;
-    reminderOffsets = [];
-  }
 
   /// 获取最终的开始时间
   DateTime? getFinalStartTime() {
@@ -317,58 +303,6 @@ class TaskTimeInfo {
     }
 
     return null;
-  }
-
-  /// 格式化显示文本
-  String getDisplayText() {
-    final start = getFinalStartTime();
-    final end = getFinalEndTime();
-
-    if (start != null && end != null) {
-      // 显示 startTime --> endTime 格式
-      if (start.hour == 0 && start.minute == 0) {
-        // 只有日期信息，不显示时间
-        return '${start.month}月${start.day}日';
-      } else {
-        final startStr =
-            "${start.month}月${start.day}日 ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}";
-        final endStr =
-            "${end.hour.toString().padLeft(2, '0')}:${end.minute.toString().padLeft(2, '0')}";
-        return '$startStr --> $endStr';
-      }
-    } else if (start != null) {
-      // 只显示开始时间
-      if (start.hour == 0 && start.minute == 0) {
-        // 只有日期信息，不显示时间
-        return '${start.month}月${start.day}日';
-      } else {
-        return "${start.month}月${start.day}日 ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}";
-      }
-    } else {
-      return '选择日期';
-    }
-  }
-
-  /// 检查是否是今天
-  bool isToday() {
-    final start = getFinalStartTime();
-    if (start == null) return false;
-    return start.isToday();
-  }
-
-  /// 获取今天的显示文本
-  String getTodayDisplayText() {
-    final start = getFinalStartTime();
-    if (start == null) return '选择日期';
-
-    if (start.isToday()) {
-      if (start.hasTime()) {
-        return '今天 ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}';
-      }
-      return '今天';
-    }
-
-    return getDisplayText();
   }
 
   @override

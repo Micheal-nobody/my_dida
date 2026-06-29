@@ -13,9 +13,9 @@ import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/services/search_history_manager.dart';
-import 'package:my_dida/features/tasks/widgets/search_filter_chips.dart';
-import 'package:my_dida/features/tasks/widgets/search_highlighted_text.dart';
-import 'package:my_dida/features/tasks/widgets/search_history_section.dart';
+import 'package:my_dida/features/tasks/widgets/search/search_filter_chips.dart';
+import 'package:my_dida/features/tasks/widgets/search/search_highlighted_text.dart';
+import 'package:my_dida/features/tasks/widgets/search/search_history_section.dart';
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {

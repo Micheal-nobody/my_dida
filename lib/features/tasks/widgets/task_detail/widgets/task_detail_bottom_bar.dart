@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart';
-import 'package:my_dida/features/tasks/widgets/tag_picker_dialog.dart';
+import 'package:my_dida/features/tasks/widgets/task_detail/tag_picker_dialog.dart';
 import 'package:provider/provider.dart';
 
 class TaskDetailBottomBar extends StatelessWidget {

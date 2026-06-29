@@ -3,7 +3,7 @@ import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
-import 'package:my_dida/features/tasks/widgets/task_card.dart';
+import 'package:my_dida/features/tasks/widgets/task/task_card.dart';
 import 'package:provider/provider.dart';
 
 class CalendarTaskListBottom extends StatelessWidget {

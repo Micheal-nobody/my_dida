@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
@@ -24,6 +25,7 @@ class TaskRemindDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    final colorTheme = context.theme;
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).canvasColor,
@@ -37,9 +39,9 @@ class TaskRemindDialog extends StatelessWidget {
           // Header
           Row(
             children: [
-              const Icon(
+               Icon(
                 Icons.notifications_active,
-                color: Colors.orange,
+                color: colorTheme.iconColor,
                 size: 24,
               ),
               const SizedBox(width: 8),
@@ -118,8 +120,7 @@ class TaskRemindDialog extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorTheme.primaryBackground,
                   ),
                   onPressed: () async {
                     final taskProvider = Provider.of<TaskProvider>(

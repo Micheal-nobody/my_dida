@@ -11,8 +11,8 @@ import 'package:my_dida/features/settings/widgets/view_changer_dialog.dart';
 import 'package:my_dida/features/settings/widgets/visible_range_dialog.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart';
-import 'package:my_dida/features/tasks/widgets/board_view.dart';
-import 'package:my_dida/features/tasks/widgets/task_list_view.dart';
+import 'package:my_dida/features/tasks/widgets/task/board_view.dart';
+import 'package:my_dida/features/tasks/widgets/task/task_list_view.dart';
 import 'package:provider/provider.dart';
 
 class TodoPage extends StatefulWidget {

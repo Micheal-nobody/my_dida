@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 
 class TaskScheduleTrigger extends StatelessWidget {
   const TaskScheduleTrigger({
@@ -30,7 +31,7 @@ class TaskScheduleTrigger extends StatelessWidget {
             text,
             style: TextStyle(
               fontSize: 14,
-              color: hasSelection ? Colors.orange : Colors.grey,
+              color: hasSelection ? context.theme.textPrimary : Colors.grey,
               fontWeight: hasSelection ? FontWeight.bold : FontWeight.normal,
             ),
           ),

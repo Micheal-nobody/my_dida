@@ -6,6 +6,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:markdown_editor_plus/markdown_editor_plus.dart';
 import 'package:markdown_editor_plus/src/toolbar.dart' as mep;
 import 'package:my_dida/core/di/locator.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/core/utils/markdown_utils.dart';
 import 'package:my_dida/features/tasks/services/attachment_service.dart';
@@ -174,7 +175,7 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
 
     if (!context.mounted) return;
 
-    showDialog(
+    await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(text.isNotEmpty ? text : '附件文件'),
@@ -252,7 +253,7 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.check, color: Colors.orange),
+                    icon: Icon(Icons.check, color: context.theme.iconColor),
                     tooltip: '保存',
                     onPressed: _commit,
                   ),
@@ -306,8 +307,8 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
         ),
         child: MarkdownBody(
           data: widget.value,
-          imageBuilder: (uri, title, alt) {
-            final ref = uri.toString();
+          sizedImageBuilder: (config) {
+            final ref = config.uri.toString();
             return FutureBuilder<String>(
               future: _attachmentService.resolvePath(ref),
               builder: (context, snapshot) {
@@ -320,12 +321,12 @@ class _TaskDescriptionEditorState extends State<TaskDescriptionEditor> {
                   );
                 }
                 if (snapshot.hasError || !snapshot.hasData) {
-                  return _buildFileLostWidget(alt ?? '图片已丢失');
+                  return _buildFileLostWidget(config.alt ?? '图片已丢失');
                 }
                 final path = snapshot.data!;
                 final file = File(path);
                 if (!file.existsSync()) {
-                  return _buildFileLostWidget(alt ?? '图片已丢失');
+                  return _buildFileLostWidget(config.alt ?? '图片已丢失');
                 }
                 return Container(
                   margin: const EdgeInsets.symmetric(vertical: 4),

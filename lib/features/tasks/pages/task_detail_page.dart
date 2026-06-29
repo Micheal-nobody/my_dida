@@ -8,7 +8,7 @@ import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
-import 'package:my_dida/features/tasks/widgets/tag_picker_dialog.dart';
+import 'package:my_dida/features/tasks/widgets/task_detail/tag_picker_dialog.dart';
 import 'package:my_dida/features/tasks/widgets/task_description_editor.dart';
 import 'package:my_dida/features/tasks/widgets/task_detail/widgets/checkpoint_item_widget.dart';
 import 'package:my_dida/features/tasks/widgets/task_detail/widgets/sub_task_section.dart';
