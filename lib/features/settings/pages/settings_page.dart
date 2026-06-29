@@ -94,7 +94,7 @@ class SettingsPage extends StatelessWidget {
                             : config.theme == AppTheme.dark
                             ? '深色'
                             : '自动',
-                        style: TextStyle(color: colorTheme.textSecondary),
+                        style: TextStyle(color: colorTheme.selectedColor),
                       ),
                       const Icon(Icons.chevron_right),
                     ],
@@ -128,7 +128,7 @@ class SettingsPage extends StatelessWidget {
                     children: [
                       Text(
                         config.language == AppLanguage.zh ? '简体中文' : 'English',
-                        style: TextStyle(color: colorTheme.textSecondary),
+                        style: TextStyle(color: colorTheme.selectedColor),
                       ),
                       const Icon(Icons.chevron_right),
                     ],
@@ -175,7 +175,7 @@ class SettingsPage extends StatelessWidget {
                                   checklistProvider.allCheckLists.first,
                             )
                             .name,
-                        style: TextStyle(color: colorTheme.textSecondary),
+                        style: TextStyle(color: colorTheme.selectedColor),
                       ),
                       const Icon(Icons.chevron_right),
                     ],
@@ -278,41 +278,47 @@ class SettingsPage extends StatelessWidget {
   void _showThemeDialog(BuildContext context, SidebarConfigProvider provider) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('主题设置'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<AppTheme>(
-              title: const Text('自动'),
-              value: AppTheme.system,
-              groupValue: provider.config.theme,
-              onChanged: (val) {
-                if (val != null) provider.updateTheme(val);
-                context.pop();
-              },
-            ),
-            RadioListTile<AppTheme>(
-              title: const Text('浅色'),
-              value: AppTheme.light,
-              groupValue: provider.config.theme,
-              onChanged: (val) {
-                if (val != null) provider.updateTheme(val);
-                context.pop();
-              },
-            ),
-            RadioListTile<AppTheme>(
-              title: const Text('深色'),
-              value: AppTheme.dark,
-              groupValue: provider.config.theme,
-              onChanged: (val) {
-                if (val != null) provider.updateTheme(val);
-                context.pop();
-              },
-            ),
-          ],
-        ),
-      ),
+      builder: (context) {
+        final colorTheme = context.theme;
+        return AlertDialog(
+          title: const Text('主题设置'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<AppTheme>(
+                activeColor: colorTheme.selectedColor,
+                title: const Text('自动'),
+                value: AppTheme.system,
+                groupValue: provider.config.theme,
+                onChanged: (val) {
+                  if (val != null) provider.updateTheme(val);
+                  context.pop();
+                },
+              ),
+              RadioListTile<AppTheme>(
+                activeColor: colorTheme.selectedColor,
+                title: const Text('浅色'),
+                value: AppTheme.light,
+                groupValue: provider.config.theme,
+                onChanged: (val) {
+                  if (val != null) provider.updateTheme(val);
+                  context.pop();
+                },
+              ),
+              RadioListTile<AppTheme>(
+                activeColor: colorTheme.selectedColor,
+                title: const Text('深色'),
+                value: AppTheme.dark,
+                groupValue: provider.config.theme,
+                onChanged: (val) {
+                  if (val != null) provider.updateTheme(val);
+                  context.pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -322,32 +328,37 @@ class SettingsPage extends StatelessWidget {
   ) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('语言设置'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<AppLanguage>(
-              title: const Text('简体中文'),
-              value: AppLanguage.zh,
-              groupValue: provider.config.language,
-              onChanged: (val) {
-                if (val != null) provider.updateLanguage(val);
-                context.pop();
-              },
-            ),
-            RadioListTile<AppLanguage>(
-              title: const Text('English'),
-              value: AppLanguage.en,
-              groupValue: provider.config.language,
-              onChanged: (val) {
-                if (val != null) provider.updateLanguage(val);
-                context.pop();
-              },
-            ),
-          ],
-        ),
-      ),
+      builder: (context) {
+        final colorTheme = context.theme;
+        return AlertDialog(
+          title: const Text('语言设置'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<AppLanguage>(
+                activeColor: colorTheme.selectedColor,
+                title: const Text('简体中文'),
+                value: AppLanguage.zh,
+                groupValue: provider.config.language,
+                onChanged: (val) {
+                  if (val != null) provider.updateLanguage(val);
+                  context.pop();
+                },
+              ),
+              RadioListTile<AppLanguage>(
+                activeColor: colorTheme.selectedColor,
+                title: const Text('English'),
+                value: AppLanguage.en,
+                groupValue: provider.config.language,
+                onChanged: (val) {
+                  if (val != null) provider.updateLanguage(val);
+                  context.pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -358,30 +369,34 @@ class SettingsPage extends StatelessWidget {
   ) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('选择默认清单'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: checklistProvider.allCheckLists.length,
-            itemBuilder: (context, index) {
-              final list = checklistProvider.allCheckLists[index];
-              return RadioListTile<int>(
-                title: Text(list.name),
-                value: list.id,
-                groupValue: configProvider.config.defaultChecklistId,
-                onChanged: (val) {
-                  if (val != null) {
-                    configProvider.updateDefaultChecklistId(val);
-                  }
-                  context.pop();
-                },
-              );
-            },
+      builder: (context) {
+        final colorTheme = context.theme;
+        return AlertDialog(
+          title: const Text('选择默认清单'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: checklistProvider.allCheckLists.length,
+              itemBuilder: (context, index) {
+                final list = checklistProvider.allCheckLists[index];
+                return RadioListTile<int>(
+                  activeColor: colorTheme.selectedColor,
+                  title: Text(list.name),
+                  value: list.id,
+                  groupValue: configProvider.config.defaultChecklistId,
+                  onChanged: (val) {
+                    if (val != null) {
+                      configProvider.updateDefaultChecklistId(val);
+                    }
+                    context.pop();
+                  },
+                );
+              },
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

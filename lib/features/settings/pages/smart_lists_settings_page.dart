@@ -77,13 +77,16 @@ class SmartListsSettingsPage extends StatelessWidget {
                 provider.updateSmartListShowOption(trashShowOption: val),
           ),
           ListTile(
-            title: const Text(
+            title: Text(
               '四象限',
-              style: TextStyle(fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: config.showFourQuadrants ? colorTheme.primary : colorTheme.textPrimary,
+              ),
             ),
             trailing: Switch(
               value: config.showFourQuadrants,
-              activeThumbColor: Colors.orange,
+              activeColor: colorTheme.primary,
               onChanged: provider.updateFourQuadrantsVisibility,
             ),
           ),
@@ -104,22 +107,32 @@ class SmartListsSettingsPage extends StatelessWidget {
     if (currentValue == SmartListShowOption.auto) stateText = '自动';
 
     final colorTheme = context.theme;
+    final isEnabled = currentValue != SmartListShowOption.hide;
 
     return Column(
       children: [
         ListTile(
           title: Text(
             title,
-            style: const TextStyle(fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: isEnabled ? colorTheme.primary : colorTheme.textPrimary,
+            ),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 stateText,
-                style: TextStyle(color: colorTheme.textSecondary, fontSize: 16),
+                style: TextStyle(
+                  color: isEnabled ? colorTheme.primary : colorTheme.textSecondary,
+                  fontSize: 16,
+                ),
               ),
-              Icon(Icons.chevron_right, color: colorTheme.textDisabled),
+              Icon(
+                Icons.chevron_right,
+                color: isEnabled ? colorTheme.primary : colorTheme.textDisabled,
+              ),
             ],
           ),
           onTap: () =>
@@ -138,41 +151,47 @@ class SmartListsSettingsPage extends StatelessWidget {
   ) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('$title 的显示设置'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<SmartListShowOption>(
-              title: const Text('显示'),
-              value: SmartListShowOption.show,
-              groupValue: currentValue,
-              onChanged: (val) {
-                if (val != null) onChanged(val);
-                context.pop();
-              },
-            ),
-            RadioListTile<SmartListShowOption>(
-              title: const Text('隐藏'),
-              value: SmartListShowOption.hide,
-              groupValue: currentValue,
-              onChanged: (val) {
-                if (val != null) onChanged(val);
-                context.pop();
-              },
-            ),
-            RadioListTile<SmartListShowOption>(
-              title: const Text('自动 (有任务时显示)'),
-              value: SmartListShowOption.auto,
-              groupValue: currentValue,
-              onChanged: (val) {
-                if (val != null) onChanged(val);
-                context.pop();
-              },
-            ),
-          ],
-        ),
-      ),
+      builder: (context) {
+        final colorTheme = context.theme;
+        return AlertDialog(
+          title: Text('$title 的显示设置'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<SmartListShowOption>(
+                activeColor: colorTheme.primary,
+                title: const Text('显示'),
+                value: SmartListShowOption.show,
+                groupValue: currentValue,
+                onChanged: (val) {
+                  if (val != null) onChanged(val);
+                  context.pop();
+                },
+              ),
+              RadioListTile<SmartListShowOption>(
+                activeColor: colorTheme.primary,
+                title: const Text('隐藏'),
+                value: SmartListShowOption.hide,
+                groupValue: currentValue,
+                onChanged: (val) {
+                  if (val != null) onChanged(val);
+                  context.pop();
+                },
+              ),
+              RadioListTile<SmartListShowOption>(
+                activeColor: colorTheme.primary,
+                title: const Text('自动 (有任务时显示)'),
+                value: SmartListShowOption.auto,
+                groupValue: currentValue,
+                onChanged: (val) {
+                  if (val != null) onChanged(val);
+                  context.pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

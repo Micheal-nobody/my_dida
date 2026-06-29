@@ -44,48 +44,102 @@ class SidebarSettingsPage extends StatelessWidget {
             child: Column(
               children: [
                 SwitchListTile(
-                  secondary: const Icon(Icons.account_box),
-                  title: const Text('头像与用户信息'),
+                  secondary: Icon(
+                    Icons.account_box,
+                    color: config.showProfile ? colorTheme.selectedColor : colorTheme.textSecondary,
+                  ),
+                  title: Text(
+                    '头像与用户信息',
+                    style: TextStyle(
+                      color: config.showProfile ? colorTheme.selectedColor : colorTheme.textPrimary,
+                    ),
+                  ),
+                  activeColor: colorTheme.selectedColor,
                   value: config.showProfile,
                   onChanged: (val) =>
                       provider.updateModuleVisibility(showProfile: val),
                 ),
                 Divider(height: 1, indent: 50, color: colorTheme.border),
                 SwitchListTile(
-                  secondary: const Icon(Icons.search),
-                  title: const Text('搜索'),
+                  secondary: Icon(
+                    Icons.search,
+                    color: config.showSearch ? colorTheme.selectedColor : colorTheme.textSecondary,
+                  ),
+                  title: Text(
+                    '搜索',
+                    style: TextStyle(
+                      color: config.showSearch ? colorTheme.selectedColor : colorTheme.textPrimary,
+                    ),
+                  ),
+                  activeColor: colorTheme.selectedColor,
                   value: config.showSearch,
                   onChanged: (val) =>
                       provider.updateModuleVisibility(showSearch: val),
                 ),
                 Divider(height: 1, indent: 50, color: colorTheme.border),
                 SwitchListTile(
-                  secondary: const Icon(Icons.view_agenda),
-                  title: const Text('智能清单'),
+                  secondary: Icon(
+                    Icons.view_agenda,
+                    color: config.showSmartLists ? colorTheme.selectedColor : colorTheme.textSecondary,
+                  ),
+                  title: Text(
+                    '智能清单',
+                    style: TextStyle(
+                      color: config.showSmartLists ? colorTheme.selectedColor : colorTheme.textPrimary,
+                    ),
+                  ),
+                  activeColor: colorTheme.selectedColor,
                   value: config.showSmartLists,
                   onChanged: (val) =>
                       provider.updateModuleVisibility(showSmartLists: val),
                 ),
                 Divider(height: 1, indent: 50, color: colorTheme.border),
                 SwitchListTile(
-                  secondary: const Icon(Icons.folder),
-                  title: const Text('清单'),
+                  secondary: Icon(
+                    Icons.folder,
+                    color: config.showCustomLists ? colorTheme.selectedColor : colorTheme.textSecondary,
+                  ),
+                  title: Text(
+                    '清单',
+                    style: TextStyle(
+                      color: config.showCustomLists ? colorTheme.selectedColor : colorTheme.textPrimary,
+                    ),
+                  ),
+                  activeColor: colorTheme.selectedColor,
                   value: config.showCustomLists,
                   onChanged: (val) =>
                       provider.updateModuleVisibility(showCustomLists: val),
                 ),
                 Divider(height: 1, indent: 50, color: colorTheme.border),
                 SwitchListTile(
-                  secondary: const Icon(Icons.label),
-                  title: const Text('标签'),
+                  secondary: Icon(
+                    Icons.label,
+                    color: config.showTags ? colorTheme.selectedColor : colorTheme.textSecondary,
+                  ),
+                  title: Text(
+                    '标签',
+                    style: TextStyle(
+                      color: config.showTags ? colorTheme.selectedColor : colorTheme.textPrimary,
+                    ),
+                  ),
+                  activeColor: colorTheme.selectedColor,
                   value: config.showTags,
                   onChanged: (val) =>
                       provider.updateModuleVisibility(showTags: val),
                 ),
                 Divider(height: 1, indent: 50, color: colorTheme.border),
                 SwitchListTile(
-                  secondary: const Icon(Icons.filter_alt),
-                  title: const Text('过滤器'),
+                  secondary: Icon(
+                    Icons.filter_alt,
+                    color: config.showFilters ? colorTheme.selectedColor : colorTheme.textSecondary,
+                  ),
+                  title: Text(
+                    '过滤器',
+                    style: TextStyle(
+                      color: config.showFilters ? colorTheme.selectedColor : colorTheme.textPrimary,
+                    ),
+                  ),
+                  activeThumbColor: colorTheme.selectedColor,
                   value: config.showFilters,
                   onChanged: (val) =>
                       provider.updateModuleVisibility(showFilters: val),
