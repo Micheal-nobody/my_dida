@@ -114,7 +114,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Future<void> _loadTasksForVisibleDates() async {
     await PerformanceMonitor.timeAsyncOperation(
-      'calendar_load_tasks',
+      OperationName.calendar_load_tasks,
       () async {
         final habitProvider = Provider.of<HabitProvider>(
           context,
@@ -127,7 +127,7 @@ class _CalendarPageState extends State<CalendarPage> {
         }
 
         final taskViewData = await PerformanceMonitor.timeAsyncOperation(
-          'load_calendar_task_view',
+          OperationName.load_calendar_task_view,
           () => _taskProvider.loadCalendarTaskViewData(
             visibleDates: visibleDates,
             rruleBatchLimit: _rruleBatchLimit,
@@ -154,7 +154,7 @@ class _CalendarPageState extends State<CalendarPage> {
               final rangeStart = normalizedDate;
               final rangeEnd = normalizedDate.add(const Duration(days: 1));
               final occurrences = PerformanceMonitor.timeOperation(
-                'rrule_habit_processing',
+                OperationName.rrule_habit_processing,
                 () => RRuleUtil.getOccurrencesInRange(
                   startTime,
                   habit.rrule.toRRuleString() ?? '',

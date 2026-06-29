@@ -1,9 +1,15 @@
 import 'package:flutter/foundation.dart';
 
+enum OperationName {
+  calendar_load_tasks,
+  load_calendar_task_view,
+  rrule_habit_processing,
+}
+
 /// Performance monitoring utility to track and log performance metrics
 class PerformanceMonitor {
-  static final Map<String, DateTime> _startTimes = {};
-  static final Map<String, List<int>> _durations = {};
+  static final Map<OperationName, DateTime> _startTimes = {};
+  static final Map<OperationName, List<int>> _durations = {};
   static const int _maxSamples = 100;
   static bool _enabled = false; // 控制是否启用性能监控
 
@@ -16,13 +22,13 @@ class PerformanceMonitor {
   static bool get isEnabled => _enabled;
 
   /// Start timing an operation
-  static void startTimer(String operationName) {
+  static void startTimer(OperationName operationName) {
     if (!_enabled) return;
     _startTimes[operationName] = DateTime.now();
   }
 
   /// End timing an operation and log the duration
-  static void endTimer(String operationName) {
+  static void endTimer(OperationName operationName) {
     if (!_enabled) return;
 
     final startTime = _startTimes[operationName];
@@ -54,7 +60,10 @@ class PerformanceMonitor {
   }
 
   /// Time a synchronous operation
-  static T timeOperation<T>(String operationName, T Function() operation) {
+  static T timeOperation<T>(
+    OperationName operationName,
+    T Function() operation,
+  ) {
     if (!_enabled) return operation();
     startTimer(operationName);
     try {
@@ -66,7 +75,7 @@ class PerformanceMonitor {
 
   /// Time an asynchronous operation
   static Future<T> timeAsyncOperation<T>(
-    String operationName,
+    OperationName operationName,
     Future<T> Function() operation,
   ) async {
     if (!_enabled) return operation();
@@ -79,7 +88,7 @@ class PerformanceMonitor {
   }
 
   /// Get performance statistics for an operation
-  static PerformanceStats? getStats(String operationName) {
+  static PerformanceStats? getStats(OperationName operationName) {
     final durations = _durations[operationName];
     if (durations == null || durations.isEmpty) return null;
 
@@ -101,8 +110,8 @@ class PerformanceMonitor {
   }
 
   /// Get all performance statistics
-  static Map<String, PerformanceStats> getAllStats() {
-    final stats = <String, PerformanceStats>{};
+  static Map<OperationName, PerformanceStats> getAllStats() {
+    final stats = <OperationName, PerformanceStats>{};
     for (final operationName in _durations.keys) {
       final stat = getStats(operationName);
       if (stat != null) {
@@ -161,7 +170,7 @@ class PerformanceStats {
     required this.maxDuration,
   });
 
-  final String operationName;
+  final OperationName operationName;
   final int sampleCount;
   final double averageDuration;
   final double medianDuration;

@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/constants/dimension_constants.dart';
+import 'package:my_dida/core/constants/ui_constants.dart';
+import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
+import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
+import 'package:my_dida/features/habits/providers/habit_provider.dart';
+import 'package:my_dida/features/habits/widgets/edit_habit_dialog.dart';
+import 'package:my_dida/features/habits/widgets/habit_card.dart';
+import 'package:my_dida/features/habits/widgets/habit_check_in_dialog.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
-import 'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart';
 import 'package:my_dida/features/tasks/widgets/task_card.dart';
 import 'package:provider/provider.dart';
 
@@ -12,284 +19,294 @@ class BoardView extends StatelessWidget {
   const BoardView({
     required this.groupedTasks,
     required this.allChecklists,
+    required this.currentChecklist,
+    required this.isTodayTasks,
     super.key,
   });
 
   final Map<String, List<Task>> groupedTasks;
   final List<ChecklistVO> allChecklists;
+  final ChecklistVO currentChecklist;
+  final bool isTodayTasks;
 
   @override
   Widget build(BuildContext context) {
-    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-    final currentGroupBy = taskProvider.groupBy;
+    final taskProvider = Provider.of<TaskProvider>(context);
+    final habitProvider = Provider.of<HabitProvider>(context);
+    final colorTheme = context.theme;
+    final messageService = getIt<AppMessageService>();
+    final isTrashList = currentChecklist.isTrash;
 
-    final columns = groupedTasks.keys.toList();
+    // 1. 确定所有的 Tab
+    final taskGroups = groupedTasks.keys.toList();
+    final List<String> tabTitles = [...taskGroups];
 
-    if (columns.isEmpty) {
-      return const Center(
-        child: Text('无任务数据', style: TextStyle(color: Colors.grey)),
-      );
-    }
+    // 计算过滤后的习惯卡片
+    final List<Widget> habitCards = [];
+    if (isTodayTasks && habitProvider.habits.isNotEmpty) {
+      final habits = habitProvider.habits;
+      for (final habit in habits) {
+        final isCompleted = habitProvider.isTodayCompleted(habit);
+        if (taskProvider.visibleRange == TaskVisibleRange.undone &&
+            isCompleted) {
+          continue;
+        }
+        if (taskProvider.visibleRange == TaskVisibleRange.done &&
+            !isCompleted) {
+          continue;
+        }
 
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemCount: columns.length,
-      padding: const EdgeInsets.all(8),
-      itemBuilder: (context, index) {
-        final columnTitle = columns[index];
-        final tasks = groupedTasks[columnTitle] ?? [];
-
-        final colorTheme = context.theme;
-
-        return Container(
-          width: 300,
-          margin: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 列头部
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          columnTitle,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '${tasks.length}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ),
-                      ],
+        habitCards.add(
+          HabitCard(
+            habit: habit,
+            progress: habitProvider.getTodayProgress(habit),
+            isCompleted: isCompleted,
+            onTap: () {
+              HabitCheckInDialog.show(context: context, habit: habit);
+            },
+            onSkip: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('跳过今天'),
+                  content: const Text('确定要跳过今天的习惯吗？'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('取消'),
                     ),
-                    IconButton(
-                      icon: Icon(Icons.add, color: colorTheme.iconColor),
-                      onPressed: () {
-                        // 点击新增任务
-                        _showAddTaskDialogForColumn(
-                          context,
-                          columnTitle,
-                          currentGroupBy,
-                        );
-                      },
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('确定'),
                     ),
                   ],
                 ),
-              ),
-              const Divider(height: 1),
-
-              // 任务卡片拖放目标区域
-              Expanded(
-                child: DragTarget<Task>(
-                  onWillAcceptWithDetails: (details) => details.data.id != -1,
-                  onAcceptWithDetails: (details) {
-                    final task = details.data;
-                    _handleTaskDropped(
-                      context,
-                      task,
-                      columnTitle,
-                      currentGroupBy,
-                      taskProvider,
-                    );
-                  },
-                  builder: (context, candidateData, rejectedData) => Container(
-                    color: candidateData.isNotEmpty
-                        ? Colors.orange.withValues(alpha: 0.1)
-                        : Colors.transparent,
-                    child: ListView.builder(
-                      itemCount: tasks.length,
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      itemBuilder: (context, taskIndex) {
-                        final task = tasks[taskIndex];
-
-                        return LongPressDraggable<Task>(
-                          data: task,
-                          feedback: Material(
-                            elevation: 4,
-                            borderRadius: BorderRadius.circular(8),
-                            child: SizedBox(
-                              width: 284,
-                              child: TaskCard(
-                                task: task,
-                                checklistName: task.getChecklistName(
-                                  allChecklists,
-                                ),
-                                checklistColor: task
-                                    .getChecklist(allChecklists)
-                                    .color,
-                              ),
-                            ),
-                          ),
-                          childWhenDragging: Opacity(
-                            opacity: 0.3,
-                            child: TaskCard(
-                              task: task,
-                              checklistName: task.getChecklistName(
-                                allChecklists,
-                              ),
-                              checklistColor: task
-                                  .getChecklist(allChecklists)
-                                  .color,
-                            ),
-                          ),
-                          child: TaskCard(
-                            task: task,
-                            checklistName: task.getChecklistName(allChecklists),
-                            checklistColor: task
-                                .getChecklist(allChecklists)
-                                .color,
-                            onToggleDone: (value) {
-                              taskProvider.execute(
-                                UpdateTaskIsDone(task, value!),
-                              );
-                            },
-                            onTap: () {
-                              TaskDetailPage.show(context, task);
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ],
+              );
+              if (confirmed == true) {
+                await habitProvider.skipToday(habit);
+              }
+            },
+            onEdit: () {
+              EditHabitDialog.show(context, habit);
+            },
           ),
         );
-      },
+      }
+    }
+
+    final hasHabits = isTodayTasks && habitCards.isNotEmpty;
+    if (hasHabits) {
+      tabTitles.add('习惯');
+    }
+
+    if (tabTitles.isEmpty) {
+      return const Center(
+        child: Text(
+          '暂无任务',
+          style: TextStyle(color: Colors.grey, fontSize: 16),
+        ),
+      );
+    }
+
+    // 2. 渲染带有顶部 TabBar 和中下部 TabBarView 的布局
+    return DefaultTabController(
+      length: tabTitles.length,
+      child: Column(
+        children: [
+          Container(
+            color: colorTheme.cardBackground,
+            alignment: Alignment.centerLeft,
+            child: TabBar(
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              labelColor: colorTheme.primary,
+              unselectedLabelColor: colorTheme.textSecondary,
+              indicatorColor: colorTheme.primary,
+              dividerColor: Colors.grey[200],
+              tabs: tabTitles.map((title) {
+                // 计算该 Tab 的数量
+                int count = 0;
+                if (title == '习惯') {
+                  count = habitCards.length;
+                } else {
+                  count = groupedTasks[title]?.length ?? 0;
+                }
+
+                return Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(title),
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '$count',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              children: tabTitles.map((title) {
+                if (title == '习惯') {
+                  return ListView.builder(
+                    itemCount: habitCards.length,
+                    itemBuilder: (context, index) => habitCards[index],
+                  );
+                }
+
+                final tasks = groupedTasks[title] ?? [];
+
+                if (tasks.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      '暂无任务',
+                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  itemCount: tasks.length,
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  itemBuilder: (context, taskIndex) {
+                    final task = tasks[taskIndex];
+
+                    return Dismissible(
+                      key: Key('board_${task.id}'),
+                      background: Container(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(
+                          left: Dimensions.paddingL,
+                        ),
+                        color: isTrashList ? Colors.blue : colorTheme.success,
+                        child: Icon(
+                          isTrashList
+                              ? Icons.settings_backup_restore
+                              : Icons.check,
+                          color: colorTheme.textOnPrimary,
+                          size: 28,
+                        ),
+                      ),
+                      secondaryBackground: Container(
+                        alignment: Alignment.centerRight,
+                        color: colorTheme.error,
+                        padding: const EdgeInsets.only(
+                          right: Dimensions.paddingL,
+                        ),
+                        child: Icon(
+                          Icons.delete,
+                          color: colorTheme.textOnPrimary,
+                          size: 28,
+                        ),
+                      ),
+                      confirmDismiss: (direction) async {
+                        if (direction == DismissDirection.startToEnd) {
+                          if (isTrashList) {
+                            await taskProvider.execute(RestoreTask(task));
+                            messageService.showSuccess('任务已还原');
+                            return false;
+                          }
+                          await taskProvider.execute(
+                            UpdateTaskIsDone(task, true),
+                          );
+                          return false;
+                        } else if (direction == DismissDirection.endToStart) {
+                          return showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text(
+                                isTrashList
+                                    ? '永久删除任务'
+                                    : UIStrings.deleteTaskTitle,
+                              ),
+                              content: Text(
+                                isTrashList
+                                    ? '确认要永久删除此任务吗？该操作无法恢复。'
+                                    : UIStrings.deleteTaskMessage,
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text(UIStrings.cancel),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: colorTheme.error,
+                                  ),
+                                  child: const Text(UIStrings.delete),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                        return false;
+                      },
+                      onDismissed: (direction) async {
+                        if (direction == DismissDirection.endToStart) {
+                          try {
+                            await taskProvider.execute(DeleteTask(task));
+                            messageService.showSuccess(
+                              isTrashList
+                                  ? '任务已永久删除'
+                                  : UIStrings.taskDeleted,
+                            );
+                          } catch (e) {
+                            messageService.showError(
+                              '${UIStrings.errorDeleting}: $e',
+                            );
+                          }
+                        }
+                      },
+                      child: TaskCard(
+                        task: task,
+                        checklistName: task.getChecklistName(allChecklists),
+                        checklistColor: task.getChecklist(allChecklists).color,
+                        onToggleDone: (value) {
+                          if (isTrashList) {
+                            taskProvider.execute(RestoreTask(task));
+                            messageService.showSuccess('任务已还原');
+                          } else {
+                            taskProvider.execute(
+                              UpdateTaskIsDone(task, value!),
+                            );
+                          }
+                        },
+                        onTap: () {
+                          if (isTrashList) {
+                            messageService.showInfo('垃圾桶中的任务无法直接查看详情');
+                          } else {
+                            TaskDetailPage.show(context, task);
+                          }
+                        },
+                      ),
+                    );
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
     );
-  }
-
-  void _showAddTaskDialogForColumn(
-    BuildContext context,
-    String columnTitle,
-    TaskGroupBy groupBy,
-  ) {
-    // 根据当前分组列快速组装预设字段（我们之后可以通过构造函数传递给 AddTaskDialog 辅助快速填入）
-    Task? presetTask;
-
-    if (groupBy == TaskGroupBy.priority) {
-      final TaskPriority priority = TaskPriority.fromLabel(columnTitle);
-      presetTask = Task(name: '', isAllDay: true, priority: priority);
-    } else if (groupBy == TaskGroupBy.checklist) {
-      final cl = allChecklists.firstWhere(
-        (c) => c.name == columnTitle,
-        orElse: () => allChecklists.first,
-      );
-      presetTask = Task(name: '', isAllDay: true, checklistId: cl.id);
-    } else if (groupBy == TaskGroupBy.tag) {
-      if (columnTitle != '无标签') {
-        presetTask = Task(name: '', isAllDay: true, tags: [columnTitle]);
-      }
-    } else if (groupBy == TaskGroupBy.date) {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final tomorrow = today.add(const Duration(days: 1));
-
-      DateTime? startTime;
-      if (columnTitle == '今天') {
-        startTime = today;
-      } else if (columnTitle == '明天') {
-        startTime = tomorrow;
-      } else if (columnTitle == '最近7天') {
-        startTime = today.add(const Duration(days: 3));
-      } else if (columnTitle == '稍后') {
-        startTime = today.add(const Duration(days: 8));
-      }
-
-      if (startTime != null) {
-        presetTask = Task(name: '', isAllDay: true, startTime: startTime);
-      }
-    }
-
-    AddTaskBottomSheet.show(context: context, initTask: presetTask);
-  }
-
-  void _handleTaskDropped(
-    BuildContext context,
-    Task task,
-    String columnTitle,
-    TaskGroupBy groupBy,
-    TaskProvider taskProvider,
-  ) async {
-    if (groupBy == TaskGroupBy.priority) {
-      final TaskPriority newPriority = TaskPriority.fromLabel(columnTitle);
-
-      if (task.priority != newPriority) {
-        await taskProvider.updatePriority(task, newPriority);
-      }
-    } else if (groupBy == TaskGroupBy.checklist) {
-      final targetChecklist = allChecklists.firstWhere(
-        (cl) => cl.name == columnTitle,
-        orElse: () => allChecklists.first,
-      );
-      if (task.checklistId != targetChecklist.id) {
-        await taskProvider.execute(UpdateChecklist(task, targetChecklist.id));
-      }
-    } else if (groupBy == TaskGroupBy.tag) {
-      if (columnTitle == '无标签') {
-        if (task.tags.isNotEmpty) {
-          await taskProvider.execute(UpdateTags(task, []));
-        }
-      } else {
-        if (!task.tags.contains(columnTitle)) {
-          await taskProvider.execute(UpdateTags(task, [columnTitle]));
-        }
-      }
-    } else if (groupBy == TaskGroupBy.date) {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final tomorrow = today.add(const Duration(days: 1));
-
-      if (columnTitle == '今天') {
-        await taskProvider.updateStartTime(task, today, isAllDay: true);
-      } else if (columnTitle == '明天') {
-        await taskProvider.updateStartTime(task, tomorrow, isAllDay: true);
-      } else if (columnTitle == '已过期') {
-        await taskProvider.updateStartTime(
-          task,
-          today.subtract(const Duration(days: 1)),
-          isAllDay: true,
-        );
-      } else if (columnTitle == '最近7天') {
-        await taskProvider.updateStartTime(
-          task,
-          today.add(const Duration(days: 3)),
-          isAllDay: true,
-        );
-      } else if (columnTitle == '稍后') {
-        await taskProvider.updateStartTime(
-          task,
-          today.add(const Duration(days: 8)),
-          isAllDay: true,
-        );
-      } else if (columnTitle == '无日期') {
-        await taskProvider.clearTaskSchedule(task);
-      }
-    }
   }
 }
