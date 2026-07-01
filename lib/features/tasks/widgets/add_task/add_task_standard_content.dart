@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/core/constants/app_constants.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
@@ -11,30 +10,6 @@ import 'package:provider/provider.dart';
 
 class AddTaskStandardContent extends StatelessWidget {
   const AddTaskStandardContent({super.key});
-
-  void _ensureSelectedChecklist(BuildContext context, AddTaskBottomSheetState state, ChecklistProvider provider) {
-    if (state.selectedChecklist != null) {
-      final matchedChecklist = provider.allCheckLists
-          .where((item) => item.id == state.selectedChecklist!.id)
-          .firstOrNull;
-      if (matchedChecklist != null) {
-        state.setSelectedChecklist(matchedChecklist);
-        return;
-      }
-    }
-    state.setSelectedChecklist(_resolveInitialChecklist(provider));
-  }
-
-  ChecklistVO _resolveInitialChecklist(ChecklistProvider provider) {
-    final preferredChecklist = provider.currentCheckList.isSmartList
-        ? AppConstants.defaultCheckList
-        : provider.currentCheckList;
-
-    return provider.allCheckLists
-            .where((item) => item.id == preferredChecklist.id)
-            .firstOrNull ??
-        preferredChecklist;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,52 +45,6 @@ class AddTaskStandardContent extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  PopupMenuButton<TaskPriority>(
-                    initialValue: state.priority,
-                    onSelected: state.setPriority,
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(
-                        value: TaskPriority.high,
-                        child: Text('🔴 高优先级'),
-                      ),
-                      PopupMenuItem(
-                        value: TaskPriority.medium,
-                        child: Text('🟠 中优先级'),
-                      ),
-                      PopupMenuItem(
-                        value: TaskPriority.low,
-                        child: Text('🔵 低优先级'),
-                      ),
-                      PopupMenuItem(
-                        value: TaskPriority.none,
-                        child: Text('⚪ 无优先级'),
-                      ),
-                    ],
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Icon(
-                        Icons.flag,
-                        size: 20,
-                        color: state.priority == TaskPriority.none
-                            ? context.theme.unselectedLabelColor
-                            : state.priority.color,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.open_in_full,
-                      size: 20,
-                      color: context.theme.unselectedLabelColor,
-                    ),
-                    tooltip: '全屏编辑',
-                    onPressed: state.triggerExtendedDetail,
-                  ),
-                ],
-              ),
               TextField(
                 controller: state.textController,
                 autofocus: !state.hasInitPreset,
@@ -141,7 +70,10 @@ class AddTaskStandardContent extends StatelessWidget {
               TextField(
                 controller: state.descController,
                 maxLines: null,
-                style: TextStyle(fontSize: 14, color: context.theme.textSecondary),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: context.theme.textSecondary,
+                ),
                 decoration: const InputDecoration(
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 4),
@@ -161,21 +93,22 @@ class AddTaskStandardContent extends StatelessWidget {
                 ),
                 const CheckpointListView(),
               ],
-              const SizedBox(height: 12),
+              const SizedBox(height: 6),
               Row(
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
                           TextButton.icon(
                             style: TextButton.styleFrom(
+                              minimumSize: Size.zero,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
-                                vertical: 4,
+                                vertical: 8,
                               ),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                             icon: Icon(
                               Icons.calendar_today,
@@ -196,7 +129,6 @@ class AddTaskStandardContent extends StatelessWidget {
                             ),
                             onPressed: () => state.showDateTimePicker(context),
                           ),
-                          const SizedBox(width: 4),
                           IconButton(
                             icon: Icon(
                               Icons.label_outline,
@@ -209,78 +141,112 @@ class AddTaskStandardContent extends StatelessWidget {
                           ),
                           if (state.parentTask == null)
                             Consumer<ChecklistProvider>(
-                              builder: (context, provider, child) {
-                                _ensureSelectedChecklist(context, state, provider);
-                                return PopupMenuButton<ChecklistVO>(
-                                  initialValue: state.selectedChecklist,
-                                  onSelected: state.setSelectedChecklist,
-                                  itemBuilder: (context) => provider
-                                      .allCheckLists
-                                      .map(
-                                        (checklist) =>
-                                            PopupMenuItem<ChecklistVO>(
-                                              value: checklist,
-                                              child: Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.folder,
-                                                    color: checklist.color,
-                                                    size: 18,
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Text(checklist.name),
-                                                ],
-                                              ),
-                                            ),
-                                      )
-                                      .toList(),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.folder_open,
-                                          size: 20,
-                                          color: state.selectedChecklist != null
-                                              ? context.theme.primary
-                                              : context.theme.unselectedLabelColor,
-                                        ),
-                                        if (state.selectedChecklist != null) ...[
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            state.selectedChecklist!.name,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: context.theme.primary,
+                              builder: (context, provider, child) =>
+                                  PopupMenuButton<ChecklistVO>(
+                                    initialValue: state.selectedChecklist,
+                                    onSelected: state.setSelectedChecklist,
+                                    itemBuilder: (context) => provider.allCheckLists
+                                        .map(
+                                          (checklist) => PopupMenuItem<ChecklistVO>(
+                                            value: checklist,
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.folder,
+                                                  color: checklist.color,
+                                                  size: 18,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(checklist.name),
+                                              ],
                                             ),
                                           ),
+                                        )
+                                        .toList(),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                        vertical: 8.0,
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.folder_open,
+                                            size: 20,
+                                            color: state.selectedChecklist != null
+                                                ? context.theme.primary
+                                                : context.theme.unselectedLabelColor,
+                                          ),
+                                          if (state.selectedChecklist != null) ...[
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              state.selectedChecklist!.name,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: context.theme.primary,
+                                              ),
+                                            ),
+                                          ],
                                         ],
-                                      ],
+                                      ),
                                     ),
                                   ),
-                                );
-                              },
                             ),
+                          PopupMenuButton<TaskPriority>(
+                            initialValue: state.priority,
+                            onSelected: state.setPriority,
+                            itemBuilder: (context) => const [
+                              PopupMenuItem(
+                                value: TaskPriority.high,
+                                child: Text('🔴 高优先级'),
+                              ),
+                              PopupMenuItem(
+                                value: TaskPriority.medium,
+                                child: Text('🟠 中优先级'),
+                              ),
+                              PopupMenuItem(
+                                value: TaskPriority.low,
+                                child: Text('🔵 低优先级'),
+                              ),
+                              PopupMenuItem(
+                                value: TaskPriority.none,
+                                child: Text('⚪ 无优先级'),
+                              ),
+                            ],
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 8.0,
+                              ),
+                              child: Icon(
+                                Icons.flag,
+                                size: 20,
+                                color: state.priority.color,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.open_in_full,
+                              size: 20,
+                              color: context.theme.unselectedLabelColor,
+                            ),
+                            tooltip: '全屏编辑',
+                            onPressed: state.triggerExtendedDetail,
+                          ),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.send,
-                          color: context.theme.primary,
-                          size: 20,
-                        ),
-                        onPressed: () => state.addTask(context),
-                      ),
-                    ],
+                  IconButton(
+                    icon: Icon(
+                      Icons.send,
+                      color: context.theme.primary,
+                      size: 20,
+                    ),
+                    onPressed: () => state.addTask(context),
                   ),
                 ],
               ),

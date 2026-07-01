@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/core/constants/app_constants.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
-import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/checklist/widgets/checklist_selector.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
@@ -12,30 +10,6 @@ import 'package:provider/provider.dart';
 
 class AddTaskFullScreenContent extends StatelessWidget {
   const AddTaskFullScreenContent({super.key});
-
-  void _ensureSelectedChecklist(AddTaskBottomSheetState state, ChecklistProvider provider) {
-    if (state.selectedChecklist != null) {
-      final matchedChecklist = provider.allCheckLists
-          .where((item) => item.id == state.selectedChecklist!.id)
-          .firstOrNull;
-      if (matchedChecklist != null) {
-        state.setSelectedChecklist(matchedChecklist);
-        return;
-      }
-    }
-    state.setSelectedChecklist(_resolveInitialChecklist(provider));
-  }
-
-  ChecklistVO _resolveInitialChecklist(ChecklistProvider provider) {
-    final preferredChecklist = provider.currentCheckList.isSmartList
-        ? AppConstants.defaultCheckList
-        : provider.currentCheckList;
-
-    return provider.allCheckLists
-            .where((item) => item.id == preferredChecklist.id)
-            .firstOrNull ??
-        preferredChecklist;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +23,6 @@ class AddTaskFullScreenContent extends StatelessWidget {
         ),
         title: Consumer<ChecklistProvider>(
           builder: (context, provider, child) {
-            _ensureSelectedChecklist(state, provider);
             return ChecklistSelector(
               items: provider.allCheckLists,
               selectedValue: state.selectedChecklist,
@@ -64,9 +37,7 @@ class AddTaskFullScreenContent extends StatelessWidget {
             initialValue: state.priority,
             icon: Icon(
               Icons.flag,
-              color: state.priority == TaskPriority.none
-                  ? context.theme.unselectedLabelColor
-                  : state.priority.color,
+              color: state.priority.color,
             ),
             onSelected: state.setPriority,
             itemBuilder: (context) => const [

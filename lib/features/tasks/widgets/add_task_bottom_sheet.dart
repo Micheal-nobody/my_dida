@@ -103,6 +103,7 @@ class AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
     parentTask = widget.parentTask;
     isFullScreen = widget.initialIsFullScreen;
     final now = DateTime.now();
+    final checklistProvider = context.read<ChecklistProvider>();
 
     if (widget.initTask != null) {
       hasInitPreset = true;
@@ -141,17 +142,23 @@ class AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
       );
 
       if (widget.initTask!.checklistId != null) {
-        selectedChecklist = ChecklistVO(
-          id: widget.initTask!.checklistId!,
-          name: '',
-          color: Colors.grey,
-        );
+        selectedChecklist = checklistProvider.allCheckLists
+                .where((item) => item.id == widget.initTask!.checklistId)
+                .firstOrNull ??
+            ChecklistVO(
+              id: widget.initTask!.checklistId!,
+              name: '',
+              color: Colors.grey,
+            );
+      } else {
+        selectedChecklist = _resolveInitialChecklist(checklistProvider);
       }
     } else {
       dateTimePickerValue = CustomDateTimePickerValue(
         selectedDate: now.toBeijingTime().dateOnly,
         isAllDay: true,
       );
+      selectedChecklist = _resolveInitialChecklist(checklistProvider);
     }
 
     // 初始化已存 checkpoint 的 FocusNode
@@ -171,7 +178,6 @@ class AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
   }
 
   // 状态修改方法
-
   void setPriority(TaskPriority val) {
     setState(() {
       priority = val;
@@ -449,12 +455,10 @@ class AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AddTaskStateScope(
+  Widget build(BuildContext context) => AddTaskStateScope(
       state: this,
       child: isFullScreen
           ? const AddTaskFullScreenContent()
           : const AddTaskStandardContent(),
     );
-  }
 }

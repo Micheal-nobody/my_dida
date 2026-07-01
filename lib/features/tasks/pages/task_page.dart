@@ -50,7 +50,6 @@ class _TodoPageState extends State<TodoPage> {
               taskProvider.viewMode == TaskViewMode.list
                   ? Icons.list
                   : Icons.dashboard,
-              color: colorTheme.iconColor,
             ),
             onPressed: () => ViewChangerDialog.show(context),
           ),
@@ -96,11 +95,7 @@ class _TodoPageState extends State<TodoPage> {
                 }
               }
             },
-            itemBuilder: (context) {
-              final isSystemList =
-                  currentChecklist.isToday || currentChecklist.isInbox;
-
-              return [
+            itemBuilder: (context) => [
                 PopupMenuItem(
                   value: 'sort_group',
                   child: Row(
@@ -121,7 +116,7 @@ class _TodoPageState extends State<TodoPage> {
                     ],
                   ),
                 ),
-                if (!isSystemList) ...[
+                if (!currentChecklist.isToday || currentChecklist.isInbox) ...[
                   PopupMenuItem(
                     value: 'list_settings',
                     child: Row(
@@ -146,8 +141,7 @@ class _TodoPageState extends State<TodoPage> {
                     ),
                   ),
                 ],
-              ];
-            },
+              ],
           ),
         ],
       ),

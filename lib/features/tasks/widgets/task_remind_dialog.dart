@@ -106,14 +106,14 @@ class TaskRemindDialog extends StatelessWidget {
                     );
                     Navigator.pop(context);
                   },
-                  child: const Text('稍后提醒'),
+                  child: const Text('稍后提醒',style: TextStyle(fontSize: 10)),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('我知道了'),
+                  child: const Text('我知道了',style: TextStyle(fontSize: 10)),
                 ),
               ),
               const SizedBox(width: 8),
@@ -132,7 +132,7 @@ class TaskRemindDialog extends StatelessWidget {
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text('完成'),
+                  child: const Text('已完成',style: TextStyle(fontSize: 10)),
                 ),
               ),
             ],

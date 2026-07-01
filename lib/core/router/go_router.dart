@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/router/shell_scaffold_key.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/calendar/pages/calendar_page.dart';
 import 'package:my_dida/features/habits/pages/habit_archived_page.dart';
 import 'package:my_dida/features/habits/pages/habit_data_summary_page.dart';
@@ -136,8 +137,8 @@ final GoRouter goRouter = GoRouter(
                                           tomatoProvider.totalDuration
                                     : 1.0,
                                 strokeWidth: 2,
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Colors.orange,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  context.theme.primary,
                                 ),
                               ),
                             ),
