@@ -5,8 +5,11 @@ import 'package:my_dida/features/operation_undo/services/operation_reverter.dart
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
 
+import 'package:my_dida/features/tasks/services/task_reminder_service.dart';
+
 class TaskOperationReverter implements DomainOperationReverter {
-  final TaskRepository _taskRepo = getIt<TaskRepository>();
+  TaskRepository get _taskRepo => getIt<TaskRepository>();
+  TaskReminderService get _taskReminderService => getIt<TaskReminderService>();
 
   @override
   Future<bool> revertAdd(int id) async {
@@ -20,6 +23,7 @@ class TaskOperationReverter implements DomainOperationReverter {
       }
     }
     await _taskRepo.deleteById(id);
+    await _taskReminderService.cancelReminder(id);
     return true;
   }
 
@@ -40,6 +44,7 @@ class TaskOperationReverter implements DomainOperationReverter {
         }
       }
     }
+    await _taskReminderService.syncReminder(task);
     return true;
   }
 
@@ -53,6 +58,7 @@ class TaskOperationReverter implements DomainOperationReverter {
     final decoded = jsonDecode(previousData);
     final task = Task.fromJson(decoded as Map<String, dynamic>);
     await _taskRepo.update(task);
+    await _taskReminderService.syncReminder(task);
     return true;
   }
 }

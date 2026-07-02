@@ -29,12 +29,32 @@ class ActiveReminderManager {
     _remindedKeys.clear();
     _snoozedReminders.clear();
 
+    final now = DateTime.now();
     // Mark all existing past reminders as already reminded
-    _markPastRemindersAsReminded(DateTime.now());
+    _markPastRemindersAsReminded(now);
 
-    _checkTimer = Timer.periodic(checkInterval, (timer) {
-      _checkReminders();
-    });
+    if (checkInterval == const Duration(minutes: 1)) {
+      // 生产环境：对齐到每分钟的 0秒0毫秒 触发
+      final nextMinute = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        now.hour,
+        now.minute + 1,
+      );
+      final delay = nextMinute.difference(now);
+      _checkTimer = Timer(delay, () {
+        _checkReminders();
+        _checkTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+          _checkReminders();
+        });
+      });
+    } else {
+      // 测试环境或自定义间隔：直接使用 Timer.periodic
+      _checkTimer = Timer.periodic(checkInterval, (timer) {
+        _checkReminders();
+      });
+    }
   }
 
   void stopForegroundCheck() {

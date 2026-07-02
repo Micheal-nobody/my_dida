@@ -241,6 +241,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
         task: task,
         mutate: (draft) => draft.name = newTitle.trim(),
         description: '${UIStrings.modifiedTaskTitle}"${newTitle.trim()}"',
+        syncReminder: true,
       );
     } catch (e) {
       throw TaskException('Failed to update task title: ${e.toString()}');
@@ -256,6 +257,7 @@ class TaskLifecycleManagerImpl implements TaskLifecycleManager {
         mutate: (draft) => draft.description = newDesc.trim(),
         description:
             '${UIStrings.modifiedTaskDescription}"${task.name}"${UIStrings.descriptionSuffix}',
+        syncReminder: true,
       );
     } catch (e) {
       throw TaskException('Failed to update task description: ${e.toString()}');

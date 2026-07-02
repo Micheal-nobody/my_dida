@@ -19,16 +19,20 @@
   * 属性包括：标题、描述、开始/截止时间、重复规则（基于 RRule）、优先级、关联清单 ID，以及关联的提醒计划。
 * **清单 (Checklist)**：任务的分组容器，用户可以自定义清单来归类任务（例如“工作”、“生活”）。
   * 对应实体：`lib/features/checklist/models/checklist.dart`
+* **智能清单 (SmartList) 与清单值对象 (ChecklistVO)**：智能清单用于按照特定业务逻辑动态过滤任务（如“今天”、“明天”、“最近7天”、“所有”、“已完成”、“垃圾箱”、“收集箱”）。它在底层通过负数 ID 区分，但在 UI 交互与数据层中，通过 `ChecklistVO` 值对象对物理清单与智能清单进行统一封装和表达。
+  * 对应值对象：`lib/features/checklist/models/checklist_vo.dart`
 * **检查点 (CheckPoint)**：任务内部的细分步骤（子任务），以嵌入集合形式直接存储在 `Task` 实体中，不支持跨任务共享。
   * 对应实体：`lib/features/tasks/models/check_point.dart`
 * **习惯 (Habit)**：用户期望长期培养的行为（如“早起”、“背单词”）。
   * 对应实体：`lib/features/habits/models/habit.dart`
-  * 具有独立的打卡频次、提醒时间，并记录当前连续打卡天数（currentStreak）与历史最长打卡天数。
+  * 支持三种打卡类型（`HabitType`：是/否打卡、次数打卡、时间打卡），并关联了单次目标值（targetValue）与当前值（currentValue）。具有独立的提醒时间，并记录当前累计打卡次数（currentCheckInCount）、总打卡次数与历史最长连续打卡天数。
 * **打卡记录 (HabitCheckInRecord)**：每次习惯打卡所产生的历史记录，包含打卡的时间戳。
   * 对应实体：`lib/features/habits/models/habit_check_in_record.dart`
-* **番茄记录 (TomatoRecord)**：用户使用番茄钟进行专注的历史记录，包括专注的时长、开始时间以及关联的任务。
+* **番茄记录 (TomatoRecord)**：用户使用番茄钟进行专注的历史记录，包括专注的时长、开始时间、是否完成以及关联的任务。
   * 对应实体：`lib/features/tomato/models/tomato_record.dart`
-* **操作 (Operation)**：记录用户对任务或习惯进行增、删、改等敏感操作的历史快照，用于支持撤销与重做。
+* **自定义番茄 (CustomTomato)**：用户配置的个性化番茄钟模板，包含自定义名称与专注时间。
+  * 对应实体：`lib/features/tomato/models/custom_tomato.dart`
+* **操作 (Operation)**：记录用户对任务、习惯或清单进行增、删、改等敏感操作的历史快照，用于支持撤销与重做。
   * 对应实体：`lib/features/operation_undo/models/operation.dart`
 * **提醒计划 (TaskReminderPlan)**：定义任务在何时以何种方式向用户发送通知的配置值对象。
   * 对应 VO：`lib/features/tasks/models/task_reminder_plan.dart`
@@ -65,10 +69,16 @@
 * `lib/shared/`：跨业务模块复用的公共 UI 小部件（如公共选择组件、自定义日期选择器）和实体基类。
 
 ### 4.2 撤销与重做设计 (Undo/Redo System)
-由 `OperationStackProvider` 统一管理用户的操作历史。通过保存 `Operation` 实体（其中含有修改前后的 JSON 状态快照），由 `GenericOperationReverter` 进行解析回滚，在业务层实现轻量级的命令撤销与重做。
+由 `OperationStackProvider` 统一管理用户的操作历史。系统通过将用户对任务、习惯、清单的敏感操作序列化为 `Operation` 实体并持久化存储在 Isar 中。
+为了实现撤销逻辑与具体业务实体以及 UI 表现的完全解耦，系统采用了双重注册机制：
+* **还原解耦 (`EntityRegistry`)**：定义了通用撤销委托接口 `DomainOperationReverter`。各业务模块只需向 `EntityRegistry` 注册对应的撤销逻辑实现，统一的 `GenericOperationReverter` 即可通过泛型反射自动分发执行还原（如 `TaskOperationReverter`）。
+* **渲染解耦 (`OperationRendererRegistry`)**：定义了数据渲染器接口 `OperationDataRenderer`。各业务模块向注册表注册其渲染卡片逻辑，撤销历史列表在呈现快照时动态获取并渲染，避免了撤销历史 UI 直接硬编码依赖各个业务实体的细节。
 
 ### 4.3 提醒服务的端口与适配器模式 (Ports and Adapters)
 `TaskReminderService`（业务逻辑）不直接依赖具体的本地通知组件，而是面向 `TaskReminderSchedulerPort` 接口（端口）进行编程。具体的提醒发送行为由 `FlutterLocalTaskReminderScheduler`（适配器）来实现，该设计极大地提高了业务逻辑的可测试性，并隔离了平台底层插件。
+
+### 4.4 领域事件总线模式 (Event Bus)
+系统设计了全局的 `EventBus` 总线实现解耦式的模块联动通信。当某个业务模块发生关键状态变更时（例如关联番茄钟的完成状态、清单的删除与恢复等），模块不会同步调用其他业务模块的逻辑，而是异步发出领域事件（例如 `ChecklistDeletedEvent`），由对应的领域协同监听器（如 `TaskEventListener`）进行统一捕获并做出相应的状态调整。这确保了核心模块之间具有极高的自闭合度。
 
 ---
 

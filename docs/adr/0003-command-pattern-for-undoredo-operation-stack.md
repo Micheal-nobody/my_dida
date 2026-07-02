@@ -31,3 +31,9 @@
   - 解耦良好：视图层只需要在最下方弹出一个 Snackbar，提供一个 "撤销" 按钮并调用 `OperationStackProvider.undo()`，无需关心底层数据是如何恢复的。
 * **负面影响**：
   - 每当引入新的实体类型或新的操作逻辑时，均需要在 `GenericOperationReverter` 中扩展还原逻辑，增加了新功能开发的适配成本。
+
+## 演进与重构（多态注册与渲染解耦）
+为了解决负面影响中提到的“引入新实体需不断扩展还原逻辑”的强耦合问题，我们在后期对撤销系统进行了重构：
+1. **多态还原分发 (`EntityRegistry`)**：定义了各模块需要实现的 `DomainOperationReverter` 领域撤销委托接口。各模块（`tasks`、`habits`、`checklist`）各自实现此接口并向 `EntityRegistry` 注册。`GenericOperationReverter` 作为公共协调器，直接分发给注册表中的具体适配器，实现各领域内聚。
+2. **详情渲染解耦 (`OperationRendererRegistry`)**：针对撤销历史列表中，不同实体快照（Task、Habit、Checklist）需要以不同的卡片 UI 渲染呈现的问题，定义了 `OperationDataRenderer` 渲染接口，模块各自向注册表注册其渲染器实现，解除了历史页弹窗与具体业务 UI 的硬编码依赖。
+

@@ -4,17 +4,24 @@ import 'package:my_dida/core/events/event_bus.dart';
 import 'package:my_dida/features/checklist/events/checklist_events.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/repositories/task_repository.dart';
+import 'package:my_dida/features/tasks/services/task_reminder_service.dart';
 import 'package:my_dida/features/tomato/events/tomato_events.dart';
 
 class TaskEventListener {
-  TaskEventListener({EventBus? eventBus, TaskRepository? taskRepository})
-    : _eventBus = eventBus ?? getIt<EventBus>(),
-      _taskRepository = taskRepository ?? getIt<TaskRepository>() {
+  TaskEventListener({
+    EventBus? eventBus,
+    TaskRepository? taskRepository,
+    TaskReminderService? taskReminderService,
+  }) : _eventBus = eventBus ?? getIt<EventBus>(),
+       _taskRepository = taskRepository ?? getIt<TaskRepository>(),
+       _taskReminderService =
+           taskReminderService ?? getIt<TaskReminderService>() {
     _initSubscriptions();
   }
 
   final EventBus _eventBus;
   final TaskRepository _taskRepository;
+  final TaskReminderService _taskReminderService;
   final List<StreamSubscription> _subscriptions = [];
 
   void _initSubscriptions() {
@@ -53,6 +60,8 @@ class TaskEventListener {
         final task = await _taskRepository.selectById(event.taskId);
         if (task != null) {
           await _taskRepository.updateTaskIsDone(task, true);
+          task.isDone = true;
+          await _taskReminderService.syncReminder(task);
         }
       }),
     );

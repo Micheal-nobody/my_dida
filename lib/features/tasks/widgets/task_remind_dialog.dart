@@ -99,6 +99,12 @@ class TaskRemindDialog extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colorTheme.textPrimary,
+                    side: BorderSide(color: colorTheme.border),
+                    shape: const StadiumBorder(),
+                    textStyle: const TextStyle(fontSize: 14),
+                  ),
                   onPressed: () {
                     getIt<ActiveReminderManager>().snooze(
                       task.id,
@@ -106,14 +112,20 @@ class TaskRemindDialog extends StatelessWidget {
                     );
                     Navigator.pop(context);
                   },
-                  child: const Text('稍后提醒',style: TextStyle(fontSize: 10)),
+                  child: const Text('稍后提醒'),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colorTheme.textPrimary,
+                    side: BorderSide(color: colorTheme.border),
+                    shape: const StadiumBorder(),
+                    textStyle: const TextStyle(fontSize: 14),
+                  ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('我知道了',style: TextStyle(fontSize: 10)),
+                  child: const Text('我知道了'),
                 ),
               ),
               const SizedBox(width: 8),
@@ -121,6 +133,10 @@ class TaskRemindDialog extends StatelessWidget {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorTheme.primaryBackground,
+                    foregroundColor: colorTheme.textOnPrimary,
+                    shape: const StadiumBorder(),
+                    elevation: 0,
+                    textStyle: const TextStyle(fontSize: 14),
                   ),
                   onPressed: () async {
                     final taskProvider = Provider.of<TaskProvider>(
@@ -132,7 +148,7 @@ class TaskRemindDialog extends StatelessWidget {
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text('已完成',style: TextStyle(fontSize: 10)),
+                  child: const Text('完成'),
                 ),
               ),
             ],
