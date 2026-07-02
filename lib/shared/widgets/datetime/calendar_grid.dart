@@ -1,26 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 
 Widget _defaultDayBuilder(
   BuildContext context,
   DateTime dayDate,
   bool isSelected,
-) => Container(
-  height: 40,
-  margin: const EdgeInsets.all(2),
-  decoration: BoxDecoration(
-    shape: BoxShape.circle,
-    color: isSelected ? Colors.red : Colors.transparent,
-  ),
-  child: Center(
-    child: Text(
-      dayDate.day.toString(),
-      style: TextStyle(
-        color: isSelected ? Colors.white : Colors.black,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+) {
+  final colorTheme = context.theme;
+  return Container(
+    height: 40,
+    margin: const EdgeInsets.all(2),
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: isSelected ? colorTheme.selectedColor : Colors.transparent,
+    ),
+    child: Center(
+      child: Text(
+        dayDate.day.toString(),
+        style: TextStyle(
+          color: isSelected ? colorTheme.textOnPrimary : colorTheme.textPrimary,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
       ),
     ),
-  ),
-);
+  );
+}
 
 class CalendarGrid extends StatefulWidget {
   const CalendarGrid({

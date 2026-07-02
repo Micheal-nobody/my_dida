@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 
 import 'package:my_dida/shared/widgets/datetime/repeat_picker_utils.dart';
 
@@ -38,6 +39,7 @@ class _CustomRepeatPickerState extends State<CustomRepeatPicker> {
   @override
   Widget build(BuildContext context) {
     final repeatOptions = buildRepeatOptions(widget.baseDate);
+    final colorTheme = context.theme;
 
     return Dialog(
       child: Container(
@@ -62,14 +64,14 @@ class _CustomRepeatPickerState extends State<CustomRepeatPicker> {
                     title: Text(
                       option,
                       style: TextStyle(
-                        color: isSelected ? Colors.orange : Colors.black87,
+                        color: isSelected ? colorTheme.selectedColor : colorTheme.textPrimary,
                         fontWeight: isSelected
                             ? FontWeight.w500
                             : FontWeight.normal,
                       ),
                     ),
                     trailing: isSelected
-                        ? const Icon(Icons.check, color: Colors.orange)
+                        ? Icon(Icons.check, color: colorTheme.selectedColor)
                         : null,
                     onTap: () {
                       setState(() {
@@ -78,7 +80,7 @@ class _CustomRepeatPickerState extends State<CustomRepeatPicker> {
                     },
                   ),
                   if (index == 4 || index == 7)
-                    const Divider(height: 1, color: Colors.grey),
+                    Divider(height: 1, color: colorTheme.divider),
                 ],
               );
             }),
@@ -90,9 +92,9 @@ class _CustomRepeatPickerState extends State<CustomRepeatPicker> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text(
+                  child: Text(
                     '取消',
-                    style: TextStyle(color: Colors.orange),
+                    style: TextStyle(color: colorTheme.dialogCancel),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -100,9 +102,9 @@ class _CustomRepeatPickerState extends State<CustomRepeatPicker> {
                   onPressed: () {
                     Navigator.pop(context, _currentSelection);
                   },
-                  child: const Text(
+                  child: Text(
                     '确定',
-                    style: TextStyle(color: Colors.orange),
+                    style: TextStyle(color: colorTheme.dialogConfirm),
                   ),
                 ),
               ],

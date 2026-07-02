@@ -2,28 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:my_dida/core/utils/time_utils.dart';
 
 class TimeFormatter {
+  static String _twoDigits(int n) {
+    if (n >= 10) return '$n';
+    return '0$n';
+  }
+
   static String formatRelativeDate(
     DateTime dateTime, {
     DateTime? now,
     bool includeDayAfterTomorrow = false,
   }) {
     final currentTime = now ?? DateTime.now();
-    final today = DateTime(
-      currentTime.year,
-      currentTime.month,
-      currentTime.day,
-    );
+    final today = currentTime.dateOnly;
     final tomorrow = today.add(const Duration(days: 1));
     final dayAfterTomorrow = today.add(const Duration(days: 2));
 
-    final dateOnly = DateTime(dateTime.year, dateTime.month, dateTime.day);
+    final dateOnly = dateTime.dateOnly;
 
-    if (dateOnly.isAtSameMomentAs(today)) {
+    if (dateOnly == today) {
       return '今天';
-    } else if (dateOnly.isAtSameMomentAs(tomorrow)) {
+    } else if (dateOnly == tomorrow) {
       return '明天';
-    } else if (includeDayAfterTomorrow &&
-        dateOnly.isAtSameMomentAs(dayAfterTomorrow)) {
+    } else if (includeDayAfterTomorrow && dateOnly == dayAfterTomorrow) {
       return '后天';
     } else {
       return '${dateTime.month}月${dateTime.day}日';
@@ -34,13 +34,13 @@ class TimeFormatter {
     if (dateTime == null) return '';
     final relativeDate = formatRelativeDate(dateTime, now: now);
     if (dateTime.hasTime) {
-      return '$relativeDate,${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+      return '$relativeDate,${formatTimeOnly(dateTime)}';
     }
     return relativeDate;
   }
 
   static String formatTaskDateTime(DateTime dateTime) =>
-      "${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
+      '${_twoDigits(dateTime.month)}-${_twoDigits(dateTime.day)} ${formatTimeOnly(dateTime)}';
 
   static String formatDateTimeRange(
     DateTime? date, {
@@ -54,10 +54,10 @@ class TimeFormatter {
 
     if (!isAllDay && startTime != null) {
       final startStr =
-          '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
+          '${_twoDigits(startTime.hour)}:${_twoDigits(startTime.minute)}';
       if (endTime != null) {
         final endStr =
-            '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+            '${_twoDigits(endTime.hour)}:${_twoDigits(endTime.minute)}';
         return '$relativeStr $startStr-$endStr';
       }
       return '$relativeStr $startStr';
@@ -74,18 +74,14 @@ class TimeFormatter {
   }) {
     if (date == null) return '';
     final currentTime = now ?? DateTime.now();
-    final today = DateTime(
-      currentTime.year,
-      currentTime.month,
-      currentTime.day,
-    );
+    final today = currentTime.dateOnly;
     final tomorrow = today.add(const Duration(days: 1));
 
-    final dateOnly = DateTime(date.year, date.month, date.day);
+    final dateOnly = date.dateOnly;
     String relativeStr = '';
-    if (dateOnly.isAtSameMomentAs(today)) {
+    if (dateOnly == today) {
       relativeStr = '今天, ';
-    } else if (dateOnly.isAtSameMomentAs(tomorrow)) {
+    } else if (dateOnly == tomorrow) {
       relativeStr = '明天, ';
     }
 
@@ -94,10 +90,10 @@ class TimeFormatter {
 
     if (!isAllDay && startTime != null) {
       final startStr =
-          '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
+          '${_twoDigits(startTime.hour)}:${_twoDigits(startTime.minute)}';
       if (endTime != null) {
         final endStr =
-            '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+            '${_twoDigits(endTime.hour)}:${_twoDigits(endTime.minute)}';
         timeStr = ' $startStr-$endStr';
       } else {
         timeStr = ' $startStr';
@@ -114,14 +110,12 @@ class TimeFormatter {
       '${start.month}月${start.day}日',
     );
     if (start.hasTime) {
-      stringBuffer.write(
-        TimeFormatter.formatTimeOnly(start),
-      );
+      stringBuffer.write(formatTimeOnly(start));
     }
 
     if (end == null) return stringBuffer.toString();
 
-    final endStr = TimeFormatter.formatTimeOnly(end);
+    final endStr = formatTimeOnly(end);
     return '${stringBuffer.toString()} --> $endStr';
   }
 
@@ -129,5 +123,5 @@ class TimeFormatter {
       '${date.year}年${date.month}月${date.day}日';
 
   static String formatTimeOnly(DateTime date) =>
-      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+      '${_twoDigits(date.hour)}:${_twoDigits(date.minute)}';
 }

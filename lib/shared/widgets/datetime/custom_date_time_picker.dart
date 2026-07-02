@@ -194,9 +194,9 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: colorTheme.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
@@ -216,7 +216,7 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
                       Tab(text: '时间段'),
                     ],
                     labelColor: colorTheme.selectedColor,
-                    unselectedLabelColor: Colors.grey,
+                    unselectedLabelColor: colorTheme.unselectedLabelColor,
                     indicatorColor: colorTheme.selectedColor,
                   ),
                 ),
@@ -302,7 +302,7 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
                 onPressed: () {
                   Navigator.pop(context, CustomDateTimePickerValue.cleared());
                 },
-                child: const Text('清除', style: TextStyle(color: Colors.red)),
+                child: Text('清除', style: TextStyle(color: colorTheme.deleteButton)),
               ),
             ),
           ),

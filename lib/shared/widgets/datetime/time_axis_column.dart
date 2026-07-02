@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 
 class TimeAxisColumn extends StatelessWidget {
   const TimeAxisColumn({
@@ -7,7 +8,7 @@ class TimeAxisColumn extends StatelessWidget {
     this.hourHeight = 60,
     this.hourCount = 24,
     this.highlightedHours = const {8, 9},
-    this.highlightColor = Colors.orange,
+    this.highlightColor,
     this.labelColor,
     this.labelStyle,
     this.previewTime,
@@ -18,7 +19,7 @@ class TimeAxisColumn extends StatelessWidget {
   final double hourHeight;
   final int hourCount;
   final Set<int> highlightedHours;
-  final Color highlightColor;
+  final Color? highlightColor;
   final Color? labelColor;
   final TextStyle? labelStyle;
   final DateTime? previewTime;
@@ -32,6 +33,8 @@ class TimeAxisColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorTheme = context.theme;
+    final activeHighlightColor = highlightColor ?? colorTheme.primary;
     final activeHours =
         hours ?? List<int>.generate(hourCount, (index) => index);
     final labels = activeHours
@@ -74,7 +77,7 @@ class TimeAxisColumn extends StatelessWidget {
                 height: hourHeight,
                 decoration: BoxDecoration(
                   color: isHighlighted
-                      ? highlightColor.withValues(alpha: 0.1)
+                      ? activeHighlightColor.withValues(alpha: 0.1)
                       : null,
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -85,7 +88,7 @@ class TimeAxisColumn extends StatelessWidget {
                         labelStyle ??
                         TextStyle(
                           fontSize: 14,
-                          color: labelColor ?? Colors.grey[600],
+                          color: labelColor ?? colorTheme.textSecondary,
                           fontWeight: isHighlighted
                               ? FontWeight.bold
                               : FontWeight.normal,
@@ -100,7 +103,7 @@ class TimeAxisColumn extends StatelessWidget {
               left: width - 12,
               right: 0,
               top: previewLineTop,
-              child: Container(height: 2, color: highlightColor),
+              child: Container(height: 2, color: activeHighlightColor),
             ),
             Positioned(
               left: 4,
@@ -111,11 +114,11 @@ class TimeAxisColumn extends StatelessWidget {
                   height: previewBadgeHeight,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: highlightColor,
+                    color: activeHighlightColor,
                     borderRadius: BorderRadius.circular(999),
                     boxShadow: [
                       BoxShadow(
-                        color: highlightColor.withValues(alpha: 0.25),
+                        color: activeHighlightColor.withValues(alpha: 0.25),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -123,8 +126,8 @@ class TimeAxisColumn extends StatelessWidget {
                   ),
                   child: Text(
                     _formatPreviewTime(previewTime!),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: colorTheme.textOnPrimary,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),

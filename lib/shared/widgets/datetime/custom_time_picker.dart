@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 
 class CustomTimePicker extends StatefulWidget {
   const CustomTimePicker({required this.initialTime, super.key});
@@ -36,23 +37,25 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
   }
 
   @override
-  Widget build(BuildContext context) => Dialog(
-    child: Container(
-      width: 280,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              const Text(
-                '时间',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const Spacer(),
-              Icon(Icons.access_time, color: Colors.grey[400], size: 20),
-            ],
-          ),
+  Widget build(BuildContext context) {
+    final colorTheme = context.theme;
+    return Dialog(
+      child: Container(
+        width: 280,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Text(
+                  '时间',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                Icon(Icons.access_time, color: colorTheme.textDisabled, size: 20),
+              ],
+            ),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -115,7 +118,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
             children: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('取消', style: TextStyle(color: Colors.orange)),
+                child: Text('取消', style: TextStyle(color: colorTheme.dialogCancel)),
               ),
               const SizedBox(width: 16),
               TextButton(
@@ -125,9 +128,9 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                     TimeOfDay(hour: _selectedHour, minute: _selectedMinute),
                   );
                 },
-                child: const Text(
+                child: Text(
                   '确定',
-                  style: TextStyle(color: Colors.black87),
+                  style: TextStyle(color: colorTheme.dialogConfirm),
                 ),
               ),
             ],
@@ -136,4 +139,5 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
       ),
     ),
   );
+}
 }

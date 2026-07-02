@@ -216,8 +216,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                     dayDate.day.toString(),
                     style: TextStyle(
                       color: (isSelected || isToday)
-                          ? Colors.white
-                          : Colors.black,
+                          ? colorTheme.textOnPrimary
+                          : colorTheme.textPrimary,
                       fontWeight: (isSelected || isToday)
                           ? FontWeight.bold
                           : FontWeight.normal,

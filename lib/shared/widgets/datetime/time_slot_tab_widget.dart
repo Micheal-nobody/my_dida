@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 
 import 'package:my_dida/shared/widgets/datetime/custom_repeat_picker.dart';
@@ -216,75 +217,78 @@ class _TimeSlotTabWidgetState extends State<TimeSlotTabWidget> {
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      const SizedBox(height: 20),
-      const Row(
-        children: [Text('开始时间', style: TextStyle(fontWeight: FontWeight.bold))],
-      ),
-      const SizedBox(height: 8),
-      _buildDateTimeWheel(isStart: true),
-      const SizedBox(height: 16),
-      Row(
-        children: [
-          const Text('结束时间', style: TextStyle(fontWeight: FontWeight.bold)),
-          const Spacer(),
-          Text(_getDuration(), style: const TextStyle(color: Colors.grey)),
-        ],
-      ),
-      const SizedBox(height: 8),
-      _buildDateTimeWheel(isStart: false),
-      const SizedBox(height: 20),
-      Row(
-        children: [
-          const Text('全天'),
-          const Spacer(),
-          Switch(
-            value: _value.isAllDay,
-            onChanged: (v) {
-              _updateValue(
-                _value.copyWith(
-                  isAllDay: v,
-                  startTime: v ? null : _value.startTime,
-                  endTime: v ? null : _value.endTime,
-                  rrule: _value.rrule,
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      const SizedBox(height: 20),
-      GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () async {
-          final repeat = await CustomRepeatPicker.show(
-            context: context,
-            selectedRepeat: _repeatSelection,
-            baseDate: _value.selectedDate,
-          );
-          if (repeat == null) {
-            return;
-          }
-          final rrule = mapSelectionToRepeatPattern(
-            repeat,
-            _value.selectedDate,
-          );
-          setState(() {
-            _repeatSelection = repeat;
-          });
-          _updateValue(_value.copyWith(rrule: rrule));
-        },
-        child: Row(
+  Widget build(BuildContext context) {
+    final colorTheme = context.theme;
+    return Column(
+      children: [
+        const SizedBox(height: 20),
+        const Row(
+          children: [Text('开始时间', style: TextStyle(fontWeight: FontWeight.bold))],
+        ),
+        const SizedBox(height: 8),
+        _buildDateTimeWheel(isStart: true),
+        const SizedBox(height: 16),
+        Row(
           children: [
-            const Icon(Icons.refresh, color: Colors.grey),
-            const SizedBox(width: 12),
-            const Text('重复'),
+            const Text('结束时间', style: TextStyle(fontWeight: FontWeight.bold)),
             const Spacer(),
-            Text('$_repeatSelection >'),
+            Text(_getDuration(), style: TextStyle(color: colorTheme.textSecondary)),
           ],
         ),
-      ),
-    ],
-  );
+        const SizedBox(height: 8),
+        _buildDateTimeWheel(isStart: false),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            const Text('全天'),
+            const Spacer(),
+            Switch(
+              value: _value.isAllDay,
+              onChanged: (v) {
+                _updateValue(
+                  _value.copyWith(
+                    isAllDay: v,
+                    startTime: v ? null : _value.startTime,
+                    endTime: v ? null : _value.endTime,
+                    rrule: _value.rrule,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () async {
+            final repeat = await CustomRepeatPicker.show(
+              context: context,
+              selectedRepeat: _repeatSelection,
+              baseDate: _value.selectedDate,
+            );
+            if (repeat == null) {
+              return;
+            }
+            final rrule = mapSelectionToRepeatPattern(
+              repeat,
+              _value.selectedDate,
+            );
+            setState(() {
+              _repeatSelection = repeat;
+            });
+            _updateValue(_value.copyWith(rrule: rrule));
+          },
+          child: Row(
+            children: [
+              Icon(Icons.refresh, color: colorTheme.textSecondary),
+              const SizedBox(width: 12),
+              const Text('重复'),
+              const Spacer(),
+              Text('$_repeatSelection >'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
