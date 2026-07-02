@@ -5,7 +5,7 @@ extension DateOnly on DateTime {
 
   DateTime get dateAndTime => DateTime(year, month, day, hour, minute);
 
-  DateTime toBeijingTime() => toUtc().add(const Duration(hours: 8));
+  DateTime get toBeijingTime => toUtc().add(const Duration(hours: 8));
 
   bool isToday({DateTime? now}) {
     final currentTime = now ?? DateTime.now();
@@ -19,7 +19,7 @@ extension DateOnly on DateTime {
 
   bool get hasTime => hour != 0 || minute != 0;
 
-  bool justDate() => hour == 0 && minute == 0;
+  bool get justDate => hour == 0 && minute == 0;
 }
 
 /// 通用日期时间工具类，提取重复的日期处理逻辑
@@ -82,9 +82,6 @@ class DateTimeUtils {
   /// 创建带时间的DateTime
   static DateTime createDateTime(DateTime date, TimeOfDay time) =>
       DateTime(date.year, date.month, date.day, time.hour, time.minute);
-
-  /// 获取当前北京时间
-  static DateTime nowBeijing() => DateTime.now().toBeijingTime();
 
   /// 检查日期是否在范围内
   static bool isDateInRange(DateTime date, DateTime start, DateTime end) =>

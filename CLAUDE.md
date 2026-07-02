@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 核心目录职责划分
 * `lib/features/`：细粒度的、按业务领域隔离的功能模块（包括 `tasks`、`habits`、`tomato`、`calendar`、`checklist`、`settings`、`operation_undo`）。每个模块内部采用分层组织（`models/` , `repositories/` , `providers/` , `services/` , `pages/` , `widgets/`），不同业务模块隔离，禁止直接跨模块操作数据库。
 * `lib/core/`：系统级、无业务逻辑的基础设施（核心路由表、依赖注入 DI 容器、全局日志 logger、统一输入验证、通用错误、全局 AppMessageUI 提示）。同时包含三套环境的隔离配置。
-* `lib/shared/`：跨业务模块复用的公共 UI 小部件（如公共选择组件、网格布局）和实体基类。
+* `lib/shared/`：跨业务模块复用的公共 UI 小部件（如公共选择组件、网格布局）、共享逻辑与实体基类。
 
 ## 代码架构介绍
 * **环境隔离 (Environment Isolation)**：采用抽象配置类 `AppConfig`，通过 `lib/main_dev.dart` , `lib/main_test.dart` , `lib/main_prod.dart` 实现开发、测试、生产环境隔离，不硬编码环境变量。

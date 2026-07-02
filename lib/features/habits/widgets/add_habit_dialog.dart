@@ -43,7 +43,7 @@ class _AddHabitDialogState extends BaseFormDialogState<AddHabitDialog> {
   void initState() {
     super.initState();
     // 初始化为当前北京时间
-    final now = DateTimeUtils.nowBeijing();
+    final now = DateTime.now().toBeijingTime;
     _selectedTime = TimeOfDay(hour: now.hour, minute: now.minute);
   }
 

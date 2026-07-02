@@ -17,9 +17,7 @@ import 'package:provider/provider.dart';
 
 class AddTaskStateScope extends InheritedWidget {
   const AddTaskStateScope({
-    super.key,
-    required this.state,
-    required super.child,
+    required this.state, required super.child, super.key,
   });
 
   final AddTaskBottomSheetState state;
@@ -131,11 +129,11 @@ class AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
       }
 
       dateTimePickerValue = CustomDateTimePickerValue(
-        selectedDate: taskStart?.dateOnly ?? now.toBeijingTime().dateOnly,
-        startTime: taskStart != null && !taskStart.justDate()
+        selectedDate: taskStart?.dateOnly ?? now.toBeijingTime.dateOnly,
+        startTime: taskStart != null && !taskStart.justDate
             ? TimeOfDay.fromDateTime(taskStart)
             : null,
-        endTime: taskEnd != null && !taskEnd.justDate()
+        endTime: taskEnd != null && !taskEnd.justDate
             ? TimeOfDay.fromDateTime(taskEnd)
             : null,
         startDate: taskStart?.dateOnly,
@@ -161,7 +159,7 @@ class AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
       }
     } else {
       dateTimePickerValue = CustomDateTimePickerValue(
-        selectedDate: now.toBeijingTime().dateOnly,
+        selectedDate: now.toBeijingTime.dateOnly,
         isAllDay: true,
       );
       selectedChecklist = _resolveInitialChecklist(checklistProvider);
@@ -234,7 +232,7 @@ class AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
       isAllDay: dateTimePickerValue.isAllDay,
       startTime: dateTimePickerValue.startTime,
       endTime: dateTimePickerValue.endTime,
-      now: DateTime.now().toBeijingTime(),
+      now: DateTime.now().toBeijingTime,
     );
   }
 
@@ -246,7 +244,7 @@ class AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
       isAllDay: dateTimePickerValue.isAllDay,
       startTime: dateTimePickerValue.startTime,
       endTime: dateTimePickerValue.endTime,
-      now: DateTime.now().toBeijingTime(),
+      now: DateTime.now().toBeijingTime,
     );
   }
 

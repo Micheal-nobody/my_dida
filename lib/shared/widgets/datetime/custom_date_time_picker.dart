@@ -295,8 +295,6 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
           ),
           Container(
             padding: const EdgeInsets.all(16),
-
-            //TODO: 点击后清除 DateTime，日期和时间都不保留
             child: Center(
               child: TextButton(
                 onPressed: () {

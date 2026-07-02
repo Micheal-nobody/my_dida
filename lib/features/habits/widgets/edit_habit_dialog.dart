@@ -53,7 +53,7 @@ class _EditHabitDialogState extends BaseFormDialogState<EditHabitDialog> {
     // 如果 remindTime 的时间部分全为 0，则初始化为当前北京时间，否则使用 remindTime
     if (widget.habit.remindTime.hour == 0 &&
         widget.habit.remindTime.minute == 0) {
-      final now = DateTimeUtils.nowBeijing();
+      final now = DateTime.now().toBeijingTime;
       _selectedTime = TimeOfDay(hour: now.hour, minute: now.minute);
     } else {
       _selectedTime = TimeOfDay.fromDateTime(widget.habit.remindTime);

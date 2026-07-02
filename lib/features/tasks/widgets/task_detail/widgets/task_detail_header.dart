@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
@@ -26,6 +27,8 @@ class TaskDetailHeader extends StatelessWidget {
           orElse: () => task,
         );
 
+        final colorTheme = context.theme;
+
         return Container(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           decoration: BoxDecoration(
@@ -44,7 +47,7 @@ class TaskDetailHeader extends StatelessWidget {
                       Navigator.of(context).canPop()
                           ? Icons.arrow_back
                           : Icons.close,
-                      color: Colors.orange,
+                      color: colorTheme.iconColor,
                     ),
                     onPressed: () => Navigator.of(context).maybePop(),
                   ),
@@ -264,13 +267,13 @@ class TaskDetailHeader extends StatelessWidget {
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.orange, width: 2),
+                        border: Border.all(color: colorTheme.primary, width: 2),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: updatedTask.isDone
-                          ? const Icon(
+                          ? Icon(
                               Icons.check,
-                              color: Colors.orange,
+                              color: colorTheme.iconColor,
                               size: 16,
                             )
                           : null,
@@ -295,8 +298,8 @@ class TaskDetailHeader extends StatelessWidget {
                           },
                           child: Text(
                             dateText.isEmpty ? '设置日期与时间' : dateText,
-                            style: const TextStyle(
-                              color: Colors.orange,
+                            style: TextStyle(
+                              color: colorTheme.selectedColor,
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
                             ),

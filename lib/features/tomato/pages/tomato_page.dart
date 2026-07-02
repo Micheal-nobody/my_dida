@@ -4,6 +4,7 @@ import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/tomato/models/custom_tomato.dart';
 import 'package:my_dida/features/tomato/pages/tomato_summary_page.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
+import 'package:my_dida/shared/widgets/datetime/custom_time_picker.dart';
 import 'package:provider/provider.dart';
 
 class TomatoPage extends StatelessWidget {
@@ -381,6 +382,19 @@ class TomatoPage extends StatelessWidget {
     );
   }
 
+  // 格式化时长显示
+  String _formatDuration(int minutes) {
+    if (minutes < 60) {
+      return '$minutes 分钟';
+    }
+    final hrs = minutes ~/ 60;
+    final mins = minutes % 60;
+    if (mins == 0) {
+      return '$hrs 小时';
+    }
+    return '$hrs 小时 $mins 分钟';
+  }
+
   // 新建番茄钟预设对话框
   void _showAddTomatoDialog(BuildContext context, TomatoProvider provider) {
     final nameController = TextEditingController();
@@ -398,21 +412,35 @@ class TomatoPage extends StatelessWidget {
                 TextField(
                   controller: nameController,
                   decoration: const InputDecoration(
-                    labelText: '番茄钟名称',
-                    hintText: '例如：帕梅拉 / 冥想 / 写作',
+                    labelText: '请输入番茄钟名称',
+                    hintText: '例如：体操 / 冥想 / 写作',
                   ),
                   maxLength: 20,
                   autofocus: true,
                 ),
                 const SizedBox(height: 16),
-                _buildSlider(
-                  context,
-                  '专注时间',
-                  focusVal,
-                  5,
-                  120,
-                  (val) => setState(() => focusVal = val.round()),
-                  '分钟',
+
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('专注时间', style: TextStyle(fontSize: 15)),
+                  subtitle: Text(_formatDuration(focusVal)),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                  onTap: () async {
+                    final initialTime = TimeOfDay(
+                      hour: focusVal ~/ 60,
+                      minute: focusVal % 60,
+                    );
+                    final selectedTime = await CustomTimePicker.show(
+                      context: context,
+                      initialTime: initialTime,
+                    );
+                    if (selectedTime != null) {
+                      final totalMinutes = selectedTime.hour * 60 + selectedTime.minute;
+                      setState(() {
+                        focusVal = totalMinutes.clamp(5, 120);
+                      });
+                    }
+                  },
                 ),
               ],
             ),

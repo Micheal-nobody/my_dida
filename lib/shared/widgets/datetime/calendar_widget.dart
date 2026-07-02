@@ -195,7 +195,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               );
             },
             dayBuilder: (context, dayDate, isSelected) {
-              final now = DateTime.now().toBeijingTime();
+              final now = DateTime.now().toBeijingTime;
               final isToday =
                   dayDate.year == now.year &&
                   dayDate.month == now.month &&
@@ -240,7 +240,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 context: context,
                 initialTime:
                     _value.selectedTime ??
-                    TimeOfDay.fromDateTime(DateTime.now().toBeijingTime()),
+                    TimeOfDay.fromDateTime(DateTime.now().toBeijingTime),
               );
               if (pickedTime == null) {
                 return;

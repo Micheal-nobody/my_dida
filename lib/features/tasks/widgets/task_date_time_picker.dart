@@ -105,17 +105,7 @@ class TaskDateTimePicker {
         value.startDate == null &&
         value.endDate == null) {
       return TaskTimeInfo(
-        selectedDate: null,
-        startTime: null,
-        endTime: null,
-        startDateTime: null,
-        endDateTime: null,
-        isAllDay: false,
         rrule: const RepeatPattern.none(),
-        startDate: null,
-        endDate: null,
-        notificationEnabled: false,
-        reminderOffsets: const [],
       );
     }
 
@@ -180,18 +170,18 @@ class TaskTimeInfo {
   factory TaskTimeInfo.fromTask(Task? task) {
     if (task == null) {
       // 为新任务不设置默认时间，让用户主动选择
-      final now = DateTime.now().toBeijingTime();
+      final now = DateTime.now().toBeijingTime;
       return TaskTimeInfo(selectedDate: now.dateOnly);
     }
 
     final DateTime selectedDate =
-        task.startTime ?? DateTime.now().toBeijingTime().dateOnly;
+        task.startTime ?? DateTime.now().toBeijingTime.dateOnly;
     TimeOfDay? startTime;
     TimeOfDay? endTime;
 
     // 处理开始时间
     if (task.startTime != null) {
-      if (task.startTime!.justDate()) {
+      if (task.startTime!.justDate) {
         // 只有日期信息，不设置时间，让CalendarWidget显示"无"
         startTime = null;
       } else {
@@ -203,7 +193,7 @@ class TaskTimeInfo {
     }
 
     // 处理结束时间
-    if (task.endTime != null && !task.endTime!.justDate()) {
+    if (task.endTime != null && !task.endTime!.justDate) {
       endTime = TimeOfDay(
         hour: task.endTime!.hour,
         minute: task.endTime!.minute,
