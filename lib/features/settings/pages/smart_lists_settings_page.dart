@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_dida/core/themes/color_constants.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
-import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/settings/models/sidebar_config.dart';
+import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:provider/provider.dart';
 
 class SmartListsSettingsPage extends StatelessWidget {
@@ -155,40 +154,32 @@ class SmartListsSettingsPage extends StatelessWidget {
         final colorTheme = context.theme;
         return AlertDialog(
           title: Text('$title 的显示设置'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<SmartListShowOption>(
-                activeColor: colorTheme.primary,
-                title: const Text('显示'),
-                value: SmartListShowOption.show,
-                groupValue: currentValue,
-                onChanged: (val) {
-                  if (val != null) onChanged(val);
-                  context.pop();
-                },
-              ),
-              RadioListTile<SmartListShowOption>(
-                activeColor: colorTheme.primary,
-                title: const Text('隐藏'),
-                value: SmartListShowOption.hide,
-                groupValue: currentValue,
-                onChanged: (val) {
-                  if (val != null) onChanged(val);
-                  context.pop();
-                },
-              ),
-              RadioListTile<SmartListShowOption>(
-                activeColor: colorTheme.primary,
-                title: const Text('自动 (有任务时显示)'),
-                value: SmartListShowOption.auto,
-                groupValue: currentValue,
-                onChanged: (val) {
-                  if (val != null) onChanged(val);
-                  context.pop();
-                },
-              ),
-            ],
+          content: RadioGroup<SmartListShowOption>(
+            groupValue: currentValue,
+            onChanged: (val) {
+              if (val != null) onChanged(val);
+              context.pop();
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<SmartListShowOption>(
+                  activeColor: colorTheme.primary,
+                  title: const Text('显示'),
+                  value: SmartListShowOption.show,
+                ),
+                RadioListTile<SmartListShowOption>(
+                  activeColor: colorTheme.primary,
+                  title: const Text('隐藏'),
+                  value: SmartListShowOption.hide,
+                ),
+                RadioListTile<SmartListShowOption>(
+                  activeColor: colorTheme.primary,
+                  title: const Text('自动 (有任务时显示)'),
+                  value: SmartListShowOption.auto,
+                ),
+              ],
+            ),
           ),
         );
       },

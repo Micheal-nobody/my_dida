@@ -9,11 +9,12 @@ import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/services/data_transfer_service.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
-import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/settings/models/sidebar_config.dart';
+import 'package:my_dida/features/settings/providers/sidebar_config_provider.dart';
 import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tomato/providers/tomato_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -38,7 +39,7 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         children: [
           // 个人中心 Section
-          SectionHeader('个人中心'),
+          const SectionHeader('个人中心'),
           Card(
             margin: const EdgeInsets.symmetric(
               horizontal: Dimensions.paddingM,
@@ -68,7 +69,7 @@ class SettingsPage extends StatelessWidget {
           ),
 
           // 偏好设置 Section
-          SectionHeader('偏好设置'),
+          const SectionHeader('偏好设置'),
           Card(
             margin: const EdgeInsets.symmetric(
               horizontal: Dimensions.paddingM,
@@ -140,7 +141,7 @@ class SettingsPage extends StatelessWidget {
           ),
 
           // 任务管理 Section
-          SectionHeader('任务管理'),
+          const SectionHeader('任务管理'),
           Card(
             margin: const EdgeInsets.symmetric(
               horizontal: Dimensions.paddingM,
@@ -202,7 +203,7 @@ class SettingsPage extends StatelessWidget {
           ),
 
           // 备份与同步 Section
-          SectionHeader('备份与同步'),
+          const SectionHeader('备份与同步'),
           Card(
             margin: const EdgeInsets.symmetric(
               horizontal: Dimensions.paddingM,
@@ -215,8 +216,6 @@ class SettingsPage extends StatelessWidget {
               side: BorderSide(color: colorTheme.border),
             ),
 
-            //TODO: 将以下 Column 的内容修改为：导入数据、导出数据、删除数据 三个功能模块
-            //TODO: 导出数据时弹出二次确认弹窗，提供到处路径预览以及修改功能
             child: Column(
               children: [
                 ListTile(
@@ -247,7 +246,7 @@ class SettingsPage extends StatelessWidget {
           ),
 
           // 关于 Section
-          SectionHeader('关于'),
+          const SectionHeader('关于'),
           Card(
             margin: const EdgeInsets.symmetric(
               horizontal: Dimensions.paddingM,
@@ -259,12 +258,19 @@ class SettingsPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(Dimensions.radiusL),
               side: BorderSide(color: colorTheme.border),
             ),
-            child: const Column(
+            child: Column(
               children: [
                 ListTile(
-                  leading: Icon(Icons.info_outline),
-                  title: Text('版本信息'),
-                  subtitle: Text('v1.0.0'),
+                  leading: const Icon(Icons.info_outline),
+                  title: const Text('版本信息'),
+                  subtitle: const Text('v1.1.0'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    launchUrl(
+                      Uri.parse('https://github.com/Micheal-nobody/my_dida/releases'),
+                      mode: LaunchMode.externalApplication,
+                    );
+                  },
                 ),
               ],
             ),
@@ -282,40 +288,32 @@ class SettingsPage extends StatelessWidget {
         final colorTheme = context.theme;
         return AlertDialog(
           title: const Text('主题设置'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<AppTheme>(
-                activeColor: colorTheme.selectedColor,
-                title: const Text('自动'),
-                value: AppTheme.system,
-                groupValue: provider.config.theme,
-                onChanged: (val) {
-                  if (val != null) provider.updateTheme(val);
-                  context.pop();
-                },
-              ),
-              RadioListTile<AppTheme>(
-                activeColor: colorTheme.selectedColor,
-                title: const Text('浅色'),
-                value: AppTheme.light,
-                groupValue: provider.config.theme,
-                onChanged: (val) {
-                  if (val != null) provider.updateTheme(val);
-                  context.pop();
-                },
-              ),
-              RadioListTile<AppTheme>(
-                activeColor: colorTheme.selectedColor,
-                title: const Text('深色'),
-                value: AppTheme.dark,
-                groupValue: provider.config.theme,
-                onChanged: (val) {
-                  if (val != null) provider.updateTheme(val);
-                  context.pop();
-                },
-              ),
-            ],
+          content: RadioGroup<AppTheme>(
+            groupValue: provider.config.theme,
+            onChanged: (val) {
+              if (val != null) provider.updateTheme(val);
+              context.pop();
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<AppTheme>(
+                  activeColor: colorTheme.selectedColor,
+                  title: const Text('自动'),
+                  value: AppTheme.system,
+                ),
+                RadioListTile<AppTheme>(
+                  activeColor: colorTheme.selectedColor,
+                  title: const Text('浅色'),
+                  value: AppTheme.light,
+                ),
+                RadioListTile<AppTheme>(
+                  activeColor: colorTheme.selectedColor,
+                  title: const Text('深色'),
+                  value: AppTheme.dark,
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -332,30 +330,27 @@ class SettingsPage extends StatelessWidget {
         final colorTheme = context.theme;
         return AlertDialog(
           title: const Text('语言设置'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<AppLanguage>(
-                activeColor: colorTheme.selectedColor,
-                title: const Text('简体中文'),
-                value: AppLanguage.zh,
-                groupValue: provider.config.language,
-                onChanged: (val) {
-                  if (val != null) provider.updateLanguage(val);
-                  context.pop();
-                },
-              ),
-              RadioListTile<AppLanguage>(
-                activeColor: colorTheme.selectedColor,
-                title: const Text('English'),
-                value: AppLanguage.en,
-                groupValue: provider.config.language,
-                onChanged: (val) {
-                  if (val != null) provider.updateLanguage(val);
-                  context.pop();
-                },
-              ),
-            ],
+          content: RadioGroup<AppLanguage>(
+            groupValue: provider.config.language,
+            onChanged: (val) {
+              if (val != null) provider.updateLanguage(val);
+              context.pop();
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<AppLanguage>(
+                  activeColor: colorTheme.selectedColor,
+                  title: const Text('简体中文'),
+                  value: AppLanguage.zh,
+                ),
+                RadioListTile<AppLanguage>(
+                  activeColor: colorTheme.selectedColor,
+                  title: const Text('English'),
+                  value: AppLanguage.en,
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -375,24 +370,26 @@ class SettingsPage extends StatelessWidget {
           title: const Text('选择默认清单'),
           content: SizedBox(
             width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: checklistProvider.allCheckLists.length,
-              itemBuilder: (context, index) {
-                final list = checklistProvider.allCheckLists[index];
-                return RadioListTile<int>(
-                  activeColor: colorTheme.selectedColor,
-                  title: Text(list.name),
-                  value: list.id,
-                  groupValue: configProvider.config.defaultChecklistId,
-                  onChanged: (val) {
-                    if (val != null) {
-                      configProvider.updateDefaultChecklistId(val);
-                    }
-                    context.pop();
-                  },
-                );
+            child: RadioGroup<int>(
+              groupValue: configProvider.config.defaultChecklistId,
+              onChanged: (val) {
+                if (val != null) {
+                  configProvider.updateDefaultChecklistId(val);
+                }
+                context.pop();
               },
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: checklistProvider.allCheckLists.length,
+                itemBuilder: (context, index) {
+                  final list = checklistProvider.allCheckLists[index];
+                  return RadioListTile<int>(
+                    activeColor: colorTheme.selectedColor,
+                    title: Text(list.name),
+                    value: list.id,
+                  );
+                },
+              ),
             ),
           ),
         );
@@ -687,9 +684,9 @@ class SettingsPage extends StatelessWidget {
 }
 
 class SectionHeader extends StatelessWidget {
-  final String title;
 
   const SectionHeader(this.title, {super.key});
+  final String title;
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 
 class TagPickerDialog extends StatefulWidget {
   const TagPickerDialog({
@@ -111,7 +112,7 @@ class _TagPickerDialogState extends State<TagPickerDialog> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.check, color: Colors.orange),
+                    icon: Icon(Icons.check, color: context.theme.iconColor),
                     onPressed: () => Navigator.pop(context, _selectedTags),
                   ),
                 ],

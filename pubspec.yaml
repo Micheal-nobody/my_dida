@@ -36,6 +36,7 @@ dependencies:
 
 # dev_dependencies 表示测试依赖
   flutter_markdown: any
+  url_launcher: ^6.3.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

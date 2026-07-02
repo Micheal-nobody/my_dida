@@ -46,8 +46,8 @@ class SearchHighlightedText extends StatelessWidget {
           ),
           style:
               highlightStyle ??
-              const TextStyle(
-                color: Colors.orange,
+                  TextStyle(
+                color: colorTheme.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
         ),
