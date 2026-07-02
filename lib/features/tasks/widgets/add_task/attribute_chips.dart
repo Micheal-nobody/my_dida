@@ -17,12 +17,14 @@ class AttributeChips extends StatelessWidget {
       child: Wrap(
         spacing: 6,
         runSpacing: 4,
-        children: tags.map(
-          (tag) => InputChip(
-            label: Text(tag, style: const TextStyle(fontSize: 11)),
-            onDeleted: () => state.deleteTag(tag),
-          ),
-        ).toList(),
+        children: tags
+            .map(
+              (tag) => InputChip(
+                label: Text(tag, style: const TextStyle(fontSize: 11)),
+                onDeleted: () => state.deleteTag(tag),
+              ),
+            )
+            .toList(),
       ),
     );
   }

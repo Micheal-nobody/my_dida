@@ -82,7 +82,8 @@ class _CalendarScrollableContentState extends State<CalendarScrollableContent> {
                       SizedBox(
                         height: widget.timeAreaHeight,
                         child: VirtualizedCalendarTimeArea(
-                          onDragPreviewChanged: widget.onDragPreviewChanged ?? (_) {},
+                          onDragPreviewChanged:
+                              widget.onDragPreviewChanged ?? (_) {},
                           timeAreaHeight: widget.timeAreaHeight,
                           hours: widget.hours,
                         ),

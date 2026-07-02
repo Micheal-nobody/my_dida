@@ -4,10 +4,7 @@ import 'package:my_dida/features/tasks/models/check_point.dart';
 import 'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart';
 
 class CheckpointListView extends StatelessWidget {
-  const CheckpointListView({
-    this.isFullScreen = false,
-    super.key,
-  });
+  const CheckpointListView({this.isFullScreen = false, super.key});
 
   final bool isFullScreen;
 
@@ -25,7 +22,9 @@ class CheckpointListView extends StatelessWidget {
         final cp = checkpoints[index];
         FocusNode? focusNode;
         if (isFullScreen) {
-          focusNode = checkpointFocusNodes.length > index ? checkpointFocusNodes[index] : null;
+          focusNode = checkpointFocusNodes.length > index
+              ? checkpointFocusNodes[index]
+              : null;
         }
 
         return Row(
@@ -50,7 +49,9 @@ class CheckpointListView extends StatelessWidget {
                   hintText: isFullScreen ? '添加步骤' : '步骤内容',
                   border: InputBorder.none,
                   isDense: isFullScreen ? true : null,
-                  contentPadding: isFullScreen ? const EdgeInsets.symmetric(vertical: 8) : null,
+                  contentPadding: isFullScreen
+                      ? const EdgeInsets.symmetric(vertical: 8)
+                      : null,
                 ),
                 onChanged: (val) {
                   state.setCheckpoint(

@@ -113,14 +113,17 @@ class AddTaskStandardContent extends StatelessWidget {
                             icon: Icon(
                               Icons.calendar_today,
                               size: 18,
-                              color: state.dateTimePickerValue.selectedDate != null
+                              color:
+                                  state.dateTimePickerValue.selectedDate != null
                                   ? context.theme.primary
                                   : context.theme.unselectedLabelColor,
                             ),
                             label: Text(
                               state.getDateDisplayText(),
                               style: TextStyle(
-                                color: state.dateTimePickerValue.selectedDate != null
+                                color:
+                                    state.dateTimePickerValue.selectedDate !=
+                                        null
                                     ? context.theme.primary
                                     : context.theme.unselectedLabelColor,
                                 fontSize: 13,
@@ -145,22 +148,24 @@ class AddTaskStandardContent extends StatelessWidget {
                                   PopupMenuButton<ChecklistVO>(
                                     initialValue: state.selectedChecklist,
                                     onSelected: state.setSelectedChecklist,
-                                    itemBuilder: (context) => provider.allCheckLists
+                                    itemBuilder: (context) => provider
+                                        .allCheckLists
                                         .map(
-                                          (checklist) => PopupMenuItem<ChecklistVO>(
-                                            value: checklist,
-                                            child: Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.folder,
-                                                  color: checklist.color,
-                                                  size: 18,
+                                          (checklist) =>
+                                              PopupMenuItem<ChecklistVO>(
+                                                value: checklist,
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.folder,
+                                                      color: checklist.color,
+                                                      size: 18,
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Text(checklist.name),
+                                                  ],
                                                 ),
-                                                const SizedBox(width: 8),
-                                                Text(checklist.name),
-                                              ],
-                                            ),
-                                          ),
+                                              ),
                                         )
                                         .toList(),
                                     child: Padding(
@@ -174,11 +179,15 @@ class AddTaskStandardContent extends StatelessWidget {
                                           Icon(
                                             Icons.folder_open,
                                             size: 20,
-                                            color: state.selectedChecklist != null
+                                            color:
+                                                state.selectedChecklist != null
                                                 ? context.theme.primary
-                                                : context.theme.unselectedLabelColor,
+                                                : context
+                                                      .theme
+                                                      .unselectedLabelColor,
                                           ),
-                                          if (state.selectedChecklist != null) ...[
+                                          if (state.selectedChecklist !=
+                                              null) ...[
                                             const SizedBox(width: 4),
                                             Text(
                                               state.selectedChecklist!.name,

@@ -65,22 +65,22 @@ class _HabitDataSummaryPageState extends State<HabitDataSummaryPage>
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : TabBarView(
-        controller: _tabController,
-        children: [
-          HabitDaySummarySection(
-            allRecords: _allRecords,
-            provider: context.watch<HabitProvider>(),
-          ),
-          HabitWeekSummarySection(
-            allRecords: _allRecords,
-            provider: context.watch<HabitProvider>(),
-          ),
-          HabitMonthSummarySection(
-            allRecords: _allRecords,
-            provider: context.watch<HabitProvider>(),
-          ),
-        ],
-      ),
+              controller: _tabController,
+              children: [
+                HabitDaySummarySection(
+                  allRecords: _allRecords,
+                  provider: context.watch<HabitProvider>(),
+                ),
+                HabitWeekSummarySection(
+                  allRecords: _allRecords,
+                  provider: context.watch<HabitProvider>(),
+                ),
+                HabitMonthSummarySection(
+                  allRecords: _allRecords,
+                  provider: context.watch<HabitProvider>(),
+                ),
+              ],
+            ),
     );
   }
 }

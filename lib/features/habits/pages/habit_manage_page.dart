@@ -25,7 +25,10 @@ class _HabitManagePageState extends State<HabitManagePage> {
         actions: [
           TextButton.icon(
             icon: Icon(Icons.archive_outlined, color: colorTheme.textOnPrimary),
-            label: Text('已归档', style: TextStyle(color: colorTheme.textOnPrimary)),
+            label: Text(
+              '已归档',
+              style: TextStyle(color: colorTheme.textOnPrimary),
+            ),
             onPressed: () => context.push('/habits/manage/archived'),
           ),
         ],
@@ -59,7 +62,10 @@ class _HabitManagePageState extends State<HabitManagePage> {
               final habit = habits[index];
               return ListTile(
                 key: ValueKey('manage_${habit.id}'),
-                leading: Icon(Icons.drag_handle, color: colorTheme.textSecondary),
+                leading: Icon(
+                  Icons.drag_handle,
+                  color: colorTheme.textSecondary,
+                ),
                 title: Text(
                   habit.name,
                   style: const TextStyle(fontWeight: FontWeight.bold),

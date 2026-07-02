@@ -133,7 +133,9 @@ class _AssociateMainTaskDialogState extends State<AssociateMainTaskDialog> {
         IconButton(
           icon: Icon(
             Icons.check,
-            color: _selectedTask != null ? context.theme.iconColor : Colors.grey,
+            color: _selectedTask != null
+                ? context.theme.iconColor
+                : Colors.grey,
           ),
           onPressed: _selectedTask != null ? _confirmAssociation : null,
         ),
@@ -190,7 +192,9 @@ class _AssociateMainTaskDialogState extends State<AssociateMainTaskDialog> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isSelected ? context.theme.selectedColor : Colors.grey.shade300,
+              color: isSelected
+                  ? context.theme.selectedColor
+                  : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
             ),
           ),

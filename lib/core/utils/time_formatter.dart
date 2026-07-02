@@ -33,7 +33,7 @@ class TimeFormatter {
   static String formatTaskDate(DateTime? dateTime, {DateTime? now}) {
     if (dateTime == null) return '';
     final relativeDate = formatRelativeDate(dateTime, now: now);
-    if (dateTime.hasTime()) {
+    if (dateTime.hasTime) {
       return '$relativeDate,${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
     }
     return relativeDate;
@@ -108,24 +108,21 @@ class TimeFormatter {
   }
 
   static String formatTaskDateTimeRange(DateTime? start, DateTime? end) {
-    if (start == null) return '未设置时间';
-    if (end != null) {
-      if (start.hour == 0 && start.minute == 0) {
-        return '${start.month}月${start.day}日';
-      } else {
-        final startStr =
-            "${start.month}月${start.day}日 ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}";
-        final endStr =
-            "${end.hour.toString().padLeft(2, '0')}:${end.minute.toString().padLeft(2, '0')}";
-        return '$startStr --> $endStr';
-      }
-    } else {
-      if (start.hour == 0 && start.minute == 0) {
-        return '${start.month}月${start.day}日';
-      } else {
-        return "${start.month}月${start.day}日 ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}";
-      }
+    if (start == null) return '';
+
+    final StringBuffer stringBuffer = StringBuffer(
+      '${start.month}月${start.day}日',
+    );
+    if (start.hasTime) {
+      stringBuffer.write(
+        TimeFormatter.formatTimeOnly(start),
+      );
     }
+
+    if (end == null) return stringBuffer.toString();
+
+    final endStr = TimeFormatter.formatTimeOnly(end);
+    return '${stringBuffer.toString()} --> $endStr';
   }
 
   static String formatFullDate(DateTime date) =>

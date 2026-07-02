@@ -66,32 +66,6 @@ class CommonWidgets {
     }).toList(),
   );
 
-  /// 创建颜色选择器
-  static Widget buildColorSelector({
-    required List<Color> colors,
-    required Color selectedColor,
-    required void Function(Color) onColorSelected,
-    double colorSize = 40,
-  }) => Wrap(
-    spacing: 8,
-    runSpacing: 8,
-    children: colors.map((color) {
-      final isSelected = selectedColor == color;
-      return GestureDetector(
-        onTap: () => onColorSelected(color),
-        child: Container(
-          width: colorSize,
-          height: colorSize,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: isSelected ? Border.all(width: 3) : null,
-          ),
-        ),
-      );
-    }).toList(),
-  );
-
   /// 创建时间选择按钮
   static Widget buildTimeSelector({
     required TimeOfDay selectedTime,
@@ -136,80 +110,6 @@ class CommonWidgets {
         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
     ],
-  );
-
-  /// 创建标准的加载指示器
-  static Widget buildLoadingIndicator({String? message, double size = 20}) =>
-      Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: size,
-            height: size,
-            child: const CircularProgressIndicator(strokeWidth: 2),
-          ),
-          if (message != null) ...[
-            const SizedBox(height: 8),
-            Text(message, style: const TextStyle(fontSize: 12)),
-          ],
-        ],
-      );
-
-  /// 创建空状态显示
-  static Widget buildEmptyState({
-    required String message,
-    IconData? icon,
-    Widget? action,
-  }) => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (icon != null) ...[
-          Icon(icon, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-        ],
-        Text(
-          message,
-          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-          textAlign: TextAlign.center,
-        ),
-        if (action != null) ...[const SizedBox(height: 16), action],
-      ],
-    ),
-  );
-
-  /// 创建错误状态显示
-  static Widget buildErrorState({
-    required String message,
-    VoidCallback? onRetry,
-  }) => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-        const SizedBox(height: 16),
-        Text(
-          message,
-          style: TextStyle(fontSize: 16, color: Colors.red[600]),
-          textAlign: TextAlign.center,
-        ),
-        if (onRetry != null) ...[
-          const SizedBox(height: 16),
-          ElevatedButton(onPressed: onRetry, child: const Text('重试')),
-        ],
-      ],
-    ),
-  );
-
-  /// 创建标准的分隔线
-  static Widget buildDivider({
-    double height = 16,
-    double thickness = 1,
-    Color? color,
-  }) => Divider(
-    height: height,
-    thickness: thickness,
-    color: color ?? Colors.grey[300],
   );
 
   /// 创建标准的间距

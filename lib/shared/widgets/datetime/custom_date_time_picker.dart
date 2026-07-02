@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
-import 'package:my_dida/core/utils/time_utils.dart';
 import 'package:my_dida/features/tasks/models/repeat_pattern.dart';
 
 import 'package:my_dida/shared/widgets/datetime/calendar_widget.dart';
@@ -20,10 +19,7 @@ class CustomDateTimePickerValue {
     this.notificationEnabled = false,
   });
 
-  factory CustomDateTimePickerValue.cleared() {
-    final now = DateTime.now().toBeijingTime().dateOnly;
-    return CustomDateTimePickerValue(selectedDate: now);
-  }
+  factory CustomDateTimePickerValue.cleared() => const CustomDateTimePickerValue();
 
   static const Object _sentinel = Object();
 
@@ -299,6 +295,8 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker>
           ),
           Container(
             padding: const EdgeInsets.all(16),
+
+            //TODO: 点击后清除 DateTime，日期和时间都不保留
             child: Center(
               child: TextButton(
                 onPressed: () {

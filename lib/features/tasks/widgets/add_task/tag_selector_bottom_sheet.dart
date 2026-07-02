@@ -68,15 +68,25 @@ class _TagSelectorBottomSheetState extends State<TagSelectorBottomSheet> {
             children: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('取消', style: TextStyle(color: context.theme.unselectedLabelColor)),
+                child: Text(
+                  '取消',
+                  style: TextStyle(color: context.theme.unselectedLabelColor),
+                ),
               ),
               Text(
                 '管理标签',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.theme.textPrimary),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: context.theme.textPrimary,
+                ),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, _selectedTags),
-                child: Text('保存', style: TextStyle(color: context.theme.primary)),
+                child: Text(
+                  '保存',
+                  style: TextStyle(color: context.theme.primary),
+                ),
               ),
             ],
           ),

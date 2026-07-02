@@ -39,7 +39,7 @@ class TaskRemindDialog extends StatelessWidget {
           // Header
           Row(
             children: [
-               Icon(
+              Icon(
                 Icons.notifications_active,
                 color: colorTheme.iconColor,
                 size: 24,

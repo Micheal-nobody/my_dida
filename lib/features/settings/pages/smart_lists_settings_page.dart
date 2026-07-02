@@ -80,7 +80,9 @@ class SmartListsSettingsPage extends StatelessWidget {
               '四象限',
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color: config.showFourQuadrants ? colorTheme.primary : colorTheme.textPrimary,
+                color: config.showFourQuadrants
+                    ? colorTheme.primary
+                    : colorTheme.textPrimary,
               ),
             ),
             trailing: Switch(
@@ -124,7 +126,9 @@ class SmartListsSettingsPage extends StatelessWidget {
               Text(
                 stateText,
                 style: TextStyle(
-                  color: isEnabled ? colorTheme.primary : colorTheme.textSecondary,
+                  color: isEnabled
+                      ? colorTheme.primary
+                      : colorTheme.textSecondary,
                   fontSize: 16,
                 ),
               ),

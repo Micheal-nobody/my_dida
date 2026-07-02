@@ -96,12 +96,12 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
           ...dates.map((date) {
             final bool isSelected = date.isSameDay(widget.selectedDate);
             final String weekday = _getWeekdayName(date.weekday);
-	
+
             // Get tasks for this date (normalize date to remove time component)
             final normalizedDate = DateTime(date.year, date.month, date.day);
             final tasksForDate = widget.tasksForDates[normalizedDate] ?? [];
             final hasTasks = tasksForDate.isNotEmpty;
-	
+
             return Expanded(
               child: GestureDetector(
                 onTap: () {
@@ -112,7 +112,10 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
                   children: [
                     Text(
                       weekday,
-                      style: TextStyle(fontSize: 12, color: colorTheme.textSecondary),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorTheme.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Stack(

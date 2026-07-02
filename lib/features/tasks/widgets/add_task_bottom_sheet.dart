@@ -24,13 +24,18 @@ class AddTaskStateScope extends InheritedWidget {
 
   final AddTaskBottomSheetState state;
 
-  static AddTaskBottomSheetState of(BuildContext context, {bool listen = true}) {
+  static AddTaskBottomSheetState of(
+    BuildContext context, {
+    bool listen = true,
+  }) {
     if (listen) {
-      final scope = context.dependOnInheritedWidgetOfExactType<AddTaskStateScope>();
+      final scope = context
+          .dependOnInheritedWidgetOfExactType<AddTaskStateScope>();
       assert(scope != null, 'No AddTaskStateScope found in context');
       return scope!.state;
     } else {
-      final element = context.getElementForInheritedWidgetOfExactType<AddTaskStateScope>();
+      final element = context
+          .getElementForInheritedWidgetOfExactType<AddTaskStateScope>();
       assert(element != null, 'No AddTaskStateScope found in context');
       return (element!.widget as AddTaskStateScope).state;
     }
@@ -142,7 +147,8 @@ class AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
       );
 
       if (widget.initTask!.checklistId != null) {
-        selectedChecklist = checklistProvider.allCheckLists
+        selectedChecklist =
+            checklistProvider.allCheckLists
                 .where((item) => item.id == widget.initTask!.checklistId)
                 .firstOrNull ??
             ChecklistVO(
@@ -456,9 +462,9 @@ class AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
 
   @override
   Widget build(BuildContext context) => AddTaskStateScope(
-      state: this,
-      child: isFullScreen
-          ? const AddTaskFullScreenContent()
-          : const AddTaskStandardContent(),
-    );
+    state: this,
+    child: isFullScreen
+        ? const AddTaskFullScreenContent()
+        : const AddTaskStandardContent(),
+  );
 }

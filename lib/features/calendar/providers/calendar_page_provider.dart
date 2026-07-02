@@ -78,7 +78,10 @@ class CalendarPageProvider extends ChangeNotifier {
   }
 
   // 更新底层依赖
-  void updateDependencies(TaskProvider taskProvider, HabitProvider habitProvider) {
+  void updateDependencies(
+    TaskProvider taskProvider,
+    HabitProvider habitProvider,
+  ) {
     final isFirstRun = _taskProvider == null || _habitProvider == null;
     final isTaskProviderChanged = _taskProvider != taskProvider;
     final isHabitProviderChanged = _habitProvider != habitProvider;

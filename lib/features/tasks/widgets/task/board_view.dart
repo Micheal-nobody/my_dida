@@ -101,10 +101,7 @@ class BoardView extends StatelessWidget {
 
     if (tabTitles.isEmpty) {
       return const Center(
-        child: Text(
-          '暂无任务',
-          style: TextStyle(color: Colors.grey, fontSize: 16),
-        ),
+        child: Text('暂无任务', style: TextStyle(color: Colors.grey, fontSize: 16)),
       );
     }
 
@@ -266,9 +263,7 @@ class BoardView extends StatelessWidget {
                           try {
                             await taskProvider.execute(DeleteTask(task));
                             messageService.showSuccess(
-                              isTrashList
-                                  ? '任务已永久删除'
-                                  : UIStrings.taskDeleted,
+                              isTrashList ? '任务已永久删除' : UIStrings.taskDeleted,
                             );
                           } catch (e) {
                             messageService.showError(

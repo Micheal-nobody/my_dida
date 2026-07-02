@@ -101,6 +101,24 @@ class TaskDateTimePicker {
     CustomDateTimePickerValue value, {
     required TaskTimeInfo fallback,
   }) {
+    if (value.selectedDate == null &&
+        value.startDate == null &&
+        value.endDate == null) {
+      return TaskTimeInfo(
+        selectedDate: null,
+        startTime: null,
+        endTime: null,
+        startDateTime: null,
+        endDateTime: null,
+        isAllDay: false,
+        rrule: const RepeatPattern.none(),
+        startDate: null,
+        endDate: null,
+        notificationEnabled: false,
+        reminderOffsets: const [],
+      );
+    }
+
     DateTime? startDateTime;
     DateTime? endDateTime;
 
@@ -233,7 +251,6 @@ class TaskTimeInfo {
       startDateTime != null &&
       startDateTime!.hour == 0 &&
       startDateTime!.minute == 0;
-
 
   /// 获取最终的开始时间
   DateTime? getFinalStartTime() {

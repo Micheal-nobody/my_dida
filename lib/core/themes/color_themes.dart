@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-mixin LightTheme{
+mixin LightTheme {
   // Background colors
   Color get background => Colors.white;
   Color get surface => const Color(0xFFF5F5F5);
@@ -40,7 +40,7 @@ mixin PriorityTheme {
   Color get nonePriority => Colors.grey;
 }
 
-mixin OrangePrimaryTheme{
+mixin OrangePrimaryTheme {
   // Primary colors
   Color get primary => Colors.orange;
 
@@ -55,9 +55,9 @@ mixin OrangePrimaryTheme{
   Color get iconOnPrimary => Colors.white;
 }
 
-abstract class ColorTheme with LightTheme,OrangePrimaryTheme {}
+abstract class ColorTheme with LightTheme, OrangePrimaryTheme {}
 
-mixin BluePrimaryTheme{
+mixin BluePrimaryTheme {
   // Primary colors
   Color get primary => Colors.blue;
 
@@ -72,6 +72,6 @@ mixin BluePrimaryTheme{
 }
 
 /// Default theme implementation
-class OrangeColorTheme extends ColorTheme with LightTheme,OrangePrimaryTheme {}
+class OrangeColorTheme extends ColorTheme with LightTheme, OrangePrimaryTheme {}
 
-class BlueColorTheme extends ColorTheme with LightTheme,BluePrimaryTheme{}
+class BlueColorTheme extends ColorTheme with LightTheme, BluePrimaryTheme {}

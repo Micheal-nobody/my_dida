@@ -96,52 +96,49 @@ class _TodoPageState extends State<TodoPage> {
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'sort_group',
+                child: Row(
+                  children: [
+                    Icon(Icons.sort, color: colorTheme.textSecondary),
+                    const SizedBox(width: 8),
+                    const Text('排序与分组'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'visible_range',
+                child: Row(
+                  children: [
+                    Icon(Icons.visibility, color: colorTheme.textSecondary),
+                    const SizedBox(width: 8),
+                    const Text('可见范围'),
+                  ],
+                ),
+              ),
+              if (!currentChecklist.isToday || currentChecklist.isInbox) ...[
                 PopupMenuItem(
-                  value: 'sort_group',
+                  value: 'list_settings',
                   child: Row(
                     children: [
-                      Icon(Icons.sort, color: colorTheme.textSecondary),
+                      Icon(Icons.settings, color: colorTheme.textSecondary),
                       const SizedBox(width: 8),
-                      const Text('排序与分组'),
+                      const Text('清单设置'),
                     ],
                   ),
                 ),
                 PopupMenuItem(
-                  value: 'visible_range',
+                  value: 'delete_list',
                   child: Row(
                     children: [
-                      Icon(Icons.visibility, color: colorTheme.textSecondary),
+                      Icon(Icons.delete_forever, color: colorTheme.error),
                       const SizedBox(width: 8),
-                      const Text('可见范围'),
+                      Text('放入垃圾桶', style: TextStyle(color: colorTheme.error)),
                     ],
                   ),
                 ),
-                if (!currentChecklist.isToday || currentChecklist.isInbox) ...[
-                  PopupMenuItem(
-                    value: 'list_settings',
-                    child: Row(
-                      children: [
-                        Icon(Icons.settings, color: colorTheme.textSecondary),
-                        const SizedBox(width: 8),
-                        const Text('清单设置'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'delete_list',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_forever, color: colorTheme.error),
-                        const SizedBox(width: 8),
-                        Text(
-                          '放入垃圾桶',
-                          style: TextStyle(color: colorTheme.error),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ],
+            ],
           ),
         ],
       ),

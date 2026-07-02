@@ -108,10 +108,7 @@ class TaskListView extends StatelessWidget {
                 children: [
                   const Text(
                     UIStrings.habits,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(width: 8),
                   Container(
@@ -125,10 +122,7 @@ class TaskListView extends StatelessWidget {
                     ),
                     child: Text(
                       '${habitCards.length}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),
                 ],
@@ -143,10 +137,7 @@ class TaskListView extends StatelessWidget {
     // 3. 空白占位处理
     if (groupWidgets.isEmpty) {
       return const Center(
-        child: Text(
-          '暂无任务',
-          style: TextStyle(color: Colors.grey, fontSize: 16),
-        ),
+        child: Text('暂无任务', style: TextStyle(color: Colors.grey, fontSize: 16)),
       );
     }
 

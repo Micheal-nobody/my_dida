@@ -338,62 +338,69 @@ void main() {
       },
     );
 
-    test('TaskOperationReverter revertAdd cancels reminder and revertDelete/revertUpdate schedules reminder', () async {
-      final provider = harness.createProvider();
-      final startTime = DateTime.now().add(const Duration(days: 2));
+    test(
+      'TaskOperationReverter revertAdd cancels reminder and revertDelete/revertUpdate schedules reminder',
+      () async {
+        final provider = harness.createProvider();
+        final startTime = DateTime.now().add(const Duration(days: 2));
 
-      final task = await provider.execute(
-        AddTask(
-          Task(
-            name: 'ReverTest',
-            isAllDay: false,
-            startTime: startTime,
-            notificationEnabled: true,
-            reminderOffsetMinutes: 15,
-          ),
-        ),
-      ) as Task;
+        final task =
+            await provider.execute(
+                  AddTask(
+                    Task(
+                      name: 'ReverTest',
+                      isAllDay: false,
+                      startTime: startTime,
+                      notificationEnabled: true,
+                      reminderOffsetMinutes: 15,
+                    ),
+                  ),
+                )
+                as Task;
 
-      expect(scheduler.scheduledPlans, isNotEmpty);
-      final initialScheduledLength = scheduler.scheduledPlans.length;
+        expect(scheduler.scheduledPlans, isNotEmpty);
+        final initialScheduledLength = scheduler.scheduledPlans.length;
 
-      // 1. 测试 revertAdd 取消提醒
-      final reverter = TaskOperationReverter();
-      final initialCanceledLength = scheduler.canceledTaskIds.length;
-      await reverter.revertAdd(task.id);
-      expect(scheduler.canceledTaskIds.length, initialCanceledLength + 1);
-      expect(scheduler.canceledTaskIds.last, task.id);
+        // 1. 测试 revertAdd 取消提醒
+        final reverter = TaskOperationReverter();
+        final initialCanceledLength = scheduler.canceledTaskIds.length;
+        await reverter.revertAdd(task.id);
+        expect(scheduler.canceledTaskIds.length, initialCanceledLength + 1);
+        expect(scheduler.canceledTaskIds.last, task.id);
 
-      // 2. 测试 revertDelete 恢复提醒
-      final taskJson = jsonEncode(task.toJson());
-      await reverter.revertDelete(task.id, taskJson);
-      expect(scheduler.scheduledPlans.length, initialScheduledLength + 1);
-      expect(scheduler.scheduledPlans.last.taskId, task.id);
+        // 2. 测试 revertDelete 恢复提醒
+        final taskJson = jsonEncode(task.toJson());
+        await reverter.revertDelete(task.id, taskJson);
+        expect(scheduler.scheduledPlans.length, initialScheduledLength + 1);
+        expect(scheduler.scheduledPlans.last.taskId, task.id);
 
-      // 3. 测试 revertUpdate 恢复/修改提醒
-      final updatedTask = task.copyWith(name: 'Updated ReverTest');
-      final updatedTaskJson = jsonEncode(updatedTask.toJson());
-      await reverter.revertUpdate(task.id, updatedTaskJson, 'Revert update');
-      expect(scheduler.scheduledPlans.length, initialScheduledLength + 2);
-      expect(scheduler.scheduledPlans.last.title, 'Updated ReverTest');
-    });
+        // 3. 测试 revertUpdate 恢复/修改提醒
+        final updatedTask = task.copyWith(name: 'Updated ReverTest');
+        final updatedTaskJson = jsonEncode(updatedTask.toJson());
+        await reverter.revertUpdate(task.id, updatedTaskJson, 'Revert update');
+        expect(scheduler.scheduledPlans.length, initialScheduledLength + 2);
+        expect(scheduler.scheduledPlans.last.title, 'Updated ReverTest');
+      },
+    );
 
     test('updating task title or description syncs system reminders', () async {
       final provider = harness.createProvider();
       final startTime = DateTime.now().add(const Duration(days: 2));
 
-      final task = await provider.execute(
-        AddTask(
-          Task(
-            name: 'Original Title',
-            description: 'Original Description',
-            isAllDay: false,
-            startTime: startTime,
-            notificationEnabled: true,
-            reminderOffsetMinutes: 15,
-          ),
-        ),
-      ) as Task;
+      final task =
+          await provider.execute(
+                AddTask(
+                  Task(
+                    name: 'Original Title',
+                    description: 'Original Description',
+                    isAllDay: false,
+                    startTime: startTime,
+                    notificationEnabled: true,
+                    reminderOffsetMinutes: 15,
+                  ),
+                ),
+              )
+              as Task;
 
       expect(scheduler.scheduledPlans.last.title, 'Original Title');
       expect(scheduler.scheduledPlans.last.body, 'Original Description');
@@ -407,44 +414,49 @@ void main() {
       expect(scheduler.scheduledPlans.last.body, 'New Description');
     });
 
-    test('completing task via TomatoTaskCompletedEvent syncs reminders', () async {
-      final provider = harness.createProvider();
-      final startTime = DateTime.now().add(const Duration(days: 2));
+    test(
+      'completing task via TomatoTaskCompletedEvent syncs reminders',
+      () async {
+        final provider = harness.createProvider();
+        final startTime = DateTime.now().add(const Duration(days: 2));
 
-      final task = await provider.execute(
-        AddTask(
-          Task(
-            name: 'Tomato Task',
-            isAllDay: false,
-            startTime: startTime,
-            notificationEnabled: true,
-            reminderOffsetMinutes: 15,
-          ),
-        ),
-      ) as Task;
+        final task =
+            await provider.execute(
+                  AddTask(
+                    Task(
+                      name: 'Tomato Task',
+                      isAllDay: false,
+                      startTime: startTime,
+                      notificationEnabled: true,
+                      reminderOffsetMinutes: 15,
+                    ),
+                  ),
+                )
+                as Task;
 
-      final initialCanceledCount = scheduler.canceledTaskIds.length;
+        final initialCanceledCount = scheduler.canceledTaskIds.length;
 
-      final eventBus = EventBus();
-      final listener = TaskEventListener(
-        eventBus: eventBus,
-        taskRepository: harness.taskRepository,
-        taskReminderService: getIt<TaskReminderService>(),
-      );
+        final eventBus = EventBus();
+        final listener = TaskEventListener(
+          eventBus: eventBus,
+          taskRepository: harness.taskRepository,
+          taskReminderService: getIt<TaskReminderService>(),
+        );
 
-      // 发送事件
-      eventBus.fire(TomatoTaskCompletedEvent(taskId: task.id));
+        // 发送事件
+        eventBus.fire(TomatoTaskCompletedEvent(taskId: task.id));
 
-      // 等待异步处理
-      await Future.delayed(const Duration(milliseconds: 50));
+        // 等待异步处理
+        await Future.delayed(const Duration(milliseconds: 50));
 
-      expect(scheduler.canceledTaskIds.length, initialCanceledCount + 1);
-      expect(scheduler.canceledTaskIds.last, task.id);
+        expect(scheduler.canceledTaskIds.length, initialCanceledCount + 1);
+        expect(scheduler.canceledTaskIds.last, task.id);
 
-      final reloaded = await harness.taskRepository.selectById(task.id);
-      expect(reloaded?.isDone, isTrue);
+        final reloaded = await harness.taskRepository.selectById(task.id);
+        expect(reloaded?.isDone, isTrue);
 
-      listener.dispose();
-    });
+        listener.dispose();
+      },
+    );
   });
 }

@@ -90,7 +90,11 @@ void mainCommon(AppConfig config) async {
         ),
 
         // ChangeNotifierProxyProvider2，依赖于 TaskProvider 和 HabitProvider
-        ChangeNotifierProxyProvider2<TaskProvider, HabitProvider, CalendarPageProvider>(
+        ChangeNotifierProxyProvider2<
+          TaskProvider,
+          HabitProvider,
+          CalendarPageProvider
+        >(
           create: (context) => CalendarPageProvider(),
           update: (context, taskProvider, habitProvider, previous) =>
               (previous ?? CalendarPageProvider())

@@ -600,7 +600,9 @@ class _TomatoTimerFullScreenPageState extends State<TomatoTimerFullScreenPage> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: context.theme.deleteButton),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.theme.deleteButton,
+            ),
             child: const Text('放弃'),
           ),
         ],

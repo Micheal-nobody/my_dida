@@ -260,10 +260,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
                   padding: EdgeInsets.all(16.0),
                   child: Text(
                     '各预设番茄钟统计',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const Divider(height: 1),
@@ -354,10 +351,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
                 padding: EdgeInsets.all(16.0),
                 child: Text(
                   '专注历史明细',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                 ),
               ),
               const Divider(height: 1),
@@ -392,12 +386,7 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
   }
 
   // 单个指标卡片
-  Widget _buildMetricCard(
-    String title,
-    String val,
-    String unit,
-    Color color,
-  ) {
+  Widget _buildMetricCard(String title, String val, String unit, Color color) {
     final colorTheme = context.theme;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
@@ -414,7 +403,10 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
       ),
       child: Column(
         children: [
-          Text(title, style: TextStyle(fontSize: 11, color: colorTheme.textSecondary)),
+          Text(
+            title,
+            style: TextStyle(fontSize: 11, color: colorTheme.textSecondary),
+          ),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -430,7 +422,10 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
                 ),
               ),
               const SizedBox(width: 2),
-              Text(unit, style: TextStyle(fontSize: 9, color: colorTheme.textSecondary)),
+              Text(
+                unit,
+                style: TextStyle(fontSize: 9, color: colorTheme.textSecondary),
+              ),
             ],
           ),
         ],
@@ -448,7 +443,9 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
     return ListTile(
       leading: Icon(
         record.isCompleted ? Icons.check_circle : Icons.cancel,
-        color: record.isCompleted ? colorTheme.success : colorTheme.textSecondary,
+        color: record.isCompleted
+            ? colorTheme.success
+            : colorTheme.textSecondary,
         size: 20,
       ),
       title: Text(
@@ -456,7 +453,9 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: record.isCompleted ? colorTheme.textPrimary : colorTheme.textSecondary,
+          color: record.isCompleted
+              ? colorTheme.textPrimary
+              : colorTheme.textSecondary,
           decoration: record.isCompleted ? null : TextDecoration.lineThrough,
         ),
       ),
@@ -484,7 +483,9 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
-              color: record.isCompleted ? colorTheme.textPrimary : colorTheme.textSecondary,
+              color: record.isCompleted
+                  ? colorTheme.textPrimary
+                  : colorTheme.textSecondary,
             ),
           ),
           const SizedBox(width: 4),
@@ -516,7 +517,9 @@ class _TomatoSummaryPageState extends State<TomatoSummaryPage>
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: colorTheme.deleteButton),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorTheme.deleteButton,
+            ),
             child: const Text('删除'),
           ),
         ],

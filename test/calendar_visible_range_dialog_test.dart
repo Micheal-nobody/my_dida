@@ -78,9 +78,7 @@ void main() {
       await tester.pumpWidget(
         MultiProvider(
           providers: [
-            Provider<ColorTheme>.value(
-              value: BlueColorTheme(),
-            ),
+            Provider<ColorTheme>.value(value: BlueColorTheme()),
             ChangeNotifierProvider<ChecklistProvider>.value(
               value: fakeChecklistProvider,
             ),

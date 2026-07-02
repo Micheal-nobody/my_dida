@@ -60,18 +60,17 @@ class _CalendarAllDayTaskSectionState extends State<CalendarAllDayTaskSection> {
     double availableWidth,
     List<DateTime> visibleDates,
     List<Task> crossDayTasks,
-  ) =>
-      crossDayTasks.asMap().entries.map((entry) {
-        final taskIndex = entry.key;
-        final task = entry.value;
-        return _buildCrossDayTask(
-          task,
-          taskIndex,
-          availableWidth,
-          visibleDates,
-          crossDayTasks.length,
-        );
-      }).toList();
+  ) => crossDayTasks.asMap().entries.map((entry) {
+    final taskIndex = entry.key;
+    final task = entry.value;
+    return _buildCrossDayTask(
+      task,
+      taskIndex,
+      availableWidth,
+      visibleDates,
+      crossDayTasks.length,
+    );
+  }).toList();
 
   Widget _buildCrossDayTask(
     Task task,
@@ -146,7 +145,8 @@ class _CalendarAllDayTaskSectionState extends State<CalendarAllDayTaskSection> {
     final habitsForDates = calendarProvider.habitsForDates;
     final allDayTasksForDates = calendarProvider.allDayTasksForDates;
     final crossDayTasks = calendarProvider.crossDayTasks;
-    final crossDayTaskCountForDates = calendarProvider.crossDayTaskCountForDates;
+    final crossDayTaskCountForDates =
+        calendarProvider.crossDayTaskCountForDates;
 
     return Consumer<TaskProvider>(
       builder: (context, taskProvider, child) => LayoutBuilder(
@@ -266,10 +266,13 @@ class _CalendarAllDayTaskSectionState extends State<CalendarAllDayTaskSection> {
                                                 entry,
                                               ) => CalendarAllDayTaskEntry(
                                                 task: entry.value,
-                                                columnWidth: dateColumnWidth - 8,
+                                                columnWidth:
+                                                    dateColumnWidth - 8,
                                                 stackIndex:
-                                                    crossDayTaskCount + entry.key,
-                                                availableHeight: availableHeight,
+                                                    crossDayTaskCount +
+                                                    entry.key,
+                                                availableHeight:
+                                                    availableHeight,
                                                 displayedCount:
                                                     displayedCountForColumn +
                                                     crossDayTaskCount,
@@ -287,12 +290,14 @@ class _CalendarAllDayTaskSectionState extends State<CalendarAllDayTaskSection> {
                                                 entry,
                                               ) => CalendarAllDayHabitEntry(
                                                 habit: entry.value,
-                                                columnWidth: dateColumnWidth - 8,
+                                                columnWidth:
+                                                    dateColumnWidth - 8,
                                                 stackIndex:
                                                     crossDayTaskCount +
                                                     noTimeTasks.length +
                                                     entry.key,
-                                                availableHeight: availableHeight,
+                                                availableHeight:
+                                                    availableHeight,
                                                 displayedCount:
                                                     displayedCountForColumn +
                                                     crossDayTaskCount,

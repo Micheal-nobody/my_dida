@@ -267,7 +267,9 @@ class SettingsPage extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     launchUrl(
-                      Uri.parse('https://github.com/Micheal-nobody/my_dida/releases'),
+                      Uri.parse(
+                        'https://github.com/Micheal-nobody/my_dida/releases',
+                      ),
                       mode: LaunchMode.externalApplication,
                     );
                   },
@@ -684,7 +686,6 @@ class SettingsPage extends StatelessWidget {
 }
 
 class SectionHeader extends StatelessWidget {
-
   const SectionHeader(this.title, {super.key});
   final String title;
 

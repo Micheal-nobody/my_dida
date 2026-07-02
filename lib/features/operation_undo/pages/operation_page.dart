@@ -33,103 +33,110 @@ class _OperationPageState extends State<OperationPage> {
         foregroundColor: colorTheme.textOnPrimary,
         iconTheme: IconThemeData(color: colorTheme.textOnPrimary),
         actions: [
-        IconButton(
-          icon: const Icon(Icons.undo),
-          onPressed: () => _showUndoDialog(context),
-          tooltip: '撤回操作',
-        ),
-        PopupMenuButton<String>(
-          onSelected: (value) {
-            switch (value) {
-              case 'clear':
-                _showClearDialog(context);
-                break;
-              case 'filter':
-                _showFilterDialog(context);
-                break;
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'filter',
-              child: Row(
+          IconButton(
+            icon: const Icon(Icons.undo),
+            onPressed: () => _showUndoDialog(context),
+            tooltip: '撤回操作',
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              switch (value) {
+                case 'clear':
+                  _showClearDialog(context);
+                  break;
+                case 'filter':
+                  _showFilterDialog(context);
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'filter',
+                child: Row(
+                  children: [
+                    Icon(Icons.filter_list),
+                    SizedBox(width: 8),
+                    Text('筛选'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'clear',
+                child: Row(
+                  children: [
+                    Icon(Icons.clear_all),
+                    SizedBox(width: 8),
+                    Text('清空历史'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: Consumer<OperationStackProvider>(
+        builder: (context, operationStack, child) {
+          final operations = _getFilteredOperations(operationStack.operations);
+          if (operations.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.filter_list),
-                  SizedBox(width: 8),
-                  Text('筛选'),
+                  Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: colorTheme.surface,
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Icon(
+                      Icons.history,
+                      size: 64,
+                      color: colorTheme.textDisabled,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    '暂无操作记录',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: colorTheme.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '开始使用应用后，操作记录将显示在这里',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorTheme.textSecondary,
+                    ),
+                  ),
                 ],
               ),
-            ),
-            const PopupMenuItem(
-              value: 'clear',
-              child: Row(
-                children: [
-                  Icon(Icons.clear_all),
-                  SizedBox(width: 8),
-                  Text('清空历史'),
-                ],
+            );
+          }
+
+          return Column(
+            children: [
+              // 统计信息
+              OperationStatsCard(operationStack: operationStack),
+
+              // 操作列表
+              Expanded(
+                child: ListView.builder(
+                  itemCount: operations.length,
+                  itemBuilder: (context, index) {
+                    final operation = operations[index];
+                    return _buildOperationCard(operation, index);
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
-    ),
-    body: Consumer<OperationStackProvider>(
-      builder: (context, operationStack, child) {
-        final operations = _getFilteredOperations(operationStack.operations);
-        if (operations.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: colorTheme.surface,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: Icon(Icons.history, size: 64, color: colorTheme.textDisabled),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  '暂无操作记录',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: colorTheme.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '开始使用应用后，操作记录将显示在这里',
-                  style: TextStyle(fontSize: 14, color: colorTheme.textSecondary),
-                ),
-              ],
-            ),
+            ],
           );
-        }
-
-        return Column(
-          children: [
-            // 统计信息
-            OperationStatsCard(operationStack: operationStack),
-
-            // 操作列表
-            Expanded(
-              child: ListView.builder(
-                itemCount: operations.length,
-                itemBuilder: (context, index) {
-                  final operation = operations[index];
-                  return _buildOperationCard(operation, index);
-                },
-              ),
-            ),
-          ],
-        );
-      },
-    ),
-  );
-}
+        },
+      ),
+    );
+  }
 
   Widget _buildOperationCard(Operation operation, int index) {
     final colorTheme = context.theme;

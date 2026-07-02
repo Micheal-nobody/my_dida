@@ -35,7 +35,10 @@ class TomatoPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           '番茄专注',
-          style: TextStyle(color: colorTheme.textPrimary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: colorTheme.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -152,7 +155,9 @@ class TomatoPage extends StatelessWidget {
                                     width: 44,
                                     height: 44,
                                     decoration: BoxDecoration(
-                                      color: colorTheme.success.withValues(alpha: 0.1),
+                                      color: colorTheme.success.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
@@ -230,15 +235,17 @@ class TomatoPage extends StatelessWidget {
                                                   AlwaysStoppedAnimation<Color>(
                                                     colorTheme.primary,
                                                   ),
-                                              backgroundColor:
-                                                  colorTheme.primary.withValues(alpha: 0.2),
+                                              backgroundColor: colorTheme
+                                                  .primary
+                                                  .withValues(alpha: 0.2),
                                             ),
                                           )
                                         : Container(
                                             width: 36,
                                             height: 36,
                                             decoration: BoxDecoration(
-                                              color: colorTheme.primary.withValues(alpha: 0.1),
+                                              color: colorTheme.primary
+                                                  .withValues(alpha: 0.1),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
@@ -455,7 +462,9 @@ class TomatoPage extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: context.theme.deleteButton),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.theme.deleteButton,
+            ),
             child: const Text('删除'),
           ),
         ],

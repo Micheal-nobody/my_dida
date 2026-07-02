@@ -68,7 +68,10 @@ class CalendarTaskListBottom extends StatelessWidget {
               ? Center(
                   child: Text(
                     '当天没有任务',
-                    style: TextStyle(color: colorTheme.textSecondary, fontSize: 16),
+                    style: TextStyle(
+                      color: colorTheme.textSecondary,
+                      fontSize: 16,
+                    ),
                   ),
                 )
               : ListView.builder(

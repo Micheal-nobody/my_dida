@@ -101,9 +101,17 @@ class _VirtualizedCalendarTimeAreaState
     return visibleDates[columnIndex];
   }
 
-  void _updateDragPreview(Offset globalPosition, List<DateTime> visibleDates, List<int> activeHours) {
+  void _updateDragPreview(
+    Offset globalPosition,
+    List<DateTime> visibleDates,
+    List<int> activeHours,
+  ) {
     final targetDate = _calculateTargetDate(globalPosition, visibleDates);
-    final previewTime = _calculateTimeFromPosition(globalPosition, targetDate, activeHours);
+    final previewTime = _calculateTimeFromPosition(
+      globalPosition,
+      targetDate,
+      activeHours,
+    );
     if (_dragPreviewTime == previewTime) {
       return;
     }
@@ -140,12 +148,14 @@ class _VirtualizedCalendarTimeAreaState
     return [selected, ...dates];
   }
 
-
   @override
   Widget build(BuildContext context) {
     final calendarProvider = context.watch<CalendarPageProvider>();
     final selectedDate = calendarProvider.selectedDate;
-    final visibleDates = _getReorderedVisibleDates(calendarProvider.visibleDates, selectedDate);
+    final visibleDates = _getReorderedVisibleDates(
+      calendarProvider.visibleDates,
+      selectedDate,
+    );
     final tasksForDates = calendarProvider.tasksForDates;
     final habitsForDates = calendarProvider.habitsForDates;
     final colorTheme = context.theme;
@@ -180,7 +190,11 @@ class _VirtualizedCalendarTimeAreaState
                 listen: false,
               );
               await taskProvider.execute(
-                UpdateStartTime(details.data, _dragPreviewTime, isAllDay: false),
+                UpdateStartTime(
+                  details.data,
+                  _dragPreviewTime,
+                  isAllDay: false,
+                ),
               );
             }
             _clearDragPreview();
@@ -217,7 +231,10 @@ class _VirtualizedCalendarTimeAreaState
                         right: 0,
                         top: previewLineTop,
                         child: IgnorePointer(
-                          child: Container(height: 2, color: colorTheme.primary),
+                          child: Container(
+                            height: 2,
+                            color: colorTheme.primary,
+                          ),
                         ),
                       ),
                   ],
@@ -237,7 +254,10 @@ class _VirtualizedCalendarTimeAreaState
     Map<DateTime, List<Task>> tasksForDates,
     Map<DateTime, List<Habit>> habitsForDates,
   ) {
-    final dateColumnWidth = _getDateColumnWidth(availableWidth, visibleDates.length);
+    final dateColumnWidth = _getDateColumnWidth(
+      availableWidth,
+      visibleDates.length,
+    );
 
     return SizedBox(
       height: _hourHeight,
@@ -286,8 +306,12 @@ class _VirtualizedCalendarTimeAreaState
         Container(
           decoration: BoxDecoration(
             border: Border(
-              right: BorderSide(color: context.theme.border.withValues(alpha: 0.5)),
-              bottom: BorderSide(color: context.theme.border.withValues(alpha: 0.5)),
+              right: BorderSide(
+                color: context.theme.border.withValues(alpha: 0.5),
+              ),
+              bottom: BorderSide(
+                color: context.theme.border.withValues(alpha: 0.5),
+              ),
             ),
           ),
         ),

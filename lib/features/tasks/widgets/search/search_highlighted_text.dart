@@ -46,7 +46,7 @@ class SearchHighlightedText extends StatelessWidget {
           ),
           style:
               highlightStyle ??
-                  TextStyle(
+              TextStyle(
                 color: colorTheme.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
