@@ -13,7 +13,7 @@ class CalendarPageConfig extends BaseEntity {
     this.showCompletedTasks = true,
     this.visibleMode = CalendarVisibleMode.all,
     this.visibleChecklistIds = const [],
-    this.viewMode = CalendarViewMode.month,
+    this.viewMode = CalendarViewMode.threeDay,
     this.isTimeFolded = false,
   });
 

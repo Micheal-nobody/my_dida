@@ -54,8 +54,10 @@ class CalendarTimedTaskEntry extends StatelessWidget {
         backgroundColor: backgroundColor,
         borderColor: borderColor,
         onPressed: onPressed,
-        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0.5),
+        alignment: Alignment.centerLeft,
+        useFittedBox: true,
         opacity: task.isDone ? 0.4 : 1,
       ),
     );

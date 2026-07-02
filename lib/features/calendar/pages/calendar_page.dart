@@ -40,7 +40,10 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
-  List<Task> _getSelectedDateTasks(DateTime selectedDate, CalendarPageProvider provider) {
+  List<Task> _getSelectedDateTasks(
+    DateTime selectedDate,
+    CalendarPageProvider provider,
+  ) {
     final normalizedDate = DateTime(
       selectedDate.year,
       selectedDate.month,
@@ -332,7 +335,10 @@ class _CalendarPageState extends State<CalendarPage> {
                 Expanded(
                   child: CalendarTaskListBottom(
                     selectedDate: selectedDate,
-                    tasks: _getSelectedDateTasks(selectedDate, calendarPageProvider),
+                    tasks: _getSelectedDateTasks(
+                      selectedDate,
+                      calendarPageProvider,
+                    ),
                   ),
                 ),
               ],
@@ -345,14 +351,12 @@ class _CalendarPageState extends State<CalendarPage> {
                   tasksForDates: calendarPageProvider.tasksForDates,
                   onDateSelected: calendarPageProvider.setSelectedDate,
                 ),
-                Row(
+                const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(width: _timeAxisWidth),
-                    const SizedBox(width: _timeAxisGap),
-                    const Expanded(
-                      child: CalendarAllDayTaskSection(),
-                    ),
+                    SizedBox(width: _timeAxisWidth),
+                    SizedBox(width: _timeAxisGap),
+                    Expanded(child: CalendarAllDayTaskSection()),
                   ],
                 ),
                 Expanded(

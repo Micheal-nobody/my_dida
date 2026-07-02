@@ -31,7 +31,7 @@ class _VirtualizedCalendarTimeAreaState
   final GlobalKey _containerKey = GlobalKey();
 
   static const int _snapGranularityMinutes = 15;
-  static const double _timedEntryHeight = 15.0;
+  static const double _timedEntryHeight = 18.0;
   DateTime? _dragPreviewTime;
 
   double get _hourHeight {
