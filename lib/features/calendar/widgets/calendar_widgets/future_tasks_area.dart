@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/utils/time_formatter.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
@@ -22,6 +23,8 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
       return const SizedBox.shrink();
     }
 
+    final colorTheme = context.theme;
+
     return Consumer2<ChecklistProvider, TaskProvider>(
       builder: (context, checklistProvider, taskProvider, child) => Container(
         padding: const EdgeInsets.all(16),
@@ -34,7 +37,7 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: colorTheme.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -55,7 +58,7 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey[600],
+                        color: colorTheme.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -78,6 +81,7 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
     // 获取任务颜色
     final checklist = task.getChecklist(checklistProvider.allCheckLists);
     final taskColor = checklist.color;
+    final colorTheme = context.theme;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -115,10 +119,10 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
                     children: [
                       Text(
                         task.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black87,
+                          color: colorTheme.textPrimary,
                         ),
                       ),
                       if (task.startTime != null) ...[
@@ -127,7 +131,7 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
                           _formatTime(task.startTime!),
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: colorTheme.textSecondary,
                           ),
                         ),
                       ],
@@ -137,7 +141,7 @@ class _FutureTasksAreaState extends State<FutureTasksArea> {
 
                 // 完成状态指示器
                 if (task.isDone)
-                  Icon(Icons.check_circle, size: 16, color: Colors.green[600]),
+                  Icon(Icons.check_circle, size: 16, color: colorTheme.success),
               ],
             ),
           ),

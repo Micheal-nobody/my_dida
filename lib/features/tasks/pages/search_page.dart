@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
 import 'package:my_dida/core/di/locator.dart';
-import 'package:my_dida/core/themes/color_constants.dart';
+import 'package:my_dida/core/themes/color_themes.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/core/utils/time_formatter.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:my_dida/core/themes/color_themes.dart';
 import 'package:my_dida/features/calendar/models/calendar_page_config.dart';
 import 'package:my_dida/features/calendar/providers/calendar_page_provider.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_visible_range_dialog.dart';
@@ -32,6 +33,9 @@ class FakeCalendarPageProvider extends ChangeNotifier
     if (isTimeFolded != null) config.isTimeFolded = isTimeFolded;
     notifyListeners();
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class FakeChecklistProvider extends ChangeNotifier
@@ -74,6 +78,9 @@ void main() {
       await tester.pumpWidget(
         MultiProvider(
           providers: [
+            Provider<ColorTheme>.value(
+              value: BlueColorTheme(),
+            ),
             ChangeNotifierProvider<ChecklistProvider>.value(
               value: fakeChecklistProvider,
             ),

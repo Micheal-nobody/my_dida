@@ -4,7 +4,7 @@ import 'package:my_dida/core/constants/app_constants.dart';
 import 'package:my_dida/core/constants/dimension_constants.dart';
 import 'package:my_dida/core/constants/ui_constants.dart';
 import 'package:my_dida/core/di/locator.dart';
-import 'package:my_dida/core/themes/color_constants.dart';
+import 'package:my_dida/core/themes/color_themes.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/core/ui/app_message_service.dart';
 import 'package:my_dida/features/checklist/models/checklist_vo.dart';

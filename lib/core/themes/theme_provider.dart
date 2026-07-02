@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_dida/core/themes/color_constants.dart';
+import 'package:my_dida/core/themes/color_themes.dart';
 import 'package:provider/provider.dart';
 
 /// ThemeProvider to handle dynamic theme changes and notifications

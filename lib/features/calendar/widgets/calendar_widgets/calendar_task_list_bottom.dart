@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 import 'package:my_dida/features/tasks/pages/task_detail_page.dart';
@@ -42,6 +43,7 @@ class CalendarTaskListBottom extends StatelessWidget {
     final taskProvider = Provider.of<TaskProvider>(context);
     final checklistProvider = Provider.of<ChecklistProvider>(context);
     final allChecklists = checklistProvider.allCheckLists;
+    final colorTheme = context.theme;
 
     final dateStr =
         '${selectedDate.year}年${selectedDate.month}月${selectedDate.day}日 星期${_getWeekdayName(selectedDate.weekday)}';
@@ -53,20 +55,20 @@ class CalendarTaskListBottom extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Text(
             dateStr,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: colorTheme.textPrimary,
             ),
           ),
         ),
         const Divider(height: 1),
         Expanded(
           child: tasks.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
                     '当天没有任务',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    style: TextStyle(color: colorTheme.textSecondary, fontSize: 16),
                   ),
                 )
               : ListView.builder(

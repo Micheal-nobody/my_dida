@@ -14,6 +14,8 @@ extension DateOnly on DateTime {
         day == currentTime.day;
   }
 
+  bool isSameDay(DateTime b) => year == b.year && month == b.month && day == b.day;
+
   bool hasTime() => hour != 0 || minute != 0;
 
   bool justDate() => hour == 0 && minute == 0;

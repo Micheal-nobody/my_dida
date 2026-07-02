@@ -1,22 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:my_dida/core/themes/theme_provider.dart';
-import 'package:my_dida/core/utils/performance_monitor.dart';
-import 'package:my_dida/core/utils/rrule_util.dart';
-import 'package:my_dida/core/utils/task_filter.dart';
 import 'package:my_dida/features/calendar/models/calendar_page_config.dart';
-import 'package:my_dida/features/calendar/models/task_calendar_view_data.dart';
 import 'package:my_dida/features/calendar/providers/calendar_page_provider.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_all_day_task_section.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_entry_widgets.dart';
-import 'package:my_dida/features/calendar/widgets/calendar_time_task_section.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_visible_range_dialog.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_widgets/calendar_date_header.dart';
+import 'package:my_dida/features/calendar/widgets/calendar_widgets/calendar_scrollable_content.dart';
 import 'package:my_dida/features/calendar/widgets/calendar_widgets/calendar_task_list_bottom.dart';
-import 'package:my_dida/features/habits/models/habit.dart';
-import 'package:my_dida/features/habits/providers/habit_provider.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
-import 'package:my_dida/features/tasks/providers/task_provider.dart';
 import 'package:my_dida/features/tasks/widgets/add_task_bottom_sheet.dart';
 import 'package:my_dida/shared/widgets/datetime/calendar_grid.dart';
 import 'package:my_dida/shared/widgets/datetime/custom_date_picker_dialog.dart';
@@ -33,246 +26,28 @@ class CalendarPage extends StatefulWidget {
 class _CalendarPageState extends State<CalendarPage> {
   static const double _timeAxisWidth = 60.0;
   static const double _timeAxisGap = 8.0;
-  static const double _timedEntryHeight = 15.0;
-  static const double _allDayEntryHeight = 28.0;
 
-  late DateTime _selectedDate;
-  Map<DateTime, List<Task>> _tasksForDates = {};
-  Map<DateTime, List<Task>> _allDayTasksForDates = {};
-  List<Task> _crossDayTasks = [];
-  Map<DateTime, int> _crossDayTaskCountForDates = {};
-  Map<DateTime, List<Task>> _futureTasks = {};
-  Map<DateTime, List<Habit>> _habitsForDates = {};
   DateTime? _dragPreviewTime;
   double _timeContentScrollOffset = 0;
-  late TaskProvider _taskProvider;
-  late HabitProvider _habitProvider;
-  late CalendarPageProvider _calendarPageProvider;
 
-  final Map<DateTime, int> _rruleBatchLimit = {};
-  final Map<DateTime, bool> _rruleHasMore = {};
-
-  @override
-  void initState() {
-    super.initState();
-    final now = DateTime.now();
-    _selectedDate = now;
-    _taskProvider = Provider.of<TaskProvider>(context, listen: false);
-    _habitProvider = Provider.of<HabitProvider>(context, listen: false);
-    _calendarPageProvider = Provider.of<CalendarPageProvider>(
-      context,
-      listen: false,
-    );
-    _loadTasksForVisibleDates();
-    _taskProvider.addListener(_onTaskProviderChanged);
-    _habitProvider.addListener(_onTaskProviderChanged);
-    _calendarPageProvider.addListener(_onTaskProviderChanged);
-  }
-
-  @override
-  void dispose() {
-    _taskProvider.removeListener(_onTaskProviderChanged);
-    _habitProvider.removeListener(_onTaskProviderChanged);
-    _calendarPageProvider.removeListener(_onTaskProviderChanged);
-    super.dispose();
-  }
-
-  void _onTaskProviderChanged() {
-    _loadTasksForVisibleDates();
-  }
-
-  List<DateTime> get _visibleDates {
-    final config = _calendarPageProvider.config;
-    final dates = <DateTime>[];
-    final startDate = _selectedDate;
-    final range = config.viewMode == CalendarViewMode.week ? 7 : 3;
-
-    for (var index = 0; index < range; index++) {
-      dates.add(startDate.add(Duration(days: index)));
-    }
-    return dates;
-  }
-
-  List<DateTime> get _loadRangeDates {
-    final config = _calendarPageProvider.config;
-    if (config.viewMode == CalendarViewMode.month) {
-      final firstDay = DateTime(_selectedDate.year, _selectedDate.month);
-      final lastDay = DateTime(_selectedDate.year, _selectedDate.month + 1, 0);
-      final days = lastDay.difference(firstDay).inDays + 1;
-      return List.generate(days, (i) => firstDay.add(Duration(days: i)));
-    } else {
-      return _visibleDates;
-    }
-  }
-
-  List<Task> _filterTasks(List<Task> tasks, CalendarPageConfig config) => tasks
-      .filterByIsDone(!config.showCompletedTasks)
-      .filterByChecklistIds(
-        isCustomMode: config.visibleMode == CalendarVisibleMode.custom,
-        visibleChecklistIds: config.visibleChecklistIds,
-      );
-
-  Future<void> _loadTasksForVisibleDates() async {
-    await PerformanceMonitor.timeAsyncOperation(
-      OperationName.calendar_load_tasks,
-      () async {
-        final habitProvider = Provider.of<HabitProvider>(
-          context,
-          listen: false,
-        );
-        final habitsMap = <DateTime, List<Habit>>{};
-        final visibleDates = _loadRangeDates;
-        if (visibleDates.isEmpty) {
-          return;
-        }
-
-        final taskViewData = await PerformanceMonitor.timeAsyncOperation(
-          OperationName.load_calendar_task_view,
-          () => _taskProvider.loadCalendarTaskViewData(
-            visibleDates: visibleDates,
-            rruleBatchLimit: _rruleBatchLimit,
-          ),
-        );
-
-        final allHabits = habitProvider.habits;
-
-        for (final date in visibleDates) {
-          final normalizedDate = DateTime(date.year, date.month, date.day);
-          final habitsForDate = <Habit>[];
-
-          for (final habit in allHabits) {
-            var shouldShowToday = false;
-
-            if (!habit.rrule.isNone) {
-              final startTime = DateTime(
-                habit.startDate.year,
-                habit.startDate.month,
-                habit.startDate.day,
-                habit.remindTime.hour,
-                habit.remindTime.minute,
-              );
-              final rangeStart = normalizedDate;
-              final rangeEnd = normalizedDate.add(const Duration(days: 1));
-              final occurrences = PerformanceMonitor.timeOperation(
-                OperationName.rrule_habit_processing,
-                () => RRuleUtil.getOccurrencesInRange(
-                  startTime,
-                  habit.rrule.toRRuleString() ?? '',
-                  rangeStart,
-                  rangeEnd,
-                ),
-              );
-              shouldShowToday = occurrences.any(
-                (occurrence) => occurrence.isAtSameMomentAs(normalizedDate),
-              );
-            } else {
-              shouldShowToday = true;
-            }
-
-            if (shouldShowToday && !habitProvider.isTodayCompleted(habit)) {
-              habitsForDate.add(habit);
-            }
-          }
-
-          habitsMap[normalizedDate] = habitsForDate;
-        }
-
-        setState(() {
-          _applyTaskViewData(taskViewData);
-          _habitsForDates = habitsMap;
-        });
-      },
-    );
-
-    PerformanceMonitor.printReport();
-  }
-
-  void _loadMoreRRuleForDate(DateTime date) {
-    final normalizedDate = DateTime(date.year, date.month, date.day);
-    final current = _rruleBatchLimit[normalizedDate] ?? 5;
-    _rruleBatchLimit[normalizedDate] = current + 5;
-    _loadTasksForVisibleDates();
-  }
-
-  void _applyTaskViewData(TaskCalendarViewData taskViewData) {
-    final config = _calendarPageProvider.config;
-
-    _tasksForDates = taskViewData.tasksForDates.map(
-      (date, list) => MapEntry(date, _filterTasks(list, config)),
-    );
-
-    _allDayTasksForDates = taskViewData.allDayTasksForDates.map(
-      (date, list) => MapEntry(date, _filterTasks(list, config)),
-    );
-
-    _crossDayTasks = _filterTasks(taskViewData.crossDayTasks, config);
-
-    _crossDayTaskCountForDates = {};
-    for (final date in _visibleDates) {
-      final normalizedDate = DateTime(date.year, date.month, date.day);
-      int count = 0;
-      for (final task in _crossDayTasks) {
-        if (task.startTime != null && task.endTime != null) {
-          final start = DateTime(
-            task.startTime!.year,
-            task.startTime!.month,
-            task.startTime!.day,
-          );
-          final end = DateTime(
-            task.endTime!.year,
-            task.endTime!.month,
-            task.endTime!.day,
-          );
-          if ((normalizedDate.isAtSameMomentAs(start) ||
-                  normalizedDate.isAfter(start)) &&
-              (normalizedDate.isAtSameMomentAs(end) ||
-                  normalizedDate.isBefore(end))) {
-            count++;
-          }
-        }
-      }
-      _crossDayTaskCountForDates[normalizedDate] = count;
-    }
-
-    _futureTasks = taskViewData.futureTasks.map(
-      (date, list) => MapEntry(date, _filterTasks(list, config)),
-    );
-
-    _rruleHasMore
-      ..clear()
-      ..addAll(taskViewData.rruleHasMore);
-
-    for (final date in _loadRangeDates) {
-      final normalizedDate = DateTime(date.year, date.month, date.day);
-      _rruleBatchLimit.putIfAbsent(normalizedDate, () => 5);
-    }
-  }
-
-  void _showDatePicker() {
+  void _showDatePicker(DateTime selectedDate, CalendarPageProvider provider) {
     showDialog(
       context: context,
       builder: (context) => CustomDatePickerDialog(
-        selectedDate: _selectedDate,
-        onDateSelected: _setSelectedDate,
+        selectedDate: selectedDate,
+        onDateSelected: provider.setSelectedDate,
       ),
     );
   }
 
-  void _setSelectedDate(DateTime date) {
-    setState(() {
-      _selectedDate = date;
-    });
-    _loadTasksForVisibleDates();
-  }
-
-  List<Task> _getSelectedDateTasks() {
+  List<Task> _getSelectedDateTasks(DateTime selectedDate, CalendarPageProvider provider) {
     final normalizedDate = DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
     );
-    final tasks = _tasksForDates[normalizedDate] ?? [];
-    final allDayTasks = _allDayTasksForDates[normalizedDate] ?? [];
+    final tasks = provider.tasksForDates[normalizedDate] ?? [];
+    final allDayTasks = provider.allDayTasksForDates[normalizedDate] ?? [];
     return [...allDayTasks, ...tasks];
   }
 
@@ -282,11 +57,13 @@ class _CalendarPageState extends State<CalendarPage> {
     bool isSelected,
   ) {
     final normalizedDate = DateTime(date.year, date.month, date.day);
+    final provider = Provider.of<CalendarPageProvider>(context, listen: false);
+
     return CalendarGridDay(
       date: date,
       isSelected: isSelected,
-      tasks: _tasksForDates[normalizedDate] ?? [],
-      allDayTasks: _allDayTasksForDates[normalizedDate] ?? [],
+      tasks: provider.tasksForDates[normalizedDate] ?? [],
+      allDayTasks: provider.allDayTasksForDates[normalizedDate] ?? [],
     );
   }
 
@@ -310,76 +87,22 @@ class _CalendarPageState extends State<CalendarPage> {
     });
   }
 
-  Widget _buildTimedTaskEntry(
-    BuildContext context, {
-    required Task task,
-    required double columnWidth,
-  }) => CalendarTimedTaskEntry(
-    task: task,
-    columnWidth: columnWidth,
-    entryHeight: _timedEntryHeight,
-  );
-
-  Widget _buildTimedHabitEntry(
-    BuildContext context, {
-    required Habit habit,
-    required double columnWidth,
-  }) => CalendarTimedHabitEntry(habit: habit, columnWidth: columnWidth);
-
-  Widget _buildAllDayTaskEntry(
-    BuildContext context, {
-    required Task task,
-    required double columnWidth,
-    required int stackIndex,
-    required double availableHeight,
-    required int displayedCount,
-    required bool isCrossDay,
-    double left = 0,
-    double? width,
-  }) => CalendarAllDayTaskEntry(
-    task: task,
-    columnWidth: columnWidth,
-    stackIndex: stackIndex,
-    availableHeight: availableHeight,
-    displayedCount: displayedCount,
-    isCrossDay: isCrossDay,
-    entryHeight: _allDayEntryHeight,
-    left: left,
-    width: width,
-  );
-
-  Widget _buildAllDayHabitEntry(
-    BuildContext context, {
-    required Habit habit,
-    required double columnWidth,
-    required int stackIndex,
-    required double availableHeight,
-    required int displayedCount,
-  }) => CalendarAllDayHabitEntry(
-    habit: habit,
-    columnWidth: columnWidth,
-    stackIndex: stackIndex,
-    availableHeight: availableHeight,
-    displayedCount: displayedCount,
-    entryHeight: _allDayEntryHeight,
-  );
-
-  List<int> _getActiveHours() {
-    final config = _calendarPageProvider.config;
+  List<int> _getActiveHours(CalendarPageProvider provider) {
+    final config = provider.config;
     if (!config.isTimeFolded) {
       return List.generate(24, (i) => i);
     }
 
     final activeHours = <int>{};
-    for (final date in _visibleDates) {
+    for (final date in provider.visibleDates) {
       final normalizedDate = DateTime(date.year, date.month, date.day);
-      final tasks = _tasksForDates[normalizedDate] ?? [];
+      final tasks = provider.tasksForDates[normalizedDate] ?? [];
       for (final task in tasks) {
         if (task.startTime != null && !task.isAllDay) {
           activeHours.add(task.startTime!.hour);
         }
       }
-      final habits = _habitsForDates[normalizedDate] ?? [];
+      final habits = provider.habitsForDates[normalizedDate] ?? [];
       for (final habit in habits) {
         activeHours.add(habit.remindTime.hour);
       }
@@ -414,7 +137,8 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     final calendarPageProvider = Provider.of<CalendarPageProvider>(context);
     final config = calendarPageProvider.config;
-    final activeHours = _getActiveHours();
+    final selectedDate = calendarPageProvider.selectedDate;
+    final activeHours = _getActiveHours(calendarPageProvider);
     final dynamicTimeAreaHeight = activeHours.length * 60.0;
 
     final colorTheme = context.theme;
@@ -422,12 +146,12 @@ class _CalendarPageState extends State<CalendarPage> {
     return Scaffold(
       appBar: AppBar(
         title: GestureDetector(
-          onTap: _showDatePicker,
+          onTap: () => _showDatePicker(selectedDate, calendarPageProvider),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                DateFormat('yyyy年M月').format(_selectedDate),
+                DateFormat('yyyy年M月').format(selectedDate),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -444,7 +168,7 @@ class _CalendarPageState extends State<CalendarPage> {
           IconButton(
             tooltip: '刷新',
             icon: Icon(Icons.refresh, color: colorTheme.textSecondary),
-            onPressed: _loadTasksForVisibleDates,
+            onPressed: calendarPageProvider.loadCalendarData,
           ),
           IconButton(
             tooltip: '视图模式',
@@ -578,9 +302,9 @@ class _CalendarPageState extends State<CalendarPage> {
           ? Column(
               children: [
                 CalendarGrid(
-                  selectedDate: _selectedDate,
+                  selectedDate: selectedDate,
                   showHeader: false,
-                  onDateSelected: _setSelectedDate,
+                  onDateSelected: calendarPageProvider.setSelectedDate,
                   dayBuilder: _buildCalendarDay,
                 ),
                 GestureDetector(
@@ -607,8 +331,8 @@ class _CalendarPageState extends State<CalendarPage> {
                 ),
                 Expanded(
                   child: CalendarTaskListBottom(
-                    selectedDate: _selectedDate,
-                    tasks: _getSelectedDateTasks(),
+                    selectedDate: selectedDate,
+                    tasks: _getSelectedDateTasks(selectedDate, calendarPageProvider),
                   ),
                 ),
               ],
@@ -616,26 +340,18 @@ class _CalendarPageState extends State<CalendarPage> {
           : Column(
               children: [
                 CalendarDateHeader(
-                  selectedDate: _selectedDate,
+                  selectedDate: selectedDate,
                   dateRange: config.viewMode == CalendarViewMode.week ? 7 : 3,
-                  tasksForDates: _tasksForDates,
-                  onDateSelected: _setSelectedDate,
+                  tasksForDates: calendarPageProvider.tasksForDates,
+                  onDateSelected: calendarPageProvider.setSelectedDate,
                 ),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(width: _timeAxisWidth),
                     const SizedBox(width: _timeAxisGap),
-                    Expanded(
-                      child: CalendarAllDayTaskSection(
-                        visibleDates: _visibleDates,
-                        habitsForDates: _habitsForDates,
-                        allDayTasksForDates: _allDayTasksForDates,
-                        crossDayTasks: _crossDayTasks,
-                        crossDayTaskCountForDates: _crossDayTaskCountForDates,
-                        allDayTaskEntryBuilder: _buildAllDayTaskEntry,
-                        allDayHabitEntryBuilder: _buildAllDayHabitEntry,
-                      ),
+                    const Expanded(
+                      child: CalendarAllDayTaskSection(),
                     ),
                   ],
                 ),
@@ -649,18 +365,8 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                       const SizedBox(width: _timeAxisGap),
                       Expanded(
-                        child: CalendarTimeTaskSection(
-                          selectedDate: _selectedDate,
-                          visibleDates: _visibleDates,
-                          tasksForDates: _tasksForDates,
-                          habitsForDates: _habitsForDates,
-                          futureTasks: _futureTasks,
-                          rruleHasMore: _rruleHasMore,
-                          onLoadMoreRRule: _loadMoreRRuleForDate,
-                          onDateChanged: _setSelectedDate,
+                        child: CalendarScrollableContent(
                           timeAreaHeight: dynamicTimeAreaHeight,
-                          timedTaskEntryBuilder: _buildTimedTaskEntry,
-                          timedHabitEntryBuilder: _buildTimedHabitEntry,
                           onDragPreviewChanged: _handleDragPreviewChanged,
                           onScrollOffsetChanged:
                               _handleTimeContentScrollOffsetChanged,
@@ -678,7 +384,7 @@ class _CalendarPageState extends State<CalendarPage> {
         onPressed: () {
           AddTaskBottomSheet.show(
             context: context,
-            initTask: Task(name: '', isAllDay: true, startTime: _selectedDate),
+            initTask: Task(name: '', isAllDay: true, startTime: selectedDate),
           );
         },
       ),

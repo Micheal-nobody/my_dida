@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
+import 'package:my_dida/core/utils/time_utils.dart';
 import 'package:my_dida/features/tasks/models/task.dart';
 
 class CalendarDateHeader extends StatefulWidget {
@@ -22,6 +24,7 @@ class CalendarDateHeader extends StatefulWidget {
 class _CalendarDateHeaderState extends State<CalendarDateHeader> {
   @override
   Widget build(BuildContext context) {
+    final colorTheme = context.theme;
     // 构建日期序列：当前选中 -> 选中+1 -> ... -> 选中+(dateRange-1)
     final List<DateTime> dates = [];
     for (int i = 0; i < widget.dateRange; i++) {
@@ -57,7 +60,7 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
                           ),
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: colorTheme.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -74,7 +77,7 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.grey[800],
+                                color: colorTheme.textPrimary,
                               ),
                             ),
                           ),
@@ -91,14 +94,14 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
           const SizedBox(width: 8),
           // 日期列
           ...dates.map((date) {
-            final bool isSelected = _isSameDay(date, widget.selectedDate);
+            final bool isSelected = date.isSameDay(widget.selectedDate);
             final String weekday = _getWeekdayName(date.weekday);
-
+	
             // Get tasks for this date (normalize date to remove time component)
             final normalizedDate = DateTime(date.year, date.month, date.day);
             final tasksForDate = widget.tasksForDates[normalizedDate] ?? [];
             final hasTasks = tasksForDate.isNotEmpty;
-
+	
             return Expanded(
               child: GestureDetector(
                 onTap: () {
@@ -109,7 +112,7 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
                   children: [
                     Text(
                       weekday,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 12, color: colorTheme.textSecondary),
                     ),
                     const SizedBox(height: 4),
                     Stack(
@@ -119,7 +122,7 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
                           height: 32,
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.orange
+                                ? colorTheme.primary
                                 : Colors.transparent,
                             shape: BoxShape.circle,
                           ),
@@ -130,8 +133,8 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: isSelected
-                                    ? Colors.white
-                                    : Colors.grey[800],
+                                    ? colorTheme.textOnPrimary
+                                    : colorTheme.textPrimary,
                               ),
                             ),
                           ),
@@ -144,8 +147,8 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
                             child: Container(
                               width: 8,
                               height: 8,
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
+                              decoration: BoxDecoration(
+                                color: colorTheme.error,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -183,7 +186,4 @@ class _CalendarDateHeaderState extends State<CalendarDateHeader> {
         return '';
     }
   }
-
-  bool _isSameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
 }

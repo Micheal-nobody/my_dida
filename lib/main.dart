@@ -5,7 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:isar_community/isar.dart';
 import 'package:my_dida/core/config/app_config.dart';
 import 'package:my_dida/core/config/prod_config.dart';
-import 'package:my_dida/core/themes/color_constants.dart';
+import 'package:my_dida/core/themes/color_themes.dart';
 import 'package:my_dida/core/di/locator.dart';
 import 'package:my_dida/core/logger/logger.dart';
 import 'package:my_dida/core/router/go_router.dart';
@@ -55,7 +55,6 @@ void mainCommon(AppConfig config) async {
               themeProvider.theme,
         ),
         ChangeNotifierProvider(create: (context) => ChecklistProvider()),
-        ChangeNotifierProvider(create: (context) => CalendarPageProvider()),
         ChangeNotifierProvider(create: (context) => HabitProvider()),
         ChangeNotifierProvider(create: (context) => TomatoProvider()),
         ChangeNotifierProvider.value(value: operationStack),
@@ -88,6 +87,14 @@ void mainCommon(AppConfig config) async {
               ).currentCheckList,
             );
           },
+        ),
+
+        // ChangeNotifierProxyProvider2，依赖于 TaskProvider 和 HabitProvider
+        ChangeNotifierProxyProvider2<TaskProvider, HabitProvider, CalendarPageProvider>(
+          create: (context) => CalendarPageProvider(),
+          update: (context, taskProvider, habitProvider, previous) =>
+              (previous ?? CalendarPageProvider())
+                ..updateDependencies(taskProvider, habitProvider),
         ),
       ],
       child: const MyApp(),

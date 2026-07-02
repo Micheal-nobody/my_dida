@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_dida/core/themes/theme_provider.dart';
 import 'package:my_dida/features/calendar/models/calendar_page_config.dart';
 import 'package:my_dida/features/calendar/providers/calendar_page_provider.dart';
 import 'package:my_dida/features/checklist/providers/checklist_provider.dart';
@@ -100,6 +101,7 @@ class _CalendarVisibleRangeDialogState
   Widget build(BuildContext context) {
     final checklistProvider = Provider.of<ChecklistProvider>(context);
     final allChecklists = checklistProvider.allCheckLists;
+    final colorTheme = context.theme;
 
     return BaseBottomSheetLayout(
       title: '显示范围',
@@ -126,7 +128,7 @@ class _CalendarVisibleRangeDialogState
             title: const Text('全部'),
             value: _isAllSelected,
             onChanged: _onAllChanged,
-            activeColor: Colors.orange,
+            activeColor: colorTheme.primary,
             controlAffinity: ListTileControlAffinity.trailing,
           ),
           const Divider(height: 1, indent: 16, endIndent: 16),
@@ -137,7 +139,7 @@ class _CalendarVisibleRangeDialogState
               secondary: Icon(Icons.folder, color: checklist.color),
               value: isSelected,
               onChanged: (val) => _onChecklistChanged(checklist.id, val),
-              activeColor: Colors.orange,
+              activeColor: colorTheme.primary,
               controlAffinity: ListTileControlAffinity.trailing,
             );
           }),
